@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Development Board"
+  short_description: "Story-driven Codex execution and board rules"
+  default_prompt: "Use $project-development-board to execute CB Jira work with safe parallel board rules."
