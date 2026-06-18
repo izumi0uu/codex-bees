@@ -1,7 +1,8 @@
 import { stdin, stdout, stderr } from "node:process";
-import { planTask } from "./planner.js";
+import { planTask, queueTasksFromPlan } from "./planner.js";
 import {
   addTask,
+  addTasks,
   blockTask,
   claimTask,
   completeTask,
@@ -59,6 +60,10 @@ export const toolCatalog = [
   {
     name: "plan_task",
     description: "Generate a bounded read-only execution plan for a task brief."
+  },
+  {
+    name: "queue_plan",
+    description: "Generate a bounded execution plan and queue its lanes as local tasks."
   }
 ];
 
@@ -327,6 +332,21 @@ function handleRequest(message) {
 
       return createSuccess(id, {
         content: [{ type: "text", text: JSON.stringify(planTask(params.arguments.task), null, 2) }]
+      });
+    }
+
+    if (name === "queue_plan") {
+      if (!params.arguments?.task) {
+        return createError(id, -32602, "queue_plan requires arguments.task");
+      }
+
+      return createSuccess(id, {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(queueTasksFromPlan(params.arguments.task, addTasks), null, 2)
+          }
+        ]
       });
     }
   }

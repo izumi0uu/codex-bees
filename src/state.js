@@ -75,21 +75,26 @@ export function listTasks() {
 
 export function addTask(input) {
   const state = loadState();
-  const task = {
-    id: `task-${state.nextId}`,
-    title: input.title,
-    status: input.status ?? "todo",
-    queueStatus: input.queueStatus ?? "queued",
-    owner: input.owner ?? null,
-    claimedBy: input.claimedBy ?? null,
-    notes: input.notes ?? null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
+  const task = buildTask(input, state.nextId);
   state.tasks.push(task);
   state.nextId += 1;
   saveState(state);
   return task;
+}
+
+export function addTasks(inputs) {
+  const state = loadState();
+  const created = [];
+
+  for (const input of inputs) {
+    const task = buildTask(input, state.nextId);
+    state.tasks.push(task);
+    state.nextId += 1;
+    created.push(task);
+  }
+
+  saveState(state);
+  return created;
 }
 
 export function updateTask(input) {
@@ -164,6 +169,12 @@ function normalizeTask(task) {
     queueStatus: VALID_QUEUE_STATUSES.has(task.queueStatus) ? task.queueStatus : "queued",
     claimedBy: task.claimedBy ?? null,
     owner: task.owner ?? null,
+    verifier: task.verifier ?? null,
+    objective: task.objective ?? null,
+    lane: task.lane ?? null,
+    scope: Array.isArray(task.scope) ? task.scope : null,
+    acceptance: Array.isArray(task.acceptance) ? task.acceptance : null,
+    verification: Array.isArray(task.verification) ? task.verification : null,
     notes: task.notes ?? null
   };
 }
@@ -251,6 +262,26 @@ function transitionTask(input) {
   state.tasks[index] = next;
   saveState(state);
   return next;
+}
+
+function buildTask(input, nextId) {
+  return normalizeTask({
+    id: `task-${nextId}`,
+    title: input.title,
+    status: input.status ?? "todo",
+    queueStatus: input.queueStatus ?? "queued",
+    owner: input.owner ?? null,
+    verifier: input.verifier ?? null,
+    objective: input.objective ?? null,
+    lane: input.lane ?? null,
+    scope: input.scope ?? null,
+    acceptance: input.acceptance ?? null,
+    verification: input.verification ?? null,
+    claimedBy: input.claimedBy ?? null,
+    notes: input.notes ?? null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
 }
 
 function writeStateFile(state) {

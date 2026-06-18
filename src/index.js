@@ -4,9 +4,10 @@ import { stdout, stderr, exit, argv, env, cwd } from "node:process";
 import { statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
-import { planTask } from "./planner.js";
+import { planTask, queueTasksFromPlan } from "./planner.js";
 import {
   addTask,
+  addTasks,
   blockTask,
   claimTask,
   completeTask,
@@ -35,6 +36,7 @@ function printHelp() {
   write(`  codex-bees tools         Print the current MCP tool catalog\n`);
   write(`  codex-bees doctor        Print runtime contract diagnostics\n`);
   write(`  codex-bees plan          Generate a bounded read-only execution plan\n`);
+  write(`  codex-bees plan:queue    Generate a plan and queue its lanes as local tasks\n`);
   write(`  codex-bees task:list     List local coordination tasks\n`);
   write(`  codex-bees task:add      Add a local coordination task\n`);
   write(`  codex-bees task:claim    Claim a local coordination task\n`);
@@ -224,6 +226,11 @@ function handlePlan() {
   write(JSON.stringify(planTask(task), null, 2) + "\n");
 }
 
+function handlePlanQueue() {
+  const task = requireOption("--task");
+  write(JSON.stringify(queueTasksFromPlan(task, addTasks), null, 2) + "\n");
+}
+
 async function runCommand(command) {
   switch (command) {
     case undefined:
@@ -256,6 +263,9 @@ async function runCommand(command) {
       return;
     case "plan":
       handlePlan();
+      return;
+    case "plan:queue":
+      handlePlanQueue();
       return;
     case "task:list":
       printTasks();

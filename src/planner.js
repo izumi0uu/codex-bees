@@ -51,12 +51,36 @@ function choosePrimaryScope(task) {
     return ["README.md"];
   }
 
+  if (lower.includes("planner") || lower.includes("plan ")) {
+    return sourceFilePaths().filter((path) => path.endsWith("planner.js"));
+  }
+
+  if (
+    lower.includes("task") ||
+    lower.includes("queue") ||
+    lower.includes("claim") ||
+    lower.includes("review") ||
+    lower.includes("state")
+  ) {
+    return sourceFilePaths().filter((path) =>
+      ["src/state.js", "src/index.js", "src/mcp.js"].includes(path)
+    );
+  }
+
   if (lower.includes("agent") || lower.includes("prompt")) {
     return Object.values(ROLE_FILES).filter(fileExists);
   }
 
+  if (lower.includes("skill")) {
+    return [".codex/skills"].filter((path) => directoryExists(path) || fileExists(path));
+  }
+
   if (lower.includes("mcp") || lower.includes("tool")) {
     return sourceFilePaths().filter((path) => path.endsWith("mcp.js"));
+  }
+
+  if (lower.includes("runtime") || lower.includes("cli") || lower.includes("command")) {
+    return sourceFilePaths().filter((path) => path.endsWith("index.js"));
   }
 
   if (lower.includes("build") || lower.includes("smoke") || lower.includes("script")) {
@@ -90,8 +114,10 @@ export function planTask(task) {
   const scope = choosePrimaryScope(task);
   const lanes = [
     {
+      lane: "lane-1",
       owner: "explore",
       verifier: "reviewer",
+      summary: `Map scope and verification for: ${task}`,
       scope,
       acceptance: [
         "scope paths exist in the repository",
@@ -101,8 +127,10 @@ export function planTask(task) {
       verification: ["inspect scope paths", "confirm role files exist"]
     },
     {
+      lane: "lane-2",
       owner: "executor",
       verifier: "tester",
+      summary: `Implement the bounded repo change for: ${task}`,
       scope,
       acceptance: [
         "the targeted files can be updated without crossing unrelated surfaces",
@@ -118,5 +146,30 @@ export function planTask(task) {
     objective: task,
     evidence: plannerEvidence(task),
     lanes
+  };
+}
+
+export function queueTasksFromPlan(task, addTasks) {
+  const plan = planTask(task);
+  const tasks = plan.lanes.map((lane) => ({
+    title: lane.summary,
+    status: "todo",
+    queueStatus: "queued",
+    owner: lane.owner,
+    verifier: lane.verifier,
+    objective: task,
+    lane: lane.lane,
+    scope: lane.scope,
+    acceptance: lane.acceptance,
+    verification: lane.verification,
+    notes: `Generated from plan for: ${task}`
+  }));
+
+  const created = addTasks(tasks);
+  return {
+    kind: "queued_plan",
+    objective: task,
+    lanes: plan.lanes,
+    created
   };
 }
