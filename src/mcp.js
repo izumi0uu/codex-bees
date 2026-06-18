@@ -1,6 +1,12 @@
 import { stdin, stdout, stderr } from "node:process";
 import { planTask } from "./planner.js";
-import { addTask, listTasks, updateTask } from "./state.js";
+import {
+  addTask,
+  claimTask,
+  listTasks,
+  releaseTask,
+  updateTask
+} from "./state.js";
 
 export const toolCatalog = [
   {
@@ -26,6 +32,14 @@ export const toolCatalog = [
   {
     name: "task_update",
     description: "Update a local coordination task in the persistent state store."
+  },
+  {
+    name: "task_claim",
+    description: "Claim a queued local coordination task for one active owner."
+  },
+  {
+    name: "task_release",
+    description: "Release a claimed local coordination task back to the queue."
   },
   {
     name: "plan_task",
@@ -169,6 +183,53 @@ function handleRequest(message) {
 
       return createSuccess(id, {
         content: [{ type: "text", text: JSON.stringify({ updated: task }, null, 2) }]
+      });
+    }
+
+    if (name === "task_claim") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_claim requires arguments.id");
+      }
+      if (!params.arguments?.claimedBy) {
+        return createError(id, -32602, "task_claim requires arguments.claimedBy");
+      }
+
+      const task = claimTask({
+        id: params.arguments.id,
+        claimedBy: params.arguments.claimedBy
+      });
+
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+      if (task.error) {
+        return createError(id, -32602, task.error);
+      }
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ claimed: task }, null, 2) }]
+      });
+    }
+
+    if (name === "task_release") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_release requires arguments.id");
+      }
+
+      const task = releaseTask({
+        id: params.arguments.id,
+        claimedBy: params.arguments.claimedBy
+      });
+
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+      if (task.error) {
+        return createError(id, -32602, task.error);
+      }
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ released: task }, null, 2) }]
       });
     }
 

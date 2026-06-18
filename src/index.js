@@ -5,7 +5,14 @@ import { statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
 import { planTask } from "./planner.js";
-import { addTask, listTasks, stateFilePath, updateTask } from "./state.js";
+import {
+  addTask,
+  claimTask,
+  listTasks,
+  releaseTask,
+  stateFilePath,
+  updateTask
+} from "./state.js";
 
 const VERSION = "0.1.0";
 
@@ -27,6 +34,8 @@ function printHelp() {
   write(`  codex-bees plan          Generate a bounded read-only execution plan\n`);
   write(`  codex-bees task:list     List local coordination tasks\n`);
   write(`  codex-bees task:add      Add a local coordination task\n`);
+  write(`  codex-bees task:claim    Claim a local coordination task\n`);
+  write(`  codex-bees task:release  Release a local coordination task\n`);
   write(`  codex-bees task:update   Update a local coordination task\n`);
   write(`  codex-bees --help        Show help\n`);
   write(`  codex-bees --version     Show version\n`);
@@ -122,6 +131,36 @@ function handleTaskUpdate() {
   write(JSON.stringify({ updated: task }, null, 2) + "\n");
 }
 
+function handleTaskClaim() {
+  const id = requireOption("--id");
+  const claimedBy = requireOption("--by");
+  const task = claimTask({ id, claimedBy });
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (task.error) {
+    writeErr(`${task.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ claimed: task }, null, 2) + "\n");
+}
+
+function handleTaskRelease() {
+  const id = requireOption("--id");
+  const claimedBy = readOption("--by");
+  const task = releaseTask({ id, claimedBy });
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (task.error) {
+    writeErr(`${task.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ released: task }, null, 2) + "\n");
+}
+
 function handlePlan() {
   const task = requireOption("--task");
   write(JSON.stringify(planTask(task), null, 2) + "\n");
@@ -165,6 +204,12 @@ async function runCommand(command) {
       return;
     case "task:add":
       handleTaskAdd();
+      return;
+    case "task:claim":
+      handleTaskClaim();
+      return;
+    case "task:release":
+      handleTaskRelease();
       return;
     case "task:update":
       handleTaskUpdate();

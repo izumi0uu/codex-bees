@@ -1,4 +1,7 @@
 import { spawnSync } from "node:child_process";
+import { rmSync } from "node:fs";
+
+rmSync(".codex-bees", { recursive: true, force: true });
 
 const checks = [
   ["help", ["./src/index.js", "--help"]],
@@ -6,8 +9,10 @@ const checks = [
   ["tools", ["./src/mcp.js", "--tools"]],
   ["plan", ["./src/index.js", "plan", "--task", "Add a doctor smoke check to the CLI"]],
   ["task-add", ["./src/index.js", "task:add", "--title", "smoke task", "--status", "todo"]],
+  ["task-claim", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "smoke-worker"]],
   ["task-list", ["./src/index.js", "task:list"]],
-  ["task-update", ["./src/index.js", "task:update", "--id", "task-1", "--status", "doing"]]
+  ["task-update", ["./src/index.js", "task:update", "--id", "task-1", "--status", "doing"]],
+  ["task-release", ["./src/index.js", "task:release", "--id", "task-1", "--by", "smoke-worker"]]
 ];
 
 for (const [label, args] of checks) {

@@ -50,7 +50,9 @@ export function addTask(input) {
     id: `task-${state.tasks.length + 1}`,
     title: input.title,
     status: input.status ?? "todo",
+    queueStatus: input.queueStatus ?? "queued",
     owner: input.owner ?? null,
+    claimedBy: input.claimedBy ?? null,
     notes: input.notes ?? null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -71,7 +73,9 @@ export function updateTask(input) {
     ...current,
     ...(input.title !== undefined ? { title: input.title } : {}),
     ...(input.status !== undefined ? { status: input.status } : {}),
+    ...(input.queueStatus !== undefined ? { queueStatus: input.queueStatus } : {}),
     ...(input.owner !== undefined ? { owner: input.owner } : {}),
+    ...(input.claimedBy !== undefined ? { claimedBy: input.claimedBy } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
     updatedAt: new Date().toISOString()
   };
@@ -82,4 +86,46 @@ export function updateTask(input) {
 
 export function stateFilePath() {
   return ensureStateFile();
+}
+
+export function claimTask(input) {
+  const state = loadState();
+  const index = state.tasks.findIndex((task) => task.id === input.id);
+  if (index < 0) {
+    return null;
+  }
+  const current = state.tasks[index];
+  if (current.claimedBy && current.claimedBy !== input.claimedBy) {
+    return { error: `Task already claimed by ${current.claimedBy}` };
+  }
+  const next = {
+    ...current,
+    claimedBy: input.claimedBy,
+    queueStatus: "claimed",
+    updatedAt: new Date().toISOString()
+  };
+  state.tasks[index] = next;
+  saveState(state);
+  return next;
+}
+
+export function releaseTask(input) {
+  const state = loadState();
+  const index = state.tasks.findIndex((task) => task.id === input.id);
+  if (index < 0) {
+    return null;
+  }
+  const current = state.tasks[index];
+  if (current.claimedBy && input.claimedBy && current.claimedBy !== input.claimedBy) {
+    return { error: `Task claimed by ${current.claimedBy}, not ${input.claimedBy}` };
+  }
+  const next = {
+    ...current,
+    claimedBy: null,
+    queueStatus: "queued",
+    updatedAt: new Date().toISOString()
+  };
+  state.tasks[index] = next;
+  saveState(state);
+  return next;
 }

@@ -9,6 +9,7 @@ Codex Bees packages a small command surface, a local MCP server, reusable skills
 - runs a local CLI for orchestration and diagnostics
 - exposes an MCP stdio surface for tool-driven workflows
 - can generate bounded read-only execution plans from a task brief
+- keeps a small local task queue with single-owner claim and release semantics
 - keeps agent roles narrow, explicit, and reviewable
 - favors small, observable coordination steps over opaque automation
 
@@ -43,6 +44,9 @@ node ./src/index.js run
 node ./src/index.js tools
 node ./src/index.js doctor
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
+node ./src/index.js task:add --title "Wire a new MCP tool"
+node ./src/index.js task:claim --id task-1 --by explore
+node ./src/index.js task:release --id task-1 --by explore
 node ./src/index.js mcp
 ```
 
@@ -67,6 +71,7 @@ The foundation layer is in place:
 - a real CLI entrypoint
 - a minimal MCP stdio runtime
 - a read-only planner that maps task briefs to bounded lanes and repo scopes
+- a local task queue with explicit claim/release ownership
 - local skills and agent prompts for bounded orchestration
 - smoke checks for the current command surface
 

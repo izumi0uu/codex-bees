@@ -1,56 +1,133 @@
 ---
 name: swarm-orchestration
-description: Coordinate Codex workers through explicit ownership, bounded parallel execution, and clean handoff rules.
+description: Coordinate Codex workers through explicit ownership, bounded parallel execution, queue-based claiming, and clean handoff rules.
 ---
 
 # Swarm Orchestration
 
 Use this skill when one Codex lane should coordinate multiple bounded workers against the same objective.
 
-## Preconditions
+## When to use it
+
+Use a swarm only when parallel work is actually helpful.
 
 - The work has at least two independent lanes.
-- Each lane has a disjoint write scope or is read-only.
-- The task brief and acceptance are already known.
-- The leader can keep the critical path moving without waiting on every child result.
+- Each lane can be owned by one worker at a time.
+- Write scopes are disjoint, or some lanes are read-only.
+- The objective and acceptance criteria are already known.
+- The leader can keep the main path moving without blocking on every child result.
 
-## Required lane contract
+Do not start a swarm for vague work, one-file work, or tasks that still need discovery before they can be sliced safely.
 
-Every delegated lane must specify:
+## Core model
 
-- task or work-item identifier when one exists
+Treat the swarm as a small queue of bounded lanes.
+
+- **Leader**: owns the objective, queue, lane assignment, and final integration.
+- **Worker**: claims one lane, stays inside its boundary, and returns evidence.
+- **Lane**: one bounded unit of work with a clear outcome and scope.
+- **Queue**: the ordered list of lanes waiting to be claimed, in progress, blocked, or ready to verify.
+
+Keep the model product-facing and reusable. Slice by user-visible surface, system boundary, or validation target — not by internal department language or process labels.
+
+## Lane contract
+
+Every delegated lane must include:
+
+- lane identifier
+- outcome to achieve
 - owner role
-- exact file or directory ownership
+- exact file, directory, or read-only boundary
+- dependencies or prerequisites
 - acceptance target
-- verifier or review expectation
-- conflict rule: the worker is not alone in the codebase and must not revert unrelated edits
+- required verification
+- conflict rule: do not revert or overwrite unrelated changes
+
+If any of these are missing, the lane is not ready to claim.
+
+## Queue states
+
+Use simple queue semantics.
+
+- **queued**: ready for a worker to claim
+- **claimed**: owned by one worker and in progress
+- **blocked**: cannot proceed without a dependency, clarification, or re-slice
+- **ready for review**: worker finished and returned evidence
+- **done**: leader reviewed the result and accepted the lane
+- **released**: lane ownership returned to the queue without being accepted
+
+A lane can only have one active owner at a time.
+
+## Claim rules
+
+1. Claim only one lane at a time unless the leader explicitly bundles more than one.
+2. Record ownership before edits begin.
+3. Do not claim a lane whose scope overlaps another claimed lane.
+4. If a lane turns out to be larger or less clear than expected, stop and return it for re-slicing.
+5. If the lane is actually on the leader's critical path, keep it local instead of delegating it.
+
+## Release rules
+
+Release a lane back to the queue when:
+
+- the lane is blocked by a missing dependency or decision
+- the write scope overlaps another lane
+- the lane needs to be split into smaller lanes
+- the worker cannot complete it without leaving the assigned boundary
+- the claimed work no longer matches the current objective
+
+A release should include:
+
+- current state of the lane
+- files touched, if any
+- blocker or reason for release
+- recommendation for re-queue, re-slice, or reassignment
 
 ## Leader workflow
 
-1. Load the objective and the active task brief.
-2. Keep the critical path local; delegate sidecar lanes only.
-3. Split work by concrete surfaces, not vague effort buckets.
-4. Record ownership before parallel edits begin.
-5. Integrate completed lanes only after reviewing their write scope and evidence.
+1. Load the objective, acceptance criteria, and known constraints.
+2. Keep the critical path local; delegate only bounded side lanes.
+3. Break work into concrete lanes with explicit ownership.
+4. Queue lanes before parallel work starts.
+5. Allow workers to claim only ready lanes.
+6. Review returned evidence before marking a lane done.
+7. Integrate completed lanes only after scope and verification checks pass.
 
-## Worker expectations
+## Worker workflow
 
-1. Stay inside the assigned file boundary.
-2. Report blockers, overlap, and follow-up recommendations upward.
-3. Do not expand into another lane's file set without re-slicing ownership.
-4. Return changed files and verification evidence, not just a status phrase.
+1. Claim one ready lane.
+2. Restate the lane boundary before editing.
+3. Stay inside the assigned scope.
+4. Report blockers, overlap, and follow-up recommendations upward.
+5. Return changed files, verification evidence, and any residual risks.
+6. Release the lane instead of freelancing beyond the assignment.
 
 ## Verification
 
-- Run the smallest checks that prove the claimed lane outcome.
+Every lane needs fresh evidence.
+
+- Run the smallest check that proves the claimed outcome.
 - Prefer targeted validation before broader smoke checks.
-- Do not mark a lane complete without fresh evidence and a handoff summary.
+- Verify the specific surface the lane was meant to change.
+- Do not mark a lane complete with intent alone, partial output, or stale results.
+- The leader accepts a lane only after reviewing both scope and evidence.
 
-## Stop conditions
+A lane handoff should return:
 
-Stop and re-slice if:
+- lane identifier
+- summary of what changed
+- changed files
+- verification performed
+- result or output snippet
+- remaining risks or follow-ups
 
-- two lanes need the same file
-- the delegated task is actually on the critical path
-- the task scope is too vague to assign safely
-- a worker's changes would violate the Codex-only boundary
+## Re-slice triggers
+
+Stop, release, and re-slice when:
+
+- two lanes need the same file or tight shared context
+- the lane boundary is vague
+- the work depends on hidden discovery
+- verification cannot be defined at lane level
+- the delegated work becomes the critical path
+- the worker would need to expand into another lane's scope to finish
