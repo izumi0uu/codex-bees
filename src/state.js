@@ -1,9 +1,17 @@
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  unlinkSync,
+  writeFileSync
+} from "node:fs";
 import { join } from "node:path";
 import { cwd } from "node:process";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
+const STATE_VERSION = 1;
 const VALID_QUEUE_STATUSES = new Set([
   "queued",
   "claimed",
@@ -24,6 +32,8 @@ const ALLOWED_QUEUE_TRANSITIONS = {
 
 function defaultState() {
   return {
+    version: STATE_VERSION,
+    nextId: 1,
     tasks: [],
     updatedAt: null
   };
@@ -32,31 +42,30 @@ function defaultState() {
 export function ensureStateFile() {
   mkdirSync(STATE_DIR, { recursive: true });
   if (!existsSync(STATE_FILE)) {
-    writeFileSync(STATE_FILE, JSON.stringify(defaultState(), null, 2) + "\n", "utf8");
+    writeStateFile(defaultState());
   }
   return STATE_FILE;
 }
 
 export function loadState() {
   ensureStateFile();
-  const raw = readFileSync(STATE_FILE, "utf8");
-  const parsed = JSON.parse(raw);
-  if (!Array.isArray(parsed.tasks)) {
+  try {
+    const raw = readFileSync(STATE_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    return normalizeState(parsed);
+  } catch (error) {
+    recoverCorruptStateFile(error);
     return defaultState();
   }
-  return {
-    ...parsed,
-    tasks: parsed.tasks.map(normalizeTask)
-  };
 }
 
 export function saveState(state) {
   ensureStateFile();
-  const next = {
+  const next = normalizeState({
     ...state,
     updatedAt: new Date().toISOString()
-  };
-  writeFileSync(STATE_FILE, JSON.stringify(next, null, 2) + "\n", "utf8");
+  });
+  writeStateFile(next);
   return next;
 }
 
@@ -67,7 +76,7 @@ export function listTasks() {
 export function addTask(input) {
   const state = loadState();
   const task = {
-    id: `task-${state.tasks.length + 1}`,
+    id: `task-${state.nextId}`,
     title: input.title,
     status: input.status ?? "todo",
     queueStatus: input.queueStatus ?? "queued",
@@ -78,6 +87,7 @@ export function addTask(input) {
     updatedAt: new Date().toISOString()
   };
   state.tasks.push(task);
+  state.nextId += 1;
   saveState(state);
   return task;
 }
@@ -158,6 +168,33 @@ function normalizeTask(task) {
   };
 }
 
+function normalizeState(state) {
+  if (!state || !Array.isArray(state.tasks)) {
+    return defaultState();
+  }
+
+  const tasks = state.tasks.map(normalizeTask);
+  const maxTaskNumber = tasks.reduce((max, task) => {
+    const match = /^task-(\d+)$/.exec(task.id ?? "");
+    if (!match) {
+      return max;
+    }
+    return Math.max(max, Number(match[1]));
+  }, 0);
+
+  const nextId =
+    Number.isInteger(state.nextId) && state.nextId > maxTaskNumber
+      ? state.nextId
+      : maxTaskNumber + 1;
+
+  return {
+    version: STATE_VERSION,
+    nextId,
+    tasks,
+    updatedAt: state.updatedAt ?? null
+  };
+}
+
 function canTransition(from, to) {
   const allowed = ALLOWED_QUEUE_TRANSITIONS[from];
   return allowed ? allowed.has(to) : false;
@@ -214,4 +251,29 @@ function transitionTask(input) {
   state.tasks[index] = next;
   saveState(state);
   return next;
+}
+
+function writeStateFile(state) {
+  mkdirSync(STATE_DIR, { recursive: true });
+  const tmpPath = `${STATE_FILE}.tmp`;
+  writeFileSync(tmpPath, JSON.stringify(state, null, 2) + "\n", "utf8");
+  renameSync(tmpPath, STATE_FILE);
+}
+
+function recoverCorruptStateFile(error) {
+  try {
+    if (existsSync(STATE_FILE)) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const corruptPath = join(STATE_DIR, `state.corrupt.${timestamp}.json`);
+      renameSync(STATE_FILE, corruptPath);
+    }
+  } catch {
+    try {
+      unlinkSync(STATE_FILE);
+    } catch {
+      // ignore cleanup failures; caller will rewrite a clean file on next save
+    }
+  }
+  writeStateFile(defaultState());
+  console.warn(`[codex-bees] recovered corrupt state file: ${error.message}`);
 }

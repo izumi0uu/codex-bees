@@ -9,7 +9,7 @@ Codex Bees packages a small command surface, a local MCP server, reusable skills
 - runs a local CLI for orchestration and diagnostics
 - exposes an MCP stdio surface for tool-driven workflows
 - can generate bounded read-only execution plans from a task brief
-- keeps a small local task queue with explicit lifecycle states and single-owner transitions
+- keeps a small local task queue with explicit lifecycle states, single-owner transitions, and local state recovery
 - keeps agent roles narrow, explicit, and reviewable
 - favors small, observable coordination steps over opaque automation
 
@@ -75,6 +75,7 @@ The foundation layer is in place:
 - a minimal MCP stdio runtime
 - a read-only planner that maps task briefs to bounded lanes and repo scopes
 - a local task queue with explicit claim, block, review, release, and completion states
+- a versioned local state store with recovery for corrupt state files
 - a project-local development skill for intake, planning, execution, verification, and handoff
 - local skills and agent prompts for bounded orchestration
 - smoke checks for the current command surface
