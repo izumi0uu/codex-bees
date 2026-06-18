@@ -19,19 +19,74 @@ const checks = [
   ["tools", ["./src/mcp.js", "--tools"]],
   ["plan", ["./src/index.js", "plan", "--task", "Add a doctor smoke check to the CLI"]],
   ["plan-queue", ["./src/index.js", "plan:queue", "--task", "Queue a runtime task"]],
-  ["task-add", ["./src/index.js", "task:add", "--title", "smoke task", "--status", "todo"]],
+  [
+    "task-add",
+    [
+      "./src/index.js",
+      "task:add",
+      "--title",
+      "smoke task",
+      "--status",
+      "todo",
+      "--owner",
+      "executor",
+      "--verifier",
+      "tester",
+      "--objective",
+      "prove metadata persistence",
+      "--lane",
+      "lane-smoke",
+      "--scope",
+      "src/index.js,src/mcp.js",
+      "--acceptance",
+      "metadata stored|manual task remains bounded",
+      "--verification",
+      "task:list shows metadata|task:update preserves metadata"
+    ]
+  ],
   ["task-claim", ["./src/index.js", "task:claim", "--id", "task-3", "--by", "smoke-worker"]],
   ["task-block", ["./src/index.js", "task:block", "--id", "task-3", "--by", "smoke-worker", "--notes", "waiting on verifier"]],
   ["task-claim-from-blocked", ["./src/index.js", "task:claim", "--id", "task-3", "--by", "smoke-worker"]],
   ["task-review", ["./src/index.js", "task:review", "--id", "task-3", "--by", "smoke-worker"]],
   ["task-done", ["./src/index.js", "task:done", "--id", "task-3", "--by", "smoke-worker"]],
   ["task-list", ["./src/index.js", "task:list"]],
-  ["task-update", ["./src/index.js", "task:update", "--id", "task-3", "--status", "done", "--notes", "verified by smoke"]],
+  [
+    "task-update",
+    [
+      "./src/index.js",
+      "task:update",
+      "--id",
+      "task-3",
+      "--status",
+      "done",
+      "--notes",
+      "verified by smoke",
+      "--acceptance",
+      "metadata stored|manual task remains bounded|update path works",
+      "--verification",
+      "task:list shows metadata|task:update preserves metadata|smoke command passes"
+    ]
+  ],
   ["task-release-invalid", ["./src/index.js", "task:release", "--id", "task-3", "--by", "smoke-worker"], 1]
 ];
 
 for (const [label, args, expectedStatus = 0] of checks) {
   run(label, args, expectedStatus);
+}
+
+const listedTasks = JSON.parse(run("task-list-verify", ["./src/index.js", "task:list"]).stdout).tasks;
+const smokeTask = listedTasks.find((task) => task.id === "task-3");
+if (!smokeTask || smokeTask.verifier !== "tester" || smokeTask.lane !== "lane-smoke") {
+  console.error("[smoke:task-metadata] expected verifier and lane metadata");
+  process.exit(1);
+}
+if (!Array.isArray(smokeTask.scope) || smokeTask.scope.length !== 2) {
+  console.error("[smoke:task-metadata] expected scope metadata");
+  process.exit(1);
+}
+if (!Array.isArray(smokeTask.acceptance) || smokeTask.acceptance.length !== 3) {
+  console.error("[smoke:task-metadata] expected updated acceptance metadata");
+  process.exit(1);
 }
 
 rmSync(".codex-bees", { recursive: true, force: true });
@@ -120,6 +175,56 @@ const queuePlanPayloadMcp = queuePlanText ? JSON.parse(queuePlanText) : null;
 if (queuePlanMcp.status !== 0 || queuePlanPayloadMcp?.kind !== "queued_plan") {
   console.error("[smoke:queue-plan-mcp] expected queued_plan response");
   console.error(queuePlanMcp.stderr || queuePlanMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const taskAddMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_add",
+      arguments: {
+        title: "mcp metadata task",
+        owner: "executor",
+        verifier: "tester",
+        objective: "verify MCP metadata persistence",
+        lane: "lane-mcp",
+        scope: ["src/mcp.js"],
+        acceptance: ["metadata stored"],
+        verification: ["task_list returns metadata"]
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "task_list",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+
+const taskAddMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: taskAddMcpInput,
+  encoding: "utf8"
+});
+const taskAddMcpLines = taskAddMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const taskListResult = taskAddMcpLines.length >= 3 ? JSON.parse(taskAddMcpLines[2]) : null;
+const taskListText = taskListResult?.result?.content?.[0]?.text;
+const taskListPayload = taskListText ? JSON.parse(taskListText) : null;
+const mcpTask = taskListPayload?.tasks?.find((task) => task.title === "mcp metadata task");
+if (taskAddMcp.status !== 0 || !mcpTask || mcpTask.verifier !== "tester") {
+  console.error("[smoke:task-add-mcp] expected persisted MCP metadata");
+  console.error(taskAddMcp.stderr || taskAddMcp.stdout);
   process.exit(1);
 }
 

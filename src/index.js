@@ -99,6 +99,34 @@ function readOption(flag) {
   return argv[index + 1];
 }
 
+function readOptions(flag) {
+  const values = [];
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] === flag && argv[index + 1]) {
+      values.push(argv[index + 1]);
+    }
+  }
+  return values;
+}
+
+function parseListValue(value, separator = ",") {
+  if (!value) {
+    return undefined;
+  }
+  return value
+    .split(separator)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function readListOption(flag, separator = ",") {
+  const values = readOptions(flag);
+  if (values.length === 0) {
+    return undefined;
+  }
+  return values.flatMap((value) => parseListValue(value, separator) ?? []);
+}
+
 function requireOption(flag) {
   const value = readOption(flag);
   if (!value) {
@@ -116,8 +144,25 @@ function handleTaskAdd() {
   const title = requireOption("--title");
   const status = readOption("--status");
   const owner = readOption("--owner");
+  const verifier = readOption("--verifier");
+  const objective = readOption("--objective");
+  const lane = readOption("--lane");
+  const scope = readListOption("--scope");
+  const acceptance = readListOption("--acceptance", "|");
+  const verification = readListOption("--verification", "|");
   const notes = readOption("--notes");
-  const task = addTask({ title, status, owner, notes });
+  const task = addTask({
+    title,
+    status,
+    owner,
+    verifier,
+    objective,
+    lane,
+    scope,
+    acceptance,
+    verification,
+    notes
+  });
   write(JSON.stringify({ created: task }, null, 2) + "\n");
 }
 
@@ -128,6 +173,12 @@ function handleTaskUpdate() {
     title: readOption("--title"),
     status: readOption("--status"),
     owner: readOption("--owner"),
+    verifier: readOption("--verifier"),
+    objective: readOption("--objective"),
+    lane: readOption("--lane"),
+    scope: readListOption("--scope"),
+    acceptance: readListOption("--acceptance", "|"),
+    verification: readListOption("--verification", "|"),
     notes: readOption("--notes")
   });
 

@@ -45,7 +45,7 @@ node ./src/index.js tools
 node ./src/index.js doctor
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
 node ./src/index.js plan:queue --task "Queue a runtime change"
-node ./src/index.js task:add --title "Wire a new MCP tool"
+node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js
 node ./src/index.js task:claim --id task-1 --by explore
 node ./src/index.js task:block --id task-1 --by explore --notes "waiting on dependency"
 node ./src/index.js task:review --id task-1 --by explore
@@ -53,6 +53,14 @@ node ./src/index.js task:done --id task-1 --by explore
 node ./src/index.js task:release --id task-1 --by explore
 node ./src/index.js mcp
 ```
+
+Task metadata can carry lane-ready execution detail:
+
+- `--owner` / `--verifier`
+- `--objective` / `--lane`
+- `--scope src/index.js,src/mcp.js`
+- `--acceptance "first check|second check"`
+- `--verification "targeted command|smoke check"`
 
 ## Repository layout
 
@@ -75,10 +83,11 @@ The foundation layer is in place:
 - a real CLI entrypoint
 - a minimal MCP stdio runtime
 - a planner that maps task briefs to bounded lanes and can queue those lanes as local tasks
-- a local task queue with explicit claim, block, review, release, and completion states
+- a local task queue with explicit claim, block, review, release, and completion states plus persisted lane metadata
 - a versioned local state store with recovery for corrupt state files
 - a project-local development skill for intake, planning, execution, verification, and handoff
 - local skills and agent prompts for bounded orchestration
+- MCP tools with discoverable input schemas
 - smoke checks for the current command surface
 
 ## Why this project exists

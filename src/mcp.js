@@ -15,55 +15,161 @@ import {
 export const toolCatalog = [
   {
     name: "coordination_overview",
-    description: "Describe the current local coordination model for Codex Bees."
+    description: "Describe the current local coordination model for Codex Bees.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
   },
   {
     name: "worker_guidelines",
-    description: "Return the current worker ownership and handoff guidelines."
+    description: "Return the current worker ownership and handoff guidelines.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
   },
   {
     name: "runtime_contract",
-    description: "Return the Codex-only runtime contract and exclusions."
+    description: "Return the Codex-only runtime contract and exclusions.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
   },
   {
     name: "task_list",
-    description: "List local coordination tasks from the persistent state store."
+    description: "List local coordination tasks from the persistent state store.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
   },
   {
     name: "task_add",
-    description: "Create a local coordination task in the persistent state store."
+    description: "Create a local coordination task in the persistent state store.",
+    inputSchema: {
+      type: "object",
+      required: ["title"],
+      properties: {
+        title: { type: "string" },
+        status: { type: "string" },
+        owner: { type: "string" },
+        verifier: { type: "string" },
+        objective: { type: "string" },
+        lane: { type: "string" },
+        scope: { type: "array", items: { type: "string" } },
+        acceptance: { type: "array", items: { type: "string" } },
+        verification: { type: "array", items: { type: "string" } },
+        notes: { type: "string" }
+      }
+    }
   },
   {
     name: "task_update",
-    description: "Update a local coordination task in the persistent state store."
+    description: "Update a local coordination task in the persistent state store.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        title: { type: "string" },
+        status: { type: "string" },
+        owner: { type: "string" },
+        verifier: { type: "string" },
+        objective: { type: "string" },
+        lane: { type: "string" },
+        scope: { type: "array", items: { type: "string" } },
+        acceptance: { type: "array", items: { type: "string" } },
+        verification: { type: "array", items: { type: "string" } },
+        notes: { type: "string" }
+      }
+    }
   },
   {
     name: "task_claim",
-    description: "Claim a queued local coordination task for one active owner."
+    description: "Claim a queued local coordination task for one active owner.",
+    inputSchema: {
+      type: "object",
+      required: ["id", "claimedBy"],
+      properties: {
+        id: { type: "string" },
+        claimedBy: { type: "string" }
+      }
+    }
   },
   {
     name: "task_block",
-    description: "Mark a local coordination task as blocked."
+    description: "Mark a local coordination task as blocked.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        claimedBy: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
   },
   {
     name: "task_ready_for_review",
-    description: "Mark a local coordination task as ready for review."
+    description: "Mark a local coordination task as ready for review.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        claimedBy: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
   },
   {
     name: "task_done",
-    description: "Mark a local coordination task as complete."
+    description: "Mark a local coordination task as complete.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        claimedBy: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
   },
   {
     name: "task_release",
-    description: "Release a claimed local coordination task back to the queue."
+    description: "Release a claimed local coordination task back to the queue.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        claimedBy: { type: "string" }
+      }
+    }
   },
   {
     name: "plan_task",
-    description: "Generate a bounded read-only execution plan for a task brief."
+    description: "Generate a bounded read-only execution plan for a task brief.",
+    inputSchema: {
+      type: "object",
+      required: ["task"],
+      properties: {
+        task: { type: "string" }
+      }
+    }
   },
   {
     name: "queue_plan",
-    description: "Generate a bounded execution plan and queue its lanes as local tasks."
+    description: "Generate a bounded execution plan and queue its lanes as local tasks.",
+    inputSchema: {
+      type: "object",
+      required: ["task"],
+      properties: {
+        task: { type: "string" }
+      }
+    }
   }
 ];
 
@@ -176,6 +282,12 @@ function handleRequest(message) {
         title: params.arguments.title,
         status: params.arguments.status,
         owner: params.arguments.owner,
+        verifier: params.arguments.verifier,
+        objective: params.arguments.objective,
+        lane: params.arguments.lane,
+        scope: params.arguments.scope,
+        acceptance: params.arguments.acceptance,
+        verification: params.arguments.verification,
         notes: params.arguments.notes
       });
 
@@ -194,6 +306,12 @@ function handleRequest(message) {
         title: params.arguments.title,
         status: params.arguments.status,
         owner: params.arguments.owner,
+        verifier: params.arguments.verifier,
+        objective: params.arguments.objective,
+        lane: params.arguments.lane,
+        scope: params.arguments.scope,
+        acceptance: params.arguments.acceptance,
+        verification: params.arguments.verification,
         notes: params.arguments.notes
       });
 

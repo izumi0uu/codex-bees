@@ -115,6 +115,12 @@ export function updateTask(input) {
     ...(input.title !== undefined ? { title: input.title } : {}),
     ...(input.status !== undefined ? { status: input.status } : {}),
     ...(input.owner !== undefined ? { owner: input.owner } : {}),
+    ...(input.verifier !== undefined ? { verifier: input.verifier } : {}),
+    ...(input.objective !== undefined ? { objective: input.objective } : {}),
+    ...(input.lane !== undefined ? { lane: input.lane } : {}),
+    ...(input.scope !== undefined ? { scope: input.scope } : {}),
+    ...(input.acceptance !== undefined ? { acceptance: input.acceptance } : {}),
+    ...(input.verification !== undefined ? { verification: input.verification } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
     updatedAt: new Date().toISOString()
   };
