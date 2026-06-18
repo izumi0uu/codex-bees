@@ -9,9 +9,14 @@
     "type": "git",
     "url": "git@github.com:izumi0uu/codex-bees.git"
   },
+  "main": "dist/index.js",
+  "bin": {
+    "codex-bees": "./dist/index.js"
+  },
   "scripts": {
-    "dev": "node ./src/index.js",
+    "dev": "node ./src/index.js run",
     "build": "node ./scripts/build.mjs",
-    "check": "node --check ./src/index.js && node --check ./src/mcp.js && node --check ./scripts/build.mjs"
+    "check": "node --check ./src/index.js && node --check ./src/mcp.js && node --check ./scripts/build.mjs && node --check ./scripts/smoke.mjs",
+    "smoke": "node ./scripts/smoke.mjs"
   }
 }

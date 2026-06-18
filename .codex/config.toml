@@ -5,7 +5,7 @@ name = "codex-bees"
 
 [mcp_servers.codex-bees]
 command = "node"
-args = ["./dist/mcp.js"]
+args = ["./dist/mcp.js", "--stdio"]
 
 [agents.explore]
 description = "Fast repository lookup and mapping."
