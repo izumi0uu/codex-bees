@@ -1,0 +1,17 @@
+{
+  "name": "codex-bees",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Codex-native swarm starter for multi-agent coding workflows.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:izumi0uu/codex-bees.git"
+  },
+  "scripts": {
+    "dev": "node ./src/index.js",
+    "build": "node ./scripts/build.mjs",
+    "check": "node --check ./src/index.js && node --check ./src/mcp.js && node --check ./scripts/build.mjs"
+  }
+}

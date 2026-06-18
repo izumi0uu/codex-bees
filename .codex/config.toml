@@ -1,0 +1,14 @@
+model = "gpt-5.4"
+
+[project]
+name = "codex-bees"
+
+[mcp_servers.codex-bees]
+command = "node"
+args = ["./dist/mcp.js"]
+
+[agents.explore]
+description = "Fast repository lookup and mapping."
+
+[agents.executor]
+description = "Implementation and refactoring."
