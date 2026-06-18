@@ -42,7 +42,7 @@ function runtimeContract() {
       "provide a stable diagnostics surface for later orchestration layers"
     ],
     exclusions: [
-      "claude plugin marketplace compatibility",
+      "third-party marketplace distribution",
       "multi-host runtime support",
       "hosted backend control plane"
     ]

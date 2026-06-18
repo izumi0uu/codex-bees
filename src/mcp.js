@@ -2,12 +2,12 @@ import { stdin, stdout, stderr } from "node:process";
 
 export const toolCatalog = [
   {
-    name: "jira_story_context",
-    description: "Summarize the active Jira-first execution contract for Codex work."
+    name: "coordination_overview",
+    description: "Describe the current local coordination model for Codex Bees."
   },
   {
-    name: "skill_board_rules",
-    description: "Return the current project-development-board operating rules."
+    name: "worker_guidelines",
+    description: "Return the current worker ownership and handoff guidelines."
   },
   {
     name: "runtime_contract",
@@ -15,8 +15,7 @@ export const toolCatalog = [
   }
 ];
 
-const boardRules = {
-  hierarchy: ["长篇故事", "任务", "子任务"],
+const workerGuidelines = {
   fileOwnership: "one active writer per file",
   parallelism: "parallelize only with disjoint ownership",
   validation: ["targeted verification", "fresh evidence", "handoff discipline"]
@@ -28,7 +27,7 @@ function runtimeContractPayload() {
     mode: "codex-only",
     architecture: ["cli", "mcp", "skills", "agents", "docs"],
     exclusions: [
-      "claude plugin marketplace compatibility",
+      "third-party marketplace distribution",
       "multi-host support",
       "hosted control plane"
     ]
@@ -77,16 +76,16 @@ function handleRequest(message) {
       return createError(id, -32602, `Unknown tool: ${name}`);
     }
 
-    if (name === "jira_story_context") {
+    if (name === "coordination_overview") {
       return createSuccess(id, {
         content: [
           {
             type: "text",
             text: JSON.stringify(
               {
-                executionModel: "jira-first",
-                deliveryBoundary: "codex-only full rebuild",
-                commitStrategy: "300+ meaningful atomic commits"
+                executionModel: "local bounded multi-agent coordination",
+                deliveryBoundary: "codex-only runtime",
+                changeModel: "small reversible steps"
               },
               null,
               2
@@ -96,9 +95,9 @@ function handleRequest(message) {
       });
     }
 
-    if (name === "skill_board_rules") {
+    if (name === "worker_guidelines") {
       return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify(boardRules, null, 2) }]
+        content: [{ type: "text", text: JSON.stringify(workerGuidelines, null, 2) }]
       });
     }
 
