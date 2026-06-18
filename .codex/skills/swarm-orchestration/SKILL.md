@@ -28,7 +28,7 @@ Treat the swarm as a small queue of bounded lanes.
 - **Lane**: one bounded unit of work with a clear outcome and scope.
 - **Queue**: the ordered list of lanes waiting to be claimed, in progress, blocked, or ready to verify.
 
-Keep the model product-facing and reusable. Slice by user-visible surface, system boundary, or validation target — not by internal department language or process labels.
+Keep the model product-facing and reusable. Slice by user-visible surface, system boundary, or validation target — not by organization-specific labels or admin categories.
 
 ## Lane contract
 

@@ -7,7 +7,7 @@ description: Drive bounded repository development from a concrete task brief thr
 
 Use this skill to turn a concrete development request into a small, verifiable execution loop.
 
-Keep the repository product-facing. Implement runtime behavior, tests, docs, and execution contracts that directly help the product. Do not turn the repo into a board manual, migration diary, or internal-process dump.
+Keep the repository product-facing. Implement runtime behavior, tests, docs, and execution contracts that directly help the product. Do not turn the repo into a planning archive, legacy porting diary, or admin-process dump.
 
 ## Trigger conditions
 
@@ -22,7 +22,7 @@ Use this skill when the work requires one or more of the following:
 Do not use this skill for:
 
 - vague ideation with no concrete task brief
-- pure Jira administration with no repo-facing product change
+- tracker-only administration with no repo-facing product change
 - unsupported host or multi-host compatibility work
 - broad refactors without scoped acceptance criteria
 
@@ -43,11 +43,11 @@ If any of these are missing, stop and tighten the brief before editing.
 1. Restate the objective in one sentence.
 2. List the user-visible or runtime-visible outcome.
 3. List constraints that cannot be violated.
-4. Reject work that would turn the repo into internal governance clutter.
+4. Reject work that would turn the repo into admin clutter.
 5. Decide whether the task is:
    - local single-lane work
    - multi-lane work that benefits from subagents
-   - Jira-only work that should not expand the repo surface
+   - tracker-only work that should not expand the repo surface
 
 ### Intake stop conditions
 
@@ -55,7 +55,7 @@ Stop and escalate when:
 
 - the task brief is too vague to map safely
 - the request would require unsupported multi-host behavior
-- the requested artifact is clearly internal process residue rather than product surface
+- the requested artifact is clearly admin residue rather than product surface
 - the acceptance target cannot be stated concretely
 
 ## Stage 2: Planning
@@ -80,7 +80,7 @@ Keep the critical path local. Delegate only bounded side lanes with disjoint wri
 - Prefer deletion, simplification, and existing patterns before new abstractions.
 - Keep diffs small enough that reviewer/tester can verify them quickly.
 - If the write scope overlaps another lane, re-slice before editing.
-- If the work is really Jira-only tracking or release evidence, do not encode it as permanent product repo content.
+- If the work is really tracker-only bookkeeping or release evidence, do not encode it as permanent product repo content.
 
 ## Stage 3: Execution
 
@@ -181,10 +181,10 @@ Keep only product-relevant execution surfaces in the repo:
 
 Keep out of the repo unless the user explicitly wants them there:
 
-- migration diaries
-- internal governance doctrine
-- Jira administration instructions
-- long-lived process clutter that does not change product behavior
+- legacy porting diaries
+- organization-specific governance doctrine
+- tracker administration instructions
+- long-lived admin clutter that does not change product behavior
 
 ## Completion rule
 
