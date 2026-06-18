@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Codex-native swarm starter for multi-agent coding workflows.",
+  "description": "Codex-native multi-agent runtime for explicit local orchestration.",
   "license": "MIT",
   "repository": {
     "type": "git",

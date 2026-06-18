@@ -1,38 +1,74 @@
 # Codex Bees
 
-Codex-native swarm starter for multi-agent coding workflows.
+Codex-native multi-agent runtime for explicit local orchestration.
 
-## What it is
+Codex Bees packages a small command surface, a local MCP server, reusable skills, and narrow agent roles so complex work can be split into bounded lanes without turning the project into a black box.
 
-`codex-bees` is a public starter for building a Codex-first agent control plane:
+## What it does
 
-- `AGENTS.md` for project-wide operating rules
-- `.codex/agents` for bounded role prompts
-- `.codex/skills` for reusable workflows
-- a tiny MCP server stub for memory and task tools
+- runs a local CLI for orchestration and diagnostics
+- exposes an MCP stdio surface for tool-driven workflows
+- keeps agent roles narrow, explicit, and reviewable
+- favors small, observable coordination steps over opaque automation
 
-## Naming
+## Project principles
 
-The name keeps the "bees" swarm metaphor, but the project is intentionally practical: small roles, explicit handoffs, durable state.
+- Codex-first execution
+- explicit file ownership and handoff boundaries
+- local, inspectable runtime behavior
+- small reversible changes instead of monolithic automation
 
-## Layout
+## Non-goals
 
-- `.codex/` Codex config, agents, and skills
-- `src/index.js` local runtime entry
-- `src/mcp.js` minimal MCP-like tool stub
-- `scripts/` utility scripts
+Current scope does **not** include:
 
-## Start
+- multi-host orchestration
+- hosted control planes
+- marketplace/plugin-distribution surfaces
+
+## Quick start
 
 ```bash
 npm install
-npm run dev
+npm run check
 npm run build
+npm run smoke
 ```
 
-## Next steps
+## CLI
 
-- Replace the MCP stub with a real server
-- Add durable task storage
-- Add memory search and handoff records
-- Add more role prompts under `.codex/agents`
+```bash
+node ./src/index.js run
+node ./src/index.js tools
+node ./src/index.js doctor
+node ./src/index.js mcp
+```
+
+## Repository layout
+
+```text
+.codex/
+  agents/       role prompts for explore, execute, review, and test lanes
+  skills/       reusable workflow skills for local coordination
+src/
+  index.js      CLI/runtime entrypoint
+  mcp.js        local MCP stdio server
+scripts/
+  build.mjs
+  smoke.mjs
+```
+
+## Current status
+
+The foundation layer is in place:
+
+- a real CLI entrypoint
+- a minimal MCP stdio runtime
+- local skills and agent prompts for bounded orchestration
+- smoke checks for the current command surface
+
+## Why this project exists
+
+Most multi-agent coding setups either hide too much logic in prompts or spread too much behavior across external systems.
+
+Codex Bees keeps the core runtime, roles, and workflow surfaces in the repository, where they can be inspected, reviewed, versioned, and improved like any other part of the product.
