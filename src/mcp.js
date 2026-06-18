@@ -2,8 +2,11 @@ import { stdin, stdout, stderr } from "node:process";
 import { planTask } from "./planner.js";
 import {
   addTask,
+  blockTask,
   claimTask,
+  completeTask,
   listTasks,
+  markTaskReadyForReview,
   releaseTask,
   updateTask
 } from "./state.js";
@@ -36,6 +39,18 @@ export const toolCatalog = [
   {
     name: "task_claim",
     description: "Claim a queued local coordination task for one active owner."
+  },
+  {
+    name: "task_block",
+    description: "Mark a local coordination task as blocked."
+  },
+  {
+    name: "task_ready_for_review",
+    description: "Mark a local coordination task as ready for review."
+  },
+  {
+    name: "task_done",
+    description: "Mark a local coordination task as complete."
   },
   {
     name: "task_release",
@@ -180,6 +195,9 @@ function handleRequest(message) {
       if (!task) {
         return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
       }
+      if (task.error) {
+        return createError(id, -32602, task.error);
+      }
 
       return createSuccess(id, {
         content: [{ type: "text", text: JSON.stringify({ updated: task }, null, 2) }]
@@ -208,6 +226,75 @@ function handleRequest(message) {
 
       return createSuccess(id, {
         content: [{ type: "text", text: JSON.stringify({ claimed: task }, null, 2) }]
+      });
+    }
+
+    if (name === "task_block") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_block requires arguments.id");
+      }
+
+      const task = blockTask({
+        id: params.arguments.id,
+        claimedBy: params.arguments.claimedBy,
+        notes: params.arguments.notes
+      });
+
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+      if (task.error) {
+        return createError(id, -32602, task.error);
+      }
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ blocked: task }, null, 2) }]
+      });
+    }
+
+    if (name === "task_ready_for_review") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_ready_for_review requires arguments.id");
+      }
+
+      const task = markTaskReadyForReview({
+        id: params.arguments.id,
+        claimedBy: params.arguments.claimedBy,
+        notes: params.arguments.notes
+      });
+
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+      if (task.error) {
+        return createError(id, -32602, task.error);
+      }
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ readyForReview: task }, null, 2) }]
+      });
+    }
+
+    if (name === "task_done") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_done requires arguments.id");
+      }
+
+      const task = completeTask({
+        id: params.arguments.id,
+        claimedBy: params.arguments.claimedBy,
+        notes: params.arguments.notes
+      });
+
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+      if (task.error) {
+        return createError(id, -32602, task.error);
+      }
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ completed: task }, null, 2) }]
       });
     }
 

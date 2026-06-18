@@ -7,8 +7,11 @@ import { startMcpServer, toolCatalog } from "./mcp.js";
 import { planTask } from "./planner.js";
 import {
   addTask,
+  blockTask,
   claimTask,
+  completeTask,
   listTasks,
+  markTaskReadyForReview,
   releaseTask,
   stateFilePath,
   updateTask
@@ -35,6 +38,9 @@ function printHelp() {
   write(`  codex-bees task:list     List local coordination tasks\n`);
   write(`  codex-bees task:add      Add a local coordination task\n`);
   write(`  codex-bees task:claim    Claim a local coordination task\n`);
+  write(`  codex-bees task:block    Mark a claimed task as blocked\n`);
+  write(`  codex-bees task:review   Mark a task as ready for review\n`);
+  write(`  codex-bees task:done     Mark a task as complete\n`);
   write(`  codex-bees task:release  Release a local coordination task\n`);
   write(`  codex-bees task:update   Update a local coordination task\n`);
   write(`  codex-bees --help        Show help\n`);
@@ -127,6 +133,10 @@ function handleTaskUpdate() {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);
   }
+  if (task.error) {
+    writeErr(`${task.error}\n`);
+    exit(1);
+  }
 
   write(JSON.stringify({ updated: task }, null, 2) + "\n");
 }
@@ -159,6 +169,54 @@ function handleTaskRelease() {
     exit(1);
   }
   write(JSON.stringify({ released: task }, null, 2) + "\n");
+}
+
+function handleTaskBlock() {
+  const id = requireOption("--id");
+  const claimedBy = readOption("--by");
+  const notes = readOption("--notes");
+  const task = blockTask({ id, claimedBy, notes });
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (task.error) {
+    writeErr(`${task.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ blocked: task }, null, 2) + "\n");
+}
+
+function handleTaskReview() {
+  const id = requireOption("--id");
+  const claimedBy = readOption("--by");
+  const notes = readOption("--notes");
+  const task = markTaskReadyForReview({ id, claimedBy, notes });
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (task.error) {
+    writeErr(`${task.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ readyForReview: task }, null, 2) + "\n");
+}
+
+function handleTaskDone() {
+  const id = requireOption("--id");
+  const claimedBy = readOption("--by");
+  const notes = readOption("--notes");
+  const task = completeTask({ id, claimedBy, notes });
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (task.error) {
+    writeErr(`${task.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ completed: task }, null, 2) + "\n");
 }
 
 function handlePlan() {
@@ -207,6 +265,15 @@ async function runCommand(command) {
       return;
     case "task:claim":
       handleTaskClaim();
+      return;
+    case "task:block":
+      handleTaskBlock();
+      return;
+    case "task:review":
+      handleTaskReview();
+      return;
+    case "task:done":
+      handleTaskDone();
       return;
     case "task:release":
       handleTaskRelease();
