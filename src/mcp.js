@@ -1,4 +1,6 @@
 import { stdin, stdout, stderr } from "node:process";
+import { planTask } from "./planner.js";
+import { addTask, listTasks, updateTask } from "./state.js";
 
 export const toolCatalog = [
   {
@@ -12,6 +14,22 @@ export const toolCatalog = [
   {
     name: "runtime_contract",
     description: "Return the Codex-only runtime contract and exclusions."
+  },
+  {
+    name: "task_list",
+    description: "List local coordination tasks from the persistent state store."
+  },
+  {
+    name: "task_add",
+    description: "Create a local coordination task in the persistent state store."
+  },
+  {
+    name: "task_update",
+    description: "Update a local coordination task in the persistent state store."
+  },
+  {
+    name: "plan_task",
+    description: "Generate a bounded read-only execution plan for a task brief."
   }
 ];
 
@@ -106,6 +124,61 @@ function handleRequest(message) {
         content: [
           { type: "text", text: JSON.stringify(runtimeContractPayload(), null, 2) }
         ]
+      });
+    }
+
+    if (name === "task_list") {
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ tasks: listTasks() }, null, 2) }]
+      });
+    }
+
+    if (name === "task_add") {
+      if (!params.arguments?.title) {
+        return createError(id, -32602, "task_add requires arguments.title");
+      }
+
+      const task = addTask({
+        title: params.arguments.title,
+        status: params.arguments.status,
+        owner: params.arguments.owner,
+        notes: params.arguments.notes
+      });
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ created: task }, null, 2) }]
+      });
+    }
+
+    if (name === "task_update") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_update requires arguments.id");
+      }
+
+      const task = updateTask({
+        id: params.arguments.id,
+        title: params.arguments.title,
+        status: params.arguments.status,
+        owner: params.arguments.owner,
+        notes: params.arguments.notes
+      });
+
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ updated: task }, null, 2) }]
+      });
+    }
+
+    if (name === "plan_task") {
+      if (!params.arguments?.task) {
+        return createError(id, -32602, "plan_task requires arguments.task");
+      }
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify(planTask(params.arguments.task), null, 2) }]
       });
     }
   }

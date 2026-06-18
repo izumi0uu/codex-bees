@@ -4,6 +4,8 @@ import { stdout, stderr, exit, argv, env, cwd } from "node:process";
 import { statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
+import { planTask } from "./planner.js";
+import { addTask, listTasks, stateFilePath, updateTask } from "./state.js";
 
 const VERSION = "0.1.0";
 
@@ -19,9 +21,13 @@ function printHelp() {
   write(`codex-bees\n\n`);
   write(`Usage:\n`);
   write(`  codex-bees run           Start the local Codex runtime shell contract\n`);
-  write(`  codex-bees mcp           Start the Codex MCP stdio runtime\n`);
+  write(`  codex-bees mcp           Start the local Codex MCP stdio runtime\n`);
   write(`  codex-bees tools         Print the current MCP tool catalog\n`);
   write(`  codex-bees doctor        Print runtime contract diagnostics\n`);
+  write(`  codex-bees plan          Generate a bounded read-only execution plan\n`);
+  write(`  codex-bees task:list     List local coordination tasks\n`);
+  write(`  codex-bees task:add      Add a local coordination task\n`);
+  write(`  codex-bees task:update   Update a local coordination task\n`);
   write(`  codex-bees --help        Show help\n`);
   write(`  codex-bees --version     Show version\n`);
 }
@@ -38,8 +44,9 @@ function runtimeContract() {
     },
     responsibilities: [
       "bootstrap codex-first runtime commands",
-      "expose MCP tool catalog for story-driven execution",
-      "provide a stable diagnostics surface for later orchestration layers"
+      "expose MCP tool catalog for local coordination",
+      "provide a stable diagnostics surface for later orchestration layers",
+      "persist local work-item state for bounded multi-agent execution"
     ],
     exclusions: [
       "third-party marketplace distribution",
@@ -58,12 +65,66 @@ function printDoctor() {
         status: "ok",
         executable: exists,
         entry: selfPath,
+        stateFile: stateFilePath(),
         contract: runtimeContract()
       },
       null,
       2
     ) + "\n"
   );
+}
+
+function readOption(flag) {
+  const index = argv.indexOf(flag);
+  if (index < 0) {
+    return undefined;
+  }
+  return argv[index + 1];
+}
+
+function requireOption(flag) {
+  const value = readOption(flag);
+  if (!value) {
+    writeErr(`Missing required option: ${flag}\n`);
+    exit(1);
+  }
+  return value;
+}
+
+function printTasks() {
+  write(JSON.stringify({ tasks: listTasks() }, null, 2) + "\n");
+}
+
+function handleTaskAdd() {
+  const title = requireOption("--title");
+  const status = readOption("--status");
+  const owner = readOption("--owner");
+  const notes = readOption("--notes");
+  const task = addTask({ title, status, owner, notes });
+  write(JSON.stringify({ created: task }, null, 2) + "\n");
+}
+
+function handleTaskUpdate() {
+  const id = requireOption("--id");
+  const task = updateTask({
+    id,
+    title: readOption("--title"),
+    status: readOption("--status"),
+    owner: readOption("--owner"),
+    notes: readOption("--notes")
+  });
+
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ updated: task }, null, 2) + "\n");
+}
+
+function handlePlan() {
+  const task = requireOption("--task");
+  write(JSON.stringify(planTask(task), null, 2) + "\n");
 }
 
 async function runCommand(command) {
@@ -78,6 +139,7 @@ async function runCommand(command) {
             next: [
               "use `codex-bees doctor` to inspect runtime boundaries",
               "use `codex-bees tools` to inspect current MCP tool catalog",
+              "use `codex-bees task:add --title ...` to create local work items",
               "use `codex-bees mcp` to start the stdio MCP surface"
             ]
           },
@@ -94,6 +156,18 @@ async function runCommand(command) {
       return;
     case "doctor":
       printDoctor();
+      return;
+    case "plan":
+      handlePlan();
+      return;
+    case "task:list":
+      printTasks();
+      return;
+    case "task:add":
+      handleTaskAdd();
+      return;
+    case "task:update":
+      handleTaskUpdate();
       return;
     case "--help":
     case "help":
