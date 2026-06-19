@@ -52,6 +52,7 @@ node ./src/index.js capabilities
 node ./src/index.js runtime:alerts
 node ./src/index.js runtime:dashboard
 node ./src/index.js runtime:dispatch
+node ./src/index.js runtime:review
 node ./src/index.js runtime:roles
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
 node ./src/index.js plan:queue --task "Queue a runtime change"
@@ -159,6 +160,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload.
 
 `runtime:dispatch` / `runtime_dispatch` provide the owner-grouped dispatch workspace: which owner roles have ready work, the next dispatch candidate for each role, and the task brief already attached for handoff.
+
+`runtime:review` / `runtime_review` provide the verifier-grouped decision workspace: which verifier roles currently own pending review decisions, which task is next, and the task brief already attached for approve/reject handoff.
 
 `runtime:alerts` / `runtime_alerts` provide the compressed top-level alert stream: blocked tasks first, then pending review and swarm-ready-to-complete signals.
 
