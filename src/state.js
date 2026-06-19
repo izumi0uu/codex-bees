@@ -423,9 +423,11 @@ export function swarmDispatchBundle(id) {
   const dispatchLane = (brief?.lanes ?? []).find(
     (lane) => lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released"
   ) ?? null;
+  const recommendedReason = deriveSwarmDispatchBundleReason({ overview, dispatchLane });
 
   return {
     kind: "swarm_dispatch_bundle",
+    recommendedReason,
     swarm: overview.swarm,
     derivedStatus: overview.derivedStatus,
     statusAligned: overview.statusAligned,
@@ -4629,6 +4631,19 @@ function deriveRuntimeAlertsReason({ alerts }) {
     return "alerts_visible";
   }
   return "no_alerts_active";
+}
+
+function deriveSwarmDispatchBundleReason({ overview, dispatchLane }) {
+  if (dispatchLane?.lane) {
+    return "dispatch_lane_ready";
+  }
+  if (overview?.readyToComplete) {
+    return "swarm_ready_to_complete";
+  }
+  if ((overview?.dispatchableCount ?? 0) > 0) {
+    return "dispatchable_lanes_visible";
+  }
+  return "no_dispatchable_lane";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

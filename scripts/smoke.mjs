@@ -1103,6 +1103,7 @@ const swarmDispatchBundleCli = JSON.parse(
 ).dispatchBundle;
 if (
   swarmDispatchBundleCli.kind !== "swarm_dispatch_bundle" ||
+  swarmDispatchBundleCli.recommendedReason !== "dispatch_lane_ready" ||
   swarmDispatchBundleCli.dispatchableCount !== 2 ||
   swarmDispatchBundleCli.nextLane?.lane !== "lane-alpha" ||
   swarmDispatchBundleCli.taskBrief?.task?.id !== "task-1"
@@ -1758,6 +1759,7 @@ const swarmDispatchBundleMcpLines = swarmDispatchBundleMcp.stdout
 const swarmDispatchBundleMcpPayload = JSON.parse(JSON.parse(swarmDispatchBundleMcpLines[1]).result.content[0].text);
 if (
   swarmDispatchBundleMcp.status !== 0 ||
+  swarmDispatchBundleMcpPayload.dispatchBundle?.recommendedReason !== "dispatch_lane_ready" ||
   swarmDispatchBundleMcpPayload.dispatchBundle?.nextLane?.lane !== "lane-dispatch" ||
   swarmDispatchBundleMcpPayload.dispatchBundle?.taskBrief?.task?.id !== "task-1"
 ) {
