@@ -36,6 +36,7 @@ import {
   runtimeDispatch,
   runtimeFocus,
   runtimeHandoffs,
+  runtimeRecovery,
   runtimeReview,
   runtimeRoles,
   swarmOverview,
@@ -133,6 +134,14 @@ export const toolCatalog = [
   {
     name: "runtime_handoffs",
     description: "Build the next-actor handoff workspace for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_recovery",
+    description: "Build the recovery-oriented task workspace for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -991,6 +1000,10 @@ function handleRequest(message) {
 
     if (name === "runtime_handoffs") {
       return createSuccess(id, createTextPayload({ handoffs: runtimeHandoffs() }));
+    }
+
+    if (name === "runtime_recovery") {
+      return createSuccess(id, createTextPayload({ recovery: runtimeRecovery() }));
     }
 
     if (name === "runtime_dashboard") {
