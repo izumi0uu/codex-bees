@@ -1055,6 +1055,47 @@ export function runtimeLeaderPack(input = {}) {
   };
 }
 
+export function runtimeWorkerPack(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const session = workerSession(input);
+  const handoff = workerHandoff(input);
+  const closeout = workerCloseout(input);
+  const next = taskNext({
+    role: input.role,
+    workerId: input.workerId,
+    mode: input.mode ?? "any"
+  });
+  const recommendedSurface = deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next });
+
+  return {
+    kind: "runtime_worker_pack",
+    role: session?.role ?? describeRole(input.role),
+    workerId: input.workerId,
+    mode: session?.mode ?? normalizeNextMode(input.mode),
+    recommendedSurface,
+    overview: {
+      session: session?.counts ?? null,
+      inbox: session?.inbox?.counts ?? null
+    },
+    next: {
+      focus: session?.focus ?? null,
+      candidate: next?.candidate ?? null,
+      handoff: handoff?.currentTask ?? null,
+      closeout: closeout?.report?.task ?? null
+    },
+    surfaces: {
+      session,
+      handoff,
+      closeout,
+      next
+    },
+    summary: buildRuntimeWorkerPackSummary(recommendedSurface, session)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -3025,6 +3066,30 @@ function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue) {
   }
 
   return `Runtime leader pack recommends ${recommendedSurface} next. ${workspace?.summary ?? queue?.summary ?? ""}`.trim();
+}
+
+function deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next }) {
+  if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
+    return "worker:session";
+  }
+  if (session?.focus?.kind === "review_task") {
+    return "worker:closeout";
+  }
+  if (handoff?.currentTask?.id) {
+    return "worker:handoff";
+  }
+  if (next?.candidate?.id) {
+    return "task:pickup";
+  }
+  if (closeout?.report?.task?.id) {
+    return "worker:closeout";
+  }
+  return "worker:session";
+}
+
+function buildRuntimeWorkerPackSummary(recommendedSurface, session) {
+  const detail = session?.focus?.reason ?? "worker has no current focus detail.";
+  return `Runtime worker pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function compareRuntimeRoleEntries(left, right) {
