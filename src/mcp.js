@@ -31,6 +31,7 @@ import {
   releaseTask,
   runtimeActivity,
   runtimeAlerts,
+  runtimeCloseout,
   runtimeDashboard,
   runtimeDispatch,
   runtimeFocus,
@@ -119,6 +120,14 @@ export const toolCatalog = [
       properties: {
         limit: { type: "integer", minimum: 1 }
       }
+    }
+  },
+  {
+    name: "runtime_closeout",
+    description: "Build the final closeout workspace for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
     }
   },
   {
@@ -974,6 +983,10 @@ function handleRequest(message) {
 
     if (name === "runtime_activity") {
       return createSuccess(id, createTextPayload({ activity: runtimeActivity({ limit: params.arguments?.limit }) }));
+    }
+
+    if (name === "runtime_closeout") {
+      return createSuccess(id, createTextPayload({ closeout: runtimeCloseout() }));
     }
 
     if (name === "runtime_handoffs") {

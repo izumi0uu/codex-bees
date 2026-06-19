@@ -36,6 +36,7 @@ import {
   releaseTask,
   runtimeActivity,
   runtimeAlerts,
+  runtimeCloseout,
   runtimeDashboard,
   runtimeDispatch,
   runtimeFocus,
@@ -91,6 +92,7 @@ function printHelp() {
   write(`  codex-bees runtime:alerts  Build the top-level orchestration alert stream\n`);
   write(`  codex-bees runtime:activity Build the recent runtime activity stream\n`);
   write(`  codex-bees runtime:dashboard Build the top-level orchestration dashboard\n`);
+  write(`  codex-bees runtime:closeout Build the final closeout workspace\n`);
   write(`  codex-bees runtime:dispatch Build the owner-grouped dispatch workspace\n`);
   write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
   write(`  codex-bees runtime:handoffs Build the next-actor handoff workspace\n`);
@@ -207,6 +209,10 @@ function printCapabilities() {
 
 function printRuntimeActivity() {
   write(JSON.stringify({ activity: runtimeActivity({ limit: readPositiveIntegerOption("--limit") }) }, null, 2) + "\n");
+}
+
+function printRuntimeCloseout() {
+  write(JSON.stringify({ closeout: runtimeCloseout() }, null, 2) + "\n");
 }
 
 function printRuntimeHandoffs() {
@@ -1050,6 +1056,9 @@ async function runCommand(command) {
       return;
     case "runtime:activity":
       printRuntimeActivity();
+      return;
+    case "runtime:closeout":
+      printRuntimeCloseout();
       return;
     case "runtime:handoffs":
       printRuntimeHandoffs();
