@@ -570,7 +570,7 @@ if (testerInbox.counts.pendingReview !== 0 || testerInbox.tasks?.[0]?.relation !
 const testerNext = JSON.parse(
   run("task-next-tester", ["./src/index.js", "task:next", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).next;
-if (testerNext.candidate !== null || testerNext.brief !== null) {
+if (testerNext.recommendedReason !== "no_next_candidate" || testerNext.candidate !== null || testerNext.brief !== null) {
   console.error("[smoke:task-next] expected no next tester candidate after completion");
   process.exit(1);
 }
@@ -734,7 +734,7 @@ if (reviewInbox.counts.pendingReview !== 0 || reviewInbox.tasks?.[0]?.relation !
 const ownerNext = JSON.parse(
   run("task-next-owner", ["./src/index.js", "task:next", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
 ).next;
-if (ownerNext.candidate?.id !== "task-1" || ownerNext.candidate?.relation !== "owner_claimed_by_worker") {
+if (ownerNext.recommendedReason !== "continue_claimed_candidate" || ownerNext.candidate?.id !== "task-1" || ownerNext.candidate?.relation !== "owner_claimed_by_worker") {
   console.error("[smoke:task-next] expected owner next candidate to continue claimed task");
   process.exit(1);
 }
@@ -4445,7 +4445,7 @@ if (cliInbox.tasks?.[0]?.id !== "task-2" || cliInbox.tasks?.[0]?.relation !== "v
 const cliNext = JSON.parse(
   run("task-next-cli", ["./src/index.js", "task:next", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
 ).next;
-if (cliNext.candidate?.id !== "task-2" || cliNext.brief?.recommendedNextAction !== "review_and_decide") {
+if (cliNext.recommendedReason !== "review_ready_candidate" || cliNext.candidate?.id !== "task-2" || cliNext.brief?.recommendedNextAction !== "review_and_decide") {
   console.error("[smoke:task-next] expected verifier next task to include execution brief");
   process.exit(1);
 }
@@ -4648,6 +4648,7 @@ const nextMcpPayload = JSON.parse(JSON.parse(inboxMcpLines[2]).result.content[0]
 if (
   inboxMcp.status !== 0 ||
   inboxMcpPayload.inbox?.tasks?.[0]?.id !== "task-2" ||
+  nextMcpPayload.next?.recommendedReason !== "review_ready_candidate" ||
   nextMcpPayload.next?.candidate?.id !== "task-2" ||
   nextMcpPayload.next?.brief?.roles?.verifier?.promptPath !== ".codex/agents/tester.md"
 ) {

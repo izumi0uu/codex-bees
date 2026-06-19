@@ -2182,6 +2182,7 @@ export function taskNext(input = {}) {
     role: describeRole(input.role),
     workerId: input.workerId ?? null,
     mode,
+    recommendedReason: deriveTaskNextReason(selected ? summarizeInboxTask(selected, input.role, input.workerId).relation : null),
     candidate: selected ? summarizeInboxTask(selected, input.role, input.workerId) : null,
     brief: selected ? taskBrief(selected.id) : null
   };
@@ -4370,6 +4371,28 @@ function deriveTaskPickupReason(relation) {
     return "observe_without_action";
   }
   return "non_claim_followup";
+}
+
+function deriveTaskNextReason(relation) {
+  if (relation === "owner_claimable") {
+    return "claimable_owner_candidate";
+  }
+  if (relation === "owner_claimed_by_worker") {
+    return "continue_claimed_candidate";
+  }
+  if (relation === "verifier_review") {
+    return "review_ready_candidate";
+  }
+  if (relation === "owner_blocked") {
+    return "blocked_owner_candidate";
+  }
+  if (relation === "owner_observe") {
+    return "owner_observe_only";
+  }
+  if (relation === "verifier_observe") {
+    return "verifier_observe_only";
+  }
+  return "no_next_candidate";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
