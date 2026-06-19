@@ -2618,11 +2618,13 @@ export function verifierBundle(input = {}) {
   const handoff = workerHandoff(normalized);
   const reviewSnapshot = session?.reviewQueue?.[0] ?? null;
   const report = reviewSnapshot?.summary?.id ? taskReport(reviewSnapshot.summary.id) : null;
+  const recommendedReason = deriveVerifierBundleReason({ reviewSnapshot, report, handoff });
 
   return {
     kind: "verifier_bundle",
     role: describeRole(input.role),
     workerId: input.workerId,
+    recommendedReason,
     handoff,
     currentTask: reviewSnapshot?.summary ?? null,
     report,
@@ -4440,6 +4442,19 @@ function deriveWorkerCloseoutReason(handoff, report) {
     return "current_task_closeout_visible";
   }
   return "no_closeout_target";
+}
+
+function deriveVerifierBundleReason({ reviewSnapshot, report, handoff }) {
+  if (reviewSnapshot?.summary?.id) {
+    return "decision_target_ready";
+  }
+  if (report?.task?.id) {
+    return "closure_report_ready";
+  }
+  if (handoff?.currentTask?.id) {
+    return "verifier_handoff_visible";
+  }
+  return "no_decision_target";
 }
 
 function deriveWorkerHandoffReason(session, focusTaskSnapshot) {

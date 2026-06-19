@@ -4518,6 +4518,7 @@ const verifierBundleCli = JSON.parse(
   run("verifier-bundle-cli", ["./src/index.js", "verifier:bundle", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).bundle;
 if (
+  verifierBundleCli.recommendedReason !== "decision_target_ready" ||
   verifierBundleCli.currentTask?.id !== "task-2" ||
   verifierBundleCli.report?.task?.id !== "task-2" ||
   verifierBundleCli.commands?.approve !== "node ./src/index.js task:approve --id task-2 --by tester"
@@ -4841,6 +4842,7 @@ const verifierBundleMcpLines = verifierBundleMcp.stdout
 const verifierBundleMcpPayload = JSON.parse(JSON.parse(verifierBundleMcpLines[1]).result.content[0].text);
 if (
   verifierBundleMcp.status !== 0 ||
+  verifierBundleMcpPayload.bundle?.recommendedReason !== "decision_target_ready" ||
   verifierBundleMcpPayload.bundle?.currentTask?.id !== "task-2" ||
   verifierBundleMcpPayload.bundle?.commands?.approve !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
