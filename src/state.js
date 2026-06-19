@@ -2722,7 +2722,12 @@ export function validateTask(id) {
   if (!task) {
     return null;
   }
-  return validateTaskValue(task);
+  const validation = validateTaskValue(task);
+  return {
+    kind: "task_validation",
+    recommendedReason: deriveTaskValidationReason(validation),
+    ...validation
+  };
 }
 
 export function validateSwarm(id) {
@@ -4780,6 +4785,25 @@ function deriveSwarmValidationReason(validation) {
     return "swarm_validation_issues_present";
   }
   return "swarm_validation_visible";
+}
+
+function deriveTaskValidationReason(validation) {
+  if (!validation) {
+    return "validation_unavailable";
+  }
+  if (validation.ready) {
+    return "task_ready_to_claim";
+  }
+  if ((validation.issues ?? []).some((issue) => issue.code === "unknown_owner" || issue.code === "unknown_verifier")) {
+    return "task_role_validation_issues_present";
+  }
+  if ((validation.issues ?? []).some((issue) => issue.code === "missing_claimed_by")) {
+    return "claimed_task_metadata_incomplete";
+  }
+  if ((validation.issues?.length ?? 0) > 0) {
+    return "task_validation_issues_present";
+  }
+  return "task_validation_visible";
 }
 
 function deriveSwarmBriefReason(recommended) {

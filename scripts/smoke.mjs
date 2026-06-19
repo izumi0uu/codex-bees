@@ -623,7 +623,11 @@ if (
 }
 
 const checkedTask = JSON.parse(run("task-check-verify", ["./src/index.js", "task:check", "--id", "task-3"]).stdout).validation;
-if (!checkedTask.ready) {
+if (
+  checkedTask.kind !== "task_validation" ||
+  checkedTask.recommendedReason !== "task_ready_to_claim" ||
+  !checkedTask.ready
+) {
   console.error("[smoke:task-check] expected bounded smoke task to validate cleanly");
   process.exit(1);
 }
@@ -672,7 +676,11 @@ if (createdTwo.id !== "task-1") {
 const incompleteTaskValidation = JSON.parse(
   run("task-check-incomplete", ["./src/index.js", "task:check", "--id", "task-1"]).stdout
 ).validation;
-if (incompleteTaskValidation.ready || incompleteTaskValidation.issues.length === 0) {
+if (
+  incompleteTaskValidation.recommendedReason !== "task_validation_issues_present" ||
+  incompleteTaskValidation.ready ||
+  incompleteTaskValidation.issues.length === 0
+) {
   console.error("[smoke:task-check] expected incomplete task validation issues");
   process.exit(1);
 }
@@ -698,7 +706,11 @@ run("task-add-invalid-role", [
 const invalidRoleTaskValidation = JSON.parse(
   run("task-check-invalid-role", ["./src/index.js", "task:check", "--id", "task-1"]).stdout
 ).validation;
-if (invalidRoleTaskValidation.ready || !invalidRoleTaskValidation.issues.some((issue) => issue.code === "unknown_owner")) {
+if (
+  invalidRoleTaskValidation.recommendedReason !== "task_role_validation_issues_present" ||
+  invalidRoleTaskValidation.ready ||
+  !invalidRoleTaskValidation.issues.some((issue) => issue.code === "unknown_owner")
+) {
   console.error("[smoke:task-check] expected unknown owner role validation issue");
   process.exit(1);
 }
