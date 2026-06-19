@@ -93,6 +93,7 @@ node ./src/index.js task:report --id task-1
 node ./src/index.js task:brief --id task-1
 node ./src/index.js task:inbox --role executor --worker worker-1
 node ./src/index.js task:next --role tester --worker tester-1 --mode verifier
+node ./src/index.js task:assignment-preview --role executor --worker worker-1 --mode owner
 node ./src/index.js task:assignment-pickup --role executor --worker worker-1 --mode owner
 node ./src/index.js task:pickup --role executor --worker worker-1 --mode owner
 node ./src/index.js worker:session --role executor --worker worker-1 --mode owner
@@ -159,6 +160,8 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `task:inbox` / `task_inbox` give each shipped role a prioritized local work queue, and `task:next` / `task_next` resolve the single best next claim-or-review candidate with its full execution brief attached. This is the bridge from persisted coordination state to an actual Codex worker pickup loop.
 
+`task:assignment-preview` / `task_assignment_preview` provide the read-only leader-dispatch preview path: they show the next leader-assigned lane for one role, its execution brief, and the exact next command without mutating queue ownership.
+
 `task:assignment-pickup` / `task_assignment_pickup` provide the explicit leader-dispatch acceptance path: they pick the next leader-assigned lane for one role, claim it for the worker when it is dispatchable, and otherwise return the exact continue/review/release command for that assigned task instead of falling back to the broader inbox.
 
 `task:pickup` / `task_pickup` turn that candidate into action: claimable owner work is auto-claimed for the worker, while claimed or review-ready work returns the exact next handoff command. This keeps the pickup loop explicit without hiding lifecycle transitions.
@@ -215,7 +218,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:owner-pack` / `runtime_owner_pack` provide the owner-oriented package: owner-mode worker session, handoff, closeout, and next pickup candidate combined into one role-scoped payload with a recommended next surface.
 
-`runtime:assignment-pack` / `runtime_assignment_pack` provide the leader-to-worker assignment package: current leader assignment context plus one worker's live session, next candidate, and pickup preview combined into one dispatch-ready payload with a recommended next surface. When leader-assigned lane work exists for that role, the package now recommends the explicit `task:assignment-pickup` surface instead of a generic pickup loop.
+`runtime:assignment-pack` / `runtime_assignment_pack` provide the leader-to-worker assignment package: current leader assignment context plus one worker's live session, next candidate, and assignment-scoped preview combined into one dispatch-ready payload with a recommended next surface. When leader-assigned lane work exists for that role, the package now recommends the explicit `task:assignment-pickup` surface instead of a generic pickup loop.
 
 `runtime:pickup-pack` / `runtime_pickup_pack` provide the start-work pickup package: one worker's current session, next candidate, read-only pickup preview, and role context combined into one immediate start-work payload with a recommended next surface.
 
