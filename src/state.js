@@ -1090,6 +1090,51 @@ export function runtimeLeaderPack(input = {}) {
   };
 }
 
+export function runtimeOwnerPack(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const normalized = {
+    ...input,
+    mode: "owner"
+  };
+  const session = workerSession(normalized);
+  const handoff = workerHandoff(normalized);
+  const closeout = workerCloseout(normalized);
+  const next = taskNext({
+    role: input.role,
+    workerId: input.workerId,
+    mode: "owner"
+  });
+  const recommendedSurface = deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role: input.role, workerId: input.workerId });
+
+  return {
+    kind: "runtime_owner_pack",
+    role: session?.role ?? describeRole(input.role),
+    workerId: input.workerId,
+    mode: "owner",
+    recommendedSurface,
+    overview: {
+      session: session?.counts ?? null,
+      inbox: session?.inbox?.counts ?? null
+    },
+    next: {
+      focus: session?.focus ?? null,
+      candidate: next?.candidate ?? null,
+      handoff: handoff?.currentTask ?? null,
+      closeout: closeout?.report?.task ?? null
+    },
+    surfaces: {
+      session,
+      handoff,
+      closeout,
+      next
+    },
+    summary: buildRuntimeOwnerPackSummary(recommendedSurface, session)
+  };
+}
+
 export function runtimeWorkerPack(input = {}) {
   if (!input.role || !input.workerId) {
     return null;
@@ -3173,6 +3218,30 @@ function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue) {
   }
 
   return `Runtime leader pack recommends ${recommendedSurface} next. ${workspace?.summary ?? queue?.summary ?? ""}`.trim();
+}
+
+function deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role, workerId }) {
+  if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
+    return "worker:session";
+  }
+  if (session?.focus?.kind === "awaiting_review") {
+    return "worker:handoff";
+  }
+  if (handoff?.currentTask?.id) {
+    return "worker:closeout";
+  }
+  if (next?.candidate?.id) {
+    return `task:pickup --role ${role} --worker ${workerId} --mode owner`;
+  }
+  if (closeout?.report?.task?.id) {
+    return "worker:closeout";
+  }
+  return "worker:session";
+}
+
+function buildRuntimeOwnerPackSummary(recommendedSurface, session) {
+  const detail = session?.focus?.reason ?? "owner has no current execution detail.";
+  return `Runtime owner pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next }) {
