@@ -30,8 +30,8 @@ const VALID_SWARM_STATUSES = new Set([
 
 const ALLOWED_QUEUE_TRANSITIONS = {
   queued: new Set(["claimed", "blocked"]),
-  claimed: new Set(["blocked", "ready_for_review", "released", "done"]),
-  blocked: new Set(["claimed", "released", "done"]),
+  claimed: new Set(["blocked", "ready_for_review", "released"]),
+  blocked: new Set(["claimed", "released"]),
   ready_for_review: new Set(["claimed", "blocked", "released", "done"]),
   released: new Set(["claimed", "blocked"]),
   done: new Set()
@@ -512,6 +512,20 @@ export function completeTask(input) {
   });
 }
 
+export function approveTask(input) {
+  return transitionTask({
+    ...input,
+    nextQueueStatus: "done"
+  });
+}
+
+export function rejectTask(input) {
+  return transitionTask({
+    ...input,
+    nextQueueStatus: input.nextQueueStatus ?? "claimed"
+  });
+}
+
 export function releaseTask(input) {
   return transitionTask({
     ...input,
@@ -560,7 +574,12 @@ function normalizeTask(task) {
     scope: Array.isArray(task.scope) ? task.scope : null,
     acceptance: Array.isArray(task.acceptance) ? task.acceptance : null,
     verification: Array.isArray(task.verification) ? task.verification : null,
-    notes: task.notes ?? null
+    notes: task.notes ?? null,
+    reviewedBy: task.reviewedBy ?? null,
+    reviewedAt: task.reviewedAt ?? null,
+    reviewOutcome: task.reviewOutcome ?? null,
+    reviewNotes: task.reviewNotes ?? null,
+    reviewEvidence: Array.isArray(task.reviewEvidence) ? task.reviewEvidence : null
   };
 }
 
@@ -856,21 +875,37 @@ function transitionTask(input) {
     return { error: "claimedBy is required for this transition" };
   }
 
-  if (nextQueueStatus === "claimed") {
+  const isVerifierApproval = nextQueueStatus === "done";
+  const isVerifierReturn = current.queueStatus === "ready_for_review" && ["claimed", "blocked", "released"].includes(nextQueueStatus);
+  const verifierActor = input.reviewedBy ?? null;
+
+  if (nextQueueStatus === "claimed" && !isVerifierReturn) {
     const validation = validateTaskValue(current);
     if (!validation.ready) {
       return { error: `Task ${current.id} is not ready to claim`, validation };
     }
   }
 
+  if (isVerifierApproval || isVerifierReturn) {
+    if (current.queueStatus !== "ready_for_review") {
+      return { error: `Task ${current.id} must be ready_for_review before verifier action` };
+    }
+    if (!verifierActor) {
+      return { error: "reviewedBy is required for verifier action" };
+    }
+    if (!current.verifier || current.verifier !== verifierActor) {
+      return { error: `Task ${current.id} must be reviewed by verifier ${current.verifier ?? "unknown"}` };
+    }
+  }
+
   if (current.claimedBy && current.claimedBy !== input.claimedBy) {
-    if (nextQueueStatus === "claimed" || input.claimedBy) {
+    if (!isVerifierReturn && (nextQueueStatus === "claimed" || input.claimedBy)) {
       return { error: `Task already claimed by ${current.claimedBy}` };
     }
   }
 
   let claimedBy = current.claimedBy;
-  if (nextQueueStatus === "claimed") {
+  if (nextQueueStatus === "claimed" && !isVerifierReturn) {
     claimedBy = input.claimedBy;
   } else if (nextQueueStatus === "released") {
     claimedBy = null;
@@ -884,6 +919,24 @@ function transitionTask(input) {
     claimedBy,
     ...(input.owner !== undefined ? { owner: input.owner } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    ...(nextQueueStatus === "ready_for_review"
+      ? {
+          reviewedBy: null,
+          reviewedAt: null,
+          reviewOutcome: null,
+          reviewNotes: null,
+          reviewEvidence: null
+        }
+      : {}),
+    ...(isVerifierApproval || isVerifierReturn
+      ? {
+          reviewedBy: verifierActor,
+          reviewedAt: new Date().toISOString(),
+          reviewOutcome: isVerifierApproval ? "approved" : "changes_requested",
+          reviewNotes: input.notes ?? null,
+          reviewEvidence: input.reviewEvidence ?? null
+        }
+      : {}),
     updatedAt: new Date().toISOString()
   });
 
@@ -944,6 +997,11 @@ function buildTask(input, nextId) {
     verification: input.verification ?? null,
     claimedBy: input.claimedBy ?? null,
     notes: input.notes ?? null,
+    reviewedBy: input.reviewedBy ?? null,
+    reviewedAt: input.reviewedAt ?? null,
+    reviewOutcome: input.reviewOutcome ?? null,
+    reviewNotes: input.reviewNotes ?? null,
+    reviewEvidence: input.reviewEvidence ?? null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   });
