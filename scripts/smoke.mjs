@@ -1071,9 +1071,30 @@ const assignmentPackExecutorCli = JSON.parse(
 ).assignmentPack;
 if (
   assignmentPackExecutorCli.recommendedSurface !== "task:assignment-pickup --role executor --worker worker-executor --mode owner" ||
-  assignmentPackExecutorCli.next?.assignment?.taskId !== "task-2"
+  assignmentPackExecutorCli.next?.assignment?.taskId !== "task-2" ||
+  assignmentPackExecutorCli.next?.pickup?.kind !== "task_assignment_preview" ||
+  assignmentPackExecutorCli.next?.pickup?.outcome !== "claimable"
 ) {
   console.error("[smoke:runtime-assignment-pack] expected explicit assignment pickup surface for executor");
+  process.exit(1);
+}
+const assignmentPreviewExecutorCli = JSON.parse(
+  run("task-assignment-preview-cli", ["./src/index.js", "task:assignment-preview", "--role", "executor", "--worker", "worker-executor", "--mode", "owner"]).stdout
+).assignmentPreview;
+if (
+  assignmentPreviewExecutorCli.outcome !== "claimable" ||
+  assignmentPreviewExecutorCli.assignment?.taskId !== "task-2" ||
+  assignmentPreviewExecutorCli.task?.id !== "task-2" ||
+  assignmentPreviewExecutorCli.command !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2"
+) {
+  console.error("[smoke:task-assignment-preview] expected executor assignment preview");
+  process.exit(1);
+}
+const assignmentPreviewExecutorState = JSON.parse(
+  run("task-assignment-preview-state", ["./src/index.js", "task:get", "--id", "task-2"]).stdout
+).task;
+if (assignmentPreviewExecutorState.queueStatus !== "queued") {
+  console.error("[smoke:task-assignment-preview] expected preview to preserve assigned task state");
   process.exit(1);
 }
 const assignmentPickupExecutorCli = JSON.parse(
@@ -1623,10 +1644,42 @@ const assignmentPackExecutorMcpPayload = JSON.parse(JSON.parse(assignmentPackExe
 if (
   assignmentPackExecutorMcp.status !== 0 ||
   assignmentPackExecutorMcpPayload.assignmentPack?.recommendedSurface !== "task:assignment-pickup --role executor --worker worker-executor --mode owner" ||
-  assignmentPackExecutorMcpPayload.assignmentPack?.next?.assignment?.taskId !== "task-2"
+  assignmentPackExecutorMcpPayload.assignmentPack?.next?.assignment?.taskId !== "task-2" ||
+  assignmentPackExecutorMcpPayload.assignmentPack?.next?.pickup?.kind !== "task_assignment_preview" ||
+  assignmentPackExecutorMcpPayload.assignmentPack?.next?.pickup?.outcome !== "claimable"
 ) {
   console.error("[smoke:runtime-assignment-pack-mcp] expected explicit executor assignment surface");
   console.error(assignmentPackExecutorMcp.stderr || assignmentPackExecutorMcp.stdout);
+  process.exit(1);
+}
+const taskAssignmentPreviewExecutorMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_assignment_preview",
+      arguments: { role: "executor", workerId: "worker-executor", mode: "owner" }
+    }
+  })
+].join("\n") + "\n";
+const taskAssignmentPreviewExecutorMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: taskAssignmentPreviewExecutorMcpInput,
+  encoding: "utf8"
+});
+const taskAssignmentPreviewExecutorMcpLines = taskAssignmentPreviewExecutorMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const taskAssignmentPreviewExecutorMcpPayload = JSON.parse(JSON.parse(taskAssignmentPreviewExecutorMcpLines[1]).result.content[0].text);
+if (
+  taskAssignmentPreviewExecutorMcp.status !== 0 ||
+  taskAssignmentPreviewExecutorMcpPayload.assignmentPreview?.outcome !== "claimable" ||
+  taskAssignmentPreviewExecutorMcpPayload.assignmentPreview?.task?.id !== "task-2"
+) {
+  console.error("[smoke:task-assignment-preview-mcp] expected explicit executor assignment preview payload");
+  console.error(taskAssignmentPreviewExecutorMcp.stderr || taskAssignmentPreviewExecutorMcp.stdout);
   process.exit(1);
 }
 const taskAssignmentPickupExecutorMcpInput = [
@@ -2794,7 +2847,9 @@ const runtimeAssignmentPackMcpPayload = JSON.parse(JSON.parse(runtimeAssignmentP
 if (
   runtimeAssignmentPackMcp.status !== 0 ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.recommendedSurface !== "worker:closeout" ||
-  runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.candidate?.id !== "task-2" ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.kind !== "task_assignment_preview" ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.outcome !== "none" ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.candidate !== null ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.next?.focus?.kind !== "review_task" ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.surfaces?.assignments?.next?.taskId !== "task-4"
 ) {
@@ -3616,7 +3671,9 @@ const runtimeAssignmentPackVerifier = JSON.parse(
 ).assignmentPack;
 if (
   runtimeAssignmentPackVerifier.recommendedSurface !== "worker:closeout" ||
-  runtimeAssignmentPackVerifier.next?.pickup?.candidate?.id !== "task-2" ||
+  runtimeAssignmentPackVerifier.next?.pickup?.kind !== "task_assignment_preview" ||
+  runtimeAssignmentPackVerifier.next?.pickup?.outcome !== "none" ||
+  runtimeAssignmentPackVerifier.next?.pickup?.candidate !== null ||
   runtimeAssignmentPackVerifier.next?.focus?.kind !== "review_task"
 ) {
   console.error("[smoke:runtime-assignment-pack] expected verifier assignment pack");
@@ -3648,8 +3705,11 @@ const runtimeAssignmentPackOwner = JSON.parse(
   run("runtime-assignment-pack-owner", ["./src/index.js", "runtime:assignment-pack", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
 ).assignmentPack;
 if (
-  runtimeAssignmentPackOwner.recommendedSurface !== "task:pickup --role executor --worker worker-owner --mode owner" ||
-  runtimeAssignmentPackOwner.next?.pickup?.outcome !== "claimable"
+  runtimeAssignmentPackOwner.recommendedSurface !== "task:next" ||
+  runtimeAssignmentPackOwner.next?.pickup?.kind !== "task_assignment_preview" ||
+  runtimeAssignmentPackOwner.next?.pickup?.outcome !== "none" ||
+  runtimeAssignmentPackOwner.next?.pickup?.candidate !== null ||
+  runtimeAssignmentPackOwner.next?.candidate?.id !== "task-1"
 ) {
   console.error("[smoke:runtime-assignment-pack] expected owner assignment pack");
   process.exit(1);
