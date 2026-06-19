@@ -127,6 +127,18 @@ export function listSwarmOverviews(filters = {}) {
     .filter(Boolean);
 }
 
+export function listSwarmsView(filters = {}, options = {}) {
+  const detailed = options.detailed === true;
+  const swarms = detailed ? listSwarmOverviews(filters) : listSwarms(filters);
+  const recommendedReason = swarms.length > 0 ? "swarm_list_has_results" : "swarm_list_empty";
+  return {
+    kind: "swarm_view",
+    recommendedReason,
+    detailed,
+    swarms
+  };
+}
+
 export function getTask(id) {
   const task = loadState().tasks.find((item) => item.id === id);
   return task ? normalizeTask(task) : null;

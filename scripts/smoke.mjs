@@ -1998,7 +1998,13 @@ if (
 const detailedSwarmList = JSON.parse(
   run("swarm-list-detailed", ["./src/index.js", "swarm:list", "--detailed"]).stdout
 ).swarms;
-if (!Array.isArray(detailedSwarmList) || detailedSwarmList[0]?.derivedStatus !== "completed") {
+if (
+  detailedSwarmList.kind !== "swarm_view" ||
+  detailedSwarmList.recommendedReason !== "swarm_list_has_results" ||
+  detailedSwarmList.detailed !== true ||
+  !Array.isArray(detailedSwarmList.swarms) ||
+  detailedSwarmList.swarms[0]?.derivedStatus !== "completed"
+) {
   console.error("[smoke:swarm-list] expected detailed swarm list with derived status");
   process.exit(1);
 }
@@ -4851,7 +4857,10 @@ if (
   swarmOverviewPayload?.overview?.recommendedReason !== "swarm_ready_to_complete" ||
   swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||
   swarmOverviewPayload?.overview?.readyToComplete !== true ||
-  swarmListDetailedPayload?.swarms?.[0]?.derivedStatus !== "completed"
+  swarmListDetailedPayload?.swarms?.kind !== "swarm_view" ||
+  swarmListDetailedPayload?.swarms?.recommendedReason !== "swarm_list_has_results" ||
+  swarmListDetailedPayload?.swarms?.detailed !== true ||
+  swarmListDetailedPayload?.swarms?.swarms?.[0]?.derivedStatus !== "completed"
 ) {
   console.error("[smoke:swarm-mcp] expected completion-aware MCP lifecycle payloads and overview");
   console.error(swarmMcp.stderr || swarmMcp.stdout);

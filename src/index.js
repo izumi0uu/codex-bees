@@ -41,6 +41,7 @@ import {
   listMemories,
   listSwarmOverviews,
   listSwarms,
+  listSwarmsView,
   listTasks,
   listTasksView,
   markTaskReadyForReview,
@@ -621,7 +622,7 @@ function printSwarms() {
   write(
     JSON.stringify(
       {
-        swarms: detailed ? listSwarmOverviews(filters) : listSwarms(filters)
+        swarms: listSwarmsView(filters, { detailed })
       },
       null,
       2

@@ -36,6 +36,7 @@ import {
   listMemories,
   listSwarmOverviews,
   listSwarms,
+  listSwarmsView,
   listTasks,
   listTasksView,
   markTaskReadyForReview,
@@ -2205,9 +2206,7 @@ function handleRequest(message) {
         topology: params.arguments?.topology,
         owner: params.arguments?.owner
       };
-      const swarms = params.arguments?.detailed
-        ? listSwarmOverviews(filters)
-        : listSwarms(filters);
+      const swarms = listSwarmsView(filters, { detailed: params.arguments?.detailed === true });
 
       return createSuccess(id, createTextPayload({ swarms }));
     }
