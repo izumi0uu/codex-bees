@@ -1979,6 +1979,71 @@ if (
 run("swarm-queue-invalid-role", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
 
 rmSync(".codex-bees", { recursive: true, force: true });
+run("swarm-update-init", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Update swarm smoke",
+  "--owner",
+  "leader",
+  "--max-workers",
+  "1",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-update",
+      summary: "Update lane",
+      owner: "explore",
+      verifier: "reviewer",
+      scope: ["src/index.js"],
+      acceptance: ["swarm update mutation is emitted"],
+      verification: ["swarm:get reflects updated metadata"]
+    }
+  ])
+]);
+const updatedSwarmCli = JSON.parse(
+  run("swarm-update-cli", [
+    "./src/index.js",
+    "swarm:update",
+    "--id",
+    "swarm-1",
+    "--objective",
+    "Updated swarm smoke",
+    "--max-workers",
+    "3",
+    "--lane-source",
+    "smoke-refresh",
+    "--notes",
+    "update path verified"
+  ]).stdout
+).updated;
+if (
+  updatedSwarmCli.kind !== "swarm_mutation" ||
+  updatedSwarmCli.recommendedReason !== "swarm_updated" ||
+  updatedSwarmCli.swarm?.id !== "swarm-1" ||
+  updatedSwarmCli.swarm?.objective !== "Updated swarm smoke" ||
+  updatedSwarmCli.swarm?.maxWorkers !== 3 ||
+  updatedSwarmCli.swarm?.laneSource !== "smoke-refresh" ||
+  updatedSwarmCli.swarm?.notes !== "update path verified" ||
+  updatedSwarmCli.swarm?.lanes?.length !== 1
+) {
+  console.error("[smoke:swarm-update] expected CLI swarm update mutation payload");
+  process.exit(1);
+}
+const updatedSwarmGet = JSON.parse(
+  run("swarm-update-get", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
+).swarm;
+if (
+  updatedSwarmGet.objective !== "Updated swarm smoke" ||
+  updatedSwarmGet.maxWorkers !== 3 ||
+  updatedSwarmGet.laneSource !== "smoke-refresh" ||
+  updatedSwarmGet.notes !== "update path verified"
+) {
+  console.error("[smoke:swarm-update] expected persisted updated swarm metadata");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
 run("swarm-init-blocked", [
   "./src/index.js",
   "swarm:init",
@@ -2159,6 +2224,96 @@ if (
 ) {
   console.error("[smoke:swarm-dispatch-bundle-mcp] expected MCP dispatch bundle");
   console.error(swarmDispatchBundleMcp.stderr || swarmDispatchBundleMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const swarmUpdateMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "swarm_init",
+      arguments: {
+        objective: "MCP swarm update smoke",
+        owner: "leader",
+        maxWorkers: 1,
+        lanes: [
+          {
+            lane: "lane-mcp-update",
+            summary: "MCP update lane",
+            owner: "executor",
+            verifier: "tester",
+            scope: ["src/mcp.js"],
+            acceptance: ["update mutation is returned"],
+            verification: ["swarm_get reflects mcp update"]
+          }
+        ]
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "swarm_update",
+      arguments: {
+        id: "swarm-1",
+        objective: "MCP swarm update refreshed",
+        maxWorkers: 4,
+        laneSource: "mcp-refresh",
+        notes: "mcp update verified"
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "swarm_get",
+      arguments: { id: "swarm-1" }
+    }
+  })
+].join("\n") + "\n";
+const swarmUpdateMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: swarmUpdateMcpInput,
+  encoding: "utf8"
+});
+const swarmUpdateMcpResponses = swarmUpdateMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const swarmUpdateMcpById = new Map(
+  swarmUpdateMcpResponses.map((line) => {
+    const parsed = JSON.parse(line);
+    return [parsed.id, parsed];
+  })
+);
+const swarmUpdateResult = swarmUpdateMcpById.get(3) ?? null;
+const swarmUpdateText = swarmUpdateResult?.result?.content?.[0]?.text;
+const swarmUpdatePayload = swarmUpdateText ? JSON.parse(swarmUpdateText) : null;
+const swarmUpdateGetResult = swarmUpdateMcpById.get(4) ?? null;
+const swarmUpdateGetText = swarmUpdateGetResult?.result?.content?.[0]?.text;
+const swarmUpdateGetPayload = swarmUpdateGetText ? JSON.parse(swarmUpdateGetText) : null;
+if (
+  swarmUpdateMcp.status !== 0 ||
+  swarmUpdatePayload?.updated?.kind !== "swarm_mutation" ||
+  swarmUpdatePayload?.updated?.recommendedReason !== "swarm_updated" ||
+  swarmUpdatePayload?.updated?.swarm?.objective !== "MCP swarm update refreshed" ||
+  swarmUpdatePayload?.updated?.swarm?.maxWorkers !== 4 ||
+  swarmUpdatePayload?.updated?.swarm?.laneSource !== "mcp-refresh" ||
+  swarmUpdatePayload?.updated?.swarm?.notes !== "mcp update verified" ||
+  swarmUpdateGetPayload?.swarm?.objective !== "MCP swarm update refreshed" ||
+  swarmUpdateGetPayload?.swarm?.maxWorkers !== 4 ||
+  swarmUpdateGetPayload?.swarm?.laneSource !== "mcp-refresh" ||
+  swarmUpdateGetPayload?.swarm?.notes !== "mcp update verified"
+) {
+  console.error("[smoke:swarm-update-mcp] expected MCP swarm update mutation payload");
+  console.error(swarmUpdateMcp.stderr || swarmUpdateMcp.stdout);
   process.exit(1);
 }
 

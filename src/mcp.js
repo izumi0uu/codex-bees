@@ -95,6 +95,7 @@ import {
   workerHandoff,
   workerSession,
   updateSwarm,
+  updateSwarmMutation,
   updateTask,
   updateTaskMutation,
   taskBrief,
@@ -2306,7 +2307,7 @@ function handleRequest(message) {
         return createError(id, -32602, "swarm_update requires arguments.id");
       }
 
-      const swarm = updateSwarm({
+      const swarm = updateSwarmMutation({
         id: params.arguments.id,
         objective: params.arguments.objective,
         topology: params.arguments.topology,

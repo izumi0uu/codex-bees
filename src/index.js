@@ -101,6 +101,7 @@ import {
   workerHandoff,
   workerSession,
   updateSwarm,
+  updateSwarmMutation,
   updateTask,
   updateTaskMutation,
   taskBrief,
@@ -1172,7 +1173,7 @@ function handleSwarmDispatchBundle() {
 
 function handleSwarmUpdate() {
   const id = requireOption("--id");
-  const swarm = updateSwarm({
+  const swarm = updateSwarmMutation({
     id,
     objective: readOption("--objective"),
     topology: readOption("--topology"),

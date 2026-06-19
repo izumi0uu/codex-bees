@@ -302,6 +302,8 @@ Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task
 
 `swarm:init` / `swarm_init` return the explicit swarm creation mutation result. They emit `kind: "swarm_mutation"` with `recommendedReason: "swarm_created"` so automation can distinguish durable swarm creation from later activation, queueing, and dispatch steps without inferring from the nested swarm snapshot alone.
 
+`swarm:update` / `swarm_update` return the explicit swarm metadata mutation result. They emit `kind: "swarm_mutation"` with `recommendedReason: "swarm_updated"` so automation can distinguish contract edits from lifecycle moves like activation, blocking, completion, or cancellation without reparsing the nested swarm state alone.
+
 `swarm:start` / `swarm_activate` return the explicit lifecycle mutation result for activating a swarm. They emit a machine-readable `recommendedReason` so automation can treat activation as a first-class protocol step instead of inferring it only from the nested swarm status field.
 
 `swarm:block` / `swarm_block` return the explicit lifecycle mutation result for blocking a swarm. They emit a machine-readable `recommendedReason` so automation can distinguish an intentional lifecycle block from task-derived blocked state that might later surface through `swarm:sync` or `swarm:overview`.

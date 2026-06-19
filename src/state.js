@@ -3033,6 +3033,18 @@ export function updateSwarm(input) {
   return next;
 }
 
+export function updateSwarmMutation(input) {
+  const result = updateSwarm(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "swarm_mutation",
+    recommendedReason: "swarm_updated",
+    swarm: result
+  };
+}
+
 export function queueSwarmTasks(input) {
   const state = loadState();
   const index = state.swarms.findIndex((swarm) => swarm.id === input.id);
