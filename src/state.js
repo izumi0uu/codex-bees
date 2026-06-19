@@ -1412,6 +1412,62 @@ export function runtimeSessionPack(input = {}) {
   };
 }
 
+export function runtimeRolePack(input = {}) {
+  if (!input.role) {
+    return null;
+  }
+
+  const roles = runtimeRoles();
+  const roleEntry = roles?.roles?.find((entry) => entry.role?.id === input.role) ?? null;
+  const sessionPack = input.workerId
+    ? runtimeSessionPack({
+        role: input.role,
+        workerId: input.workerId,
+        mode: input.mode ?? "any"
+      })
+    : null;
+  const ownerPack = input.workerId
+    ? runtimeOwnerPack({
+        role: input.role,
+        workerId: input.workerId
+      })
+    : null;
+  const verifierPack = input.workerId
+    ? runtimeVerifierPack({
+        role: input.role,
+        workerId: input.workerId
+      })
+    : null;
+  const recommendedSurface = deriveRuntimeRolePackSurface({ roleEntry, sessionPack, ownerPack, verifierPack });
+
+  return {
+    kind: "runtime_role_pack",
+    role: roleEntry?.role ?? describeRole(input.role),
+    workerId: input.workerId ?? null,
+    mode: input.mode ?? "any",
+    recommendedSurface,
+    overview: {
+      role: roleEntry?.counts ?? null,
+      session: sessionPack?.overview ?? null,
+      owner: ownerPack?.overview ?? null,
+      verifier: verifierPack?.overview ?? null
+    },
+    next: {
+      role: roleEntry?.nextAction ?? null,
+      session: sessionPack?.next ?? null,
+      owner: ownerPack?.next ?? null,
+      verifier: verifierPack?.next ?? null
+    },
+    surfaces: {
+      role: roleEntry,
+      sessionPack,
+      ownerPack,
+      verifierPack
+    },
+    summary: buildRuntimeRolePackSummary(recommendedSurface, roleEntry, sessionPack, verifierPack, ownerPack)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3830,6 +3886,35 @@ function buildRuntimeSessionPackSummary(recommendedSurface, workerPack, ownerPac
     roleEntry?.summary ??
     "Runtime session pack has no current session detail.";
   return `Runtime session pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeRolePackSurface({ roleEntry, sessionPack, ownerPack, verifierPack }) {
+  if (sessionPack?.recommendedSurface && sessionPack.recommendedSurface !== "worker:session") {
+    return sessionPack.recommendedSurface;
+  }
+  if (roleEntry?.nextAction?.command) {
+    return roleEntry.nextAction.command;
+  }
+  if (verifierPack?.recommendedSurface && verifierPack.recommendedSurface !== "runtime:review") {
+    return verifierPack.recommendedSurface;
+  }
+  if (ownerPack?.recommendedSurface && ownerPack.recommendedSurface !== "worker:session") {
+    return ownerPack.recommendedSurface;
+  }
+  if (sessionPack?.recommendedSurface) {
+    return sessionPack.recommendedSurface;
+  }
+  return "runtime:roles";
+}
+
+function buildRuntimeRolePackSummary(recommendedSurface, roleEntry, sessionPack, verifierPack, ownerPack) {
+  const detail =
+    sessionPack?.summary ??
+    verifierPack?.summary ??
+    ownerPack?.summary ??
+    roleEntry?.summary ??
+    "Runtime role pack has no current role detail.";
+  return `Runtime role pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
