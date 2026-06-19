@@ -512,6 +512,7 @@ if (fetchedTask.id !== "task-3" || fetchedTask.owner !== "executor" || fetchedTa
 const taskExecutionBrief = JSON.parse(run("task-brief-verify", ["./src/index.js", "task:brief", "--id", "task-3"]).stdout).brief;
 if (
   taskExecutionBrief.kind !== "task_execution_brief" ||
+  taskExecutionBrief.recommendedReason !== "completed_task_brief" ||
   taskExecutionBrief.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
   taskExecutionBrief.roles?.verifier?.promptPath !== ".codex/agents/tester.md" ||
   taskExecutionBrief.recommendedNextAction !== "complete"
@@ -545,7 +546,10 @@ run("task-annotate-complete", [
 const taskBriefAnnotated = JSON.parse(
   run("task-brief-annotated", ["./src/index.js", "task:brief", "--id", "task-3"]).stdout
 ).brief;
-if (taskBriefAnnotated.annotations?.entries?.at(-1)?.content !== "verified with smoke coverage") {
+if (
+  taskBriefAnnotated.recommendedReason !== "completed_task_brief" ||
+  taskBriefAnnotated.annotations?.entries?.at(-1)?.content !== "verified with smoke coverage"
+) {
   console.error("[smoke:task-annotate] expected annotation to appear in task brief");
   process.exit(1);
 }
@@ -877,6 +881,18 @@ if (
   reviewTaskHistory.history?.map((entry) => entry.type).join(",") !== "created,claimed,ready_for_review,changes_requested"
 ) {
   console.error("[smoke:task-history] expected review loop handoff history");
+  process.exit(1);
+}
+const reviewTaskBrief = JSON.parse(
+  run("task-brief-review-loop", ["./src/index.js", "task:brief", "--id", "task-1"]).stdout
+).brief;
+if (
+  reviewTaskBrief.recommendedReason !== "claimed_execution_brief" ||
+  reviewTaskBrief.recommendedNextAction !== "continue_execution_and_handoff" ||
+  reviewTaskBrief.coordination?.queueStatus !== "claimed" ||
+  reviewTaskBrief.review?.state !== "changes_requested"
+) {
+  console.error("[smoke:task-brief] expected claimed rework brief after changes requested");
   process.exit(1);
 }
 const reviewTaskReport = JSON.parse(
@@ -4386,6 +4402,7 @@ if (
   !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
   taskStatusPayload?.status?.counts?.agents !== 4 ||
   taskGetPayload?.task?.id !== "task-1" ||
+  taskBriefPayload?.brief?.recommendedReason !== "claimable_execution_brief" ||
   taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
   taskHistoryMcp.status !== 0 ||
   taskHistoryMcpPayload.history?.history?.at(-1)?.type !== "approved" ||
@@ -4520,6 +4537,18 @@ if (
 const verifierBundleCli = JSON.parse(
   run("verifier-bundle-cli", ["./src/index.js", "verifier:bundle", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).bundle;
+const verifierTaskBriefCli = JSON.parse(
+  run("task-brief-verifier-loop", ["./src/index.js", "task:brief", "--id", "task-2"]).stdout
+).brief;
+if (
+  verifierTaskBriefCli.recommendedReason !== "verifier_decision_brief" ||
+  verifierTaskBriefCli.recommendedNextAction !== "review_and_decide" ||
+  verifierTaskBriefCli.review?.state !== "pending_verifier"
+) {
+  console.error("[smoke:task-brief] expected verifier decision brief");
+  process.exit(1);
+}
+
 if (
   verifierBundleCli.recommendedReason !== "decision_target_ready" ||
   verifierBundleCli.currentTask?.id !== "task-2" ||

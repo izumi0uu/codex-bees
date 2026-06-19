@@ -219,9 +219,11 @@ export function taskBrief(id) {
   const validation = validateTaskValue(task);
   const catalog = getRuntimeCatalog();
   const recommended = recommendTaskAction(task);
+  const recommendedReason = deriveTaskBriefReason(task, recommended);
 
   return {
     kind: "task_execution_brief",
+    recommendedReason,
     task,
     objective: task.objective ?? task.title,
     roles: {
@@ -3356,6 +3358,28 @@ function buildTaskReportEntries(task) {
     annotations,
     history
   };
+}
+
+function deriveTaskBriefReason(task, recommended) {
+  if (task.queueStatus === "done") {
+    return "completed_task_brief";
+  }
+  if (task.queueStatus === "ready_for_review") {
+    return "verifier_decision_brief";
+  }
+  if (task.queueStatus === "claimed") {
+    return "claimed_execution_brief";
+  }
+  if (task.queueStatus === "blocked") {
+    return "blocked_recovery_brief";
+  }
+  if (task.queueStatus === "released") {
+    return "released_repickup_brief";
+  }
+  if (recommended?.actor?.type === "owner_role") {
+    return "claimable_execution_brief";
+  }
+  return "queued_execution_brief";
 }
 
 function recommendTaskAction(task) {
