@@ -41,6 +41,7 @@ const checks = [
   ],
   ["plan", ["./src/index.js", "plan", "--task", "Add a doctor smoke check to the CLI"]],
   ["plan-queue", ["./src/index.js", "plan:queue", "--task", "Queue a runtime task"]],
+  ["plan-swarm", ["./src/index.js", "plan:swarm", "--task", "Coordinate a runtime task"]],
   [
     "task-add",
     [
@@ -225,6 +226,40 @@ if (queuePlanMcp.status !== 0 || queuePlanPayloadMcp?.kind !== "queued_plan") {
 }
 
 
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const plannedSwarm = JSON.parse(
+  run("plan-swarm-verify", [
+    "./src/index.js",
+    "plan:swarm",
+    "--task",
+    "Coordinate a planner-driven swarm"
+  ]).stdout
+);
+if (plannedSwarm.kind !== "planned_swarm" || plannedSwarm.swarm?.laneSource !== "planner") {
+  console.error("[smoke:plan-swarm] expected planner swarm payload");
+  process.exit(1);
+}
+const queuedPlanSwarm = JSON.parse(
+  run("plan-swarm-queue", [
+    "./src/index.js",
+    "plan:swarm:queue",
+    "--task",
+    "Queue a planner-driven swarm"
+  ]).stdout
+);
+if (queuedPlanSwarm.kind !== "queued_plan_swarm" || queuedPlanSwarm.created.length !== 2) {
+  console.error("[smoke:plan-swarm-queue] expected queued planner swarm tasks");
+  process.exit(1);
+}
+const queuedPlanSwarmTasks = JSON.parse(
+  run("plan-swarm-queue-task-list", ["./src/index.js", "task:list"]).stdout
+).tasks;
+if (!queuedPlanSwarmTasks.every((task) => task.swarmId === "swarm-1")) {
+  console.error("[smoke:plan-swarm-queue] expected swarm-linked tasks from planner");
+  process.exit(1);
+}
+
 rmSync(".codex-bees", { recursive: true, force: true });
 const swarmLaneJson = JSON.stringify([
   {
@@ -348,6 +383,38 @@ const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId ==
 if (swarmMcp.status !== 0 || !mcpSwarmTask) {
   console.error("[smoke:swarm-mcp] expected queued MCP swarm task");
   console.error(swarmMcp.stderr || swarmMcp.stdout);
+  process.exit(1);
+}
+
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const queuePlanSwarmMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "queue_plan_swarm",
+      arguments: { task: "Queue a planner MCP swarm" }
+    }
+  })
+].join("\n") + "\n";
+
+const queuePlanSwarmMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: queuePlanSwarmMcpInput,
+  encoding: "utf8"
+});
+const queuePlanSwarmLines = queuePlanSwarmMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const queuePlanSwarmResult = queuePlanSwarmLines.length >= 2 ? JSON.parse(queuePlanSwarmLines[1]) : null;
+const queuePlanSwarmText = queuePlanSwarmResult?.result?.content?.[0]?.text;
+const queuePlanSwarmPayload = queuePlanSwarmText ? JSON.parse(queuePlanSwarmText) : null;
+if (queuePlanSwarmMcp.status !== 0 || queuePlanSwarmPayload?.kind !== "queued_plan_swarm") {
+  console.error("[smoke:queue-plan-swarm-mcp] expected queued_plan_swarm response");
+  console.error(queuePlanSwarmMcp.stderr || queuePlanSwarmMcp.stdout);
   process.exit(1);
 }
 
