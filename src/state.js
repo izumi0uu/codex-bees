@@ -216,6 +216,70 @@ export function swarmBrief(id) {
   };
 }
 
+export function taskInbox(input = {}) {
+  if (!input.role) {
+    return null;
+  }
+
+  const catalog = getRuntimeCatalog();
+  const tasks = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => task.owner === input.role || task.verifier === input.role);
+  const sorted = sortInboxTasks(tasks, input.role, input.workerId);
+  const limit = Number.isInteger(Number(input.limit)) && Number(input.limit) > 0
+    ? Number(input.limit)
+    : 20;
+  const visibleTasks = sorted.slice(0, limit).map((task) => summarizeInboxTask(task, input.role, input.workerId));
+  const next = taskNext({
+    role: input.role,
+    workerId: input.workerId,
+    mode: input.mode ?? "any"
+  });
+
+  return {
+    kind: "role_inbox",
+    role: describeRole(input.role, catalog),
+    workerId: input.workerId ?? null,
+    counts: {
+      total: tasks.length,
+      ownerClaimable: tasks.filter((task) => task.owner === input.role && isClaimableTask(task)).length,
+      ownerClaimedByWorker: input.workerId
+        ? tasks.filter(
+            (task) =>
+              task.owner === input.role &&
+              task.queueStatus === "claimed" &&
+              task.claimedBy === input.workerId
+          ).length
+        : 0,
+      ownerBlocked: tasks.filter((task) => task.owner === input.role && task.queueStatus === "blocked").length,
+      pendingReview: tasks.filter((task) => task.verifier === input.role && task.queueStatus === "ready_for_review").length,
+      completed: tasks.filter((task) => task.queueStatus === "done").length
+    },
+    tasks: visibleTasks,
+    next
+  };
+}
+
+export function taskNext(input = {}) {
+  if (!input.role) {
+    return null;
+  }
+
+  const mode = normalizeNextMode(input.mode);
+  const tasks = loadState().tasks.map(normalizeTask);
+  const candidates = sortNextCandidates(tasks, input.role, input.workerId, mode);
+  const selected = candidates[0] ?? null;
+
+  return {
+    kind: "next_task_candidate",
+    role: describeRole(input.role),
+    workerId: input.workerId ?? null,
+    mode,
+    candidate: selected ? summarizeInboxTask(selected, input.role, input.workerId) : null,
+    brief: selected ? taskBrief(selected.id) : null
+  };
+}
+
 export function validateTask(id) {
   const task = loadState().tasks.map(normalizeTask).find((item) => item.id === id);
   if (!task) {
@@ -991,6 +1055,136 @@ function buildSwarmHandoff(overview, recommended) {
     return `Swarm ${overview.swarm.id} has planned lanes but no queued tasks yet.`;
   }
   return `Swarm ${overview.swarm.id} is active with bounded local coordination state.`;
+}
+
+function summarizeInboxTask(task, role, workerId) {
+  const relation = task.verifier === role && task.queueStatus === "ready_for_review"
+    ? "verifier_review"
+    : task.owner === role && isClaimableTask(task)
+      ? "owner_claimable"
+      : task.owner === role && task.queueStatus === "claimed" && workerId && task.claimedBy === workerId
+        ? "owner_claimed_by_worker"
+        : task.owner === role && task.queueStatus === "blocked"
+          ? "owner_blocked"
+          : task.owner === role
+            ? "owner_observe"
+            : "verifier_observe";
+
+  return {
+    id: task.id,
+    title: task.title,
+    objective: task.objective,
+    lane: task.lane,
+    swarmId: task.swarmId,
+    queueStatus: task.queueStatus,
+    claimedBy: task.claimedBy,
+    owner: task.owner,
+    verifier: task.verifier,
+    scope: task.scope ?? [],
+    relation,
+    recommendedAction: relationToAction(relation),
+    updatedAt: task.updatedAt,
+    createdAt: task.createdAt
+  };
+}
+
+function relationToAction(relation) {
+  if (relation === "verifier_review") {
+    return "review";
+  }
+  if (relation === "owner_claimable") {
+    return "claim";
+  }
+  if (relation === "owner_claimed_by_worker") {
+    return "continue";
+  }
+  if (relation === "owner_blocked") {
+    return "unblock";
+  }
+  return "observe";
+}
+
+function isClaimableTask(task) {
+  return task.queueStatus === "queued" || task.queueStatus === "released";
+}
+
+function normalizeNextMode(mode) {
+  if (mode === "owner" || mode === "verifier") {
+    return mode;
+  }
+  return "any";
+}
+
+function sortInboxTasks(tasks, role, workerId) {
+  return [...tasks].sort((left, right) => {
+    const leftRank = inboxPriority(left, role, workerId);
+    const rightRank = inboxPriority(right, role, workerId);
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+    return (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");
+  });
+}
+
+function sortNextCandidates(tasks, role, workerId, mode) {
+  return tasks
+    .filter((task) => nextCandidatePriority(task, role, workerId, mode) < Number.POSITIVE_INFINITY)
+    .sort((left, right) => {
+      const leftRank = nextCandidatePriority(left, role, workerId, mode);
+      const rightRank = nextCandidatePriority(right, role, workerId, mode);
+      if (leftRank !== rightRank) {
+        return leftRank - rightRank;
+      }
+      return (left.createdAt ?? "").localeCompare(right.createdAt ?? "");
+    });
+}
+
+function inboxPriority(task, role, workerId) {
+  if (task.verifier === role && task.queueStatus === "ready_for_review") {
+    return 0;
+  }
+  if (task.owner === role && isClaimableTask(task)) {
+    return 1;
+  }
+  if (task.owner === role && task.queueStatus === "claimed" && workerId && task.claimedBy === workerId) {
+    return 2;
+  }
+  if (task.owner === role && task.queueStatus === "blocked") {
+    return 3;
+  }
+  if (task.owner === role && task.queueStatus === "claimed") {
+    return 4;
+  }
+  if (task.queueStatus === "done") {
+    return 7;
+  }
+  return 6;
+}
+
+function nextCandidatePriority(task, role, workerId, mode) {
+  if ((mode === "any" || mode === "verifier") && task.verifier === role && task.queueStatus === "ready_for_review") {
+    return 0;
+  }
+
+  if ((mode === "any" || mode === "owner") && task.owner === role && isClaimableTask(task)) {
+    return 1;
+  }
+
+  if (
+    workerId &&
+    (mode === "any" || mode === "owner") &&
+    task.owner === role &&
+    task.queueStatus === "claimed" &&
+    task.claimedBy === workerId
+  ) {
+    return 2;
+  }
+
+  if ((mode === "any" || mode === "owner") && task.owner === role && task.queueStatus === "blocked") {
+    return 3;
+  }
+
+  return Number.POSITIVE_INFINITY;
 }
 
 
