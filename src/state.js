@@ -2204,6 +2204,7 @@ export function taskPickup(input = {}) {
       role: describeRole(input.role),
       workerId: input.workerId,
       mode: next?.mode ?? normalizeNextMode(input.mode),
+      recommendedReason: "no_candidate_available",
       outcome: "none",
       candidate: null,
       task: null,
@@ -2224,6 +2225,7 @@ export function taskPickup(input = {}) {
         role: describeRole(input.role),
         workerId: input.workerId,
         mode: next.mode,
+        recommendedReason: "claim_failed",
         outcome: "error",
         candidate: next.candidate,
         task: claimed ?? null,
@@ -2238,6 +2240,7 @@ export function taskPickup(input = {}) {
       role: describeRole(input.role),
       workerId: input.workerId,
       mode: next.mode,
+      recommendedReason: "claimable_owner_work",
       outcome: "claimed",
       candidate: summarizeInboxTask(claimed, input.role, input.workerId),
       task: claimed,
@@ -2253,6 +2256,7 @@ export function taskPickup(input = {}) {
     role: describeRole(input.role),
     workerId: input.workerId,
     mode: next.mode,
+    recommendedReason: deriveTaskPickupReason(relation),
     outcome: pickupOutcome(relation),
     candidate: next.candidate,
     task: currentTask,
@@ -4347,6 +4351,25 @@ function deriveLeaderAssignmentLaunchPlanReason({ bundle, steps, next }) {
     return "assignment_launch_context_visible";
   }
   return "no_startup_steps_ready";
+}
+
+function deriveTaskPickupReason(relation) {
+  if (relation === "owner_claimed_by_worker") {
+    return "continue_claimed_work";
+  }
+  if (relation === "verifier_review") {
+    return "review_ready_work";
+  }
+  if (relation === "owner_blocked_by_worker") {
+    return "release_blocked_work";
+  }
+  if (relation === "owner_claimed_by_other") {
+    return "claimed_by_other_worker";
+  }
+  if (relation === "verifier_observe") {
+    return "observe_without_action";
+  }
+  return "non_claim_followup";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {

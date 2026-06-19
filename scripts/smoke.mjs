@@ -745,6 +745,10 @@ if (ownerPickup.outcome !== "continue" || ownerPickup.task?.id !== "task-1" || o
   console.error("[smoke:task-pickup] expected claimed task to resume with review follow-up");
   process.exit(1);
 }
+if (ownerPickup.recommendedReason !== "continue_claimed_work") {
+  console.error("[smoke:task-pickup] expected claimed owner pickup reason");
+  process.exit(1);
+}
 const ownerSession = JSON.parse(
   run("worker-session-owner", ["./src/index.js", "worker:session", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
 ).session;
@@ -4602,6 +4606,7 @@ const ownerPickupClaim = JSON.parse(
 ).pickup;
 if (
   ownerPickupClaim.outcome !== "claimed" ||
+  ownerPickupClaim.recommendedReason !== "claimable_owner_work" ||
   ownerPickupClaim.task?.id !== "task-1" ||
   ownerPickupClaim.task?.claimedBy !== "worker-owner" ||
   ownerPickupClaim.brief?.task?.queueStatus !== "claimed"
@@ -4674,6 +4679,7 @@ const pickupMcpPayload = JSON.parse(JSON.parse(pickupMcpLines[1]).result.content
 if (
   pickupMcp.status !== 0 ||
   pickupMcpPayload.pickup?.outcome !== "review" ||
+  pickupMcpPayload.pickup?.recommendedReason !== "review_ready_work" ||
   pickupMcpPayload.pickup?.candidate?.id !== "task-2" ||
   pickupMcpPayload.pickup?.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
