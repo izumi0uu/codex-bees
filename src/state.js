@@ -1991,6 +1991,7 @@ export function runtimeWorkerPack(input = {}) {
     mode: input.mode ?? "any"
   });
   const recommendedSurface = deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next });
+  const recommendedReason = deriveRuntimeWorkerPackReason({ session, handoff, closeout, next });
 
   return {
     kind: "runtime_worker_pack",
@@ -1998,6 +1999,7 @@ export function runtimeWorkerPack(input = {}) {
     workerId: input.workerId,
     mode: session?.mode ?? normalizeNextMode(input.mode),
     recommendedSurface,
+    recommendedReason,
     overview: {
       session: session?.counts ?? null,
       inbox: session?.inbox?.counts ?? null
@@ -5069,6 +5071,28 @@ function deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next }) {
     return "worker:closeout";
   }
   return "worker:session";
+}
+
+function deriveRuntimeWorkerPackReason({ session, handoff, closeout, next }) {
+  if (session?.focus?.kind === "active_task") {
+    return "active_task_priority";
+  }
+  if (session?.focus?.kind === "blocked_task") {
+    return "blocked_task_priority";
+  }
+  if (session?.focus?.kind === "review_task") {
+    return "review_task_priority";
+  }
+  if (handoff?.currentTask?.id) {
+    return "handoff_priority";
+  }
+  if (next?.candidate?.id) {
+    return "pickup_next_priority";
+  }
+  if (closeout?.report?.task?.id) {
+    return "closeout_report_ready";
+  }
+  return "default_worker_priority";
 }
 
 function buildRuntimeWorkerPackSummary(recommendedSurface, session) {

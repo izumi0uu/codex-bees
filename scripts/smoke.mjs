@@ -806,6 +806,7 @@ const ownerWorkerPack = JSON.parse(
 if (
   ownerWorkerPack.kind !== "runtime_worker_pack" ||
   ownerWorkerPack.recommendedSurface !== "worker:session" ||
+  ownerWorkerPack.recommendedReason !== "active_task_priority" ||
   ownerWorkerPack.next?.focus?.kind !== "active_task" ||
   ownerWorkerPack.surfaces?.handoff?.currentTask?.id !== "task-1"
 ) {
@@ -4464,6 +4465,7 @@ const verifierWorkerPack = JSON.parse(
 ).workerPack;
 if (
   verifierWorkerPack.recommendedSurface !== "worker:closeout" ||
+  verifierWorkerPack.recommendedReason !== "review_task_priority" ||
   verifierWorkerPack.next?.focus?.kind !== "review_task" ||
   verifierWorkerPack.surfaces?.closeout?.report?.task?.id !== "task-2"
 ) {
@@ -4835,6 +4837,7 @@ const workerPackMcpPayload = JSON.parse(JSON.parse(workerPackMcpLines[1]).result
 if (
   workerPackMcp.status !== 0 ||
   workerPackMcpPayload.workerPack?.recommendedSurface !== "worker:closeout" ||
+  workerPackMcpPayload.workerPack?.recommendedReason !== "review_task_priority" ||
   workerPackMcpPayload.workerPack?.surfaces?.closeout?.report?.task?.id !== "task-2"
 ) {
   console.error("[smoke:runtime-worker-pack-mcp] expected MCP worker pack");

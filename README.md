@@ -264,7 +264,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:workspace-pack` / `runtime_workspace_pack` provide the orchestration workspace package: dashboard, dispatch, leader startup plans when parallel startup is ready, review, and recovery combined into one broad control surface with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between parallel launch readiness, review pressure, blocked recovery pressure, dispatch pressure, and plain dashboard visibility without parsing the nested pack summaries. Pass `--workers` on CLI or `workerIds` over MCP to turn nested assignment launch plans into concrete worker-targeted startup steps.
 
-`runtime:worker-pack` / `runtime_worker_pack` provide the worker-oriented package: worker session, handoff, closeout, and next candidate combined into one role-scoped payload with a recommended next surface.
+`runtime:worker-pack` / `runtime_worker_pack` provide the worker-oriented package: worker session, handoff, closeout, and next candidate combined into one role-scoped payload with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between active/blocked work, review-task closeout pressure, handoff pressure, and pickup-next pressure without parsing the pack summary.
 
 `runtime:review` / `runtime_review` provide the verifier-grouped decision workspace: which verifier roles currently own pending review decisions, which task is next, and the task brief already attached for approve/reject handoff.
 
