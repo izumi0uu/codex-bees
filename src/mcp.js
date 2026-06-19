@@ -39,6 +39,7 @@ import {
   runtimeLeaderPack,
   runtimeRecovery,
   runtimeSummaryPack,
+  runtimeVerifierPack,
   runtimeWorkerPack,
   runtimeReview,
   runtimeRoles,
@@ -168,6 +169,18 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_verifier_pack",
+    description: "Build the verifier-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" }
+      }
     }
   },
   {
@@ -1057,6 +1070,24 @@ function handleRequest(message) {
 
     if (name === "runtime_summary_pack") {
       return createSuccess(id, createTextPayload({ summaryPack: runtimeSummaryPack() }));
+    }
+
+    if (name === "runtime_verifier_pack") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "runtime_verifier_pack requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "runtime_verifier_pack requires arguments.workerId");
+      }
+      return createSuccess(
+        id,
+        createTextPayload({
+          verifierPack: runtimeVerifierPack({
+            role: params.arguments.role,
+            workerId: params.arguments.workerId
+          })
+        })
+      );
     }
 
     if (name === "runtime_worker_pack") {

@@ -44,6 +44,7 @@ import {
   runtimeLeaderPack,
   runtimeRecovery,
   runtimeSummaryPack,
+  runtimeVerifierPack,
   runtimeWorkerPack,
   runtimeReview,
   runtimeRoles,
@@ -103,6 +104,7 @@ function printHelp() {
   write(`  codex-bees runtime:leader-pack Build the leader-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
   write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
+  write(`  codex-bees runtime:verifier-pack Build the verifier-oriented runtime package\n`);
   write(`  codex-bees runtime:worker-pack Build the worker-oriented runtime package\n`);
   write(`  codex-bees runtime:review  Build the verifier-grouped review workspace\n`);
   write(`  codex-bees runtime:roles   Build the role-level orchestration queue view\n`);
@@ -237,6 +239,21 @@ function printRuntimeSummaryPack() {
 
 function printRuntimeLeaderPack() {
   write(JSON.stringify({ leaderPack: runtimeLeaderPack() }, null, 2) + "\n");
+}
+
+function printRuntimeVerifierPack() {
+  const role = readOption("--role");
+  const workerId = readOption("--worker");
+  if (!role || !workerId) {
+    writeErr("runtime:verifier-pack requires --role and --worker\n");
+    exit(1);
+  }
+  write(JSON.stringify({
+    verifierPack: runtimeVerifierPack({
+      role,
+      workerId
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeWorkerPack() {
@@ -1101,6 +1118,9 @@ async function runCommand(command) {
       return;
     case "runtime:leader-pack":
       printRuntimeLeaderPack();
+      return;
+    case "runtime:verifier-pack":
+      printRuntimeVerifierPack();
       return;
     case "runtime:worker-pack":
       printRuntimeWorkerPack();
