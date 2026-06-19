@@ -47,6 +47,7 @@ import {
   runtimeRecoveryPack,
   runtimeRecovery,
   runtimeReviewPack,
+  runtimeSessionPack,
   runtimeSignalPack,
   runtimeSummaryPack,
   runtimeTriagePack,
@@ -221,6 +222,18 @@ export const toolCatalog = [
       properties: {
         role: { type: "string" },
         workerId: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "runtime_session_pack",
+    description: "Build the per-worker runtime session package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" }
       }
     }
   },
@@ -1201,6 +1214,22 @@ function handleRequest(message) {
         reviewPack: runtimeReviewPack({
           role: params.arguments?.role,
           workerId: params.arguments?.workerId
+        })
+      }));
+    }
+
+    if (name === "runtime_session_pack") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "runtime_session_pack requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "runtime_session_pack requires arguments.workerId");
+      }
+      return createSuccess(id, createTextPayload({
+        sessionPack: runtimeSessionPack({
+          role: params.arguments.role,
+          workerId: params.arguments.workerId,
+          mode: params.arguments.mode
         })
       }));
     }
