@@ -2588,11 +2588,13 @@ export function workerCloseout(input = {}) {
   }
 
   const report = handoff.currentTask?.id ? taskReport(handoff.currentTask.id) : null;
+  const recommendedReason = deriveWorkerCloseoutReason(handoff, report);
   return {
     kind: "worker_closeout",
     role: handoff.role,
     workerId: handoff.workerId,
     mode: handoff.mode,
+    recommendedReason,
     focus: handoff.focus,
     handoff,
     report,
@@ -4417,6 +4419,25 @@ function deriveWorkerSessionReason(focus, next) {
     return "next_candidate_visible";
   }
   return "idle_focus";
+}
+
+function deriveWorkerCloseoutReason(handoff, report) {
+  if (handoff?.focus?.kind === "active_task") {
+    return "active_task_ready_for_review";
+  }
+  if (handoff?.focus?.kind === "review_task") {
+    return "review_task_ready_for_decision";
+  }
+  if (handoff?.focus?.kind === "blocked_task") {
+    return "blocked_task_ready_for_release";
+  }
+  if (report?.closure?.closureReady) {
+    return "closure_gate_ready";
+  }
+  if (handoff?.currentTask?.id) {
+    return "current_task_closeout_visible";
+  }
+  return "no_closeout_target";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {

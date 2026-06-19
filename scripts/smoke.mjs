@@ -798,6 +798,7 @@ const ownerCloseout = JSON.parse(
   run("worker-closeout-owner", ["./src/index.js", "worker:closeout", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
 ).closeout;
 if (
+  ownerCloseout.recommendedReason !== "active_task_ready_for_review" ||
   ownerCloseout.focus?.kind !== "active_task" ||
   ownerCloseout.command !== "node ./src/index.js task:review --id task-1 --by review-worker" ||
   ownerCloseout.report?.task?.id !== "task-1"
@@ -4477,6 +4478,7 @@ const verifierCloseout = JSON.parse(
   run("worker-closeout-verifier", ["./src/index.js", "worker:closeout", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
 ).closeout;
 if (
+  verifierCloseout.recommendedReason !== "review_task_ready_for_decision" ||
   verifierCloseout.focus?.kind !== "review_task" ||
   verifierCloseout.command !== "node ./src/index.js task:approve --id task-2 --by tester" ||
   verifierCloseout.report?.task?.id !== "task-2"
@@ -4805,6 +4807,7 @@ const workerCloseoutMcpLines = workerCloseoutMcp.stdout
 const workerCloseoutMcpPayload = JSON.parse(JSON.parse(workerCloseoutMcpLines[1]).result.content[0].text);
 if (
   workerCloseoutMcp.status !== 0 ||
+  workerCloseoutMcpPayload.closeout?.recommendedReason !== "review_task_ready_for_decision" ||
   workerCloseoutMcpPayload.closeout?.focus?.kind !== "review_task" ||
   workerCloseoutMcpPayload.closeout?.report?.task?.id !== "task-2"
 ) {

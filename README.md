@@ -182,7 +182,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `worker:handoff` / `worker_handoff` package that workspace into a return-ready payload: current focus, task brief, recent history, recent annotations, next candidate, and one summary sentence that another worker or leader can pick up immediately.
 
-`worker:closeout` / `worker_closeout` add the closure layer on top: current handoff, task report, and the concrete closeout command. This is the bundle a worker can emit when returning work for review, approval, or final archive.
+`worker:closeout` / `worker_closeout` add the closure layer on top: current handoff, task report, and the concrete closeout command. They also emit a machine-readable `recommendedReason` so automation can distinguish between review handoff, verifier decision, blocked release, closure-ready fallback, and empty closeout states without reparsing the summary prose. This is the bundle a worker can emit when returning work for review, approval, or final archive.
 
 `verifier:bundle` / `verifier_bundle` provide the symmetric decision artifact for the verification lane: current review target, task report, recent context, and approve/reject commands. This keeps the reviewer side as productized as the worker side.
 
