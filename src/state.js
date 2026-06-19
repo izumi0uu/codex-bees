@@ -648,6 +648,41 @@ export function runtimeRoles(input = {}) {
   };
 }
 
+export function runtimeDispatch() {
+  const assignments = leaderAssignments();
+  const groups = (assignments?.groups ?? []).map((group) => ({
+    owner: group.owner,
+    count: group.count,
+    next: group.assignments?.[0] ?? null,
+    assignments: (group.assignments ?? []).map((assignment, index) => ({
+      position: index + 1,
+      swarmId: assignment.swarmId,
+      objective: assignment.objective,
+      lane: assignment.lane,
+      taskId: assignment.taskId,
+      taskQueueStatus: assignment.taskQueueStatus,
+      verifier: assignment.verifier,
+      recommendedNextActor: assignment.recommendedNextActor,
+      recommendedNextAction: assignment.recommendedNextAction,
+      recommendedCommands: assignment.recommendedCommands,
+      taskBrief: assignment.taskBrief,
+      summary: assignment.summary
+    }))
+  }));
+  const next = groups[0]?.assignments?.[0] ?? null;
+
+  return {
+    kind: "runtime_dispatch",
+    counts: {
+      ownerGroups: groups.length,
+      totalAssignments: groups.reduce((total, group) => total + (group.count ?? 0), 0)
+    },
+    groups,
+    next,
+    summary: buildRuntimeDispatchSummary(groups, next)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -2113,6 +2148,18 @@ function buildRuntimeRolesSummary(roles, next) {
   }
 
   return `Runtime roles is tracking ${roles.length} roles; ${next.role.id} is the next role to inspect.`;
+}
+
+function buildRuntimeDispatchSummary(groups, next) {
+  if (groups.length === 0) {
+    return "Runtime dispatch has no owner-grouped work ready right now.";
+  }
+
+  if (!next) {
+    return `Runtime dispatch is tracking ${groups.length} owner group${groups.length === 1 ? "" : "s"}.`;
+  }
+
+  return `Runtime dispatch has ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is the next handoff.`;
 }
 
 function compareRuntimeRoleEntries(left, right) {
