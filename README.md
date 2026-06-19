@@ -58,6 +58,7 @@ node ./src/index.js task:get --id task-1
 node ./src/index.js task:brief --id task-1
 node ./src/index.js task:inbox --role executor --worker worker-1
 node ./src/index.js task:next --role tester --worker tester-1 --mode verifier
+node ./src/index.js task:pickup --role executor --worker worker-1 --mode owner
 node ./src/index.js task:check --id task-1
 node ./src/index.js swarm:init --objective "Ship a bounded runtime slice" --owner leader --max-workers 2 --lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer"}]'
 node ./src/index.js swarm:check --id swarm-1
@@ -104,6 +105,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `task:get` / `task_brief` and `swarm:get` / `swarm_brief` turn stored coordination state into execution-ready handoff payloads. Briefs resolve shipped role prompt paths, summarize queue/review state, identify the next actor, and suggest the next CLI action so a Codex worker can pick up work without re-discovering scope.
 
 `task:inbox` / `task_inbox` give each shipped role a prioritized local work queue, and `task:next` / `task_next` resolve the single best next claim-or-review candidate with its full execution brief attached. This is the bridge from persisted coordination state to an actual Codex worker pickup loop.
+
+`task:pickup` / `task_pickup` turn that candidate into action: claimable owner work is auto-claimed for the worker, while claimed or review-ready work returns the exact next handoff command. This keeps the pickup loop explicit without hiding lifecycle transitions.
 
 `catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
 
