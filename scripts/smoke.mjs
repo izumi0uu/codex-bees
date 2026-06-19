@@ -1122,6 +1122,8 @@ const leaderAssignmentDispatchBundleCli = JSON.parse(
 if (
   leaderAssignmentDispatchBundleCli.counts?.launches !== 2 ||
   leaderAssignmentDispatchBundleCli.next?.role?.id !== "executor" ||
+  leaderAssignmentDispatchBundleCli.launches?.[0]?.assignmentPackCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
+  leaderAssignmentDispatchBundleCli.launches?.[0]?.sessionCommand !== "node ./src/index.js worker:session --role executor --worker worker-executor --mode owner" ||
   leaderAssignmentDispatchBundleCli.launches?.[0]?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2" ||
   leaderAssignmentDispatchBundleCli.launches?.[1]?.previewCommand !== "node ./src/index.js task:assignment-preview --role explore --worker worker-explore --task task-1"
 ) {
@@ -1885,6 +1887,7 @@ if (
   leaderAssignmentDispatchBundleMcp.status !== 0 ||
   leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.counts?.launches !== 2 ||
   leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.next?.role?.id !== "executor" ||
+  leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.launches?.[0]?.assignmentPackCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
   leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.launches?.[0]?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2"
 ) {
   console.error("[smoke:leader-assignment-dispatch-bundle-mcp] expected MCP multi-worker launch bundle");
