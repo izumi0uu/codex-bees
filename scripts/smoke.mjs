@@ -208,15 +208,19 @@ if (
 }
 const runtimeCapabilities = JSON.parse(run("capabilities-verify", ["./src/index.js", "capabilities"]).stdout).capabilities;
 if (
-  !Array.isArray(runtimeCapabilities) ||
-  !runtimeCapabilities.some((capability) => capability.id === "swarm_coordination") ||
-  !runtimeCapabilities.some((capability) => capability.id === "runtime_catalog") ||
-  !runtimeCapabilities.find((capability) => capability.id === "runtime_catalog")?.highlights?.includes("runtime:queue-pack recommends launch context before raw leader queue review") ||
-  !runtimeCapabilities.find((capability) => capability.id === "leader_orchestration")?.highlights?.includes("assignment-launch-plan provides ordered worker startup steps") ||
-  runtimeCapabilities.find((capability) => capability.id === "runtime_catalog")?.preferredEntryPoints?.cli?.[0] !== "status" ||
-  runtimeCapabilities.find((capability) => capability.id === "leader_orchestration")?.preferredEntryPoints?.mcp?.[0] !== "leader_assignment_launch_plan" ||
-  !runtimeCapabilities.find((capability) => capability.id === "runtime_catalog")?.useCases?.includes("probe the runtime surface before choosing deeper orchestration tools") ||
-  !runtimeCapabilities.find((capability) => capability.id === "leader_orchestration")?.useCases?.includes("bring multiple workers online in leader-defined order")
+  runtimeCapabilities.kind !== "runtime_capabilities_view" ||
+  runtimeCapabilities.recommendedReason !== "capabilities_loaded" ||
+  runtimeCapabilities.counts?.totalCapabilities < 6 ||
+  runtimeCapabilities.counts?.categories?.coordination < 1 ||
+  !Array.isArray(runtimeCapabilities.capabilities) ||
+  !runtimeCapabilities.capabilities.some((capability) => capability.id === "swarm_coordination") ||
+  !runtimeCapabilities.capabilities.some((capability) => capability.id === "runtime_catalog") ||
+  !runtimeCapabilities.capabilities.find((capability) => capability.id === "runtime_catalog")?.highlights?.includes("runtime:queue-pack recommends launch context before raw leader queue review") ||
+  !runtimeCapabilities.capabilities.find((capability) => capability.id === "leader_orchestration")?.highlights?.includes("assignment-launch-plan provides ordered worker startup steps") ||
+  runtimeCapabilities.capabilities.find((capability) => capability.id === "runtime_catalog")?.preferredEntryPoints?.cli?.[0] !== "status" ||
+  runtimeCapabilities.capabilities.find((capability) => capability.id === "leader_orchestration")?.preferredEntryPoints?.mcp?.[0] !== "leader_assignment_launch_plan" ||
+  !runtimeCapabilities.capabilities.find((capability) => capability.id === "runtime_catalog")?.useCases?.includes("probe the runtime surface before choosing deeper orchestration tools") ||
+  !runtimeCapabilities.capabilities.find((capability) => capability.id === "leader_orchestration")?.useCases?.includes("bring multiple workers online in leader-defined order")
 ) {
   console.error("[smoke:capabilities] expected runtime capability inventory");
   process.exit(1);

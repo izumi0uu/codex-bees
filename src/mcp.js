@@ -1,7 +1,7 @@
 import { stdin, stdout, stderr } from "node:process";
 import { getRuntimeCatalog, getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
-import { getCapabilityCatalog, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
+import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import {
   activateSwarm,
   addTask,
@@ -1368,7 +1368,7 @@ function handleRequest(message) {
     }
 
     if (name === "runtime_capabilities") {
-      return createSuccess(id, createTextPayload({ capabilities: getCapabilityCatalog() }));
+      return createSuccess(id, createTextPayload({ capabilities: getCapabilityCatalogView() }));
     }
 
     if (name === "runtime_activity") {

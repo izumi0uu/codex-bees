@@ -143,6 +143,20 @@ export function getCapabilityCatalog() {
   }));
 }
 
+export function getCapabilityCatalogView() {
+  const capabilities = getCapabilityCatalog();
+  const categoryCounts = countBy(capabilities, (capability) => capability.category);
+  return {
+    kind: "runtime_capabilities_view",
+    recommendedReason: capabilities.length > 0 ? "capabilities_loaded" : "capabilities_empty",
+    counts: {
+      totalCapabilities: capabilities.length,
+      categories: categoryCounts
+    },
+    capabilities
+  };
+}
+
 export function getRuntimeStatus({ version, toolCount }) {
   const catalog = getRuntimeCatalog();
   const tasks = listTasks();

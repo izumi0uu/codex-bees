@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
 import { getRuntimeCatalog, getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
-import { getCapabilityCatalog, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
+import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import {
   activateSwarm,
   addTask,
@@ -280,7 +280,7 @@ function printStatus() {
 }
 
 function printCapabilities() {
-  write(JSON.stringify({ capabilities: getCapabilityCatalog() }, null, 2) + "\n");
+  write(JSON.stringify({ capabilities: getCapabilityCatalogView() }, null, 2) + "\n");
 }
 
 function printRuntimeActivity() {
