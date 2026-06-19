@@ -51,6 +51,7 @@ import {
   runtimeRecoveryPack,
   runtimeRecovery,
   runtimeReviewPack,
+  runtimeSignalPack,
   runtimeSummaryPack,
   runtimeVerifierPack,
   runtimeWorkspacePack,
@@ -120,6 +121,7 @@ function printHelp() {
   write(`  codex-bees runtime:recovery-pack Build the recovery-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
   write(`  codex-bees runtime:review-pack Build the review-oriented runtime package\n`);
+  write(`  codex-bees runtime:signal-pack Build the signal-oriented runtime package\n`);
   write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
   write(`  codex-bees runtime:verifier-pack Build the verifier-oriented runtime package\n`);
   write(`  codex-bees runtime:workspace-pack Build the orchestration workspace package\n`);
@@ -249,6 +251,10 @@ function printRuntimeCloseoutPack() {
 
 function printRuntimeControlPack() {
   write(JSON.stringify({ controlPack: runtimeControlPack() }, null, 2) + "\n");
+}
+
+function printRuntimeSignalPack() {
+  write(JSON.stringify({ signalPack: runtimeSignalPack({ limit: readPositiveIntegerOption("--limit") }) }, null, 2) + "\n");
 }
 
 function printRuntimeHandoffs() {
@@ -1188,6 +1194,9 @@ async function runCommand(command) {
       return;
     case "runtime:control-pack":
       printRuntimeControlPack();
+      return;
+    case "runtime:signal-pack":
+      printRuntimeSignalPack();
       return;
     case "runtime:handoffs":
       printRuntimeHandoffs();

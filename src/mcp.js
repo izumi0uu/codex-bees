@@ -46,6 +46,7 @@ import {
   runtimeRecoveryPack,
   runtimeRecovery,
   runtimeReviewPack,
+  runtimeSignalPack,
   runtimeSummaryPack,
   runtimeVerifierPack,
   runtimeWorkspacePack,
@@ -158,6 +159,16 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_signal_pack",
+    description: "Build the signal-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "integer" }
+      }
     }
   },
   {
@@ -1141,6 +1152,10 @@ function handleRequest(message) {
 
     if (name === "runtime_control_pack") {
       return createSuccess(id, createTextPayload({ controlPack: runtimeControlPack() }));
+    }
+
+    if (name === "runtime_signal_pack") {
+      return createSuccess(id, createTextPayload({ signalPack: runtimeSignalPack({ limit: params.arguments?.limit }) }));
     }
 
     if (name === "runtime_handoffs") {
