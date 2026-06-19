@@ -1265,10 +1265,12 @@ export function runtimeRecoveryPack() {
   const handoffs = runtimeHandoffs();
   const focus = runtimeFocus();
   const recommendedSurface = deriveRuntimeRecoveryPackSurface({ recovery, handoffs, focus });
+  const recommendedReason = deriveRuntimeRecoveryPackReason({ recovery, handoffs, focus });
 
   return {
     kind: "runtime_recovery_pack",
     recommendedSurface,
+    recommendedReason,
     focus,
     overview: {
       recovery: recovery?.counts ?? null,
@@ -4374,6 +4376,28 @@ function deriveRuntimeRecoveryPackSurface({ recovery, handoffs, focus }) {
     return "runtime:focus";
   }
   return "runtime:recovery";
+}
+
+function deriveRuntimeRecoveryPackReason({ recovery, handoffs, focus }) {
+  if (recovery?.next?.recoveryType === "blocked_recovery") {
+    return "blocked_recovery_priority";
+  }
+  if (recovery?.next?.recoveryType === "changes_requested") {
+    return "changes_requested_priority";
+  }
+  if (recovery?.next?.recoveryType === "released_repickup") {
+    return "released_repickup_priority";
+  }
+  if ((handoffs?.counts?.blockedRecoveries ?? 0) > 0) {
+    return "blocked_recovery_handoff_priority";
+  }
+  if ((handoffs?.counts?.ownerClaims ?? 0) > 0) {
+    return "owner_claim_handoff_priority";
+  }
+  if (focus?.focus?.type === "blocked_task") {
+    return "blocked_focus_priority";
+  }
+  return "default_recovery_priority";
 }
 
 function buildRuntimeRecoveryPackSummary(recommendedSurface, recovery, focus) {
