@@ -591,6 +591,7 @@ const runtimeReviewPackInitial = JSON.parse(
 if (
   runtimeReviewPackInitial.kind !== "runtime_review_pack" ||
   !runtimeReviewPackInitial.recommendedSurface ||
+  typeof runtimeReviewPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeReviewPackInitial.overview ||
   !runtimeReviewPackInitial.surfaces
 ) {
@@ -3828,6 +3829,10 @@ const runtimeReviewPackCli = JSON.parse(
 if (
   runtimeReviewPackCli.recommendedSurface !== "runtime:verifier-pack" ||
   runtimeReviewPackCli.recommendedReason !== "verifier_bundle_available" ||
+  runtimeReviewPackCli.metadata?.hasReview !== true ||
+  runtimeReviewPackCli.metadata?.hasRole !== true ||
+  runtimeReviewPackCli.metadata?.hasVerifier !== true ||
+  runtimeReviewPackCli.counts?.surfacedNextEntries !== Object.values(runtimeReviewPackCli.next ?? {}).filter(Boolean).length ||
   runtimeReviewPackCli.next?.review?.taskId !== "task-2" ||
   runtimeReviewPackCli.next?.verifier?.decision?.id !== "task-2" ||
   runtimeReviewPackCli.overview?.review?.totalPendingReview !== 1 ||

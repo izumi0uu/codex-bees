@@ -1546,6 +1546,11 @@ export function runtimeReviewPack(input = {}) {
     : null;
   const recommendedSurface = deriveRuntimeReviewPackSurface({ review, roles, verifierPack });
   const recommendedReason = deriveRuntimeReviewPackReason({ review, roles, verifierPack });
+  const nextEntries = {
+    review: review?.next ?? null,
+    role: roles?.next ?? null,
+    verifier: verifierPack?.next ?? null
+  };
 
   return {
     kind: "runtime_review_pack",
@@ -1553,16 +1558,20 @@ export function runtimeReviewPack(input = {}) {
     workerId: input.workerId ?? null,
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasReview: Boolean(review?.next),
+      hasRole: Boolean(roles?.next),
+      hasVerifier: Boolean(verifierPack?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       review: review?.counts ?? null,
       roles: roles?.counts ?? null,
       verifier: verifierPack?.overview ?? null
     },
-    next: {
-      review: review?.next ?? null,
-      role: roles?.next ?? null,
-      verifier: verifierPack?.next ?? null
-    },
+    next: nextEntries,
     surfaces: {
       review,
       roles,
