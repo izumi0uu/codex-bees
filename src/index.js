@@ -25,6 +25,7 @@ import {
   queueSwarmTasks,
   releaseTask,
   swarmOverview,
+  syncSwarmStatus,
   searchMemories,
   stateFilePath,
   storeMemory,
@@ -470,6 +471,16 @@ function handleSwarmDispatch() {
   write(JSON.stringify({ dispatched: result }, null, 2) + "\n");
 }
 
+function handleSwarmSync() {
+  const id = requireOption("--id");
+  const result = syncSwarmStatus(id);
+  if (!result) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ synced: result }, null, 2) + "\n");
+}
+
 function handleSwarmStart() {
   const id = requireOption("--id");
   const swarm = activateSwarm({
@@ -693,6 +704,9 @@ async function runCommand(command) {
       return;
     case "swarm:dispatch":
       handleSwarmDispatch();
+      return;
+    case "swarm:sync":
+      handleSwarmSync();
       return;
     case "swarm:start":
       handleSwarmStart();
