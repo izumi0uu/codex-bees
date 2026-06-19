@@ -99,6 +99,9 @@ export function listTasksView() {
   return {
     kind: "task_view",
     recommendedReason,
+    counts: {
+      totalTasks: tasks.length
+    },
     tasks
   };
 }

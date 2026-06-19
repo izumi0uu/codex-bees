@@ -757,6 +757,7 @@ const listedTasks = JSON.parse(run("task-list-verify", ["./src/index.js", "task:
 if (
   listedTasks.kind !== "task_view" ||
   listedTasks.recommendedReason !== "task_list_has_results" ||
+  listedTasks.counts?.totalTasks !== listedTasks.tasks.length ||
   !Array.isArray(listedTasks.tasks)
 ) {
   console.error("[smoke:task-list] expected CLI task list view payload");
@@ -5374,6 +5375,7 @@ if (
   taskApprovePayload?.approved?.task?.reviewedBy !== "tester" ||
   taskListPayload?.tasks?.kind !== "task_view" ||
   taskListPayload?.tasks?.recommendedReason !== "task_list_has_results" ||
+  taskListPayload?.tasks?.counts?.totalTasks !== taskListPayload?.tasks?.tasks?.length ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||

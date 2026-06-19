@@ -150,7 +150,7 @@ Task metadata can carry lane-ready execution detail:
 
 `task:check` validates that a task is actually claimable before a worker takes it. A ready task needs a title, owner, verifier, scope, acceptance, and verification metadata; claiming an incomplete task is rejected. Owner and verifier must also match shipped local agent roles from `.codex/agents`, and the surface emits a machine-readable `recommendedReason` so automation can distinguish claim-ready tasks, role mismatches, claimed-task metadata gaps, and general validation failures without reparsing issue arrays by hand.
 
-`task:list` / `task_list` return the explicit task retrieval view. They emit `kind: "task_view"` with `recommendedReason: "task_list_has_results"` or `recommendedReason: "task_list_empty"` so automation can distinguish non-empty and empty task listings without inferring from array length alone.
+`task:list` / `task_list` return the explicit task retrieval view. They emit `kind: "task_view"` with `recommendedReason: "task_list_has_results"` or `recommendedReason: "task_list_empty"`, plus `counts.totalTasks`, so automation can distinguish non-empty and empty task listings and read compact task cardinality without inferring only from array length.
 
 `task:get` / `task_get` return the explicit task detail view. They emit `kind: "task_detail"` with `recommendedReason: "task_detail_loaded"` so automation can distinguish one-task retrieval from list, brief, history, and report surfaces without inferring that only from nesting shape.
 
