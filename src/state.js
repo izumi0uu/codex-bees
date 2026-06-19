@@ -2380,6 +2380,7 @@ export function previewTaskAssignment(input = {}) {
       workerId: input.workerId,
       mode: normalizeNextMode(input.mode),
       outcome: "none",
+      recommendedReason: "no_assignment_preview",
       assignment: null,
       candidate: null,
       task: null,
@@ -2396,6 +2397,7 @@ export function previewTaskAssignment(input = {}) {
       workerId: input.workerId,
       mode: normalizeNextMode(input.mode),
       outcome: "error",
+      recommendedReason: "missing_assignment_task",
       assignment,
       candidate: null,
       task: null,
@@ -2414,6 +2416,7 @@ export function previewTaskAssignment(input = {}) {
     workerId: input.workerId,
     mode: normalizeNextMode(input.mode),
     outcome: candidate.relation === "owner_claimable" ? "claimable" : assignmentPickupOutcome(candidate.relation),
+    recommendedReason: deriveTaskAssignmentPreviewReason(candidate.relation),
     assignment,
     candidate,
     task,
@@ -4427,6 +4430,22 @@ function deriveTaskPickupReason(relation) {
     return "observe_without_action";
   }
   return "non_claim_followup";
+}
+
+function deriveTaskAssignmentPreviewReason(relation) {
+  if (relation === "owner_claimable") {
+    return "claimable_assignment_preview";
+  }
+  if (relation === "verifier_review") {
+    return "review_assignment_preview";
+  }
+  if (relation === "owner_claimed_by_worker") {
+    return "continue_assignment_preview";
+  }
+  if (relation === "owner_blocked") {
+    return "blocked_assignment_preview";
+  }
+  return "observe_assignment_preview";
 }
 
 function deriveTaskPickupPreviewReason(relation) {

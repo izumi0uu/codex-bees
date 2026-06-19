@@ -172,7 +172,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `task:inbox` / `task_inbox` give each shipped role a prioritized local work queue, and `task:next` / `task_next` resolve the single best next claim-or-review candidate with its full execution brief attached. They also emit a machine-readable `recommendedReason` so automation can distinguish between claimable owner work, continue/review/blocked candidates, observe-only states, and no-candidate fallback before mutating anything. This is the bridge from persisted coordination state to an actual Codex worker pickup loop.
 
-`task:assignment-preview` / `task_assignment_preview` provide the read-only leader-dispatch preview path: they show the next leader-assigned lane for one role, its execution brief, and the exact next command without mutating queue ownership.
+`task:assignment-preview` / `task_assignment_preview` provide the read-only leader-dispatch preview path: they show the next leader-assigned lane for one role, its execution brief, and the exact next command without mutating queue ownership. They also emit a machine-readable `recommendedReason` so automation can distinguish between claimable, review, continue, blocked, observe-only, missing-task, and no-assignment preview states before dispatching work.
 
 `task:assignment-pickup` / `task_assignment_pickup` provide the explicit leader-dispatch acceptance path: they pick the next leader-assigned lane for one role, claim it for the worker when it is dispatchable, and otherwise return the exact continue/review/release command for that assigned task instead of falling back to the broader inbox.
 
