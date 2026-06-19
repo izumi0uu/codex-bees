@@ -454,6 +454,17 @@ if (
   console.error("[smoke:worker-handoff] expected owner handoff package with current task context");
   process.exit(1);
 }
+const ownerCloseout = JSON.parse(
+  run("worker-closeout-owner", ["./src/index.js", "worker:closeout", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
+).closeout;
+if (
+  ownerCloseout.focus?.kind !== "active_task" ||
+  ownerCloseout.command !== "node ./src/index.js task:review --id task-1 --by review-worker" ||
+  ownerCloseout.report?.task?.id !== "task-1"
+) {
+  console.error("[smoke:worker-closeout] expected owner closeout bundle");
+  process.exit(1);
+}
 const reviewTaskHistory = JSON.parse(
   run("task-history-review-loop", ["./src/index.js", "task:history", "--id", "task-1"]).stdout
 ).history;
@@ -1331,6 +1342,17 @@ if (
   console.error("[smoke:worker-handoff] expected verifier handoff package");
   process.exit(1);
 }
+const verifierCloseout = JSON.parse(
+  run("worker-closeout-verifier", ["./src/index.js", "worker:closeout", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).closeout;
+if (
+  verifierCloseout.focus?.kind !== "review_task" ||
+  verifierCloseout.command !== "node ./src/index.js task:approve --id task-2 --by tester" ||
+  verifierCloseout.report?.task?.id !== "task-2"
+) {
+  console.error("[smoke:worker-closeout] expected verifier closeout bundle");
+  process.exit(1);
+}
 const ownerPickupClaim = JSON.parse(
   run("task-pickup-claim", ["./src/index.js", "task:pickup", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
 ).pickup;
@@ -1473,6 +1495,36 @@ if (
 ) {
   console.error("[smoke:worker-handoff-mcp] expected verifier handoff payload");
   console.error(workerHandoffMcp.stderr || workerHandoffMcp.stdout);
+  process.exit(1);
+}
+const workerCloseoutMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "worker_closeout",
+      arguments: { role: "tester", workerId: "tester-worker", mode: "verifier" }
+    }
+  })
+].join("\n") + "\n";
+const workerCloseoutMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: workerCloseoutMcpInput,
+  encoding: "utf8"
+});
+const workerCloseoutMcpLines = workerCloseoutMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const workerCloseoutMcpPayload = JSON.parse(JSON.parse(workerCloseoutMcpLines[1]).result.content[0].text);
+if (
+  workerCloseoutMcp.status !== 0 ||
+  workerCloseoutMcpPayload.closeout?.focus?.kind !== "review_task" ||
+  workerCloseoutMcpPayload.closeout?.report?.task?.id !== "task-2"
+) {
+  console.error("[smoke:worker-closeout-mcp] expected verifier closeout bundle");
+  console.error(workerCloseoutMcp.stderr || workerCloseoutMcp.stdout);
   process.exit(1);
 }
 const inboxHistory = JSON.parse(
