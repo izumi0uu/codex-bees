@@ -348,7 +348,39 @@ if (!swarmTasks.every((task) => task.swarmId === "swarm-1")) {
   console.error("[smoke:swarm-queue] expected swarm task linkage");
   process.exit(1);
 }
-run("swarm-done", ["./src/index.js", "swarm:done", "--id", "swarm-1", "--owner", "leader"]);
+run("swarm-task-1-done", ["./src/index.js", "task:done", "--id", "task-1", "--by", "worker-alpha"]);
+const dispatchedLaneTwo = JSON.parse(
+  run("swarm-dispatch-second", [
+    "./src/index.js",
+    "swarm:dispatch",
+    "--id",
+    "swarm-1",
+    "--by",
+    "worker-beta",
+    "--owner",
+    "executor"
+  ]).stdout
+).dispatched;
+if (dispatchedLaneTwo.task.id !== "task-2") {
+  console.error("[smoke:swarm-dispatch] expected second lane dispatch to task-2");
+  process.exit(1);
+}
+run("swarm-task-2-done", ["./src/index.js", "task:done", "--id", "task-2", "--by", "worker-beta"]);
+const swarmOverviewReadyToComplete = JSON.parse(
+  run("swarm-overview-ready-to-complete", ["./src/index.js", "swarm:overview", "--id", "swarm-1"]).stdout
+).overview;
+if (!swarmOverviewReadyToComplete.readyToComplete || swarmOverviewReadyToComplete.derivedStatus !== "completed") {
+  console.error("[smoke:swarm-overview] expected completion readiness and derived completed status");
+  process.exit(1);
+}
+const syncedSwarm = JSON.parse(
+  run("swarm-sync", ["./src/index.js", "swarm:sync", "--id", "swarm-1"]).stdout
+).synced;
+if (syncedSwarm.swarm.status !== "completed") {
+  console.error("[smoke:swarm-sync] expected synced completed swarm status");
+  process.exit(1);
+}
+run("swarm-dispatch-none", ["./src/index.js", "swarm:dispatch", "--id", "swarm-1", "--by", "worker-gamma"], 1);
 run("swarm-queue-invalid", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
 
 rmSync(".codex-bees", { recursive: true, force: true });
@@ -401,13 +433,31 @@ const swarmMcpInput = [
     id: 5,
     method: "tools/call",
     params: {
+      name: "task_done",
+      arguments: { id: "task-1", claimedBy: "mcp-worker" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
+      name: "swarm_sync",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 7,
+    method: "tools/call",
+    params: {
       name: "swarm_overview",
       arguments: { id: "swarm-1" }
     }
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 6,
+    id: 8,
     method: "tools/call",
     params: {
       name: "task_list",
@@ -424,19 +474,20 @@ const swarmMcpLines = swarmMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const swarmOverviewResult = swarmMcpLines.length >= 5 ? JSON.parse(swarmMcpLines[4]) : null;
+const swarmOverviewResult = swarmMcpLines.length >= 7 ? JSON.parse(swarmMcpLines[6]) : null;
 const swarmOverviewText = swarmOverviewResult?.result?.content?.[0]?.text;
 const swarmOverviewPayload = swarmOverviewText ? JSON.parse(swarmOverviewText) : null;
-const swarmTaskListResult = swarmMcpLines.length >= 6 ? JSON.parse(swarmMcpLines[5]) : null;
+const swarmTaskListResult = swarmMcpLines.length >= 8 ? JSON.parse(swarmMcpLines[7]) : null;
 const swarmTaskListText = swarmTaskListResult?.result?.content?.[0]?.text;
 const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
   !mcpSwarmTask ||
-  swarmOverviewPayload?.overview?.counts?.claimed !== 1
+  swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||
+  swarmOverviewPayload?.overview?.readyToComplete !== true
 ) {
-  console.error("[smoke:swarm-mcp] expected queued and dispatched MCP swarm task");
+  console.error("[smoke:swarm-mcp] expected synced completion-aware MCP swarm overview");
   console.error(swarmMcp.stderr || swarmMcp.stdout);
   process.exit(1);
 }
