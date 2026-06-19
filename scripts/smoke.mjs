@@ -165,6 +165,16 @@ if (
   console.error("[smoke:runtime-dispatch] expected top-level runtime dispatch");
   process.exit(1);
 }
+const runtimeReviewInitial = JSON.parse(
+  run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
+).review;
+if (
+  runtimeReviewInitial.kind !== "runtime_review" ||
+  !Array.isArray(runtimeReviewInitial.groups)
+) {
+  console.error("[smoke:runtime-review] expected top-level runtime review");
+  process.exit(1);
+}
 const runtimeAlertsInitial = JSON.parse(
   run("runtime-alerts-initial", ["./src/index.js", "runtime:alerts"]).stdout
 ).alerts;
@@ -1329,6 +1339,19 @@ if (
   console.error("[smoke:runtime-dispatch] expected CLI owner-grouped dispatch workspace");
   process.exit(1);
 }
+const runtimeReviewCli = JSON.parse(
+  run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
+).review;
+if (
+  runtimeReviewCli.counts?.verifierGroups !== 1 ||
+  runtimeReviewCli.counts?.totalPendingReview !== 1 ||
+  runtimeReviewCli.next?.taskId !== "task-2" ||
+  runtimeReviewCli.groups?.[0]?.verifier?.id !== "tester" ||
+  runtimeReviewCli.groups?.[0]?.tasks?.[0]?.taskBrief?.task?.id !== "task-2"
+) {
+  console.error("[smoke:runtime-review] expected CLI verifier-grouped review workspace");
+  process.exit(1);
+}
 const runtimeAlertsCli = JSON.parse(
   run("runtime-alerts-cli", ["./src/index.js", "runtime:alerts"]).stdout
 ).alerts;
@@ -1417,6 +1440,38 @@ if (
 ) {
   console.error("[smoke:runtime-dispatch-mcp] expected MCP runtime dispatch");
   console.error(runtimeDispatchMcp.stderr || runtimeDispatchMcp.stdout);
+  process.exit(1);
+}
+const runtimeReviewMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_review",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeReviewMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeReviewMcpInput,
+  encoding: "utf8"
+});
+const runtimeReviewMcpLines = runtimeReviewMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeReviewMcpPayload = JSON.parse(JSON.parse(runtimeReviewMcpLines[1]).result.content[0].text);
+if (
+  runtimeReviewMcp.status !== 0 ||
+  runtimeReviewMcpPayload.review?.counts?.verifierGroups !== 1 ||
+  runtimeReviewMcpPayload.review?.counts?.totalPendingReview !== 1 ||
+  runtimeReviewMcpPayload.review?.next?.taskId !== "task-2" ||
+  runtimeReviewMcpPayload.review?.groups?.[0]?.verifier?.id !== "tester"
+) {
+  console.error("[smoke:runtime-review-mcp] expected MCP runtime review");
+  console.error(runtimeReviewMcp.stderr || runtimeReviewMcp.stdout);
   process.exit(1);
 }
 const runtimeAlertsMcpInput = [
