@@ -252,7 +252,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:role-pack` / `runtime_role_pack` provide the role-oriented package: role pressure plus optional session, owner, and verifier runtime views combined into one role-scoped workbench with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between session-driven priority, explicit role-action pressure, verifier priority, and owner priority without parsing the pack summary.
 
-`runtime:session-pack` / `runtime_session_pack` provide the per-worker session package: worker, owner, verifier, and role-pressure views combined into one personal runtime entrypoint with a recommended next surface.
+`runtime:session-pack` / `runtime_session_pack` provide the per-worker session package: worker, owner, verifier, and role-pressure views combined into one personal runtime entrypoint with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between worker/owner/verifier priority, review-next pressure, and pickup-next pressure without parsing the pack summary.
 
 `runtime:signal-pack` / `runtime_signal_pack` provide the signal-oriented package: focus, alerts, activity, and role pressure combined into one monitoring entrypoint with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between blocked/review focus, alert pressure, role pressure, and plain recent activity visibility without parsing summary prose.
 

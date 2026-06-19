@@ -1590,6 +1590,14 @@ export function runtimeSessionPack(input = {}) {
     role: input.role,
     workerId: input.workerId
   });
+  const recommendedReason = deriveRuntimeSessionPackReason({
+    workerPack,
+    ownerPack,
+    verifierPack,
+    roleEntry,
+    role: input.role,
+    workerId: input.workerId
+  });
 
   return {
     kind: "runtime_session_pack",
@@ -1597,6 +1605,7 @@ export function runtimeSessionPack(input = {}) {
     workerId: input.workerId,
     mode: input.mode ?? "any",
     recommendedSurface,
+    recommendedReason,
     overview: {
       worker: workerPack?.overview ?? null,
       owner: ownerPack?.overview ?? null,
@@ -4707,6 +4716,28 @@ function deriveRuntimeSessionPackSurface({ workerPack, ownerPack, verifierPack, 
     return workerPack.recommendedSurface;
   }
   return "worker:session";
+}
+
+function deriveRuntimeSessionPackReason({ workerPack, ownerPack, verifierPack, roleEntry }) {
+  if (workerPack?.recommendedSurface && workerPack.recommendedSurface !== "worker:session") {
+    return "worker_priority";
+  }
+  if (ownerPack?.recommendedSurface && ownerPack.recommendedSurface !== "worker:session") {
+    return "owner_priority";
+  }
+  if (verifierPack?.recommendedSurface && verifierPack.recommendedSurface !== "runtime:review") {
+    return "verifier_priority";
+  }
+  if (verifierPack?.next?.review?.taskId || (roleEntry?.counts?.pendingReview ?? 0) > 0) {
+    return "review_next_priority";
+  }
+  if (ownerPack?.next?.candidate?.id || workerPack?.next?.candidate?.id || (roleEntry?.counts?.ownerClaimable ?? 0) > 0) {
+    return "pickup_next_priority";
+  }
+  if (workerPack?.recommendedSurface) {
+    return "worker_visible";
+  }
+  return "default_session_priority";
 }
 
 function buildRuntimeSessionPackSummary(recommendedSurface, workerPack, ownerPack, verifierPack, roleEntry) {

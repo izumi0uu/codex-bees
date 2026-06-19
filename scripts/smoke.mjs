@@ -2833,6 +2833,7 @@ const runtimeSessionPackCli = JSON.parse(
 ).sessionPack;
 if (
   runtimeSessionPackCli.recommendedSurface !== "worker:closeout" ||
+  runtimeSessionPackCli.recommendedReason !== "worker_priority" ||
   runtimeSessionPackCli.next?.verifier?.review?.taskId !== "task-2" ||
   runtimeSessionPackCli.next?.role?.lane !== "verifier" ||
   runtimeSessionPackCli.surfaces?.verifierPack?.recommendedSurface !== "worker:closeout"
@@ -3561,6 +3562,7 @@ const runtimeSessionPackMcpPayload = JSON.parse(JSON.parse(runtimeSessionPackMcp
 if (
   runtimeSessionPackMcp.status !== 0 ||
   runtimeSessionPackMcpPayload.sessionPack?.recommendedSurface !== "worker:closeout" ||
+  runtimeSessionPackMcpPayload.sessionPack?.recommendedReason !== "worker_priority" ||
   runtimeSessionPackMcpPayload.sessionPack?.next?.verifier?.review?.taskId !== "task-2" ||
   runtimeSessionPackMcpPayload.sessionPack?.next?.role?.lane !== "verifier"
 ) {
