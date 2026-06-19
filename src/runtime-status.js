@@ -154,6 +154,7 @@ export function getRuntimeStatus({ version, toolCount }) {
     cli: [...new Set(capabilities.flatMap((capability) => capability.preferredEntryPoints?.cli ?? []))].slice(0, 6),
     mcp: [...new Set(capabilities.flatMap((capability) => capability.preferredEntryPoints?.mcp ?? []))].slice(0, 6)
   };
+  const useCases = [...new Set(capabilities.flatMap((capability) => capability.useCases ?? []))].slice(0, 6);
 
   return {
     product: "codex-bees",
@@ -175,6 +176,7 @@ export function getRuntimeStatus({ version, toolCount }) {
     },
     highlights,
     recommendedEntryPoints,
+    useCases,
     catalog,
     capabilities: capabilities.map((capability) => ({
       id: capability.id,

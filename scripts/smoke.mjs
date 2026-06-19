@@ -134,9 +134,11 @@ if (
   !Array.isArray(runtimeStatus.highlights) ||
   !runtimeStatus.highlights.includes("runtime:queue-pack recommends launch context before raw leader queue review") ||
   runtimeStatus.recommendedEntryPoints?.cli?.[0] !== "leader:assignment-launch-plan" ||
-  runtimeStatus.recommendedEntryPoints?.mcp?.[0] !== "leader_assignment_launch_plan"
+  runtimeStatus.recommendedEntryPoints?.mcp?.[0] !== "leader_assignment_launch_plan" ||
+  !Array.isArray(runtimeStatus.useCases) ||
+  !runtimeStatus.useCases.includes("bring multiple workers online in leader-defined order")
 ) {
-  console.error("[smoke:status] expected runtime summary counts, highlights, and recommended entrypoints");
+  console.error("[smoke:status] expected runtime summary counts, highlights, recommended entrypoints, and use cases");
   process.exit(1);
 }
 const runtimeCapabilities = JSON.parse(run("capabilities-verify", ["./src/index.js", "capabilities"]).stdout).capabilities;
