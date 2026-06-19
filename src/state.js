@@ -345,9 +345,11 @@ export function swarmBundle(id) {
       report: task ? taskReport(task.id) : null
     };
   });
+  const recommendedReason = deriveSwarmBundleReason({ overview, laneBundles });
 
   return {
     kind: "swarm_bundle",
+    recommendedReason,
     swarm: overview.swarm,
     brief,
     counts: overview.counts,
@@ -4691,6 +4693,25 @@ function deriveSwarmBriefReason(recommended) {
   }
   if (typeof action === "string" && action.startsWith("unblock_lane:")) {
     return "blocked_lane_ready";
+  }
+  return "swarm_state_visible";
+}
+
+function deriveSwarmBundleReason({ overview, laneBundles }) {
+  if (overview?.readyToComplete) {
+    return "swarm_ready_to_complete";
+  }
+  const reviewLane = laneBundles?.find((lane) => lane.queueStatus === "ready_for_review") ?? null;
+  if (reviewLane?.lane) {
+    return "review_lane_waiting";
+  }
+  const claimedLane = laneBundles?.find((lane) => lane.queueStatus === "claimed") ?? null;
+  if (claimedLane?.lane) {
+    return "claimed_lane_active";
+  }
+  const dispatchLane = laneBundles?.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null;
+  if (dispatchLane?.lane) {
+    return "dispatch_lane_ready";
   }
   return "swarm_state_visible";
 }

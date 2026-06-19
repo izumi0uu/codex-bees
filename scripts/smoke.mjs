@@ -1480,6 +1480,7 @@ const swarmBundleCli = JSON.parse(
 ).bundle;
 if (
   swarmBundleCli.kind !== "swarm_bundle" ||
+  swarmBundleCli.recommendedReason !== "swarm_ready_to_complete" ||
   swarmBundleCli.lanes?.length !== 2 ||
   swarmBundleCli.lanes?.[0]?.report?.task?.id !== "task-1" ||
   swarmBundleCli.summary?.includes("ready to complete") !== true
@@ -4171,6 +4172,7 @@ if (
   !mcpSwarmTask ||
   mcpSwarmTask.reviewedBy !== "tester" ||
   mcpSwarmTask.reviewOutcome !== "approved" ||
+  swarmBundlePayload?.bundle?.recommendedReason !== "swarm_ready_to_complete" ||
   swarmBundlePayload?.bundle?.lanes?.[0]?.report?.task?.id !== "task-1" ||
   swarmCloseoutPayload?.closeout?.recommendedReason !== "swarm_closeout_ready" ||
   swarmCloseoutPayload?.closeout?.command !== "node ./src/index.js swarm:done --id swarm-1" ||

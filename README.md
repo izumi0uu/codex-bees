@@ -204,6 +204,8 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `swarm:blockers` / `swarm_blockers` add the blocker layer for swarm leadership: blocked lanes only, their task reports, and the next unblock/requeue action. They also emit a machine-readable `recommendedReason` so automation can distinguish a single unblock-ready lane, multiple blocked lanes, and empty blocker state without reparsing blocker arrays.
 
+`swarm:bundle` / `swarm_bundle` package the leader-ready orchestration view with lane reports and a summary sentence. They also emit a machine-readable `recommendedReason` so automation can distinguish ready-to-complete swarms, review-waiting lanes, active claimed lanes, runnable dispatch lanes, and plain tracked swarm state without reparsing lane queues.
+
 `swarm:dispatch-bundle` / `swarm_dispatch_bundle` add the dispatch layer for swarm leadership: the next runnable lane, its task brief, and the concrete dispatch command. They also emit a machine-readable `recommendedReason` so automation can distinguish runnable dispatch lanes, ready-to-complete swarms, passive dispatchable visibility, and empty dispatch state without reparsing lane payloads.
 
 `catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
