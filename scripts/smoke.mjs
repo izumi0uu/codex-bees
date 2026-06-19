@@ -362,6 +362,13 @@ if (ownerNext.candidate?.id !== "task-1" || ownerNext.candidate?.relation !== "o
   console.error("[smoke:task-next] expected owner next candidate to continue claimed task");
   process.exit(1);
 }
+const ownerPickup = JSON.parse(
+  run("task-pickup-owner", ["./src/index.js", "task:pickup", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
+).pickup;
+if (ownerPickup.outcome !== "continue" || ownerPickup.task?.id !== "task-1" || ownerPickup.command !== "node ./src/index.js task:review --id task-1 --by review-worker") {
+  console.error("[smoke:task-pickup] expected claimed task to resume with review follow-up");
+  process.exit(1);
+}
 
 rmSync(".codex-bees", { recursive: true, force: true });
 const queuedPlan = run("queue-plan-cli", [
@@ -1114,6 +1121,18 @@ if (cliNext.candidate?.id !== "task-2" || cliNext.brief?.recommendedNextAction !
   console.error("[smoke:task-next] expected verifier next task to include execution brief");
   process.exit(1);
 }
+const ownerPickupClaim = JSON.parse(
+  run("task-pickup-claim", ["./src/index.js", "task:pickup", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
+).pickup;
+if (
+  ownerPickupClaim.outcome !== "claimed" ||
+  ownerPickupClaim.task?.id !== "task-1" ||
+  ownerPickupClaim.task?.claimedBy !== "worker-owner" ||
+  ownerPickupClaim.brief?.task?.queueStatus !== "claimed"
+) {
+  console.error("[smoke:task-pickup] expected claimable task to auto-claim for owner");
+  process.exit(1);
+}
 const inboxMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -1153,6 +1172,37 @@ if (
 ) {
   console.error("[smoke:task-inbox-mcp] expected inbox and next-task MCP surfaces");
   console.error(inboxMcp.stderr || inboxMcp.stdout);
+  process.exit(1);
+}
+const pickupMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_pickup",
+      arguments: { role: "tester", workerId: "tester-worker", mode: "verifier" }
+    }
+  })
+].join("\n") + "\n";
+const pickupMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: pickupMcpInput,
+  encoding: "utf8"
+});
+const pickupMcpLines = pickupMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const pickupMcpPayload = JSON.parse(JSON.parse(pickupMcpLines[1]).result.content[0].text);
+if (
+  pickupMcp.status !== 0 ||
+  pickupMcpPayload.pickup?.outcome !== "review" ||
+  pickupMcpPayload.pickup?.candidate?.id !== "task-2" ||
+  pickupMcpPayload.pickup?.command !== "node ./src/index.js task:approve --id task-2 --by tester"
+) {
+  console.error("[smoke:task-pickup-mcp] expected review pickup payload");
+  console.error(pickupMcp.stderr || pickupMcp.stdout);
   process.exit(1);
 }
 
