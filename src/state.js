@@ -1317,9 +1317,10 @@ export function runtimeQueuePack() {
 export function runtimeWorkspacePack() {
   const dashboard = runtimeDashboard();
   const dispatch = runtimeDispatch();
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle();
   const review = runtimeReview();
   const recovery = runtimeRecovery();
-  const recommendedSurface = deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, review, recovery });
+  const recommendedSurface = deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, review, recovery });
 
   return {
     kind: "runtime_workspace_pack",
@@ -1327,22 +1328,25 @@ export function runtimeWorkspacePack() {
     overview: {
       dashboard: dashboard?.counts ?? null,
       dispatch: dispatch?.counts ?? null,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
       review: review?.counts ?? null,
       recovery: recovery?.counts ?? null
     },
     next: {
       dashboard: dashboard?.leader?.queue?.next ?? null,
       dispatch: dispatch?.next ?? null,
+      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
       review: review?.next ?? null,
       recovery: recovery?.next ?? null
     },
     surfaces: {
       dashboard,
       dispatch,
+      assignmentDispatchBundle,
       review,
       recovery
     },
-    summary: buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, review, recovery)
+    summary: buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, assignmentDispatchBundle, review, recovery)
   };
 }
 
@@ -1590,9 +1594,10 @@ export function runtimeRolePack(input = {}) {
 export function runtimeExecutionPack() {
   const focus = runtimeFocus();
   const dispatch = runtimeDispatch();
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle();
   const roles = runtimeRoles();
   const queuePack = runtimeQueuePack();
-  const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, roles, queuePack });
+  const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, roles, queuePack });
 
   return {
     kind: "runtime_execution_pack",
@@ -1600,22 +1605,25 @@ export function runtimeExecutionPack() {
     overview: {
       focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
       dispatch: dispatch?.counts ?? null,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
       roles: roles?.counts ?? null,
       queue: queuePack?.overview?.queue ?? null
     },
     next: {
       focus: focus?.focus ?? null,
       dispatch: dispatch?.next ?? null,
+      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
       role: roles?.next ?? null,
       queue: queuePack?.next?.queue ?? null
     },
     surfaces: {
       focus,
       dispatch,
+      assignmentDispatchBundle,
       roles,
       queuePack
     },
-    summary: buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, roles, queuePack)
+    summary: buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, assignmentDispatchBundle, roles, queuePack)
   };
 }
 
@@ -4248,7 +4256,10 @@ function buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboar
   return `Runtime queue pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
-function deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, review, recovery }) {
+function deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, review, recovery }) {
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "leader:assignment-dispatch-bundle";
+  }
   if ((dashboard?.counts?.blockedTasks ?? 0) > 0) {
     return "runtime:recovery";
   }
@@ -4267,8 +4278,9 @@ function deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, review, recove
   return "runtime:dashboard";
 }
 
-function buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, review, recovery) {
+function buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, assignmentDispatchBundle, review, recovery) {
   const detail =
+    assignmentDispatchBundle?.summary ??
     dashboard?.summary ??
     dispatch?.summary ??
     review?.summary ??
@@ -4442,7 +4454,10 @@ function buildRuntimeRolePackSummary(recommendedSurface, roleEntry, sessionPack,
   return `Runtime role pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
-function deriveRuntimeExecutionPackSurface({ focus, dispatch, roles, queuePack }) {
+function deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, roles, queuePack }) {
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "leader:assignment-dispatch-bundle";
+  }
   if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task" || focus?.focus?.type === "dispatch_lane") {
     return "runtime:focus";
   }
@@ -4458,14 +4473,19 @@ function deriveRuntimeExecutionPackSurface({ focus, dispatch, roles, queuePack }
   return "runtime:focus";
 }
 
-function buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, roles, queuePack) {
+function buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, assignmentDispatchBundle, roles, queuePack) {
   const detail =
+    focus?.focus?.type === "dispatch_lane" ? focus?.summary :
+    undefined;
+  const resolvedDetail =
+    detail ??
+    assignmentDispatchBundle?.summary ??
     focus?.summary ??
     dispatch?.summary ??
     roles?.summary ??
     queuePack?.summary ??
     "Runtime execution pack has no current execution detail.";
-  return `Runtime execution pack recommends ${recommendedSurface} next. ${detail}`;
+  return `Runtime execution pack recommends ${recommendedSurface} next. ${resolvedDetail}`;
 }
 
 function deriveRuntimePickupPackSurface({ session, pickup, next, rolePack, role, workerId, mode }) {
