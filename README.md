@@ -102,6 +102,7 @@ node ./src/index.js worker:closeout --role executor --worker worker-1 --mode own
 node ./src/index.js verifier:bundle --role tester --worker tester-1
 node ./src/index.js leader:assignment-dispatch --role executor --worker worker-1
 node ./src/index.js leader:assignment-dispatch-pack
+node ./src/index.js leader:assignment-dispatch-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js leader:assignments
 node ./src/index.js leader:queue
 node ./src/index.js leader:workspace
@@ -178,7 +179,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `leader:assignment-dispatch` / `leader_assignment_dispatch` provide the explicit leader-to-worker handoff package for one assignment: the chosen lane assignment plus the exact preview and pickup commands the target worker should run next.
 
-`leader:assignment-dispatch-pack` / `leader_assignment_dispatch_pack` provide the batch leader handoff package: one worker-targeted dispatch package per owner group so multiple workers can be started in parallel without re-deriving commands by hand.
+`leader:assignment-dispatch-pack` / `leader_assignment_dispatch_pack` provide the batch leader handoff package: one worker-targeted dispatch package per owner group so multiple workers can be started in parallel without re-deriving commands by hand. Pass `--workers` on CLI or `workerIds` over MCP to inject real role-to-worker mappings into the generated preview and pickup commands.
 
 `leader:workspace` / `leader_workspace` provide the symmetric orchestration artifact for the leader lane: multi-swarm counts, prioritized swarm focus, the next recommended action, and an embedded deep `swarm:bundle` for the current focus swarm.
 
