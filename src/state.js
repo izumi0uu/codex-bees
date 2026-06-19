@@ -579,6 +579,34 @@ export function workerCloseout(input = {}) {
   };
 }
 
+export function verifierBundle(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const normalized = {
+    ...input,
+    mode: "verifier"
+  };
+  const session = workerSession(normalized);
+  const handoff = workerHandoff(normalized);
+  const reviewSnapshot = session?.reviewQueue?.[0] ?? null;
+  const report = reviewSnapshot?.summary?.id ? taskReport(reviewSnapshot.summary.id) : null;
+
+  return {
+    kind: "verifier_bundle",
+    role: describeRole(input.role),
+    workerId: input.workerId,
+    handoff,
+    currentTask: reviewSnapshot?.summary ?? null,
+    report,
+    recentHistory: reviewSnapshot?.recentHistory ?? [],
+    recentAnnotations: reviewSnapshot?.recentAnnotations ?? [],
+    commands: buildVerifierDecisionCommands(reviewSnapshot?.summary, input.role),
+    summary: buildVerifierBundleSummary(reviewSnapshot?.summary, input.role, input.workerId)
+  };
+}
+
 export function validateTask(id) {
   const task = loadState().tasks.map(normalizeTask).find((item) => item.id === id);
   if (!task) {
@@ -1569,6 +1597,30 @@ function buildWorkerCloseoutSummary(handoff, report) {
     return `Task ${handoff.currentTask.id} is blocked and should be released or clarified before closeout.`;
   }
   return `Task ${handoff.currentTask.id} has a closeout bundle ready for the next actor.`;
+}
+
+function buildVerifierDecisionCommands(taskSummary, role) {
+  if (!taskSummary?.id) {
+    return {
+      approve: null,
+      rejectToClaimed: null,
+      rejectToReleased: null
+    };
+  }
+
+  return {
+    approve: `node ./src/index.js task:approve --id ${taskSummary.id} --by ${role}`,
+    rejectToClaimed: `node ./src/index.js task:reject --id ${taskSummary.id} --by ${role} --status claimed --notes "<changes requested>"`,
+    rejectToReleased: `node ./src/index.js task:reject --id ${taskSummary.id} --by ${role} --status released --notes "<changes requested>"`
+  };
+}
+
+function buildVerifierBundleSummary(taskSummary, role, workerId) {
+  if (!taskSummary?.id) {
+    return `Verifier ${workerId} has no pending review target.`;
+  }
+
+  return `Verifier ${workerId} (${role}) can decide ${taskSummary.id} now with approve or changes-requested actions.`;
 }
 
 function pickupOutcome(relation) {
