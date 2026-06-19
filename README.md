@@ -102,6 +102,7 @@ node ./src/index.js worker:closeout --role executor --worker worker-1 --mode own
 node ./src/index.js verifier:bundle --role tester --worker tester-1
 node ./src/index.js leader:assignment-dispatch --role executor --worker worker-1
 node ./src/index.js leader:assignment-dispatch-bundle --workers '{"executor":"worker-executor","explore":"worker-explore"}'
+node ./src/index.js leader:assignment-launch-plan --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js leader:assignment-dispatch-pack
 node ./src/index.js leader:assignment-dispatch-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js leader:assignments
@@ -182,6 +183,8 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `leader:assignment-dispatch-bundle` / `leader_assignment_dispatch_bundle` provide the parallel startup bundle for the leader lane: a flattened launch queue across owner groups with real worker-targeted preview, pickup, worker-session, and runtime-assignment-pack commands when `--workers` / `workerIds` are supplied.
 
+`leader:assignment-launch-plan` / `leader_assignment_launch_plan` provide the leader-ready startup checklist: one ordered startup step per worker launch with the concrete runtime commands the leader should run first.
+
 `leader:assignment-dispatch-pack` / `leader_assignment_dispatch_pack` provide the batch leader handoff package: one worker-targeted dispatch package per owner group so multiple workers can be started in parallel without re-deriving commands by hand. Pass `--workers` on CLI or `workerIds` over MCP to inject real role-to-worker mappings into the generated preview and pickup commands.
 
 `leader:workspace` / `leader_workspace` provide the symmetric orchestration artifact for the leader lane: multi-swarm counts, prioritized swarm focus, the next recommended action, and an embedded deep `swarm:bundle` for the current focus swarm.
@@ -204,9 +207,9 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:dispatch` / `runtime_dispatch` provide the owner-grouped dispatch workspace: which owner roles have ready work, the next dispatch candidate for each role, and the task brief already attached for handoff.
 
-`runtime:dispatch-pack` / `runtime_dispatch_pack` provide the dispatch-oriented package: dispatch groups, multi-worker leader launch bundles when multiple owner groups are ready, role pressure, and next-actor handoffs combined into one leader/automation payload with a recommended next surface.
+`runtime:dispatch-pack` / `runtime_dispatch_pack` provide the dispatch-oriented package: dispatch groups, leader startup plans when multiple owner groups are ready, role pressure, and next-actor handoffs combined into one leader/automation payload with a recommended next surface.
 
-`runtime:execution-pack` / `runtime_execution_pack` provide the execution-oriented package: focus, dispatch, leader launch bundles when parallel startup is ready, role pressure, and queue control combined into one start-work entrypoint with a recommended next surface.
+`runtime:execution-pack` / `runtime_execution_pack` provide the execution-oriented package: focus, dispatch, leader startup plans when parallel startup is ready, role pressure, and queue control combined into one start-work entrypoint with a recommended next surface.
 
 `runtime:activity` / `runtime_activity` provide the recent event stream: claims, blocks, review handoffs, approvals, and changes-requested events compressed into one top-level chronological feed.
 
@@ -222,7 +225,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:handoffs` / `runtime_handoffs` provide the next-actor transfer workspace: queued pickups, blocked recoveries, and verifier decisions grouped by who should take the next action.
 
-`runtime:leader-pack` / `runtime_leader_pack` provide the leader-oriented package: leader workspace, leader queue, dispatch pressure, multi-worker leader launch bundles when parallel startup is ready, and closeout readiness combined into one role-shaped payload with a recommended next surface.
+`runtime:leader-pack` / `runtime_leader_pack` provide the leader-oriented package: leader workspace, leader queue, dispatch pressure, leader startup plans when parallel startup is ready, and closeout readiness combined into one role-shaped payload with a recommended next surface.
 
 `runtime:operator-pack` / `runtime_operator_pack` provide the operator-oriented package: current focus plus dashboard, alerts, handoffs, and closeout readiness combined into one top-level operator payload with a recommended next surface.
 
@@ -252,7 +255,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:verifier-pack` / `runtime_verifier_pack` provide the verifier-oriented package: review pressure, current verifier decision bundle, closeout-ready approval payload, and next review candidate combined into one role-scoped payload with a recommended next surface.
 
-`runtime:workspace-pack` / `runtime_workspace_pack` provide the orchestration workspace package: dashboard, dispatch, leader launch bundles when parallel startup is ready, review, and recovery combined into one broad control surface with a recommended next surface.
+`runtime:workspace-pack` / `runtime_workspace_pack` provide the orchestration workspace package: dashboard, dispatch, leader startup plans when parallel startup is ready, review, and recovery combined into one broad control surface with a recommended next surface.
 
 `runtime:worker-pack` / `runtime_worker_pack` provide the worker-oriented package: worker session, handoff, closeout, and next candidate combined into one role-scoped payload with a recommended next surface.
 
