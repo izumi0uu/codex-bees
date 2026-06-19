@@ -373,6 +373,74 @@ export function taskPickup(input = {}) {
   };
 }
 
+export function workerSession(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const role = input.role;
+  const workerId = input.workerId;
+  const mode = normalizeNextMode(input.mode);
+  const tasks = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => task.owner === role || task.verifier === role);
+
+  const activeOwned = tasks
+    .filter((task) => task.owner === role && task.claimedBy === workerId && task.queueStatus === "claimed")
+    .sort(compareTasksByUpdatedAt);
+  const blockedOwned = tasks
+    .filter((task) => task.owner === role && task.claimedBy === workerId && task.queueStatus === "blocked")
+    .sort(compareTasksByUpdatedAt);
+  const handoffsAwaitingReview = tasks
+    .filter((task) => task.owner === role && task.claimedBy === workerId && task.queueStatus === "ready_for_review")
+    .sort(compareTasksByUpdatedAt);
+  const reviewQueue = tasks
+    .filter((task) => task.verifier === role && task.queueStatus === "ready_for_review")
+    .sort(compareTasksByUpdatedAt);
+
+  const inbox = taskInbox({
+    role,
+    workerId,
+    mode,
+    limit: input.limit
+  });
+  const next = taskNext({
+    role,
+    workerId,
+    mode
+  });
+  const focus = recommendWorkerSessionFocus({
+    role,
+    workerId,
+    mode,
+    activeOwned,
+    blockedOwned,
+    handoffsAwaitingReview,
+    reviewQueue,
+    next
+  });
+
+  return {
+    kind: "worker_session",
+    role: describeRole(role),
+    workerId,
+    mode,
+    counts: {
+      activeOwned: activeOwned.length,
+      blockedOwned: blockedOwned.length,
+      handoffsAwaitingReview: handoffsAwaitingReview.length,
+      reviewQueue: reviewQueue.length
+    },
+    activeOwned: activeOwned.map((task) => buildSessionTaskSnapshot(task, role, workerId)),
+    blockedOwned: blockedOwned.map((task) => buildSessionTaskSnapshot(task, role, workerId)),
+    handoffsAwaitingReview: handoffsAwaitingReview.map((task) => buildSessionTaskSnapshot(task, role, workerId)),
+    reviewQueue: reviewQueue.map((task) => buildSessionTaskSnapshot(task, role, workerId)),
+    inbox,
+    next,
+    focus
+  };
+}
+
 export function validateTask(id) {
   const task = loadState().tasks.map(normalizeTask).find((item) => item.id === id);
   if (!task) {
@@ -1179,6 +1247,72 @@ function buildSwarmHandoff(overview, recommended) {
   return `Swarm ${overview.swarm.id} is active with bounded local coordination state.`;
 }
 
+function buildSessionTaskSnapshot(task, role, workerId) {
+  return {
+    summary: summarizeInboxTask(task, role, workerId),
+    brief: taskBrief(task.id),
+    recentHistory: (task.history ?? []).slice(-5)
+  };
+}
+
+function recommendWorkerSessionFocus(input) {
+  const activeTask = input.activeOwned[0];
+  if (activeTask) {
+    return {
+      kind: "active_task",
+      taskId: activeTask.id,
+      command: `node ./src/index.js task:review --id ${activeTask.id} --by ${input.workerId}`,
+      reason: "worker already owns active execution"
+    };
+  }
+
+  const reviewTask = input.reviewQueue[0];
+  if (reviewTask) {
+    return {
+      kind: "review_task",
+      taskId: reviewTask.id,
+      command: `node ./src/index.js task:approve --id ${reviewTask.id} --by ${input.role}`,
+      reason: "verifier has pending review work"
+    };
+  }
+
+  const blockedTask = input.blockedOwned[0];
+  if (blockedTask) {
+    return {
+      kind: "blocked_task",
+      taskId: blockedTask.id,
+      command: `node ./src/index.js task:release --id ${blockedTask.id} --by ${input.workerId}`,
+      reason: "worker has blocked owned work"
+    };
+  }
+
+  const handoffTask = input.handoffsAwaitingReview[0];
+  if (handoffTask) {
+    return {
+      kind: "awaiting_review",
+      taskId: handoffTask.id,
+      command: null,
+      reason: "worker has already handed this task to its verifier"
+    };
+  }
+
+  if (input.next?.candidate) {
+    return {
+      kind: "pickup_next",
+      taskId: input.next.candidate.id,
+      command: `node ./src/index.js task:pickup --role ${input.role} --worker ${input.workerId} --mode ${input.mode}`,
+      reason: "worker has no active task and can pick up the next candidate"
+    };
+  }
+
+  return {
+    kind: "idle",
+    taskId: null,
+    command: null,
+    reason: "no current or queued work for this worker session"
+  };
+}
+
 function pickupOutcome(relation) {
   if (relation === "owner_claimed_by_worker") {
     return "continue";
@@ -1285,6 +1419,10 @@ function sortNextCandidates(tasks, role, workerId, mode) {
       }
       return (left.createdAt ?? "").localeCompare(right.createdAt ?? "");
     });
+}
+
+function compareTasksByUpdatedAt(left, right) {
+  return (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");
 }
 
 function inboxPriority(task, role, workerId) {
