@@ -353,6 +353,46 @@ export function swarmBundle(id) {
   };
 }
 
+export function leaderWorkspace(input = {}) {
+  const filters = {
+    status: input.status,
+    topology: input.topology,
+    owner: input.owner
+  };
+  const overviews = listSwarmOverviews(filters);
+  const swarmEntries = overviews
+    .map((overview) => buildLeaderWorkspaceSwarmEntry(overview))
+    .sort(compareLeaderWorkspaceEntries);
+  const focusEntry = swarmEntries[0] ?? null;
+
+  return {
+    kind: "leader_workspace",
+    filters,
+    counts: {
+      totalSwarms: swarmEntries.length,
+      planned: swarmEntries.filter((entry) => entry.status === "planned").length,
+      active: swarmEntries.filter((entry) => entry.status === "active").length,
+      blocked: swarmEntries.filter((entry) => entry.status === "blocked").length,
+      completed: swarmEntries.filter((entry) => entry.status === "completed").length,
+      cancelled: swarmEntries.filter((entry) => entry.status === "cancelled").length,
+      readyToComplete: swarmEntries.filter((entry) => entry.readyToComplete).length,
+      dispatchable: swarmEntries.reduce((total, entry) => total + (entry.dispatchableCount ?? 0), 0),
+      pendingReview: swarmEntries.reduce((total, entry) => total + (entry.counts?.readyForReview ?? 0), 0)
+    },
+    swarms: swarmEntries,
+    focus: focusEntry
+      ? {
+          swarmId: focusEntry.id,
+          recommendedNextActor: focusEntry.recommendedNextActor,
+          recommendedNextAction: focusEntry.recommendedNextAction,
+          recommendedCommands: focusEntry.recommendedCommands,
+          bundle: swarmBundle(focusEntry.id)
+        }
+      : null,
+    summary: buildLeaderWorkspaceSummary(swarmEntries, focusEntry)
+  };
+}
+
 export function taskInbox(input = {}) {
   if (!input.role) {
     return null;
@@ -1535,6 +1575,63 @@ function buildSwarmBundleSummary(overview, laneBundles) {
   return `Swarm ${overview.swarm.id} remains active with ${overview.counts.totalLanes} tracked lanes.`;
 }
 
+function buildLeaderWorkspaceSwarmEntry(overview) {
+  const brief = swarmBrief(overview.swarm.id);
+  return {
+    id: overview.swarm.id,
+    objective: overview.swarm.objective,
+    topology: overview.swarm.topology,
+    status: overview.swarm.status,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    owner: overview.swarm.owner,
+    laneSource: overview.swarm.laneSource,
+    counts: overview.counts,
+    readyToComplete: overview.readyToComplete,
+    dispatchableCount: overview.dispatchableCount,
+    nextLane: overview.nextLane,
+    recommendedNextActor: brief?.recommendedNextActor ?? null,
+    recommendedNextAction: brief?.recommendedNextAction ?? null,
+    recommendedCommands: brief?.recommendedCommands ?? [],
+    leaderHandoff: brief?.leaderHandoff ?? null,
+    summary: buildSwarmBundleSummary(overview, overview.lanes),
+    updatedAt: overview.swarm.updatedAt ?? null
+  };
+}
+
+function buildLeaderWorkspaceSummary(swarmEntries, focusEntry) {
+  if (swarmEntries.length === 0) {
+    return "Leader workspace has no tracked swarms yet.";
+  }
+
+  if (!focusEntry) {
+    return `Leader workspace is tracking ${swarmEntries.length} swarm${swarmEntries.length === 1 ? "" : "s"}.`;
+  }
+
+  if (focusEntry.recommendedNextAction?.startsWith("review_lane:")) {
+    return `Leader workspace should review ${focusEntry.id} first because a lane is waiting on verifier action.`;
+  }
+  if (focusEntry.recommendedNextAction?.startsWith("dispatch_lane:")) {
+    return `Leader workspace should dispatch the next runnable lane from ${focusEntry.id}.`;
+  }
+  if (focusEntry.recommendedNextAction === "queue_swarm_lanes") {
+    return `Leader workspace should queue planned lanes for ${focusEntry.id} next.`;
+  }
+  if (focusEntry.recommendedNextAction?.startsWith("continue_lane:")) {
+    return `Leader workspace should monitor active execution in ${focusEntry.id} before starting more work.`;
+  }
+  if (focusEntry.recommendedNextAction?.startsWith("unblock_lane:")) {
+    return `Leader workspace should resolve a blocked lane in ${focusEntry.id} next.`;
+  }
+
+  const activeSwarms = swarmEntries.filter((entry) => !["completed", "cancelled"].includes(entry.status)).length;
+  if (activeSwarms === 0) {
+    return `Leader workspace shows ${swarmEntries.length} closed swarm${swarmEntries.length === 1 ? "" : "s"} with no active coordination remaining.`;
+  }
+
+  return `Leader workspace is tracking ${swarmEntries.length} swarms; ${focusEntry.id} is the current focus.`;
+}
+
 function buildSessionTaskSnapshot(task, role, workerId) {
   return {
     summary: summarizeInboxTask(task, role, workerId),
@@ -1794,6 +1891,40 @@ function sortNextCandidates(tasks, role, workerId, mode) {
 
 function compareTasksByUpdatedAt(left, right) {
   return (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");
+}
+
+function compareLeaderWorkspaceEntries(left, right) {
+  const leftRank = leaderWorkspacePriority(left);
+  const rightRank = leaderWorkspacePriority(right);
+  if (leftRank !== rightRank) {
+    return leftRank - rightRank;
+  }
+  return (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");
+}
+
+function leaderWorkspacePriority(entry) {
+  if (entry.recommendedNextAction?.startsWith("review_lane:")) {
+    return 0;
+  }
+  if (entry.recommendedNextAction?.startsWith("dispatch_lane:")) {
+    return 1;
+  }
+  if (entry.recommendedNextAction === "queue_swarm_lanes") {
+    return 2;
+  }
+  if (entry.recommendedNextAction?.startsWith("continue_lane:")) {
+    return 3;
+  }
+  if (entry.recommendedNextAction?.startsWith("unblock_lane:")) {
+    return 4;
+  }
+  if (entry.status === "completed") {
+    return 5;
+  }
+  if (entry.status === "cancelled") {
+    return 6;
+  }
+  return 7;
 }
 
 function inboxPriority(task, role, workerId) {
