@@ -16,6 +16,7 @@ rmSync(".codex-bees", { recursive: true, force: true });
 const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
+  ["catalog", ["./src/index.js", "catalog"]],
   ["tools", ["./src/mcp.js", "--tools"]],
   [
     "memory-store",
@@ -110,6 +111,17 @@ const checks = [
 
 for (const [label, args, expectedStatus = 0] of checks) {
   run(label, args, expectedStatus);
+}
+
+const runtimeCatalog = JSON.parse(run("catalog-verify", ["./src/index.js", "catalog"]).stdout).catalog;
+if (
+  !Array.isArray(runtimeCatalog.agents) ||
+  !runtimeCatalog.agents.some((agent) => agent.id === "executor") ||
+  !Array.isArray(runtimeCatalog.skills) ||
+  !runtimeCatalog.skills.some((skill) => skill.id === "project-development")
+) {
+  console.error("[smoke:catalog] expected shipped agent and skill catalog");
+  process.exit(1);
 }
 
 const listedMemories = JSON.parse(
@@ -215,6 +227,32 @@ if (incompleteTaskValidation.ready || incompleteTaskValidation.issues.length ===
   process.exit(1);
 }
 run("task-claim-incomplete", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "blocked-worker"], 1);
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("task-add-invalid-role", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "invalid role task",
+  "--owner",
+  "leader",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/index.js",
+  "--acceptance",
+  "invalid owner caught",
+  "--verification",
+  "task check reports role error"
+]);
+const invalidRoleTaskValidation = JSON.parse(
+  run("task-check-invalid-role", ["./src/index.js", "task:check", "--id", "task-1"]).stdout
+).validation;
+if (invalidRoleTaskValidation.ready || !invalidRoleTaskValidation.issues.some((issue) => issue.code === "unknown_owner")) {
+  console.error("[smoke:task-check] expected unknown owner role validation issue");
+  process.exit(1);
+}
+run("task-claim-invalid-role", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "blocked-worker"], 1);
 
 rmSync(".codex-bees", { recursive: true, force: true });
 run("review-task-add", [
@@ -529,6 +567,38 @@ if (invalidSwarmValidation.ready || invalidSwarmValidation.overlaps.length === 0
 run("swarm-queue-invalid-validation", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
 
 rmSync(".codex-bees", { recursive: true, force: true });
+const invalidSwarmRoleJson = JSON.stringify([
+  {
+    lane: "lane-role-bad-1",
+    summary: "Unknown owner lane",
+    owner: "leader",
+    verifier: "tester",
+    scope: ["src/index.js"],
+    acceptance: ["role validation enforced"],
+    verification: ["swarm check reports owner issue"]
+  }
+]);
+run("swarm-init-invalid-role", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Invalid swarm role smoke",
+  "--lanes",
+  invalidSwarmRoleJson
+]);
+const invalidSwarmRoleValidation = JSON.parse(
+  run("swarm-check-invalid-role", ["./src/index.js", "swarm:check", "--id", "swarm-1"]).stdout
+).validation;
+if (
+  invalidSwarmRoleValidation.ready ||
+  !invalidSwarmRoleValidation.lanes?.[0]?.issues?.some((issue) => issue.code === "unknown_owner")
+) {
+  console.error("[smoke:swarm-check] expected unknown lane owner validation issue");
+  process.exit(1);
+}
+run("swarm-queue-invalid-role", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
+
+rmSync(".codex-bees", { recursive: true, force: true });
 const swarmMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -714,6 +784,15 @@ const taskAddMcpInput = [
     id: 2,
     method: "tools/call",
     params: {
+      name: "runtime_catalog",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
       name: "task_add",
       arguments: {
         title: "mcp metadata task",
@@ -729,7 +808,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 3,
+    id: 4,
     method: "tools/call",
     params: {
       name: "task_check",
@@ -738,7 +817,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 4,
+    id: 5,
     method: "tools/call",
     params: {
       name: "task_claim",
@@ -747,7 +826,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 5,
+    id: 6,
     method: "tools/call",
     params: {
       name: "task_ready_for_review",
@@ -756,7 +835,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 6,
+    id: 7,
     method: "tools/call",
     params: {
       name: "task_reject",
@@ -770,7 +849,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 7,
+    id: 8,
     method: "tools/call",
     params: {
       name: "task_claim",
@@ -779,7 +858,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 8,
+    id: 9,
     method: "tools/call",
     params: {
       name: "task_ready_for_review",
@@ -788,7 +867,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 9,
+    id: 10,
     method: "tools/call",
     params: {
       name: "task_approve",
@@ -801,7 +880,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 10,
+    id: 11,
     method: "tools/call",
     params: {
       name: "task_list",
@@ -818,18 +897,22 @@ const taskAddMcpLines = taskAddMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const taskCheckResult = taskAddMcpLines.length >= 3 ? JSON.parse(taskAddMcpLines[2]) : null;
+const taskCatalogResult = taskAddMcpLines.length >= 2 ? JSON.parse(taskAddMcpLines[1]) : null;
+const taskCatalogText = taskCatalogResult?.result?.content?.[0]?.text;
+const taskCatalogPayload = taskCatalogText ? JSON.parse(taskCatalogText) : null;
+const taskCheckResult = taskAddMcpLines.length >= 4 ? JSON.parse(taskAddMcpLines[3]) : null;
 const taskCheckText = taskCheckResult?.result?.content?.[0]?.text;
 const taskCheckPayload = taskCheckText ? JSON.parse(taskCheckText) : null;
-const taskRejectResult = taskAddMcpLines.length >= 6 ? JSON.parse(taskAddMcpLines[5]) : null;
+const taskRejectResult = taskAddMcpLines.length >= 7 ? JSON.parse(taskAddMcpLines[6]) : null;
 const taskRejectText = taskRejectResult?.result?.content?.[0]?.text;
 const taskRejectPayload = taskRejectText ? JSON.parse(taskRejectText) : null;
-const taskListResult = taskAddMcpLines.length >= 10 ? JSON.parse(taskAddMcpLines[9]) : null;
+const taskListResult = taskAddMcpLines.length >= 11 ? JSON.parse(taskAddMcpLines[10]) : null;
 const taskListText = taskListResult?.result?.content?.[0]?.text;
 const taskListPayload = taskListText ? JSON.parse(taskListText) : null;
 const mcpTask = taskListPayload?.tasks?.find((task) => task.title === "mcp metadata task");
 if (
   taskAddMcp.status !== 0 ||
+  !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||
