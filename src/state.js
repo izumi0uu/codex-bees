@@ -1291,6 +1291,38 @@ export function runtimeSignalPack(input = {}) {
   };
 }
 
+export function runtimeHandoffPack() {
+  const handoffs = runtimeHandoffs();
+  const dispatch = runtimeDispatch();
+  const review = runtimeReview();
+  const recovery = runtimeRecovery();
+  const recommendedSurface = deriveRuntimeHandoffPackSurface({ handoffs, dispatch, review, recovery });
+
+  return {
+    kind: "runtime_handoff_pack",
+    recommendedSurface,
+    overview: {
+      handoffs: handoffs?.counts ?? null,
+      dispatch: dispatch?.counts ?? null,
+      review: review?.counts ?? null,
+      recovery: recovery?.counts ?? null
+    },
+    next: {
+      handoff: handoffs?.next ?? null,
+      dispatch: dispatch?.next ?? null,
+      review: review?.next ?? null,
+      recovery: recovery?.next ?? null
+    },
+    surfaces: {
+      handoffs,
+      dispatch,
+      review,
+      recovery
+    },
+    summary: buildRuntimeHandoffPackSummary(recommendedSurface, handoffs, review, recovery, dispatch)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3625,6 +3657,32 @@ function buildRuntimeSignalPackSummary(recommendedSurface, focus, alerts, activi
     activity?.summary ??
     "Runtime signal pack has no current signal detail.";
   return `Runtime signal pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeHandoffPackSurface({ handoffs, dispatch, review, recovery }) {
+  if ((handoffs?.counts?.reviewDecisions ?? 0) > 0) {
+    return "runtime:handoffs";
+  }
+  if ((review?.counts?.totalPendingReview ?? 0) > 0) {
+    return "runtime:review";
+  }
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "runtime:recovery";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "runtime:dispatch";
+  }
+  return "runtime:handoffs";
+}
+
+function buildRuntimeHandoffPackSummary(recommendedSurface, handoffs, review, recovery, dispatch) {
+  const detail =
+    handoffs?.summary ??
+    review?.summary ??
+    recovery?.summary ??
+    dispatch?.summary ??
+    "Runtime handoff pack has no current transfer detail.";
+  return `Runtime handoff pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
