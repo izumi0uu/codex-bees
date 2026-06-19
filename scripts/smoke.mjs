@@ -144,6 +144,16 @@ if (
   console.error("[smoke:capabilities] expected runtime capability inventory");
   process.exit(1);
 }
+const runtimeActivityInitial = JSON.parse(
+  run("runtime-activity-initial", ["./src/index.js", "runtime:activity"]).stdout
+).activity;
+if (
+  runtimeActivityInitial.kind !== "runtime_activity" ||
+  !Array.isArray(runtimeActivityInitial.entries)
+) {
+  console.error("[smoke:runtime-activity] expected top-level runtime activity");
+  process.exit(1);
+}
 const runtimeDashboardInitial = JSON.parse(
   run("runtime-dashboard-initial", ["./src/index.js", "runtime:dashboard"]).stdout
 ).dashboard;
@@ -1324,6 +1334,20 @@ run("dashboard-swarm", [
   ])
 ]);
 run("dashboard-swarm-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]);
+const runtimeActivityCli = JSON.parse(
+  run("runtime-activity-cli", ["./src/index.js", "runtime:activity"]).stdout
+).activity;
+if (
+  runtimeActivityCli.counts?.totalEntries < 6 ||
+  runtimeActivityCli.next?.type !== "created" ||
+  runtimeActivityCli.next?.taskId !== "task-4" ||
+  runtimeActivityCli.entries?.some((entry) => entry.type === "blocked" && entry.taskId === "task-1") !== true ||
+  runtimeActivityCli.entries?.some((entry) => entry.type === "ready_for_review" && entry.taskId === "task-2") !== true ||
+  runtimeActivityCli.entries?.some((entry) => entry.type === "claimed" && entry.taskId === "task-3") !== true
+) {
+  console.error("[smoke:runtime-activity] expected CLI runtime activity stream");
+  process.exit(1);
+}
 const runtimeDashboardCli = JSON.parse(
   run("runtime-dashboard-cli", ["./src/index.js", "runtime:dashboard"]).stdout
 ).dashboard;
@@ -1399,6 +1423,36 @@ if (
   runtimeRolesCli.roles?.find((entry) => entry.role?.id === "explore")?.counts?.ownerClaimed !== 1
 ) {
   console.error("[smoke:runtime-roles] expected CLI runtime role pressure ordering");
+  process.exit(1);
+}
+const runtimeActivityMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_activity",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeActivityMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeActivityMcpInput,
+  encoding: "utf8"
+});
+const runtimeActivityMcpLines = runtimeActivityMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeActivityMcpPayload = JSON.parse(JSON.parse(runtimeActivityMcpLines[1]).result.content[0].text);
+if (
+  runtimeActivityMcp.status !== 0 ||
+  runtimeActivityMcpPayload.activity?.counts?.totalEntries < 6 ||
+  runtimeActivityMcpPayload.activity?.entries?.some((entry) => entry.type === "blocked" && entry.taskId === "task-1") !== true
+) {
+  console.error("[smoke:runtime-activity-mcp] expected MCP runtime activity");
+  console.error(runtimeActivityMcp.stderr || runtimeActivityMcp.stdout);
   process.exit(1);
 }
 const runtimeDashboardMcpInput = [
