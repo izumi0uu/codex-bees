@@ -1251,6 +1251,7 @@ const runtimeQueuePackMappedCli = JSON.parse(
 ).queuePack;
 if (
   runtimeQueuePackMappedCli.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeQueuePackMappedCli.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeQueuePackMappedCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
   runtimeQueuePackMappedCli.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
   runtimeQueuePackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[1]?.workerId !== "worker-explore"
@@ -2347,6 +2348,7 @@ const runtimeQueuePackMappedMcpPayload = JSON.parse(JSON.parse(runtimeQueuePackM
 if (
   runtimeQueuePackMappedMcp.status !== 0 ||
   runtimeQueuePackMappedMcpPayload.queuePack?.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeQueuePackMappedMcpPayload.queuePack?.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeQueuePackMappedMcpPayload.queuePack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
   runtimeQueuePackMappedMcpPayload.queuePack?.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
   runtimeQueuePackMappedMcpPayload.queuePack?.surfaces?.assignmentLaunchPlan?.steps?.[1]?.workerId !== "worker-explore"
@@ -2619,6 +2621,7 @@ const runtimeQueuePackCli = JSON.parse(
 ).queuePack;
 if (
   runtimeQueuePackCli.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeQueuePackCli.recommendedReason !== "assignment_launch_ready" ||
   runtimeQueuePackCli.next?.queue?.swarmId !== "swarm-1" ||
   runtimeQueuePackCli.next?.focus?.taskId !== "task-1" ||
   runtimeQueuePackCli.next?.assignmentLaunch?.workerId !== "<executor-worker>" ||
@@ -3155,6 +3158,7 @@ const runtimeQueuePackMcpPayload = JSON.parse(JSON.parse(runtimeQueuePackMcpLine
 if (
   runtimeQueuePackMcp.status !== 0 ||
   runtimeQueuePackMcpPayload.queuePack?.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeQueuePackMcpPayload.queuePack?.recommendedReason !== "assignment_launch_ready" ||
   runtimeQueuePackMcpPayload.queuePack?.next?.queue?.swarmId !== "swarm-1" ||
   runtimeQueuePackMcpPayload.queuePack?.next?.assignmentLaunch?.workerId !== "<executor-worker>" ||
   runtimeQueuePackMcpPayload.queuePack?.overview?.assignmentDispatchBundle?.launches !== 1
