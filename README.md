@@ -210,7 +210,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `status` and the MCP `runtime_status` tool summarize the current local runtime: shipped tool/agent/skill counts, persisted task/swarm/memory counts, queue status distribution, a top-level highlight rollup of the most important orchestration semantics, a compact recommended-entrypoint rollup for consumers that need the best current CLI/MCP starting surfaces immediately, and a compact use-case rollup that says what those high-value orchestration surfaces are for. `capabilities` and `runtime_capabilities` provide the fuller product-facing inventory of what this Codex-only runtime actually supports today, including semantic highlights such as launch-first queue orchestration and compact launch context in summary surfaces, preferred entrypoints, and focused use cases for high-value capabilities.
 
-`runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload.
+`runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload. They also emit a machine-readable `recommendedReason` so automation can distinguish whether blocked tasks, pending review, active claimed work, leader queue pressure, leader assignments, or an empty workspace currently dominate the dashboard.
 
 `runtime:dispatch` / `runtime_dispatch` provide the owner-grouped dispatch workspace: which owner roles have ready work, the next dispatch candidate for each role, and the task brief already attached for handoff.
 

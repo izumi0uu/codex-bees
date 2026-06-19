@@ -706,9 +706,11 @@ export function runtimeDashboard() {
     .filter((task) => task.queueStatus === "claimed")
     .sort(compareTasksByUpdatedAt)
     .map((task) => summarizeDashboardTask(task));
+  const recommendedReason = deriveRuntimeDashboardReason({ blockedTasks, pendingReview, activeClaimed, queue, assignments });
 
   return {
     kind: "runtime_dashboard",
+    recommendedReason,
     counts: {
       tasks: tasks.length,
       swarms: swarms.length,
@@ -4459,6 +4461,25 @@ function deriveTaskPickupReason(relation) {
     return "observe_without_action";
   }
   return "non_claim_followup";
+}
+
+function deriveRuntimeDashboardReason({ blockedTasks, pendingReview, activeClaimed, queue, assignments }) {
+  if (blockedTasks.length > 0) {
+    return "blocked_tasks_visible";
+  }
+  if (pendingReview.length > 0) {
+    return "pending_review_visible";
+  }
+  if (activeClaimed.length > 0) {
+    return "active_claimed_visible";
+  }
+  if ((queue?.counts?.total ?? 0) > 0) {
+    return "leader_queue_visible";
+  }
+  if ((assignments?.counts?.totalAssignments ?? 0) > 0) {
+    return "leader_assignments_visible";
+  }
+  return "empty_dashboard";
 }
 
 function deriveRuntimeReviewReason({ groups, next, totalPendingReview }) {

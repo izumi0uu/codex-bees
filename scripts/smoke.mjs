@@ -196,6 +196,7 @@ const runtimeDashboardInitial = JSON.parse(
 ).dashboard;
 if (
   runtimeDashboardInitial.kind !== "runtime_dashboard" ||
+  runtimeDashboardInitial.recommendedReason !== "empty_dashboard" ||
   runtimeDashboardInitial.counts?.tasks < 3 ||
   runtimeDashboardInitial.leader?.queue?.kind !== "leader_queue"
 ) {
@@ -2620,6 +2621,7 @@ const runtimeDashboardCli = JSON.parse(
   run("runtime-dashboard-cli", ["./src/index.js", "runtime:dashboard"]).stdout
 ).dashboard;
 if (
+  runtimeDashboardCli.recommendedReason !== "blocked_tasks_visible" ||
   runtimeDashboardCli.counts?.blockedTasks !== 1 ||
   runtimeDashboardCli.counts?.pendingReview !== 1 ||
   runtimeDashboardCli.counts?.activeClaimed !== 1 ||
@@ -3100,6 +3102,7 @@ const runtimeDashboardMcpLines = runtimeDashboardMcp.stdout
 const runtimeDashboardMcpPayload = JSON.parse(JSON.parse(runtimeDashboardMcpLines[1]).result.content[0].text);
 if (
   runtimeDashboardMcp.status !== 0 ||
+  runtimeDashboardMcpPayload.dashboard?.recommendedReason !== "blocked_tasks_visible" ||
   runtimeDashboardMcpPayload.dashboard?.counts?.blockedTasks !== 1 ||
   runtimeDashboardMcpPayload.dashboard?.counts?.pendingReview !== 1 ||
   runtimeDashboardMcpPayload.dashboard?.counts?.activeClaimed !== 1 ||
