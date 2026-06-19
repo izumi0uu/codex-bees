@@ -1109,6 +1109,34 @@ export function runtimeRecoveryPack() {
   };
 }
 
+export function runtimeCloseoutPack() {
+  const closeout = runtimeCloseout();
+  const summaryPack = runtimeSummaryPack();
+  const leaderPack = runtimeLeaderPack();
+  const recommendedSurface = deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack });
+
+  return {
+    kind: "runtime_closeout_pack",
+    recommendedSurface,
+    overview: {
+      closeout: closeout?.counts ?? null,
+      summary: summaryPack?.overview?.closeout ?? null,
+      leader: leaderPack?.overview?.closeout ?? null
+    },
+    next: {
+      closeout: closeout?.next ?? null,
+      summary: summaryPack?.next?.closeout ?? null,
+      leader: leaderPack?.next?.closeout ?? null
+    },
+    surfaces: {
+      closeout,
+      summaryPack,
+      leaderPack
+    },
+    summary: buildRuntimeCloseoutPackSummary(recommendedSurface, closeout, summaryPack)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3297,6 +3325,27 @@ function buildRuntimeRecoveryPackSummary(recommendedSurface, recovery, focus) {
     focus?.summary ??
     "Runtime recovery pack has no current recovery detail.";
   return `Runtime recovery pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack }) {
+  if ((closeout?.counts?.totalReady ?? 0) > 0) {
+    return "runtime:closeout";
+  }
+  if ((summaryPack?.overview?.closeout?.totalReady ?? 0) > 0 || summaryPack?.next?.closeout) {
+    return "runtime:summary-pack";
+  }
+  if ((leaderPack?.overview?.closeout?.swarmsReady ?? 0) > 0 || leaderPack?.next?.closeout) {
+    return "runtime:leader-pack";
+  }
+  return "runtime:closeout";
+}
+
+function buildRuntimeCloseoutPackSummary(recommendedSurface, closeout, summaryPack) {
+  const detail =
+    closeout?.summary ??
+    summaryPack?.summary ??
+    "Runtime closeout pack has no current closure detail.";
+  return `Runtime closeout pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
