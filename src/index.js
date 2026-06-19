@@ -19,6 +19,7 @@ import {
   getSwarm,
   initSwarm,
   listMemories,
+  listSwarmOverviews,
   listSwarms,
   listTasks,
   markTaskReadyForReview,
@@ -198,14 +199,16 @@ function printTasks() {
 }
 
 function printSwarms() {
+  const filters = {
+    status: readOption("--status"),
+    topology: readOption("--topology"),
+    owner: readOption("--owner")
+  };
+  const detailed = argv.includes("--detailed");
   write(
     JSON.stringify(
       {
-        swarms: listSwarms({
-          status: readOption("--status"),
-          topology: readOption("--topology"),
-          owner: readOption("--owner")
-        })
+        swarms: detailed ? listSwarmOverviews(filters) : listSwarms(filters)
       },
       null,
       2
