@@ -180,6 +180,9 @@ export function taskHistory(id) {
     taskId: task.id,
     title: task.title,
     queueStatus: task.queueStatus,
+    counts: {
+      totalHistoryEntries: history.length
+    },
     history
   };
 }

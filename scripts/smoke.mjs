@@ -686,6 +686,7 @@ const taskHistoryComplete = JSON.parse(
 ).history;
 if (
   taskHistoryComplete.recommendedReason !== "approved_event_latest" ||
+  taskHistoryComplete.counts?.totalHistoryEntries !== taskHistoryComplete.history.length ||
   !Array.isArray(taskHistoryComplete.history) ||
   taskHistoryComplete.history.length < 5 ||
   taskHistoryComplete.history.at(-1)?.type !== "approved"
@@ -6022,6 +6023,7 @@ const inboxHistory = JSON.parse(
 ).history;
 if (
   inboxHistory.recommendedReason !== "review_event_latest" ||
+  inboxHistory.counts?.totalHistoryEntries !== inboxHistory.history.length ||
   inboxHistory.history?.map((entry) => entry.type).join(",") !== "created,claimed,ready_for_review"
 ) {
   console.error("[smoke:task-history] expected inbox review task history");
