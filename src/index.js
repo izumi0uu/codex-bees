@@ -38,6 +38,7 @@ import {
   runtimeAlerts,
   runtimeCloseoutPack,
   runtimeCloseout,
+  runtimeControlPack,
   runtimeDashboard,
   runtimeDispatchPack,
   runtimeDispatch,
@@ -107,6 +108,7 @@ function printHelp() {
   write(`  codex-bees runtime:dashboard Build the top-level orchestration dashboard\n`);
   write(`  codex-bees runtime:closeout Build the final closeout workspace\n`);
   write(`  codex-bees runtime:closeout-pack Build the closeout-oriented runtime package\n`);
+  write(`  codex-bees runtime:control-pack Build the automation/control runtime package\n`);
   write(`  codex-bees runtime:dispatch Build the owner-grouped dispatch workspace\n`);
   write(`  codex-bees runtime:dispatch-pack Build the dispatch-oriented runtime package\n`);
   write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
@@ -243,6 +245,10 @@ function printRuntimeCloseout() {
 
 function printRuntimeCloseoutPack() {
   write(JSON.stringify({ closeoutPack: runtimeCloseoutPack() }, null, 2) + "\n");
+}
+
+function printRuntimeControlPack() {
+  write(JSON.stringify({ controlPack: runtimeControlPack() }, null, 2) + "\n");
 }
 
 function printRuntimeHandoffs() {
@@ -1179,6 +1185,9 @@ async function runCommand(command) {
       return;
     case "runtime:closeout-pack":
       printRuntimeCloseoutPack();
+      return;
+    case "runtime:control-pack":
+      printRuntimeControlPack();
       return;
     case "runtime:handoffs":
       printRuntimeHandoffs();

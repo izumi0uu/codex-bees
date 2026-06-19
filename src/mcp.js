@@ -33,6 +33,7 @@ import {
   runtimeAlerts,
   runtimeCloseoutPack,
   runtimeCloseout,
+  runtimeControlPack,
   runtimeDashboard,
   runtimeDispatchPack,
   runtimeDispatch,
@@ -146,6 +147,14 @@ export const toolCatalog = [
   {
     name: "runtime_closeout_pack",
     description: "Build the closeout-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_control_pack",
+    description: "Build the automation/control runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1128,6 +1137,10 @@ function handleRequest(message) {
 
     if (name === "runtime_closeout_pack") {
       return createSuccess(id, createTextPayload({ closeoutPack: runtimeCloseoutPack() }));
+    }
+
+    if (name === "runtime_control_pack") {
+      return createSuccess(id, createTextPayload({ controlPack: runtimeControlPack() }));
     }
 
     if (name === "runtime_handoffs") {
