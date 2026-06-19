@@ -1937,6 +1937,10 @@ const assignmentPreviewExecutorCli = JSON.parse(
 if (
   assignmentPreviewExecutorCli.outcome !== "claimable" ||
   assignmentPreviewExecutorCli.recommendedReason !== "claimable_assignment_preview" ||
+  assignmentPreviewExecutorCli.metadata?.hasAssignment !== true ||
+  assignmentPreviewExecutorCli.metadata?.hasTask !== true ||
+  assignmentPreviewExecutorCli.metadata?.hasBrief !== true ||
+  assignmentPreviewExecutorCli.metadata?.taskId !== "task-2" ||
   assignmentPreviewExecutorCli.assignment?.taskId !== "task-2" ||
   assignmentPreviewExecutorCli.task?.id !== "task-2" ||
   assignmentPreviewExecutorCli.command !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2"
@@ -3319,6 +3323,8 @@ if (
   taskAssignmentPreviewExecutorMcp.status !== 0 ||
   taskAssignmentPreviewExecutorMcpPayload.assignmentPreview?.outcome !== "claimable" ||
   taskAssignmentPreviewExecutorMcpPayload.assignmentPreview?.recommendedReason !== "claimable_assignment_preview" ||
+  taskAssignmentPreviewExecutorMcpPayload.assignmentPreview?.metadata?.hasBrief !== true ||
+  taskAssignmentPreviewExecutorMcpPayload.assignmentPreview?.metadata?.taskId !== "task-2" ||
   taskAssignmentPreviewExecutorMcpPayload.assignmentPreview?.task?.id !== "task-2"
 ) {
   console.error("[smoke:task-assignment-preview-mcp] expected explicit executor assignment preview payload");

@@ -2569,6 +2569,12 @@ export function previewTaskAssignment(input = {}) {
       mode: normalizeNextMode(input.mode),
       outcome: "none",
       recommendedReason: "no_assignment_preview",
+      metadata: {
+        hasAssignment: false,
+        hasTask: false,
+        hasBrief: false,
+        taskId: null
+      },
       assignment: null,
       candidate: null,
       task: null,
@@ -2586,6 +2592,12 @@ export function previewTaskAssignment(input = {}) {
       mode: normalizeNextMode(input.mode),
       outcome: "error",
       recommendedReason: "missing_assignment_task",
+      metadata: {
+        hasAssignment: true,
+        hasTask: false,
+        hasBrief: false,
+        taskId: assignment.taskId
+      },
       assignment,
       candidate: null,
       task: null,
@@ -2605,6 +2617,12 @@ export function previewTaskAssignment(input = {}) {
     mode: normalizeNextMode(input.mode),
     outcome: candidate.relation === "owner_claimable" ? "claimable" : assignmentPickupOutcome(candidate.relation),
     recommendedReason: deriveTaskAssignmentPreviewReason(candidate.relation),
+    metadata: {
+      hasAssignment: true,
+      hasTask: true,
+      hasBrief: Boolean(brief),
+      taskId: task.id
+    },
     assignment,
     candidate,
     task,
