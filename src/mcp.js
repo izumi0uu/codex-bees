@@ -14,6 +14,7 @@ import {
   completeSwarm,
   completeTask,
   dispatchSwarmLane,
+  getTask,
   getSwarm,
   initSwarm,
   listMemories,
@@ -28,8 +29,10 @@ import {
   syncSwarmStatus,
   searchMemories,
   storeMemory,
+  swarmBrief,
   updateSwarm,
   updateTask,
+  taskBrief,
   validateSwarm,
   validateTask
 } from "./state.js";
@@ -131,6 +134,28 @@ export const toolCatalog = [
         acceptance: { type: "array", items: { type: "string" } },
         verification: { type: "array", items: { type: "string" } },
         notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_get",
+    description: "Get one local coordination task by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_brief",
+    description: "Render an execution brief for one local coordination task.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
       }
     }
   },
@@ -286,6 +311,17 @@ export const toolCatalog = [
   {
     name: "swarm_get",
     description: "Get one local swarm contract by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_brief",
+    description: "Render an execution brief for one local swarm contract.",
     inputSchema: {
       type: "object",
       required: ["id"],
@@ -659,6 +695,32 @@ function handleRequest(message) {
       return createSuccess(id, createTextPayload({ created: task }));
     }
 
+    if (name === "task_get") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_get requires arguments.id");
+      }
+
+      const task = getTask(params.arguments.id);
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ task }));
+    }
+
+    if (name === "task_brief") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_brief requires arguments.id");
+      }
+
+      const brief = taskBrief(params.arguments.id);
+      if (!brief) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ brief }));
+    }
+
     if (name === "task_update") {
       if (!params.arguments?.id) {
         return createError(id, -32602, "task_update requires arguments.id");
@@ -902,6 +964,19 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ swarm }));
+    }
+
+    if (name === "swarm_brief") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_brief requires arguments.id");
+      }
+
+      const brief = swarmBrief(params.arguments.id);
+      if (!brief) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ brief }));
     }
 
     if (name === "swarm_update") {

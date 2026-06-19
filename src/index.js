@@ -19,6 +19,7 @@ import {
   completeSwarm,
   completeTask,
   dispatchSwarmLane,
+  getTask,
   getSwarm,
   initSwarm,
   listMemories,
@@ -34,8 +35,10 @@ import {
   searchMemories,
   stateFilePath,
   storeMemory,
+  swarmBrief,
   updateSwarm,
   updateTask,
+  taskBrief,
   validateSwarm,
   validateTask
 } from "./state.js";
@@ -65,6 +68,8 @@ function printHelp() {
   write(`  codex-bees plan:swarm      Generate a bounded swarm contract from a task brief\n`);
   write(`  codex-bees task:list       List local coordination tasks\n`);
   write(`  codex-bees task:add        Add a local coordination task\n`);
+  write(`  codex-bees task:get        Show one local coordination task\n`);
+  write(`  codex-bees task:brief      Render an execution brief for one task\n`);
   write(`  codex-bees task:claim      Claim a local coordination task\n`);
   write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
   write(`  codex-bees task:review     Mark a task as ready for review\n`);
@@ -77,6 +82,7 @@ function printHelp() {
   write(`  codex-bees swarm:init      Create a bounded local swarm contract\n`);
   write(`  codex-bees swarm:list      List local swarm contracts\n`);
   write(`  codex-bees swarm:get       Show one local swarm contract\n`);
+  write(`  codex-bees swarm:brief     Render an execution brief for one swarm\n`);
   write(`  codex-bees swarm:update    Update a local swarm contract\n`);
   write(`  codex-bees swarm:check     Validate one swarm contract for lane readiness\n`);
   write(`  codex-bees swarm:start     Mark a planned swarm active\n`);
@@ -300,6 +306,26 @@ function handleTaskUpdate() {
   write(JSON.stringify({ updated: task }, null, 2) + "\n");
 }
 
+function handleTaskGet() {
+  const id = requireOption("--id");
+  const task = getTask(id);
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ task }, null, 2) + "\n");
+}
+
+function handleTaskBrief() {
+  const id = requireOption("--id");
+  const brief = taskBrief(id);
+  if (!brief) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ brief }, null, 2) + "\n");
+}
+
 function handleTaskCheck() {
   const id = requireOption("--id");
   const validation = validateTask(id);
@@ -489,6 +515,16 @@ function handleSwarmGet() {
     exit(1);
   }
   write(JSON.stringify({ swarm }, null, 2) + "\n");
+}
+
+function handleSwarmBrief() {
+  const id = requireOption("--id");
+  const brief = swarmBrief(id);
+  if (!brief) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ brief }, null, 2) + "\n");
 }
 
 function handleSwarmUpdate() {
@@ -764,6 +800,12 @@ async function runCommand(command) {
     case "task:add":
       handleTaskAdd();
       return;
+    case "task:get":
+      handleTaskGet();
+      return;
+    case "task:brief":
+      handleTaskBrief();
+      return;
     case "task:claim":
       handleTaskClaim();
       return;
@@ -799,6 +841,9 @@ async function runCommand(command) {
       return;
     case "swarm:get":
       handleSwarmGet();
+      return;
+    case "swarm:brief":
+      handleSwarmBrief();
       return;
     case "swarm:update":
       handleSwarmUpdate();
