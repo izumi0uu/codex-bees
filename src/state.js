@@ -1083,9 +1083,11 @@ export function runtimeHandoffs() {
 
   const groups = [...groupsByActor.values()].sort(compareRuntimeHandoffGroups);
   const next = groups[0]?.handoffs?.[0] ?? null;
+  const recommendedReason = deriveRuntimeHandoffsReason({ groups, next });
 
   return {
     kind: "runtime_handoffs",
+    recommendedReason,
     counts: {
       actorGroups: groups.length,
       totalHandoffs: handoffs.length,
@@ -4535,6 +4537,22 @@ function deriveRuntimeActivityReason({ entries, next }) {
     return "recent_activity_visible";
   }
   return "no_recent_activity";
+}
+
+function deriveRuntimeHandoffsReason({ groups, next }) {
+  if (next?.handoffType === "verifier_decision") {
+    return "review_decision_ready";
+  }
+  if (next?.handoffType === "blocked_recovery") {
+    return "blocked_recovery_ready";
+  }
+  if (next?.handoffType === "owner_claim") {
+    return "owner_claim_ready";
+  }
+  if ((groups?.length ?? 0) > 0) {
+    return "actor_groups_visible";
+  }
+  return "no_handoffs_ready";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

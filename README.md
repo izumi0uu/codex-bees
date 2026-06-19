@@ -230,7 +230,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:handoff-pack` / `runtime_handoff_pack` provide the handoff-oriented package: handoffs, dispatch, review, and recovery combined into one next-actor transfer entrypoint with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between reviewer handoff pressure, review queue pressure, recovery queue pressure, and dispatch-ready transfer pressure without parsing summary prose.
 
-`runtime:handoffs` / `runtime_handoffs` provide the next-actor transfer workspace: queued pickups, blocked recoveries, and verifier decisions grouped by who should take the next action.
+`runtime:handoffs` / `runtime_handoffs` provide the next-actor transfer workspace: queued pickups, blocked recoveries, and verifier decisions grouped by who should take the next action. It also emits a machine-readable `recommendedReason` so automation can distinguish whether the current handoff head is a verifier decision, blocked recovery, owner claim, or merely grouped transfer visibility before escalating into larger handoff packs.
 
 `runtime:leader-pack` / `runtime_leader_pack` provide the leader-oriented package: leader workspace, leader queue, dispatch pressure, leader startup plans when parallel startup is ready, and closeout readiness combined into one role-shaped payload with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between parallel launch readiness, review-driven workspace pressure, dispatch pressure, closeout readiness, and plain leader-queue visibility without parsing the pack summary.
 

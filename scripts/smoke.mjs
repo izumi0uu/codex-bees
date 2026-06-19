@@ -256,7 +256,12 @@ const runtimeHandoffsInitial = JSON.parse(
   run("runtime-handoffs-initial", ["./src/index.js", "runtime:handoffs"]).stdout
 ).handoffs;
 if (
+  runtimeHandoffsInitial.recommendedReason !== "owner_claim_ready" ||
   runtimeHandoffsInitial.kind !== "runtime_handoffs" ||
+  runtimeHandoffsInitial.counts?.actorGroups !== 2 ||
+  runtimeHandoffsInitial.counts?.totalHandoffs !== 2 ||
+  runtimeHandoffsInitial.next?.taskId !== "task-2" ||
+  runtimeHandoffsInitial.next?.actor?.id !== "executor" ||
   !Array.isArray(runtimeHandoffsInitial.groups)
 ) {
   console.error("[smoke:runtime-handoffs] expected top-level runtime handoffs");
@@ -2703,6 +2708,7 @@ const runtimeHandoffsCli = JSON.parse(
   run("runtime-handoffs-cli", ["./src/index.js", "runtime:handoffs"]).stdout
 ).handoffs;
 if (
+  runtimeHandoffsCli.recommendedReason !== "review_decision_ready" ||
   runtimeHandoffsCli.counts?.actorGroups !== 3 ||
   runtimeHandoffsCli.counts?.totalHandoffs !== 3 ||
   runtimeHandoffsCli.counts?.reviewDecisions !== 1 ||
@@ -2711,10 +2717,10 @@ if (
   runtimeHandoffsCli.next?.taskId !== "task-2" ||
   runtimeHandoffsCli.next?.actor?.id !== "tester" ||
   runtimeHandoffsCli.groups?.some((group) => group.actor?.id === "tester" && group.handoffs?.[0]?.taskId === "task-2") !== true ||
-  runtimeHandoffsCli.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-1")) !== true ||
-  runtimeHandoffsCli.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-4")) !== true
+  runtimeHandoffsCli.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-1" && handoff.handoffType === "blocked_recovery")) !== true ||
+  runtimeHandoffsCli.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-4" && handoff.handoffType === "owner_claim")) !== true
 ) {
-  console.error("[smoke:runtime-handoffs] expected CLI next-actor handoff workspace");
+  console.error("[smoke:runtime-handoffs-cli] expected CLI next-actor handoff workspace");
   process.exit(1);
 }
 const runtimeRecoveryCli = JSON.parse(
@@ -3281,11 +3287,19 @@ const runtimeHandoffsMcpLines = runtimeHandoffsMcp.stdout
 const runtimeHandoffsMcpPayload = JSON.parse(JSON.parse(runtimeHandoffsMcpLines[1]).result.content[0].text);
 if (
   runtimeHandoffsMcp.status !== 0 ||
+  runtimeHandoffsMcpPayload.handoffs?.recommendedReason !== "review_decision_ready" ||
+  runtimeHandoffsMcpPayload.handoffs?.counts?.actorGroups !== 3 ||
   runtimeHandoffsMcpPayload.handoffs?.counts?.totalHandoffs !== 3 ||
+  runtimeHandoffsMcpPayload.handoffs?.counts?.reviewDecisions !== 1 ||
+  runtimeHandoffsMcpPayload.handoffs?.counts?.blockedRecoveries !== 1 ||
+  runtimeHandoffsMcpPayload.handoffs?.counts?.ownerClaims !== 1 ||
+  runtimeHandoffsMcpPayload.handoffs?.next?.taskId !== "task-2" ||
+  runtimeHandoffsMcpPayload.handoffs?.next?.actor?.id !== "tester" ||
   runtimeHandoffsMcpPayload.handoffs?.groups?.some((group) => group.actor?.id === "tester" && group.handoffs?.[0]?.taskId === "task-2") !== true ||
-  runtimeHandoffsMcpPayload.handoffs?.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-1")) !== true
+  runtimeHandoffsMcpPayload.handoffs?.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-1" && handoff.handoffType === "blocked_recovery")) !== true ||
+  runtimeHandoffsMcpPayload.handoffs?.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-4" && handoff.handoffType === "owner_claim")) !== true
 ) {
-  console.error("[smoke:runtime-handoffs-mcp] expected MCP runtime handoffs");
+  console.error("[smoke:runtime-handoffs-mcp] expected MCP next-actor handoff workspace");
   console.error(runtimeHandoffsMcp.stderr || runtimeHandoffsMcp.stdout);
   process.exit(1);
 }
