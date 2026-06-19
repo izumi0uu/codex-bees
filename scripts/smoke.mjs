@@ -663,6 +663,9 @@ const fetchedTask = JSON.parse(run("task-get-verify", ["./src/index.js", "task:g
 if (
   fetchedTask.kind !== "task_detail" ||
   fetchedTask.recommendedReason !== "task_detail_loaded" ||
+  fetchedTask.metadata?.hasHistory !== true ||
+  fetchedTask.metadata?.hasAnnotations !== false ||
+  fetchedTask.metadata?.reviewState !== "approved" ||
   fetchedTask.task?.id !== "task-3" ||
   fetchedTask.task?.owner !== "executor" ||
   fetchedTask.task?.verifier !== "tester"
@@ -1929,6 +1932,7 @@ const assignmentPreviewExecutorState = JSON.parse(
 if (
   assignmentPreviewExecutorState.kind !== "task_detail" ||
   assignmentPreviewExecutorState.recommendedReason !== "task_detail_loaded" ||
+  assignmentPreviewExecutorState.metadata?.reviewState !== "not_started" ||
   assignmentPreviewExecutorState.task?.queueStatus !== "queued"
 ) {
   console.error("[smoke:task-assignment-preview] expected preview to preserve assigned task state");
@@ -5344,6 +5348,9 @@ if (
   taskAddPayload?.created?.task?.id !== "task-1" ||
   taskGetPayload?.task?.kind !== "task_detail" ||
   taskGetPayload?.task?.recommendedReason !== "task_detail_loaded" ||
+  taskGetPayload?.task?.metadata?.hasHistory !== true ||
+  taskGetPayload?.task?.metadata?.hasAnnotations !== false ||
+  taskGetPayload?.task?.metadata?.reviewState !== "not_started" ||
   taskGetPayload?.task?.task?.id !== "task-1" ||
   taskBriefPayload?.brief?.recommendedReason !== "claimable_execution_brief" ||
   taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||

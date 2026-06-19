@@ -161,6 +161,11 @@ export function getTaskView(id) {
   return {
     kind: "task_detail",
     recommendedReason: "task_detail_loaded",
+    metadata: {
+      hasHistory: (task.history ?? []).length > 0,
+      hasAnnotations: (task.annotations ?? []).length > 0,
+      reviewState: deriveReviewState(task)
+    },
     task
   };
 }
