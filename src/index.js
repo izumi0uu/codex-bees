@@ -6,18 +6,27 @@ import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
 import { planTask, queueTasksFromPlan } from "./planner.js";
 import {
+  activateSwarm,
   addTask,
   addTasks,
+  blockSwarm,
   blockTask,
+  cancelSwarm,
   claimTask,
+  completeSwarm,
   completeTask,
+  getSwarm,
+  initSwarm,
   listMemories,
+  listSwarms,
   listTasks,
   markTaskReadyForReview,
+  queueSwarmTasks,
   releaseTask,
   searchMemories,
   stateFilePath,
   storeMemory,
+  updateSwarm,
   updateTask
 } from "./state.js";
 
@@ -34,25 +43,34 @@ function writeErr(text) {
 function printHelp() {
   write(`codex-bees\n\n`);
   write(`Usage:\n`);
-  write(`  codex-bees run           Start the local Codex runtime shell contract\n`);
-  write(`  codex-bees mcp           Start the local Codex MCP stdio runtime\n`);
-  write(`  codex-bees tools         Print the current MCP tool catalog\n`);
-  write(`  codex-bees doctor        Print runtime contract diagnostics\n`);
-  write(`  codex-bees plan          Generate a bounded read-only execution plan\n`);
-  write(`  codex-bees plan:queue    Generate a plan and queue its lanes as local tasks\n`);
-  write(`  codex-bees task:list     List local coordination tasks\n`);
-  write(`  codex-bees task:add      Add a local coordination task\n`);
-  write(`  codex-bees task:claim    Claim a local coordination task\n`);
-  write(`  codex-bees task:block    Mark a claimed task as blocked\n`);
-  write(`  codex-bees task:review   Mark a task as ready for review\n`);
-  write(`  codex-bees task:done     Mark a task as complete\n`);
-  write(`  codex-bees task:release  Release a local coordination task\n`);
-  write(`  codex-bees task:update   Update a local coordination task\n`);
-  write(`  codex-bees memory:store  Store a persistent local memory\n`);
-  write(`  codex-bees memory:list   List persistent local memories\n`);
-  write(`  codex-bees memory:search Search persistent local memories\n`);
-  write(`  codex-bees --help        Show help\n`);
-  write(`  codex-bees --version     Show version\n`);
+  write(`  codex-bees run             Start the local Codex runtime shell contract\n`);
+  write(`  codex-bees mcp             Start the local Codex MCP stdio runtime\n`);
+  write(`  codex-bees tools           Print the current MCP tool catalog\n`);
+  write(`  codex-bees doctor          Print runtime contract diagnostics\n`);
+  write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
+  write(`  codex-bees plan:queue      Generate a plan and queue its lanes as local tasks\n`);
+  write(`  codex-bees task:list       List local coordination tasks\n`);
+  write(`  codex-bees task:add        Add a local coordination task\n`);
+  write(`  codex-bees task:claim      Claim a local coordination task\n`);
+  write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
+  write(`  codex-bees task:review     Mark a task as ready for review\n`);
+  write(`  codex-bees task:done       Mark a task as complete\n`);
+  write(`  codex-bees task:release    Release a local coordination task\n`);
+  write(`  codex-bees task:update     Update a local coordination task\n`);
+  write(`  codex-bees swarm:init      Create a bounded local swarm contract\n`);
+  write(`  codex-bees swarm:list      List local swarm contracts\n`);
+  write(`  codex-bees swarm:get       Show one local swarm contract\n`);
+  write(`  codex-bees swarm:update    Update a local swarm contract\n`);
+  write(`  codex-bees swarm:start     Mark a planned swarm active\n`);
+  write(`  codex-bees swarm:block     Mark an active swarm blocked\n`);
+  write(`  codex-bees swarm:done      Mark a swarm complete\n`);
+  write(`  codex-bees swarm:cancel    Cancel a swarm\n`);
+  write(`  codex-bees swarm:queue     Queue swarm lanes into local tasks\n`);
+  write(`  codex-bees memory:store    Store a persistent local memory\n`);
+  write(`  codex-bees memory:list     List persistent local memories\n`);
+  write(`  codex-bees memory:search   Search persistent local memories\n`);
+  write(`  codex-bees --help          Show help\n`);
+  write(`  codex-bees --version       Show version\n`);
 }
 
 function runtimeContract() {
@@ -70,7 +88,8 @@ function runtimeContract() {
       "expose MCP tool catalog for local coordination",
       "provide a stable diagnostics surface for later orchestration layers",
       "persist local work-item state for bounded multi-agent execution",
-      "store and recall local memory across execution lanes"
+      "store and recall local memory across execution lanes",
+      "track local swarm contracts with bounded lane-to-task handoff"
     ],
     exclusions: [
       "third-party marketplace distribution",
@@ -134,6 +153,20 @@ function readListOption(flag, separator = ",") {
   return values.flatMap((value) => parseListValue(value, separator) ?? []);
 }
 
+function readJsonOption(flag) {
+  const value = readOption(flag);
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    writeErr(`Invalid JSON for ${flag}: ${error.message}\n`);
+    exit(1);
+  }
+}
+
 function requireOption(flag) {
   const value = readOption(flag);
   if (!value) {
@@ -143,8 +176,37 @@ function requireOption(flag) {
   return value;
 }
 
+function readPositiveIntegerOption(flag) {
+  const value = readOption(flag);
+  if (value === undefined) {
+    return undefined;
+  }
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    writeErr(`${flag} must be a positive integer\n`);
+    exit(1);
+  }
+  return parsed;
+}
+
 function printTasks() {
   write(JSON.stringify({ tasks: listTasks() }, null, 2) + "\n");
+}
+
+function printSwarms() {
+  write(
+    JSON.stringify(
+      {
+        swarms: listSwarms({
+          status: readOption("--status"),
+          topology: readOption("--topology"),
+          owner: readOption("--owner")
+        })
+      },
+      null,
+      2
+    ) + "\n"
+  );
 }
 
 function handleTaskAdd() {
@@ -154,6 +216,7 @@ function handleTaskAdd() {
   const verifier = readOption("--verifier");
   const objective = readOption("--objective");
   const lane = readOption("--lane");
+  const swarmId = readOption("--swarm-id");
   const scope = readListOption("--scope");
   const acceptance = readListOption("--acceptance", "|");
   const verification = readListOption("--verification", "|");
@@ -165,6 +228,7 @@ function handleTaskAdd() {
     verifier,
     objective,
     lane,
+    swarmId,
     scope,
     acceptance,
     verification,
@@ -183,6 +247,7 @@ function handleTaskUpdate() {
     verifier: readOption("--verifier"),
     objective: readOption("--objective"),
     lane: readOption("--lane"),
+    swarmId: readOption("--swarm-id"),
     scope: readListOption("--scope"),
     acceptance: readListOption("--acceptance", "|"),
     verification: readListOption("--verification", "|"),
@@ -289,6 +354,150 @@ function handlePlanQueue() {
   write(JSON.stringify(queueTasksFromPlan(task, addTasks), null, 2) + "\n");
 }
 
+function handleSwarmInit() {
+  const objective = requireOption("--objective");
+  const swarm = initSwarm({
+    objective,
+    topology: readOption("--topology"),
+    maxWorkers: readPositiveIntegerOption("--max-workers"),
+    owner: readOption("--owner"),
+    laneSource: readOption("--lane-source"),
+    notes: readOption("--notes"),
+    lanes: readJsonOption("--lanes")
+  });
+  write(JSON.stringify({ created: swarm }, null, 2) + "\n");
+}
+
+function handleSwarmGet() {
+  const id = requireOption("--id");
+  const swarm = getSwarm(id);
+  if (!swarm) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ swarm }, null, 2) + "\n");
+}
+
+function handleSwarmUpdate() {
+  const id = requireOption("--id");
+  const swarm = updateSwarm({
+    id,
+    objective: readOption("--objective"),
+    topology: readOption("--topology"),
+    maxWorkers: readPositiveIntegerOption("--max-workers"),
+    owner: readOption("--owner"),
+    laneSource: readOption("--lane-source"),
+    notes: readOption("--notes"),
+    lanes: readJsonOption("--lanes")
+  });
+
+  if (!swarm) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (swarm.error) {
+    writeErr(`${swarm.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ updated: swarm }, null, 2) + "\n");
+}
+
+function handleSwarmStart() {
+  const id = requireOption("--id");
+  const swarm = activateSwarm({
+    id,
+    owner: readOption("--owner"),
+    notes: readOption("--notes")
+  });
+
+  if (!swarm) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (swarm.error) {
+    writeErr(`${swarm.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ activated: swarm }, null, 2) + "\n");
+}
+
+function handleSwarmBlock() {
+  const id = requireOption("--id");
+  const swarm = blockSwarm({
+    id,
+    owner: readOption("--owner"),
+    notes: readOption("--notes")
+  });
+
+  if (!swarm) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (swarm.error) {
+    writeErr(`${swarm.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ blocked: swarm }, null, 2) + "\n");
+}
+
+function handleSwarmDone() {
+  const id = requireOption("--id");
+  const swarm = completeSwarm({
+    id,
+    owner: readOption("--owner"),
+    notes: readOption("--notes")
+  });
+
+  if (!swarm) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (swarm.error) {
+    writeErr(`${swarm.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ completed: swarm }, null, 2) + "\n");
+}
+
+function handleSwarmCancel() {
+  const id = requireOption("--id");
+  const swarm = cancelSwarm({
+    id,
+    owner: readOption("--owner"),
+    notes: readOption("--notes")
+  });
+
+  if (!swarm) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (swarm.error) {
+    writeErr(`${swarm.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ cancelled: swarm }, null, 2) + "\n");
+}
+
+function handleSwarmQueue() {
+  const id = requireOption("--id");
+  const result = queueSwarmTasks({ id });
+  if (!result) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (result.error) {
+    writeErr(`${result.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify(result, null, 2) + "\n");
+}
+
 function handleMemoryStore() {
   const content = requireOption("--content");
   const memory = storeMemory({
@@ -346,6 +555,7 @@ async function runCommand(command) {
               "use `codex-bees doctor` to inspect runtime boundaries",
               "use `codex-bees tools` to inspect current MCP tool catalog",
               "use `codex-bees task:add --title ...` to create local work items",
+              "use `codex-bees swarm:init --objective ...` to stage a bounded local swarm",
               "use `codex-bees mcp` to start the stdio MCP surface"
             ]
           },
@@ -393,6 +603,33 @@ async function runCommand(command) {
     case "task:update":
       handleTaskUpdate();
       return;
+    case "swarm:init":
+      handleSwarmInit();
+      return;
+    case "swarm:list":
+      printSwarms();
+      return;
+    case "swarm:get":
+      handleSwarmGet();
+      return;
+    case "swarm:update":
+      handleSwarmUpdate();
+      return;
+    case "swarm:start":
+      handleSwarmStart();
+      return;
+    case "swarm:block":
+      handleSwarmBlock();
+      return;
+    case "swarm:done":
+      handleSwarmDone();
+      return;
+    case "swarm:cancel":
+      handleSwarmCancel();
+      return;
+    case "swarm:queue":
+      handleSwarmQueue();
+      return;
     case "memory:store":
       handleMemoryStore();
       return;
@@ -421,4 +658,7 @@ if (env.CODEX_BEES_CLI_TRACE === "1") {
   writeErr(`[codex-bees] argv=${JSON.stringify(argv.slice(2))}\n`);
 }
 
-await runCommand(argv[2]);
+runCommand(argv[2]).catch((error) => {
+  writeErr(`${error.stack || error.message}\n`);
+  exit(1);
+});
