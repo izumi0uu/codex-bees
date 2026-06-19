@@ -206,7 +206,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:dispatch-pack` / `runtime_dispatch_pack` provide the dispatch-oriented package: dispatch groups, multi-worker leader launch bundles when multiple owner groups are ready, role pressure, and next-actor handoffs combined into one leader/automation payload with a recommended next surface.
 
-`runtime:execution-pack` / `runtime_execution_pack` provide the execution-oriented package: focus, dispatch, role pressure, and queue control combined into one start-work entrypoint with a recommended next surface.
+`runtime:execution-pack` / `runtime_execution_pack` provide the execution-oriented package: focus, dispatch, leader launch bundles when parallel startup is ready, role pressure, and queue control combined into one start-work entrypoint with a recommended next surface.
 
 `runtime:activity` / `runtime_activity` provide the recent event stream: claims, blocks, review handoffs, approvals, and changes-requested events compressed into one top-level chronological feed.
 
@@ -214,7 +214,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:closeout-pack` / `runtime_closeout_pack` provide the closeout-oriented package: closeout readiness plus summary-pack and leader-pack closeout context combined into one finalization-ready payload with a recommended next surface.
 
-`runtime:control-pack` / `runtime_control_pack` provide the automation/control package: summary-pack, workspace-pack, operator-pack, and leader-pack combined into one highest-level control entrypoint with a recommended next surface.
+`runtime:control-pack` / `runtime_control_pack` provide the automation/control package: summary-pack, workspace-pack, operator-pack, and leader-pack combined into one highest-level control entrypoint with a recommended next surface, while preserving leader launch bundle context inside the nested orchestration surfaces.
 
 `runtime:focus` / `runtime_focus` provide the single next-action workspace: one chosen current priority across blocked work, review pressure, dispatchable lanes, role pressure, and leader queue context.
 
@@ -252,7 +252,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:verifier-pack` / `runtime_verifier_pack` provide the verifier-oriented package: review pressure, current verifier decision bundle, closeout-ready approval payload, and next review candidate combined into one role-scoped payload with a recommended next surface.
 
-`runtime:workspace-pack` / `runtime_workspace_pack` provide the orchestration workspace package: dashboard, dispatch, review, and recovery combined into one broad control surface with a recommended next surface.
+`runtime:workspace-pack` / `runtime_workspace_pack` provide the orchestration workspace package: dashboard, dispatch, leader launch bundles when parallel startup is ready, review, and recovery combined into one broad control surface with a recommended next surface.
 
 `runtime:worker-pack` / `runtime_worker_pack` provide the worker-oriented package: worker session, handoff, closeout, and next candidate combined into one role-scoped payload with a recommended next surface.
 
