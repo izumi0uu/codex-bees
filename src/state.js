@@ -2812,8 +2812,16 @@ export function swarmOverview(id) {
   const derivedStatus = deriveSwarmStatus(normalizedSwarm, swarmTasks);
   const nextLane =
     laneSummaries.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null;
+  const readyToComplete = counts.totalLanes > 0 && counts.done === counts.totalLanes;
+  const recommendedReason = deriveSwarmOverviewReason({
+    counts,
+    nextLane,
+    readyToComplete
+  });
 
   return {
+    kind: "swarm_overview",
+    recommendedReason,
     swarm: normalizedSwarm,
     counts,
     lanes: laneSummaries,
@@ -2821,7 +2829,7 @@ export function swarmOverview(id) {
     nextLane,
     derivedStatus,
     statusAligned: normalizedSwarm.status === derivedStatus,
-    readyToComplete: counts.totalLanes > 0 && counts.done === counts.totalLanes,
+    readyToComplete,
     dispatchableCount: counts.queued + counts.released
   };
 }
@@ -4676,6 +4684,28 @@ function deriveSwarmCloseoutReason({ overview, command }) {
     return "followup_before_closeout";
   }
   return "no_closeout_action";
+}
+
+function deriveSwarmOverviewReason({ counts, nextLane, readyToComplete }) {
+  if (readyToComplete) {
+    return "swarm_ready_to_complete";
+  }
+  if ((counts?.readyForReview ?? 0) > 0) {
+    return "review_lane_waiting";
+  }
+  if ((counts?.blocked ?? 0) > 0) {
+    return "blocked_lanes_present";
+  }
+  if (nextLane?.lane) {
+    return "dispatch_lane_ready";
+  }
+  if ((counts?.claimed ?? 0) > 0) {
+    return "claimed_lane_active";
+  }
+  if ((counts?.unqueued ?? 0) > 0) {
+    return "planned_lanes_unqueued";
+  }
+  return "swarm_state_visible";
 }
 
 function deriveSwarmBriefReason(recommended) {

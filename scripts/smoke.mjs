@@ -1097,7 +1097,12 @@ if (!Array.isArray(swarmQueue.created) || swarmQueue.created.length !== 2) {
 const swarmOverviewBeforeDispatch = JSON.parse(
   run("swarm-overview-before-dispatch", ["./src/index.js", "swarm:overview", "--id", "swarm-1"]).stdout
 ).overview;
-if (swarmOverviewBeforeDispatch.counts.queued !== 2 || swarmOverviewBeforeDispatch.nextLane?.lane !== "lane-alpha") {
+if (
+  swarmOverviewBeforeDispatch.kind !== "swarm_overview" ||
+  swarmOverviewBeforeDispatch.recommendedReason !== "dispatch_lane_ready" ||
+  swarmOverviewBeforeDispatch.counts.queued !== 2 ||
+  swarmOverviewBeforeDispatch.nextLane?.lane !== "lane-alpha"
+) {
   console.error("[smoke:swarm-overview] expected queued lanes and next lane before dispatch");
   process.exit(1);
 }
@@ -1417,7 +1422,11 @@ if (dispatchedLane.task.claimedBy !== "worker-alpha" || dispatchedLane.lane.lane
 const swarmOverviewAfterDispatch = JSON.parse(
   run("swarm-overview-after-dispatch", ["./src/index.js", "swarm:overview", "--id", "swarm-1"]).stdout
 ).overview;
-if (swarmOverviewAfterDispatch.counts.claimed !== 2 || swarmOverviewAfterDispatch.counts.queued !== 0) {
+if (
+  swarmOverviewAfterDispatch.recommendedReason !== "claimed_lane_active" ||
+  swarmOverviewAfterDispatch.counts.claimed !== 2 ||
+  swarmOverviewAfterDispatch.counts.queued !== 0
+) {
   console.error("[smoke:swarm-overview] expected assignment pickup and dispatch to claim both lanes");
   process.exit(1);
 }
@@ -1468,6 +1477,8 @@ const swarmExecutionBrief = JSON.parse(
   run("swarm-brief-ready", ["./src/index.js", "swarm:brief", "--id", "swarm-1"]).stdout
 ).brief;
 if (
+  swarmOverviewReadyToComplete.kind !== "swarm_overview" ||
+  swarmOverviewReadyToComplete.recommendedReason !== "swarm_ready_to_complete" ||
   swarmExecutionBrief.kind !== "swarm_execution_brief" ||
   swarmExecutionBrief.recommendedReason !== "swarm_complete" ||
   swarmExecutionBrief.recommendedNextAction !== "complete" ||
@@ -4181,6 +4192,8 @@ if (
   leaderWorkspacePayload?.workspace?.recommendedReason !== "closeout_focus_priority" ||
   leaderWorkspacePayload?.workspace?.focus?.swarmId !== "swarm-1" ||
   leaderWorkspacePayload?.workspace?.focus?.bundle?.swarm?.id !== "swarm-1" ||
+  swarmOverviewPayload?.overview?.kind !== "swarm_overview" ||
+  swarmOverviewPayload?.overview?.recommendedReason !== "swarm_ready_to_complete" ||
   swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||
   swarmOverviewPayload?.overview?.readyToComplete !== true ||
   swarmListDetailedPayload?.swarms?.[0]?.derivedStatus !== "completed"
