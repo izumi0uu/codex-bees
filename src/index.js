@@ -45,6 +45,7 @@ import {
   runtimeLeaderPack,
   runtimeOperatorPack,
   runtimeOwnerPack,
+  runtimeRecoveryPack,
   runtimeRecovery,
   runtimeSummaryPack,
   runtimeVerifierPack,
@@ -108,6 +109,7 @@ function printHelp() {
   write(`  codex-bees runtime:leader-pack Build the leader-oriented runtime package\n`);
   write(`  codex-bees runtime:operator-pack Build the operator-oriented runtime package\n`);
   write(`  codex-bees runtime:owner-pack Build the owner-oriented runtime package\n`);
+  write(`  codex-bees runtime:recovery-pack Build the recovery-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
   write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
   write(`  codex-bees runtime:verifier-pack Build the verifier-oriented runtime package\n`);
@@ -249,6 +251,10 @@ function printRuntimeLeaderPack() {
 
 function printRuntimeOperatorPack() {
   write(JSON.stringify({ operatorPack: runtimeOperatorPack() }, null, 2) + "\n");
+}
+
+function printRuntimeRecoveryPack() {
+  write(JSON.stringify({ recoveryPack: runtimeRecoveryPack() }, null, 2) + "\n");
 }
 
 function printRuntimeOwnerPack() {
@@ -1150,6 +1156,9 @@ async function runCommand(command) {
       return;
     case "runtime:operator-pack":
       printRuntimeOperatorPack();
+      return;
+    case "runtime:recovery-pack":
+      printRuntimeRecoveryPack();
       return;
     case "runtime:owner-pack":
       printRuntimeOwnerPack();

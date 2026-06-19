@@ -40,6 +40,7 @@ import {
   runtimeLeaderPack,
   runtimeOperatorPack,
   runtimeOwnerPack,
+  runtimeRecoveryPack,
   runtimeRecovery,
   runtimeSummaryPack,
   runtimeVerifierPack,
@@ -141,6 +142,14 @@ export const toolCatalog = [
   {
     name: "runtime_handoffs",
     description: "Build the next-actor handoff workspace for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_recovery_pack",
+    description: "Build the recovery-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1080,6 +1089,10 @@ function handleRequest(message) {
 
     if (name === "runtime_handoffs") {
       return createSuccess(id, createTextPayload({ handoffs: runtimeHandoffs() }));
+    }
+
+    if (name === "runtime_recovery_pack") {
+      return createSuccess(id, createTextPayload({ recoveryPack: runtimeRecoveryPack() }));
     }
 
     if (name === "runtime_recovery") {

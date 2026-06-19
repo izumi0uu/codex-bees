@@ -90,8 +90,8 @@ const CAPABILITY_CATALOG = [
     id: "runtime_catalog",
     category: "introspection",
     description: "Repo-native discovery of shipped agents and skills with role-aware validation.",
-    cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:activity", "runtime:closeout", "runtime:dashboard", "runtime:dispatch", "runtime:dispatch-pack", "runtime:focus", "runtime:handoffs", "runtime:leader-pack", "runtime:operator-pack", "runtime:owner-pack", "runtime:recovery", "runtime:summary-pack", "runtime:verifier-pack", "runtime:worker-pack", "runtime:review", "runtime:alerts", "runtime:roles"],
-    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_activity", "runtime_closeout", "runtime_dashboard", "runtime_dispatch", "runtime_dispatch_pack", "runtime_focus", "runtime_handoffs", "runtime_leader_pack", "runtime_operator_pack", "runtime_owner_pack", "runtime_recovery", "runtime_summary_pack", "runtime_verifier_pack", "runtime_worker_pack", "runtime_review", "runtime_alerts", "runtime_roles"]
+    cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:activity", "runtime:closeout", "runtime:dashboard", "runtime:dispatch", "runtime:dispatch-pack", "runtime:focus", "runtime:handoffs", "runtime:leader-pack", "runtime:operator-pack", "runtime:owner-pack", "runtime:recovery", "runtime:recovery-pack", "runtime:summary-pack", "runtime:verifier-pack", "runtime:worker-pack", "runtime:review", "runtime:alerts", "runtime:roles"],
+    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_activity", "runtime_closeout", "runtime_dashboard", "runtime_dispatch", "runtime_dispatch_pack", "runtime_focus", "runtime_handoffs", "runtime_leader_pack", "runtime_operator_pack", "runtime_owner_pack", "runtime_recovery", "runtime_recovery_pack", "runtime_summary_pack", "runtime_verifier_pack", "runtime_worker_pack", "runtime_review", "runtime_alerts", "runtime_roles"]
   }
 ];
 
