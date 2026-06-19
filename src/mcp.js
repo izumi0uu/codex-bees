@@ -269,7 +269,7 @@ export const toolCatalog = [
   },
   {
     name: "runtime_queue_pack",
-    description: "Build the queue-oriented runtime package for local runtime work.",
+    description: "Build the queue-oriented runtime package with launch-first recommendations for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {
@@ -350,7 +350,7 @@ export const toolCatalog = [
   },
   {
     name: "runtime_summary_pack",
-    description: "Build the automation-first runtime summary package for local runtime work.",
+    description: "Build the automation-first runtime summary package with compact launch context for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {

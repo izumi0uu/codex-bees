@@ -135,14 +135,14 @@ function printHelp() {
   write(`  codex-bees runtime:operator-pack Build the operator-oriented runtime package\n`);
   write(`  codex-bees runtime:owner-pack Build the owner-oriented runtime package\n`);
   write(`  codex-bees runtime:pickup-pack Build the start-work pickup package for one worker\n`);
-  write(`  codex-bees runtime:queue-pack Build the queue-oriented runtime package\n`);
+  write(`  codex-bees runtime:queue-pack Build the queue-oriented runtime package with launch-first recommendations\n`);
   write(`  codex-bees runtime:recovery-pack Build the recovery-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
   write(`  codex-bees runtime:role-pack Build the role-oriented runtime package\n`);
   write(`  codex-bees runtime:review-pack Build the review-oriented runtime package\n`);
   write(`  codex-bees runtime:session-pack Build the per-worker runtime session package\n`);
   write(`  codex-bees runtime:signal-pack Build the signal-oriented runtime package\n`);
-  write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
+  write(`  codex-bees runtime:summary-pack Build the automation-first summary package with compact launch context\n`);
   write(`  codex-bees runtime:triage-pack Build the triage-oriented runtime package\n`);
   write(`  codex-bees runtime:verifier-pack Build the verifier-oriented runtime package\n`);
   write(`  codex-bees runtime:workspace-pack Build the orchestration workspace package\n`);
