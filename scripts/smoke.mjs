@@ -2709,6 +2709,7 @@ const runtimeOperatorPackCli = JSON.parse(
 ).operatorPack;
 if (
   runtimeOperatorPackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeOperatorPackCli.recommendedReason !== "blocked_focus_priority" ||
   runtimeOperatorPackCli.focus?.focus?.taskId !== "task-1" ||
   runtimeOperatorPackCli.next?.handoff?.taskId !== "task-2" ||
   runtimeOperatorPackCli.overview?.alerts?.high !== 1 ||
@@ -3387,6 +3388,7 @@ const runtimeOperatorPackMcpPayload = JSON.parse(JSON.parse(runtimeOperatorPackM
 if (
   runtimeOperatorPackMcp.status !== 0 ||
   runtimeOperatorPackMcpPayload.operatorPack?.recommendedSurface !== "runtime:focus" ||
+  runtimeOperatorPackMcpPayload.operatorPack?.recommendedReason !== "blocked_focus_priority" ||
   runtimeOperatorPackMcpPayload.operatorPack?.focus?.focus?.taskId !== "task-1" ||
   runtimeOperatorPackMcpPayload.operatorPack?.next?.handoff?.taskId !== "task-2"
 ) {

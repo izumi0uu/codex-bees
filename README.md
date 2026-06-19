@@ -234,7 +234,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:leader-pack` / `runtime_leader_pack` provide the leader-oriented package: leader workspace, leader queue, dispatch pressure, leader startup plans when parallel startup is ready, and closeout readiness combined into one role-shaped payload with a recommended next surface.
 
-`runtime:operator-pack` / `runtime_operator_pack` provide the operator-oriented package: current focus plus dashboard, alerts, handoffs, and closeout readiness combined into one top-level operator payload with a recommended next surface.
+`runtime:operator-pack` / `runtime_operator_pack` provide the operator-oriented package: current focus plus dashboard, alerts, handoffs, and closeout readiness combined into one top-level operator payload with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between blocked/review focus, handoff pressure, closeout readiness, high-alert pressure, and plain dashboard visibility without inferring from the summary prose.
 
 `runtime:owner-pack` / `runtime_owner_pack` provide the owner-oriented package: owner-mode worker session, handoff, closeout, and next pickup candidate combined into one role-scoped payload with a recommended next surface.
 

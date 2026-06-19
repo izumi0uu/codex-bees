@@ -1188,10 +1188,12 @@ export function runtimeOperatorPack() {
   const handoffs = runtimeHandoffs();
   const closeout = runtimeCloseout();
   const recommendedSurface = deriveRuntimeOperatorPackSurface({ focus, handoffs, closeout, dashboard, alerts });
+  const recommendedReason = deriveRuntimeOperatorPackReason({ focus, handoffs, closeout, dashboard, alerts });
 
   return {
     kind: "runtime_operator_pack",
     recommendedSurface,
+    recommendedReason,
     focus,
     overview: {
       dashboard: dashboard?.counts ?? null,
@@ -4229,6 +4231,31 @@ function deriveRuntimeOperatorPackSurface({ focus, handoffs, closeout, dashboard
     return "runtime:dashboard";
   }
   return "runtime:focus";
+}
+
+function deriveRuntimeOperatorPackReason({ focus, handoffs, closeout, dashboard, alerts }) {
+  if (focus?.focus?.type === "blocked_task") {
+    return "blocked_focus_priority";
+  }
+  if (focus?.focus?.type === "review_task") {
+    return "review_focus_priority";
+  }
+  if ((handoffs?.counts?.reviewDecisions ?? 0) > 0) {
+    return "review_handoff_priority";
+  }
+  if ((handoffs?.counts?.blockedRecoveries ?? 0) > 0) {
+    return "blocked_recovery_priority";
+  }
+  if ((closeout?.counts?.totalReady ?? 0) > 0) {
+    return "closeout_priority";
+  }
+  if ((alerts?.counts?.high ?? 0) > 0) {
+    return "high_alert_priority";
+  }
+  if ((dashboard?.counts?.tasks ?? 0) > 0 || (dashboard?.counts?.leaderQueueItems ?? 0) > 0) {
+    return "dashboard_visibility";
+  }
+  return "default_focus_priority";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
