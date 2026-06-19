@@ -564,6 +564,44 @@ export function leaderAssignmentDispatch(input = {}) {
   };
 }
 
+export function leaderAssignmentDispatchPack(input = {}) {
+  const assignments = leaderAssignments(input);
+  const groups = (assignments?.groups ?? []).map((group) => {
+    const ownerId = group.owner?.id ?? group.owner?.name ?? "unknown";
+    const workerId = input.workerId ?? `<${ownerId}-worker>`;
+    const dispatch = leaderAssignmentDispatch({
+      ...input,
+      role: ownerId,
+      workerId
+    });
+
+    return {
+      owner: group.owner,
+      count: group.count,
+      next: dispatch.assignment,
+      workerId,
+      previewCommand: dispatch.previewCommand,
+      pickupCommand: dispatch.pickupCommand,
+      command: dispatch.command,
+      summary: dispatch.summary
+    };
+  });
+  const next = groups[0] ?? null;
+
+  return {
+    kind: "leader_assignment_dispatch_pack",
+    counts: {
+      ownerGroups: groups.length,
+      totalAssignments: assignments?.counts?.totalAssignments ?? 0
+    },
+    next,
+    groups,
+    summary: next
+      ? `Leader assignment dispatch pack has ${groups.length} owner group${groups.length === 1 ? "" : "s"} ready; ${next.owner?.id ?? next.owner?.name ?? "unknown"} is first.`
+      : "Leader assignment dispatch pack has no worker-targeted assignment dispatches right now."
+  };
+}
+
 export function runtimeDashboard() {
   const state = loadState();
   const tasks = state.tasks.map(normalizeTask);
