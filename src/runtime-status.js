@@ -90,8 +90,8 @@ const CAPABILITY_CATALOG = [
     id: "runtime_catalog",
     category: "introspection",
     description: "Repo-native discovery of shipped agents and skills with role-aware validation.",
-    cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:dashboard"],
-    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_dashboard"]
+    cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:dashboard", "runtime:alerts"],
+    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_dashboard", "runtime_alerts"]
   }
 ];
 

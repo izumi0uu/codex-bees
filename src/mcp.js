@@ -29,6 +29,7 @@ import {
   queueSwarmTasks,
   rejectTask,
   releaseTask,
+  runtimeAlerts,
   runtimeDashboard,
   swarmOverview,
   syncSwarmStatus,
@@ -107,6 +108,14 @@ export const toolCatalog = [
   {
     name: "runtime_dashboard",
     description: "Build the top-level orchestration dashboard for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_alerts",
+    description: "Build the top-level orchestration alert stream for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -907,6 +916,10 @@ function handleRequest(message) {
 
     if (name === "runtime_dashboard") {
       return createSuccess(id, createTextPayload({ dashboard: runtimeDashboard() }));
+    }
+
+    if (name === "runtime_alerts") {
+      return createSuccess(id, createTextPayload({ alerts: runtimeAlerts() }));
     }
 
     if (name === "task_list") {

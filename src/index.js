@@ -34,6 +34,7 @@ import {
   queueSwarmTasks,
   rejectTask,
   releaseTask,
+  runtimeAlerts,
   runtimeDashboard,
   swarmOverview,
   syncSwarmStatus,
@@ -81,6 +82,7 @@ function printHelp() {
   write(`  codex-bees doctor          Print runtime contract diagnostics\n`);
   write(`  codex-bees status          Print runtime state and surface summary\n`);
   write(`  codex-bees capabilities    Print the shipped runtime capability inventory\n`);
+  write(`  codex-bees runtime:alerts  Build the top-level orchestration alert stream\n`);
   write(`  codex-bees runtime:dashboard Build the top-level orchestration dashboard\n`);
   write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
   write(`  codex-bees plan:queue      Generate a plan and queue its lanes as local tasks\n`);
@@ -193,6 +195,10 @@ function printCapabilities() {
 
 function printRuntimeDashboard() {
   write(JSON.stringify({ dashboard: runtimeDashboard() }, null, 2) + "\n");
+}
+
+function printRuntimeAlerts() {
+  write(JSON.stringify({ alerts: runtimeAlerts() }, null, 2) + "\n");
 }
 
 function readOption(flag) {
@@ -1008,6 +1014,9 @@ async function runCommand(command) {
       return;
     case "runtime:dashboard":
       printRuntimeDashboard();
+      return;
+    case "runtime:alerts":
+      printRuntimeAlerts();
       return;
     case "plan":
       handlePlan();
