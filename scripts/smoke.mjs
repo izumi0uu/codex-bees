@@ -358,6 +358,7 @@ const runtimeDispatchPackInitial = JSON.parse(
 if (
   runtimeDispatchPackInitial.kind !== "runtime_dispatch_pack" ||
   !runtimeDispatchPackInitial.recommendedSurface ||
+  typeof runtimeDispatchPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeDispatchPackInitial.overview ||
   !runtimeDispatchPackInitial.surfaces
 ) {
@@ -3525,6 +3526,10 @@ const runtimeDispatchPackCli = JSON.parse(
 if (
   runtimeDispatchPackCli.recommendedSurface !== "runtime:dispatch" ||
   runtimeDispatchPackCli.recommendedReason !== "dispatch_priority" ||
+  runtimeDispatchPackCli.metadata?.hasDispatch !== true ||
+  runtimeDispatchPackCli.metadata?.hasRole !== true ||
+  runtimeDispatchPackCli.metadata?.hasHandoff !== true ||
+  runtimeDispatchPackCli.counts?.surfacedNextEntries !== Object.values(runtimeDispatchPackCli.next ?? {}).filter(Boolean).length ||
   runtimeDispatchPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeDispatchPackCli.next?.handoff?.taskId !== "task-2" ||
   runtimeDispatchPackCli.overview?.dispatch?.totalAssignments !== 1 ||

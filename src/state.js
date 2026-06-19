@@ -1434,11 +1434,29 @@ export function runtimeDispatchPack(input = {}) {
   const handoffs = runtimeHandoffs();
   const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs });
   const recommendedReason = deriveRuntimeDispatchPackReason({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs });
+  const nextEntries = {
+    dispatch: dispatch?.next ?? null,
+    assignmentDispatch: assignmentDispatchPack?.next ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
+    role: roles?.next ?? null,
+    handoff: handoffs?.next ?? null
+  };
 
   return {
     kind: "runtime_dispatch_pack",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasDispatch: Boolean(dispatch?.next),
+      hasAssignmentDispatch: Boolean(assignmentDispatchPack?.next),
+      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
+      hasRole: Boolean(roles?.next),
+      hasHandoff: Boolean(handoffs?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       dispatch: dispatch?.counts ?? null,
       assignmentDispatchPack: assignmentDispatchPack?.counts ?? null,
@@ -1447,14 +1465,7 @@ export function runtimeDispatchPack(input = {}) {
       roles: roles?.counts ?? null,
       handoffs: handoffs?.counts ?? null
     },
-    next: {
-      dispatch: dispatch?.next ?? null,
-      assignmentDispatch: assignmentDispatchPack?.next ?? null,
-      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-      assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
-      role: roles?.next ?? null,
-      handoff: handoffs?.next ?? null
-    },
+    next: nextEntries,
     surfaces: {
       dispatch,
       assignmentDispatchPack,
