@@ -31,6 +31,7 @@ import {
   storeMemory,
   swarmBrief,
   taskInbox,
+  taskHistory,
   taskPickup,
   taskNext,
   updateSwarm,
@@ -143,6 +144,17 @@ export const toolCatalog = [
   {
     name: "task_get",
     description: "Get one local coordination task by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_history",
+    description: "Get structured handoff history for one local coordination task.",
     inputSchema: {
       type: "object",
       required: ["id"],
@@ -748,6 +760,19 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ task }));
+    }
+
+    if (name === "task_history") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_history requires arguments.id");
+      }
+
+      const history = taskHistory(params.arguments.id);
+      if (!history) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ history }));
     }
 
     if (name === "task_brief") {
