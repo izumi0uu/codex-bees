@@ -10,6 +10,7 @@ import {
   claimTask,
   completeSwarm,
   completeTask,
+  dispatchSwarmLane,
   getSwarm,
   initSwarm,
   listMemories,
@@ -18,6 +19,7 @@ import {
   markTaskReadyForReview,
   queueSwarmTasks,
   releaseTask,
+  swarmOverview,
   searchMemories,
   storeMemory,
   updateSwarm,
@@ -246,6 +248,30 @@ export const toolCatalog = [
             }
           }
         }
+      }
+    }
+  },
+  {
+    name: "swarm_overview",
+    description: "Summarize swarm progress, lane statuses, and the next runnable lane.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_dispatch",
+    description: "Claim the next runnable lane task from a swarm for one worker.",
+    inputSchema: {
+      type: "object",
+      required: ["id", "claimedBy"],
+      properties: {
+        id: { type: "string" },
+        claimedBy: { type: "string" },
+        owner: { type: "string" }
       }
     }
   },
@@ -717,6 +743,42 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ updated: swarm }));
+    }
+
+    if (name === "swarm_overview") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_overview requires arguments.id");
+      }
+
+      const overview = swarmOverview(params.arguments.id);
+      if (!overview) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ overview }));
+    }
+
+    if (name === "swarm_dispatch") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_dispatch requires arguments.id");
+      }
+      if (!params.arguments?.claimedBy) {
+        return createError(id, -32602, "swarm_dispatch requires arguments.claimedBy");
+      }
+
+      const result = dispatchSwarmLane({
+        id: params.arguments.id,
+        claimedBy: params.arguments.claimedBy,
+        owner: params.arguments.owner
+      });
+      if (!result) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+      if (result.error) {
+        return createError(id, -32602, result.error);
+      }
+
+      return createSuccess(id, createTextPayload({ dispatched: result }));
     }
 
     if (name === "swarm_activate") {
