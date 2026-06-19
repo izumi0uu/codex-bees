@@ -23,6 +23,7 @@ import {
   getTask,
   getSwarm,
   initSwarm,
+  leaderQueue,
   leaderWorkspace,
   listMemories,
   listSwarmOverviews,
@@ -95,6 +96,7 @@ function printHelp() {
   write(`  codex-bees worker:handoff  Build a return-ready handoff package for one worker\n`);
   write(`  codex-bees worker:closeout Build a closure-oriented bundle for one worker\n`);
   write(`  codex-bees verifier:bundle Build a decision-ready bundle for one verifier\n`);
+  write(`  codex-bees leader:queue    Build a prioritized leader decision queue across swarms\n`);
   write(`  codex-bees leader:workspace Build a leader-ready orchestration workspace across swarms\n`);
   write(`  codex-bees task:claim      Claim a local coordination task\n`);
   write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
@@ -480,6 +482,15 @@ function handleLeaderWorkspace() {
     owner: readOption("--owner")
   });
   write(JSON.stringify({ workspace }, null, 2) + "\n");
+}
+
+function handleLeaderQueue() {
+  const queue = leaderQueue({
+    status: readOption("--status"),
+    topology: readOption("--topology"),
+    owner: readOption("--owner")
+  });
+  write(JSON.stringify({ queue }, null, 2) + "\n");
 }
 
 function handleTaskCheck() {
@@ -1034,6 +1045,9 @@ async function runCommand(command) {
       return;
     case "leader:workspace":
       handleLeaderWorkspace();
+      return;
+    case "leader:queue":
+      handleLeaderQueue();
       return;
     case "task:claim":
       handleTaskClaim();
