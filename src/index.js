@@ -42,6 +42,7 @@ import {
   runtimeFocus,
   runtimeHandoffs,
   runtimeLeaderPack,
+  runtimeOperatorPack,
   runtimeRecovery,
   runtimeSummaryPack,
   runtimeVerifierPack,
@@ -102,6 +103,7 @@ function printHelp() {
   write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
   write(`  codex-bees runtime:handoffs Build the next-actor handoff workspace\n`);
   write(`  codex-bees runtime:leader-pack Build the leader-oriented runtime package\n`);
+  write(`  codex-bees runtime:operator-pack Build the operator-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
   write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
   write(`  codex-bees runtime:verifier-pack Build the verifier-oriented runtime package\n`);
@@ -239,6 +241,10 @@ function printRuntimeSummaryPack() {
 
 function printRuntimeLeaderPack() {
   write(JSON.stringify({ leaderPack: runtimeLeaderPack() }, null, 2) + "\n");
+}
+
+function printRuntimeOperatorPack() {
+  write(JSON.stringify({ operatorPack: runtimeOperatorPack() }, null, 2) + "\n");
 }
 
 function printRuntimeVerifierPack() {
@@ -1118,6 +1124,9 @@ async function runCommand(command) {
       return;
     case "runtime:leader-pack":
       printRuntimeLeaderPack();
+      return;
+    case "runtime:operator-pack":
+      printRuntimeOperatorPack();
       return;
     case "runtime:verifier-pack":
       printRuntimeVerifierPack();

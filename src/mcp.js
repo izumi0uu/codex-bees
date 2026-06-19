@@ -37,6 +37,7 @@ import {
   runtimeFocus,
   runtimeHandoffs,
   runtimeLeaderPack,
+  runtimeOperatorPack,
   runtimeRecovery,
   runtimeSummaryPack,
   runtimeVerifierPack,
@@ -161,6 +162,14 @@ export const toolCatalog = [
         topology: { type: "string" },
         owner: { type: "string" }
       }
+    }
+  },
+  {
+    name: "runtime_operator_pack",
+    description: "Build the operator-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
     }
   },
   {
@@ -1066,6 +1075,10 @@ function handleRequest(message) {
           })
         })
       );
+    }
+
+    if (name === "runtime_operator_pack") {
+      return createSuccess(id, createTextPayload({ operatorPack: runtimeOperatorPack() }));
     }
 
     if (name === "runtime_summary_pack") {
