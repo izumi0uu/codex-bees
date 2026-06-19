@@ -18,6 +18,7 @@ import {
   getTask,
   getSwarm,
   initSwarm,
+  leaderAssignments,
   leaderQueue,
   leaderWorkspace,
   listMemories,
@@ -320,6 +321,18 @@ export const toolCatalog = [
   {
     name: "leader_queue",
     description: "Build a prioritized leader decision queue across local swarms.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string" },
+        topology: { type: "string" },
+        owner: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "leader_assignments",
+    description: "Build owner-grouped dispatch assignments across local swarms.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1119,6 +1132,16 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ queue }));
+    }
+
+    if (name === "leader_assignments") {
+      const assignments = leaderAssignments({
+        status: params.arguments?.status,
+        topology: params.arguments?.topology,
+        owner: params.arguments?.owner
+      });
+
+      return createSuccess(id, createTextPayload({ assignments }));
     }
 
     if (name === "task_update") {
