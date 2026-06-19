@@ -895,6 +895,7 @@ export function runtimeFocus() {
     const brief = taskBrief(blockedAlert.taskId);
     return {
       kind: "runtime_focus",
+      recommendedReason: "blocked_focus_priority",
       focus: {
         source: "alerts",
         priority: "high",
@@ -916,6 +917,7 @@ export function runtimeFocus() {
   if (review.next?.taskId) {
     return {
       kind: "runtime_focus",
+      recommendedReason: "review_focus_priority",
       focus: {
         source: "review",
         priority: "medium",
@@ -938,6 +940,7 @@ export function runtimeFocus() {
   if (dispatch.next?.lane) {
     return {
       kind: "runtime_focus",
+      recommendedReason: "dispatch_focus_priority",
       focus: {
         source: "dispatch",
         priority: "medium",
@@ -960,6 +963,7 @@ export function runtimeFocus() {
   if (roles.next?.nextAction?.task || (roles.next?.counts?.total ?? 0) > 0) {
     return {
       kind: "runtime_focus",
+      recommendedReason: "role_focus_priority",
       focus: {
         source: "roles",
         priority: "low",
@@ -980,6 +984,7 @@ export function runtimeFocus() {
   if (queueNext?.swarmId) {
     return {
       kind: "runtime_focus",
+      recommendedReason: "leader_queue_focus_priority",
       focus: {
         source: "leader_queue",
         priority: "low",
@@ -997,6 +1002,7 @@ export function runtimeFocus() {
 
   return {
     kind: "runtime_focus",
+    recommendedReason: "idle_focus_priority",
     focus: {
       source: "idle",
       priority: "none",

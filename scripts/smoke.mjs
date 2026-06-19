@@ -229,6 +229,7 @@ const runtimeFocusInitial = JSON.parse(
 ).focus;
 if (
   runtimeFocusInitial.kind !== "runtime_focus" ||
+  runtimeFocusInitial.recommendedReason !== "role_focus_priority" ||
   !runtimeFocusInitial.focus
 ) {
   console.error("[smoke:runtime-focus] expected top-level runtime focus");
@@ -2658,6 +2659,7 @@ const runtimeFocusCli = JSON.parse(
   run("runtime-focus-cli", ["./src/index.js", "runtime:focus"]).stdout
 ).focus;
 if (
+  runtimeFocusCli.recommendedReason !== "blocked_focus_priority" ||
   runtimeFocusCli.focus?.type !== "blocked_task" ||
   runtimeFocusCli.focus?.taskId !== "task-1" ||
   runtimeFocusCli.focus?.recommendedNextAction !== "resolve_blocker_and_requeue" ||
@@ -3194,6 +3196,7 @@ const runtimeFocusMcpLines = runtimeFocusMcp.stdout
 const runtimeFocusMcpPayload = JSON.parse(JSON.parse(runtimeFocusMcpLines[1]).result.content[0].text);
 if (
   runtimeFocusMcp.status !== 0 ||
+  runtimeFocusMcpPayload.focus?.recommendedReason !== "blocked_focus_priority" ||
   runtimeFocusMcpPayload.focus?.focus?.type !== "blocked_task" ||
   runtimeFocusMcpPayload.focus?.focus?.taskId !== "task-1" ||
   runtimeFocusMcpPayload.focus?.sources?.dispatch?.totalAssignments !== 1
