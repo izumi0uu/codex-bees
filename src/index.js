@@ -290,11 +290,21 @@ function printRuntimeCloseout() {
 }
 
 function printRuntimeCloseoutPack() {
-  write(JSON.stringify({ closeoutPack: runtimeCloseoutPack() }, null, 2) + "\n");
+  write(JSON.stringify({
+    closeoutPack: runtimeCloseoutPack({
+      workerId: readOption("--worker"),
+      workerIds: readJsonOption("--workers")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeControlPack() {
-  write(JSON.stringify({ controlPack: runtimeControlPack() }, null, 2) + "\n");
+  write(JSON.stringify({
+    controlPack: runtimeControlPack({
+      workerId: readOption("--worker"),
+      workerIds: readJsonOption("--workers")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeSignalPack() {
@@ -302,7 +312,12 @@ function printRuntimeSignalPack() {
 }
 
 function printRuntimeExecutionPack() {
-  write(JSON.stringify({ executionPack: runtimeExecutionPack() }, null, 2) + "\n");
+  write(JSON.stringify({
+    executionPack: runtimeExecutionPack({
+      workerId: readOption("--worker"),
+      workerIds: readJsonOption("--workers")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimePickupPack() {
@@ -338,7 +353,12 @@ function printRuntimeRecovery() {
 }
 
 function printRuntimeSummaryPack() {
-  write(JSON.stringify({ summaryPack: runtimeSummaryPack() }, null, 2) + "\n");
+  write(JSON.stringify({
+    summaryPack: runtimeSummaryPack({
+      workerId: readOption("--worker"),
+      workerIds: readJsonOption("--workers")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeLeaderPack() {
@@ -387,11 +407,21 @@ function printRuntimeSessionPack() {
 }
 
 function printRuntimeQueuePack() {
-  write(JSON.stringify({ queuePack: runtimeQueuePack() }, null, 2) + "\n");
+  write(JSON.stringify({
+    queuePack: runtimeQueuePack({
+      workerId: readOption("--worker"),
+      workerIds: readJsonOption("--workers")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeWorkspacePack() {
-  write(JSON.stringify({ workspacePack: runtimeWorkspacePack() }, null, 2) + "\n");
+  write(JSON.stringify({
+    workspacePack: runtimeWorkspacePack({
+      workerId: readOption("--worker"),
+      workerIds: readJsonOption("--workers")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeOwnerPack() {

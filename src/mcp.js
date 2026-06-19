@@ -177,7 +177,10 @@ export const toolCatalog = [
     description: "Build the closeout-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
-      properties: {}
+      properties: {
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } }
+      }
     }
   },
   {
@@ -185,7 +188,10 @@ export const toolCatalog = [
     description: "Build the automation/control runtime package for local runtime work.",
     inputSchema: {
       type: "object",
-      properties: {}
+      properties: {
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } }
+      }
     }
   },
   {
@@ -266,7 +272,10 @@ export const toolCatalog = [
     description: "Build the queue-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
-      properties: {}
+      properties: {
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } }
+      }
     }
   },
   {
@@ -274,7 +283,10 @@ export const toolCatalog = [
     description: "Build the orchestration workspace package for local runtime work.",
     inputSchema: {
       type: "object",
-      properties: {}
+      properties: {
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } }
+      }
     }
   },
   {
@@ -341,7 +353,10 @@ export const toolCatalog = [
     description: "Build the automation-first runtime summary package for local runtime work.",
     inputSchema: {
       type: "object",
-      properties: {}
+      properties: {
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } }
+      }
     }
   },
   {
@@ -401,7 +416,10 @@ export const toolCatalog = [
     description: "Build the execution-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
-      properties: {}
+      properties: {
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } }
+      }
     }
   },
   {
@@ -1363,11 +1381,21 @@ function handleRequest(message) {
     }
 
     if (name === "runtime_closeout_pack") {
-      return createSuccess(id, createTextPayload({ closeoutPack: runtimeCloseoutPack() }));
+      return createSuccess(id, createTextPayload({
+        closeoutPack: runtimeCloseoutPack({
+          workerId: params.arguments?.workerId,
+          workerIds: params.arguments?.workerIds
+        })
+      }));
     }
 
     if (name === "runtime_control_pack") {
-      return createSuccess(id, createTextPayload({ controlPack: runtimeControlPack() }));
+      return createSuccess(id, createTextPayload({
+        controlPack: runtimeControlPack({
+          workerId: params.arguments?.workerId,
+          workerIds: params.arguments?.workerIds
+        })
+      }));
     }
 
     if (name === "runtime_signal_pack") {
@@ -1420,11 +1448,21 @@ function handleRequest(message) {
     }
 
     if (name === "runtime_queue_pack") {
-      return createSuccess(id, createTextPayload({ queuePack: runtimeQueuePack() }));
+      return createSuccess(id, createTextPayload({
+        queuePack: runtimeQueuePack({
+          workerId: params.arguments?.workerId,
+          workerIds: params.arguments?.workerIds
+        })
+      }));
     }
 
     if (name === "runtime_workspace_pack") {
-      return createSuccess(id, createTextPayload({ workspacePack: runtimeWorkspacePack() }));
+      return createSuccess(id, createTextPayload({
+        workspacePack: runtimeWorkspacePack({
+          workerId: params.arguments?.workerId,
+          workerIds: params.arguments?.workerIds
+        })
+      }));
     }
 
     if (name === "runtime_leader_pack") {
@@ -1497,7 +1535,12 @@ function handleRequest(message) {
     }
 
     if (name === "runtime_summary_pack") {
-      return createSuccess(id, createTextPayload({ summaryPack: runtimeSummaryPack() }));
+      return createSuccess(id, createTextPayload({
+        summaryPack: runtimeSummaryPack({
+          workerId: params.arguments?.workerId,
+          workerIds: params.arguments?.workerIds
+        })
+      }));
     }
 
     if (name === "runtime_verifier_pack") {
@@ -1558,7 +1601,12 @@ function handleRequest(message) {
     }
 
     if (name === "runtime_execution_pack") {
-      return createSuccess(id, createTextPayload({ executionPack: runtimeExecutionPack() }));
+      return createSuccess(id, createTextPayload({
+        executionPack: runtimeExecutionPack({
+          workerId: params.arguments?.workerId,
+          workerIds: params.arguments?.workerIds
+        })
+      }));
     }
 
     if (name === "runtime_focus") {
