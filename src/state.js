@@ -981,6 +981,43 @@ export function runtimeRecovery() {
   };
 }
 
+export function runtimeSummaryPack() {
+  const dashboard = runtimeDashboard();
+  const alerts = runtimeAlerts();
+  const focus = runtimeFocus();
+  const handoffs = runtimeHandoffs();
+  const recovery = runtimeRecovery();
+  const closeout = runtimeCloseout();
+  const recommendedSurface = deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard });
+
+  return {
+    kind: "runtime_summary_pack",
+    recommendedSurface,
+    focus,
+    overview: {
+      dashboard: dashboard.counts,
+      alerts: alerts.counts,
+      handoffs: handoffs.counts,
+      recovery: recovery.counts,
+      closeout: closeout.counts
+    },
+    next: {
+      focus: focus.focus ?? null,
+      handoff: handoffs.next ?? null,
+      recovery: recovery.next ?? null,
+      closeout: closeout.next ?? null
+    },
+    surfaces: {
+      dashboard,
+      alerts,
+      handoffs,
+      recovery,
+      closeout
+    },
+    summary: buildRuntimeSummaryPackSummary(recommendedSurface, focus)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -2903,6 +2940,30 @@ function buildRuntimeRecoverySummary(groups, next) {
   }
 
   return `Runtime recovery should start with ${next.taskId} in ${next.recoveryType}.`;
+}
+
+function deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard }) {
+  if (focus?.focus?.type === "blocked_task") {
+    return "runtime:focus";
+  }
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "runtime:recovery";
+  }
+  if ((handoffs?.counts?.totalHandoffs ?? 0) > 0) {
+    return "runtime:handoffs";
+  }
+  if ((closeout?.counts?.totalReady ?? 0) > 0) {
+    return "runtime:closeout";
+  }
+  if ((dashboard?.counts?.leaderQueueItems ?? 0) > 0) {
+    return "runtime:dashboard";
+  }
+  return "runtime:focus";
+}
+
+function buildRuntimeSummaryPackSummary(recommendedSurface, focus) {
+  const detail = focus?.summary ?? "Runtime summary pack has no current focus detail.";
+  return `Runtime summary pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function compareRuntimeRoleEntries(left, right) {
