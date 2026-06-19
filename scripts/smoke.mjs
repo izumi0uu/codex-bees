@@ -554,7 +554,15 @@ if (
 const listedMemories = JSON.parse(
   run("memory-list-verify", ["./src/index.js", "memory:list", "--namespace", "smoke"]).stdout
 ).memories;
-const smokeMemory = listedMemories.find((memory) => memory.namespace === "smoke");
+if (
+  listedMemories.kind !== "memory_view" ||
+  listedMemories.recommendedReason !== "memory_list_has_results" ||
+  !Array.isArray(listedMemories.memories)
+) {
+  console.error("[smoke:memory-list] expected CLI memory list view payload");
+  process.exit(1);
+}
+const smokeMemory = listedMemories.memories.find((memory) => memory.namespace === "smoke");
 if (!smokeMemory || smokeMemory.agent !== "tester") {
   console.error("[smoke:memory-list] expected persisted memory with agent");
   process.exit(1);
@@ -5718,6 +5726,17 @@ const memoryMcpInput = [
     id: 3,
     method: "tools/call",
     params: {
+      name: "memory_list",
+      arguments: {
+        namespace: "mcp-smoke"
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
       name: "memory_search",
       arguments: {
         query: "smoke coverage",
@@ -5739,7 +5758,10 @@ const memoryMcpLines = memoryMcp.stdout
 const memoryStoreResult = memoryMcpLines.length >= 2 ? JSON.parse(memoryMcpLines[1]) : null;
 const memoryStoreText = memoryStoreResult?.result?.content?.[0]?.text;
 const memoryStorePayload = memoryStoreText ? JSON.parse(memoryStoreText) : null;
-const memorySearchResult = memoryMcpLines.length >= 3 ? JSON.parse(memoryMcpLines[2]) : null;
+const memoryListResult = memoryMcpLines.length >= 3 ? JSON.parse(memoryMcpLines[2]) : null;
+const memoryListText = memoryListResult?.result?.content?.[0]?.text;
+const memoryListPayload = memoryListText ? JSON.parse(memoryListText) : null;
+const memorySearchResult = memoryMcpLines.length >= 4 ? JSON.parse(memoryMcpLines[3]) : null;
 const memorySearchText = memorySearchResult?.result?.content?.[0]?.text;
 const memorySearchPayload = memorySearchText ? JSON.parse(memorySearchText) : null;
 if (
@@ -5748,6 +5770,9 @@ if (
   memoryStorePayload?.stored?.recommendedReason !== "memory_stored" ||
   memoryStorePayload?.stored?.memory?.namespace !== "mcp-smoke" ||
   memoryStorePayload?.stored?.memory?.content !== "Remember MCP memory smoke coverage" ||
+  memoryListPayload?.memories?.kind !== "memory_view" ||
+  memoryListPayload?.memories?.recommendedReason !== "memory_list_has_results" ||
+  !memoryListPayload?.memories?.memories?.some((memory) => memory.namespace === "mcp-smoke") ||
   !Array.isArray(memorySearchPayload?.results) ||
   memorySearchPayload.results.length === 0
 ) {

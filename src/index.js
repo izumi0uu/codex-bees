@@ -81,6 +81,7 @@ import {
   swarmOverview,
   syncSwarmStatus,
   searchMemories,
+  listMemoriesView,
   stateFilePath,
   storeMemory,
   storeMemoryMutation,
@@ -1361,7 +1362,7 @@ function handleMemoryList() {
   write(
     JSON.stringify(
       {
-        memories: listMemories({
+        memories: listMemoriesView({
           namespace: readOption("--namespace"),
           kind: readOption("--kind"),
           agent: readOption("--agent"),

@@ -353,6 +353,8 @@ The foundation layer is in place:
 
 `memory:store` / `memory_store` return the explicit memory mutation result. They emit `kind: "memory_mutation"` with `recommendedReason: "memory_stored"` so automation can distinguish durable memory writes from later search/list retrieval surfaces without inferring from the nested memory payload alone.
 
+`memory:list` / `memory_list` return the explicit memory retrieval view. They emit `kind: "memory_view"` with `recommendedReason: "memory_list_has_results"` or `recommendedReason: "memory_list_empty"` so automation can distinguish non-empty and empty filtered memory listings without inferring from array length alone.
+
 ## Why this project exists
 
 Most multi-agent coding setups either hide too much logic in prompts or spread too much behavior across external systems.

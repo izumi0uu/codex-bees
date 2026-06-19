@@ -97,6 +97,16 @@ export function listMemories(filters = {}) {
   return filterMemories(loadState().memories, filters);
 }
 
+export function listMemoriesView(filters = {}) {
+  const memories = listMemories(filters);
+  const recommendedReason = memories.length > 0 ? "memory_list_has_results" : "memory_list_empty";
+  return {
+    kind: "memory_view",
+    recommendedReason,
+    memories
+  };
+}
+
 export function listSwarms(filters = {}) {
   return filterSwarms(loadState().swarms, filters);
 }

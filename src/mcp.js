@@ -76,6 +76,7 @@ import {
   swarmOverview,
   syncSwarmStatus,
   searchMemories,
+  listMemoriesView,
   storeMemory,
   storeMemoryMutation,
   swarmBlockers,
@@ -2564,7 +2565,7 @@ function handleRequest(message) {
     }
 
     if (name === "memory_list") {
-      const memories = listMemories({
+      const memories = listMemoriesView({
         namespace: params.arguments?.namespace,
         kind: params.arguments?.kind,
         agent: params.arguments?.agent,
