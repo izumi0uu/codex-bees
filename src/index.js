@@ -42,6 +42,7 @@ import {
   runtimeDashboard,
   runtimeDispatchPack,
   runtimeDispatch,
+  runtimeExecutionPack,
   runtimeFocus,
   runtimeHandoffPack,
   runtimeHandoffs,
@@ -116,6 +117,7 @@ function printHelp() {
   write(`  codex-bees runtime:control-pack Build the automation/control runtime package\n`);
   write(`  codex-bees runtime:dispatch Build the owner-grouped dispatch workspace\n`);
   write(`  codex-bees runtime:dispatch-pack Build the dispatch-oriented runtime package\n`);
+  write(`  codex-bees runtime:execution-pack Build the execution-oriented runtime package\n`);
   write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
   write(`  codex-bees runtime:handoff-pack Build the handoff-oriented runtime package\n`);
   write(`  codex-bees runtime:handoffs Build the next-actor handoff workspace\n`);
@@ -263,6 +265,10 @@ function printRuntimeControlPack() {
 
 function printRuntimeSignalPack() {
   write(JSON.stringify({ signalPack: runtimeSignalPack({ limit: readPositiveIntegerOption("--limit") }) }, null, 2) + "\n");
+}
+
+function printRuntimeExecutionPack() {
+  write(JSON.stringify({ executionPack: runtimeExecutionPack() }, null, 2) + "\n");
 }
 
 function printRuntimeHandoffPack() {
@@ -1244,6 +1250,9 @@ async function runCommand(command) {
       return;
     case "runtime:signal-pack":
       printRuntimeSignalPack();
+      return;
+    case "runtime:execution-pack":
+      printRuntimeExecutionPack();
       return;
     case "runtime:handoff-pack":
       printRuntimeHandoffPack();

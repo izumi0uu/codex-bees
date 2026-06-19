@@ -37,6 +37,7 @@ import {
   runtimeDashboard,
   runtimeDispatchPack,
   runtimeDispatch,
+  runtimeExecutionPack,
   runtimeFocus,
   runtimeHandoffPack,
   runtimeHandoffs,
@@ -350,6 +351,14 @@ export const toolCatalog = [
   {
     name: "runtime_dispatch_pack",
     description: "Build the dispatch-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_execution_pack",
+    description: "Build the execution-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1354,6 +1363,10 @@ function handleRequest(message) {
 
     if (name === "runtime_dispatch_pack") {
       return createSuccess(id, createTextPayload({ dispatchPack: runtimeDispatchPack() }));
+    }
+
+    if (name === "runtime_execution_pack") {
+      return createSuccess(id, createTextPayload({ executionPack: runtimeExecutionPack() }));
     }
 
     if (name === "runtime_focus") {
