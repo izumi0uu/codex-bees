@@ -14,6 +14,7 @@ import {
   getSwarm,
   initSwarm,
   listMemories,
+  listSwarmOverviews,
   listSwarms,
   listTasks,
   markTaskReadyForReview,
@@ -174,7 +175,8 @@ export const toolCatalog = [
       properties: {
         status: { type: "string" },
         topology: { type: "string" },
-        owner: { type: "string" }
+        owner: { type: "string" },
+        detailed: { type: "boolean" }
       }
     }
   },
@@ -691,11 +693,14 @@ function handleRequest(message) {
     }
 
     if (name === "swarm_list") {
-      const swarms = listSwarms({
+      const filters = {
         status: params.arguments?.status,
         topology: params.arguments?.topology,
         owner: params.arguments?.owner
-      });
+      };
+      const swarms = params.arguments?.detailed
+        ? listSwarmOverviews(filters)
+        : listSwarms(filters);
 
       return createSuccess(id, createTextPayload({ swarms }));
     }
