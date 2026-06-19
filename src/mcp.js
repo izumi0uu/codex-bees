@@ -36,6 +36,7 @@ import {
   taskPickup,
   taskReport,
   taskNext,
+  verifierBundle,
   workerCloseout,
   workerHandoff,
   workerSession,
@@ -281,6 +282,19 @@ export const toolCatalog = [
         role: { type: "string" },
         workerId: { type: "string" },
         mode: { type: "string" },
+        limit: { type: "number" }
+      }
+    }
+  },
+  {
+    name: "verifier_bundle",
+    description: "Build a decision-ready bundle for one verifier.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
         limit: { type: "number" }
       }
     }
@@ -994,6 +1008,23 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ closeout }));
+    }
+
+    if (name === "verifier_bundle") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "verifier_bundle requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "verifier_bundle requires arguments.workerId");
+      }
+
+      const bundle = verifierBundle({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        limit: params.arguments.limit
+      });
+
+      return createSuccess(id, createTextPayload({ bundle }));
     }
 
     if (name === "task_update") {
