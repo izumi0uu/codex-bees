@@ -1321,12 +1321,14 @@ export function runtimeReviewPack(input = {}) {
     ? runtimeVerifierPack({ role: input.role, workerId: input.workerId })
     : null;
   const recommendedSurface = deriveRuntimeReviewPackSurface({ review, roles, verifierPack });
+  const recommendedReason = deriveRuntimeReviewPackReason({ review, roles, verifierPack });
 
   return {
     kind: "runtime_review_pack",
     role: input.role ? describeRole(input.role) : null,
     workerId: input.workerId ?? null,
     recommendedSurface,
+    recommendedReason,
     overview: {
       review: review?.counts ?? null,
       roles: roles?.counts ?? null,
@@ -4363,6 +4365,19 @@ function deriveRuntimeReviewPackSurface({ review, roles, verifierPack }) {
     return "runtime:roles";
   }
   return "runtime:review";
+}
+
+function deriveRuntimeReviewPackReason({ review, roles, verifierPack }) {
+  if (verifierPack?.recommendedSurface) {
+    return "verifier_bundle_available";
+  }
+  if ((review?.counts?.totalPendingReview ?? 0) > 0) {
+    return "review_queue_waiting";
+  }
+  if ((roles?.counts?.withPendingReview ?? 0) > 0) {
+    return "review_role_pressure";
+  }
+  return "default_review_priority";
 }
 
 function buildRuntimeReviewPackSummary(recommendedSurface, review, verifierPack, roles) {

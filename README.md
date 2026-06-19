@@ -248,7 +248,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:recovery-pack` / `runtime_recovery_pack` provide the recovery-oriented package: recovery groups, next-actor handoffs, and current focus combined into one restart-friendly payload with a recommended next surface.
 
-`runtime:review-pack` / `runtime_review_pack` provide the review-oriented package: review groups, role pressure, and optional verifier-scoped control bundle combined into one verifier-control payload with a recommended next surface.
+`runtime:review-pack` / `runtime_review_pack` provide the review-oriented package: review groups, role pressure, and optional verifier-scoped control bundle combined into one verifier-control payload with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between verifier-bundle readiness, review queue pressure, and verifier-role pressure without parsing the pack summary.
 
 `runtime:role-pack` / `runtime_role_pack` provide the role-oriented package: role pressure plus optional session, owner, and verifier runtime views combined into one role-scoped workbench with a recommended next surface.
 
