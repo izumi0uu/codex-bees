@@ -1178,6 +1178,7 @@ const runtimeLeaderPackMultiOwnerCli = JSON.parse(
 ).leaderPack;
 if (
   runtimeLeaderPackMultiOwnerCli.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeLeaderPackMultiOwnerCli.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeLeaderPackMultiOwnerCli.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeLeaderPackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeLeaderPackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
@@ -2135,6 +2136,7 @@ const runtimeLeaderPackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeLeade
 if (
   runtimeLeaderPackMultiOwnerMcp.status !== 0 ||
   runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
@@ -2697,6 +2699,7 @@ const runtimeLeaderPackCli = JSON.parse(
 ).leaderPack;
 if (
   runtimeLeaderPackCli.recommendedSurface !== "runtime:dispatch" ||
+  runtimeLeaderPackCli.recommendedReason !== "dispatch_priority" ||
   runtimeLeaderPackCli.next?.workspace?.swarmId !== "swarm-1" ||
   runtimeLeaderPackCli.overview?.dispatch?.totalAssignments !== 1 ||
   runtimeLeaderPackCli.surfaces?.queue?.next?.swarmId !== "swarm-1"
@@ -3362,6 +3365,7 @@ const runtimeLeaderPackMcpPayload = JSON.parse(JSON.parse(runtimeLeaderPackMcpLi
 if (
   runtimeLeaderPackMcp.status !== 0 ||
   runtimeLeaderPackMcpPayload.leaderPack?.recommendedSurface !== "runtime:dispatch" ||
+  runtimeLeaderPackMcpPayload.leaderPack?.recommendedReason !== "dispatch_priority" ||
   runtimeLeaderPackMcpPayload.leaderPack?.surfaces?.queue?.next?.swarmId !== "swarm-1"
 ) {
   console.error("[smoke:runtime-leader-pack-mcp] expected MCP runtime leader pack");

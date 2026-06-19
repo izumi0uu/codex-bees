@@ -1877,6 +1877,7 @@ export function runtimeLeaderPack(input = {}) {
   const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const closeout = runtimeCloseout();
   const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
+  const recommendedReason = deriveRuntimeLeaderPackReason({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
 
   return {
     kind: "runtime_leader_pack",
@@ -1886,6 +1887,7 @@ export function runtimeLeaderPack(input = {}) {
       owner: input.owner
     },
     recommendedSurface,
+    recommendedReason,
     overview: {
       workspace: workspace?.counts ?? null,
       queue: queue?.counts ?? null,
@@ -4912,6 +4914,34 @@ function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignment
     return "leader:queue";
   }
   return "leader:workspace";
+}
+
+function deriveRuntimeLeaderPackReason({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout }) {
+  if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
+    return "parallel_launch_plan_ready";
+  }
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "parallel_dispatch_bundle_ready";
+  }
+  if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
+    return "parallel_dispatch_pack_ready";
+  }
+  if ((workspace?.counts?.pendingReview ?? 0) > 0) {
+    return "pending_review_priority";
+  }
+  if ((queue?.next?.recommendedNextAction ?? "").startsWith("review_lane:")) {
+    return "queue_review_priority";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "dispatch_priority";
+  }
+  if ((closeout?.counts?.swarmsReady ?? 0) > 0) {
+    return "closeout_priority";
+  }
+  if ((queue?.counts?.total ?? 0) > 0) {
+    return "leader_queue_visible";
+  }
+  return "default_workspace_priority";
 }
 
 function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan) {
