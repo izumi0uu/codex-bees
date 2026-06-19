@@ -18,6 +18,7 @@ import {
   getTask,
   getSwarm,
   initSwarm,
+  leaderWorkspace,
   listMemories,
   listSwarmOverviews,
   listSwarms,
@@ -297,6 +298,18 @@ export const toolCatalog = [
         role: { type: "string" },
         workerId: { type: "string" },
         limit: { type: "number" }
+      }
+    }
+  },
+  {
+    name: "leader_workspace",
+    description: "Build a leader-ready orchestration workspace across local swarms.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string" },
+        topology: { type: "string" },
+        owner: { type: "string" }
       }
     }
   },
@@ -1037,6 +1050,16 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ bundle }));
+    }
+
+    if (name === "leader_workspace") {
+      const workspace = leaderWorkspace({
+        status: params.arguments?.status,
+        topology: params.arguments?.topology,
+        owner: params.arguments?.owner
+      });
+
+      return createSuccess(id, createTextPayload({ workspace }));
     }
 
     if (name === "task_update") {

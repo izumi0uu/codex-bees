@@ -38,6 +38,13 @@ const CAPABILITY_CATALOG = [
     mcpTools: ["task_ready_for_review", "task_approve", "task_reject", "task_done"]
   },
   {
+    id: "leader_orchestration",
+    category: "coordination",
+    description: "Leader-facing orchestration views across swarms, lane bundles, and next actions.",
+    cliCommands: ["leader:workspace", "swarm:brief", "swarm:bundle", "swarm:overview"],
+    mcpTools: ["leader_workspace", "swarm_brief", "swarm_bundle", "swarm_overview"]
+  },
+  {
     id: "swarm_coordination",
     category: "coordination",
     description: "Bounded swarm contracts, queueing, dispatch, sync, and detailed overviews.",
