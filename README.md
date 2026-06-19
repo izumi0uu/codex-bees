@@ -66,6 +66,7 @@ node ./src/index.js worker:session --role executor --worker worker-1 --mode owne
 node ./src/index.js worker:handoff --role executor --worker worker-1 --mode owner
 node ./src/index.js worker:closeout --role executor --worker worker-1 --mode owner
 node ./src/index.js verifier:bundle --role tester --worker tester-1
+node ./src/index.js leader:queue
 node ./src/index.js leader:workspace
 node ./src/index.js task:check --id task-1
 node ./src/index.js swarm:init --objective "Ship a bounded runtime slice" --owner leader --max-workers 2 --lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer"}]'
@@ -136,6 +137,8 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `leader:workspace` / `leader_workspace` provide the symmetric orchestration artifact for the leader lane: multi-swarm counts, prioritized swarm focus, the next recommended action, and an embedded deep `swarm:bundle` for the current focus swarm.
 
+`leader:queue` / `leader_queue` provide the leaner decision surface for the leader lane: a prioritized multi-swarm action queue with the current next item already selected.
+
 `swarm:closeout` / `swarm_closeout` add the closure layer for swarm leadership: current swarm bundle, execution brief, and the concrete explicit closeout command when every lane is done.
 
 `swarm:blockers` / `swarm_blockers` add the blocker layer for swarm leadership: blocked lanes only, their task reports, and the next unblock/requeue action.
@@ -146,7 +149,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `status` and the MCP `runtime_status` tool summarize the current local runtime: shipped tool/agent/skill counts, persisted task/swarm/memory counts, and queue status distribution. `capabilities` and `runtime_capabilities` provide a product-facing inventory of what this Codex-only runtime actually supports today.
 
-Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. Swarm-linked task lifecycle changes automatically keep swarm status close to task reality, `swarm:list --detailed` gives leaders a multi-swarm dashboard, `leader:workspace` / `leader_workspace` choose the current orchestration focus across those swarms, `swarm:overview` summarizes one swarm, `swarm:brief` provides the next execution handoff, `swarm:bundle` / `swarm_bundle` package the leader-ready orchestration view with lane reports and a summary sentence, `swarm:blockers` / `swarm_blockers` isolate blocked lanes for unblock work, `swarm:closeout` / `swarm_closeout` provide explicit swarm closure packaging, `swarm:dispatch-bundle` / `swarm_dispatch_bundle` package the next runnable dispatch target, `swarm:dispatch` claims the next runnable lane task for a worker, and `swarm:sync` provides an idempotent reconciliation step when leaders want an explicit status check.
+Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. Swarm-linked task lifecycle changes automatically keep swarm status close to task reality, `swarm:list --detailed` gives leaders a multi-swarm dashboard, `leader:queue` / `leader_queue` expose the prioritized cross-swarm action list, `leader:workspace` / `leader_workspace` choose the current orchestration focus across those swarms, `swarm:overview` summarizes one swarm, `swarm:brief` provides the next execution handoff, `swarm:bundle` / `swarm_bundle` package the leader-ready orchestration view with lane reports and a summary sentence, `swarm:blockers` / `swarm_blockers` isolate blocked lanes for unblock work, `swarm:closeout` / `swarm_closeout` provide explicit swarm closure packaging, `swarm:dispatch-bundle` / `swarm_dispatch_bundle` package the next runnable dispatch target, `swarm:dispatch` claims the next runnable lane task for a worker, and `swarm:sync` provides an idempotent reconciliation step when leaders want an explicit status check.
 
 Memory records can carry reusable execution context:
 
