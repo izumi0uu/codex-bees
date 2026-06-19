@@ -2845,6 +2845,7 @@ const runtimeRolePackCli = JSON.parse(
 ).rolePack;
 if (
   runtimeRolePackCli.recommendedSurface !== "worker:closeout" ||
+  runtimeRolePackCli.recommendedReason !== "session_priority" ||
   runtimeRolePackCli.next?.role?.lane !== "verifier" ||
   runtimeRolePackCli.next?.session?.verifier?.review?.taskId !== "task-2" ||
   runtimeRolePackCli.surfaces?.sessionPack?.recommendedSurface !== "worker:closeout"
@@ -3595,6 +3596,7 @@ const runtimeRolePackMcpPayload = JSON.parse(JSON.parse(runtimeRolePackMcpLines[
 if (
   runtimeRolePackMcp.status !== 0 ||
   runtimeRolePackMcpPayload.rolePack?.recommendedSurface !== "worker:closeout" ||
+  runtimeRolePackMcpPayload.rolePack?.recommendedReason !== "session_priority" ||
   runtimeRolePackMcpPayload.rolePack?.next?.role?.lane !== "verifier" ||
   runtimeRolePackMcpPayload.rolePack?.next?.session?.verifier?.review?.taskId !== "task-2"
 ) {

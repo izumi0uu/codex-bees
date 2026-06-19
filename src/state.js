@@ -1646,6 +1646,7 @@ export function runtimeRolePack(input = {}) {
       })
     : null;
   const recommendedSurface = deriveRuntimeRolePackSurface({ roleEntry, sessionPack, ownerPack, verifierPack });
+  const recommendedReason = deriveRuntimeRolePackReason({ roleEntry, sessionPack, ownerPack, verifierPack });
 
   return {
     kind: "runtime_role_pack",
@@ -1653,6 +1654,7 @@ export function runtimeRolePack(input = {}) {
     workerId: input.workerId ?? null,
     mode: input.mode ?? "any",
     recommendedSurface,
+    recommendedReason,
     overview: {
       role: roleEntry?.counts ?? null,
       session: sessionPack?.overview ?? null,
@@ -4734,6 +4736,25 @@ function deriveRuntimeRolePackSurface({ roleEntry, sessionPack, ownerPack, verif
     return sessionPack.recommendedSurface;
   }
   return "runtime:roles";
+}
+
+function deriveRuntimeRolePackReason({ roleEntry, sessionPack, ownerPack, verifierPack }) {
+  if (sessionPack?.recommendedSurface && sessionPack.recommendedSurface !== "worker:session") {
+    return "session_priority";
+  }
+  if (roleEntry?.nextAction?.command) {
+    return "role_action_priority";
+  }
+  if (verifierPack?.recommendedSurface && verifierPack.recommendedSurface !== "runtime:review") {
+    return "verifier_priority";
+  }
+  if (ownerPack?.recommendedSurface && ownerPack.recommendedSurface !== "worker:session") {
+    return "owner_priority";
+  }
+  if (sessionPack?.recommendedSurface) {
+    return "session_visible";
+  }
+  return "default_role_priority";
 }
 
 function buildRuntimeRolePackSummary(recommendedSurface, roleEntry, sessionPack, verifierPack, ownerPack) {
