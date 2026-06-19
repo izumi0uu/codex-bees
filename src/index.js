@@ -4,6 +4,7 @@ import { stdout, stderr, exit, argv, env, cwd } from "node:process";
 import { statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
+import { getRuntimeCatalog } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import {
   activateSwarm,
@@ -54,6 +55,7 @@ function printHelp() {
   write(`  codex-bees run             Start the local Codex runtime shell contract\n`);
   write(`  codex-bees mcp             Start the local Codex MCP stdio runtime\n`);
   write(`  codex-bees tools           Print the current MCP tool catalog\n`);
+  write(`  codex-bees catalog         Print the shipped local agent and skill catalog\n`);
   write(`  codex-bees doctor          Print runtime contract diagnostics\n`);
   write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
   write(`  codex-bees plan:queue      Generate a plan and queue its lanes as local tasks\n`);
@@ -102,7 +104,8 @@ function runtimeContract() {
       "provide a stable diagnostics surface for later orchestration layers",
       "persist local work-item state for bounded multi-agent execution",
       "store and recall local memory across execution lanes",
-      "track local swarm contracts with bounded lane-to-task handoff"
+      "track local swarm contracts with bounded lane-to-task handoff",
+      "validate owner and verifier roles against shipped local agent prompts"
     ],
     exclusions: [
       "third-party marketplace distribution",
@@ -122,12 +125,17 @@ function printDoctor() {
         executable: exists,
         entry: selfPath,
         stateFile: stateFilePath(),
+        catalog: getRuntimeCatalog(),
         contract: runtimeContract()
       },
       null,
       2
     ) + "\n"
   );
+}
+
+function printCatalog() {
+  write(JSON.stringify({ catalog: getRuntimeCatalog() }, null, 2) + "\n");
 }
 
 function readOption(flag) {
@@ -717,6 +725,9 @@ async function runCommand(command) {
       return;
     case "doctor":
       printDoctor();
+      return;
+    case "catalog":
+      printCatalog();
       return;
     case "plan":
       handlePlan();

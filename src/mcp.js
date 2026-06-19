@@ -1,4 +1,5 @@
 import { stdin, stdout, stderr } from "node:process";
+import { getRuntimeCatalog } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import {
   activateSwarm,
@@ -52,6 +53,14 @@ export const toolCatalog = [
   {
     name: "runtime_contract",
     description: "Return the Codex-only runtime contract and exclusions.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_catalog",
+    description: "Return the shipped local agent and skill catalog.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -512,6 +521,11 @@ function runtimeContractPayload() {
     product: "codex-bees",
     mode: "codex-only",
     architecture: ["cli", "mcp", "skills", "agents", "docs"],
+    responsibilities: [
+      "local bounded multi-agent coordination",
+      "repo-native role and skill discovery",
+      "owner and verifier role validation"
+    ],
     exclusions: [
       "third-party marketplace distribution",
       "multi-host support",
@@ -585,6 +599,10 @@ function handleRequest(message) {
 
     if (name === "runtime_contract") {
       return createSuccess(id, createTextPayload(runtimeContractPayload()));
+    }
+
+    if (name === "runtime_catalog") {
+      return createSuccess(id, createTextPayload({ catalog: getRuntimeCatalog() }));
     }
 
     if (name === "task_list") {
