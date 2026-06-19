@@ -433,6 +433,38 @@ export function swarmDispatchBundle(id) {
   };
 }
 
+export function leaderQueue(input = {}) {
+  const workspace = leaderWorkspace(input);
+  if (!workspace) {
+    return null;
+  }
+
+  const items = workspace.swarms.map((swarm, index) => ({
+    position: index + 1,
+    swarmId: swarm.id,
+    objective: swarm.objective,
+    status: swarm.status,
+    derivedStatus: swarm.derivedStatus,
+    readyToComplete: swarm.readyToComplete,
+    recommendedNextActor: swarm.recommendedNextActor,
+    recommendedNextAction: swarm.recommendedNextAction,
+    recommendedCommands: swarm.recommendedCommands,
+    summary: swarm.summary
+  }));
+
+  return {
+    kind: "leader_queue",
+    filters: workspace.filters,
+    counts: {
+      total: items.length,
+      actionable: items.filter((item) => !["completed", "cancelled"].includes(item.status)).length
+    },
+    items,
+    next: items[0] ?? null,
+    summary: buildLeaderQueueSummary(items)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -1693,6 +1725,15 @@ function buildSwarmDispatchBundleSummary(overview, dispatchLane) {
   }
 
   return `Swarm ${overview.swarm.id} can dispatch lane ${dispatchLane.lane} next for owner ${dispatchLane.owner.id ?? dispatchLane.owner.name ?? "unknown"}.`;
+}
+
+function buildLeaderQueueSummary(items) {
+  if (items.length === 0) {
+    return "Leader queue has no swarm work items yet.";
+  }
+
+  const next = items[0];
+  return `Leader queue is prioritized with ${next.swarmId} first for action ${next.recommendedNextAction ?? "observe"}.`;
 }
 
 function buildLeaderWorkspaceSwarmEntry(overview) {
