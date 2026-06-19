@@ -4,6 +4,7 @@ import {
   activateSwarm,
   addTask,
   addTasks,
+  approveTask,
   blockSwarm,
   blockTask,
   cancelSwarm,
@@ -19,6 +20,7 @@ import {
   listTasks,
   markTaskReadyForReview,
   queueSwarmTasks,
+  rejectTask,
   releaseTask,
   swarmOverview,
   syncSwarmStatus,
@@ -157,14 +159,45 @@ export const toolCatalog = [
   },
   {
     name: "task_done",
-    description: "Mark a local coordination task as complete.",
+    description: "Approve a ready-for-review task as its verifier.",
     inputSchema: {
       type: "object",
       required: ["id"],
       properties: {
         id: { type: "string" },
+        reviewedBy: { type: "string" },
         claimedBy: { type: "string" },
-        notes: { type: "string" }
+        notes: { type: "string" },
+        reviewEvidence: { type: "array", items: { type: "string" } }
+      }
+    }
+  },
+  {
+    name: "task_approve",
+    description: "Approve a ready-for-review task as its verifier.",
+    inputSchema: {
+      type: "object",
+      required: ["id", "reviewedBy"],
+      properties: {
+        id: { type: "string" },
+        reviewedBy: { type: "string" },
+        notes: { type: "string" },
+        reviewEvidence: { type: "array", items: { type: "string" } }
+      }
+    }
+  },
+  {
+    name: "task_reject",
+    description: "Return a ready-for-review task for more work as its verifier.",
+    inputSchema: {
+      type: "object",
+      required: ["id", "reviewedBy"],
+      properties: {
+        id: { type: "string" },
+        reviewedBy: { type: "string" },
+        nextQueueStatus: { type: "string" },
+        notes: { type: "string" },
+        reviewEvidence: { type: "array", items: { type: "string" } }
       }
     }
   },
@@ -695,8 +728,9 @@ function handleRequest(message) {
 
       const task = completeTask({
         id: params.arguments.id,
-        claimedBy: params.arguments.claimedBy,
-        notes: params.arguments.notes
+        reviewedBy: params.arguments.reviewedBy ?? params.arguments.claimedBy,
+        notes: params.arguments.notes,
+        reviewEvidence: params.arguments.reviewEvidence
       });
 
       if (!task) {
@@ -707,6 +741,57 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ completed: task }));
+    }
+
+    if (name === "task_approve") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_approve requires arguments.id");
+      }
+      if (!params.arguments?.reviewedBy) {
+        return createError(id, -32602, "task_approve requires arguments.reviewedBy");
+      }
+
+      const task = approveTask({
+        id: params.arguments.id,
+        reviewedBy: params.arguments.reviewedBy,
+        notes: params.arguments.notes,
+        reviewEvidence: params.arguments.reviewEvidence
+      });
+
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+      if (task.error) {
+        return createError(id, -32602, task.error);
+      }
+
+      return createSuccess(id, createTextPayload({ approved: task }));
+    }
+
+    if (name === "task_reject") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_reject requires arguments.id");
+      }
+      if (!params.arguments?.reviewedBy) {
+        return createError(id, -32602, "task_reject requires arguments.reviewedBy");
+      }
+
+      const task = rejectTask({
+        id: params.arguments.id,
+        reviewedBy: params.arguments.reviewedBy,
+        nextQueueStatus: params.arguments.nextQueueStatus,
+        notes: params.arguments.notes,
+        reviewEvidence: params.arguments.reviewEvidence
+      });
+
+      if (!task) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+      if (task.error) {
+        return createError(id, -32602, task.error);
+      }
+
+      return createSuccess(id, createTextPayload({ rejected: task }));
     }
 
     if (name === "task_release") {

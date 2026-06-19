@@ -9,6 +9,7 @@ import {
   activateSwarm,
   addTask,
   addTasks,
+  approveTask,
   blockSwarm,
   blockTask,
   cancelSwarm,
@@ -24,6 +25,7 @@ import {
   listTasks,
   markTaskReadyForReview,
   queueSwarmTasks,
+  rejectTask,
   releaseTask,
   swarmOverview,
   syncSwarmStatus,
@@ -61,7 +63,9 @@ function printHelp() {
   write(`  codex-bees task:claim      Claim a local coordination task\n`);
   write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
   write(`  codex-bees task:review     Mark a task as ready for review\n`);
-  write(`  codex-bees task:done       Mark a task as complete\n`);
+  write(`  codex-bees task:approve    Approve a ready-for-review task as its verifier\n`);
+  write(`  codex-bees task:reject     Return a ready-for-review task for more work\n`);
+  write(`  codex-bees task:done       Approve a ready-for-review task as its verifier\n`);
   write(`  codex-bees task:release    Release a local coordination task\n`);
   write(`  codex-bees task:update     Update a local coordination task\n`);
   write(`  codex-bees task:check      Validate one local coordination task for bounded execution\n`);
@@ -351,9 +355,10 @@ function handleTaskReview() {
 
 function handleTaskDone() {
   const id = requireOption("--id");
-  const claimedBy = readOption("--by");
+  const reviewedBy = requireOption("--by");
   const notes = readOption("--notes");
-  const task = completeTask({ id, claimedBy, notes });
+  const reviewEvidence = readListOption("--evidence", "|");
+  const task = completeTask({ id, reviewedBy, notes, reviewEvidence });
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);
@@ -363,6 +368,41 @@ function handleTaskDone() {
     exit(1);
   }
   write(JSON.stringify({ completed: task }, null, 2) + "\n");
+}
+
+function handleTaskApprove() {
+  const id = requireOption("--id");
+  const reviewedBy = requireOption("--by");
+  const notes = readOption("--notes");
+  const reviewEvidence = readListOption("--evidence", "|");
+  const task = approveTask({ id, reviewedBy, notes, reviewEvidence });
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (task.error) {
+    writeErr(`${task.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ approved: task }, null, 2) + "\n");
+}
+
+function handleTaskReject() {
+  const id = requireOption("--id");
+  const reviewedBy = requireOption("--by");
+  const notes = readOption("--notes");
+  const nextQueueStatus = readOption("--status");
+  const reviewEvidence = readListOption("--evidence", "|");
+  const task = rejectTask({ id, reviewedBy, nextQueueStatus, notes, reviewEvidence });
+  if (!task) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (task.error) {
+    writeErr(`${task.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ rejected: task }, null, 2) + "\n");
 }
 
 function handlePlan() {
@@ -704,6 +744,12 @@ async function runCommand(command) {
       return;
     case "task:review":
       handleTaskReview();
+      return;
+    case "task:approve":
+      handleTaskApprove();
+      return;
+    case "task:reject":
+      handleTaskReject();
       return;
     case "task:done":
       handleTaskDone();
