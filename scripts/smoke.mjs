@@ -136,6 +136,12 @@ if (!Array.isArray(smokeTask.acceptance) || smokeTask.acceptance.length !== 3) {
   process.exit(1);
 }
 
+const checkedTask = JSON.parse(run("task-check-verify", ["./src/index.js", "task:check", "--id", "task-3"]).stdout).validation;
+if (!checkedTask.ready) {
+  console.error("[smoke:task-check] expected bounded smoke task to validate cleanly");
+  process.exit(1);
+}
+
 rmSync(".codex-bees", { recursive: true, force: true });
 
 const firstAdd = run("durability-add-1", [
@@ -177,6 +183,14 @@ if (createdTwo.id !== "task-1") {
   console.error("[smoke:durability-add-2] expected clean recovery to restart at task-1");
   process.exit(1);
 }
+const incompleteTaskValidation = JSON.parse(
+  run("task-check-incomplete", ["./src/index.js", "task:check", "--id", "task-1"]).stdout
+).validation;
+if (incompleteTaskValidation.ready || incompleteTaskValidation.issues.length === 0) {
+  console.error("[smoke:task-check] expected incomplete task validation issues");
+  process.exit(1);
+}
+run("task-claim-incomplete", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "blocked-worker"], 1);
 
 rmSync(".codex-bees", { recursive: true, force: true });
 const queuedPlan = run("queue-plan-cli", [
@@ -298,6 +312,13 @@ run("swarm-init", [
   swarmLaneJson
 ]);
 run("swarm-list", ["./src/index.js", "swarm:list"]);
+const swarmValidation = JSON.parse(
+  run("swarm-check", ["./src/index.js", "swarm:check", "--id", "swarm-1"]).stdout
+).validation;
+if (!swarmValidation.ready) {
+  console.error("[smoke:swarm-check] expected bounded swarm to validate cleanly");
+  process.exit(1);
+}
 const swarmGet = JSON.parse(
   run("swarm-get", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
 ).swarm;
@@ -398,6 +419,28 @@ run("swarm-dispatch-none", ["./src/index.js", "swarm:dispatch", "--id", "swarm-1
 run("swarm-queue-invalid", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
 
 rmSync(".codex-bees", { recursive: true, force: true });
+const invalidSwarmJson = JSON.stringify([
+  { lane: "lane-bad-1", summary: "Bad lane one", owner: "explore", scope: ["src/index.js"], acceptance: ["a"], verification: ["v"] },
+  { lane: "lane-bad-2", summary: "Bad lane two", owner: "executor", verifier: "tester", scope: ["src/index.js"], acceptance: ["b"], verification: ["v"] }
+]);
+run("swarm-init-invalid", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Invalid swarm smoke",
+  "--lanes",
+  invalidSwarmJson
+]);
+const invalidSwarmValidation = JSON.parse(
+  run("swarm-check-invalid", ["./src/index.js", "swarm:check", "--id", "swarm-1"]).stdout
+).validation;
+if (invalidSwarmValidation.ready || invalidSwarmValidation.overlaps.length === 0) {
+  console.error("[smoke:swarm-check] expected invalid swarm overlap or metadata issues");
+  process.exit(1);
+}
+run("swarm-queue-invalid-validation", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
+
+rmSync(".codex-bees", { recursive: true, force: true });
 const swarmMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -429,7 +472,7 @@ const swarmMcpInput = [
     id: 3,
     method: "tools/call",
     params: {
-      name: "swarm_queue_tasks",
+      name: "swarm_check",
       arguments: { id: "swarm-1" }
     }
   }),
@@ -438,13 +481,22 @@ const swarmMcpInput = [
     id: 4,
     method: "tools/call",
     params: {
+      name: "swarm_queue_tasks",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
       name: "swarm_dispatch",
       arguments: { id: "swarm-1", claimedBy: "mcp-worker", owner: "executor" }
     }
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 5,
+    id: 6,
     method: "tools/call",
     params: {
       name: "task_done",
@@ -453,7 +505,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 6,
+    id: 7,
     method: "tools/call",
     params: {
       name: "swarm_sync",
@@ -462,7 +514,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 7,
+    id: 8,
     method: "tools/call",
     params: {
       name: "swarm_overview",
@@ -471,7 +523,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 8,
+    id: 9,
     method: "tools/call",
     params: {
       name: "task_list",
@@ -480,7 +532,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 9,
+    id: 10,
     method: "tools/call",
     params: {
       name: "swarm_list",
@@ -497,18 +549,22 @@ const swarmMcpLines = swarmMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const swarmOverviewResult = swarmMcpLines.length >= 7 ? JSON.parse(swarmMcpLines[6]) : null;
+const swarmCheckResult = swarmMcpLines.length >= 3 ? JSON.parse(swarmMcpLines[2]) : null;
+const swarmCheckText = swarmCheckResult?.result?.content?.[0]?.text;
+const swarmCheckPayload = swarmCheckText ? JSON.parse(swarmCheckText) : null;
+const swarmOverviewResult = swarmMcpLines.length >= 8 ? JSON.parse(swarmMcpLines[7]) : null;
 const swarmOverviewText = swarmOverviewResult?.result?.content?.[0]?.text;
 const swarmOverviewPayload = swarmOverviewText ? JSON.parse(swarmOverviewText) : null;
-const swarmTaskListResult = swarmMcpLines.length >= 8 ? JSON.parse(swarmMcpLines[7]) : null;
+const swarmTaskListResult = swarmMcpLines.length >= 9 ? JSON.parse(swarmMcpLines[8]) : null;
 const swarmTaskListText = swarmTaskListResult?.result?.content?.[0]?.text;
 const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) : null;
-const swarmListDetailedResult = swarmMcpLines.length >= 9 ? JSON.parse(swarmMcpLines[8]) : null;
+const swarmListDetailedResult = swarmMcpLines.length >= 10 ? JSON.parse(swarmMcpLines[9]) : null;
 const swarmListDetailedText = swarmListDetailedResult?.result?.content?.[0]?.text;
 const swarmListDetailedPayload = swarmListDetailedText ? JSON.parse(swarmListDetailedText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
+  swarmCheckPayload?.validation?.ready !== true ||
   !mcpSwarmTask ||
   swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||
   swarmOverviewPayload?.overview?.readyToComplete !== true ||
@@ -577,6 +633,15 @@ const taskAddMcpInput = [
     id: 3,
     method: "tools/call",
     params: {
+      name: "task_check",
+      arguments: { id: "task-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
       name: "task_list",
       arguments: {}
     }
@@ -591,11 +656,14 @@ const taskAddMcpLines = taskAddMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const taskListResult = taskAddMcpLines.length >= 3 ? JSON.parse(taskAddMcpLines[2]) : null;
+const taskCheckResult = taskAddMcpLines.length >= 3 ? JSON.parse(taskAddMcpLines[2]) : null;
+const taskCheckText = taskCheckResult?.result?.content?.[0]?.text;
+const taskCheckPayload = taskCheckText ? JSON.parse(taskCheckText) : null;
+const taskListResult = taskAddMcpLines.length >= 4 ? JSON.parse(taskAddMcpLines[3]) : null;
 const taskListText = taskListResult?.result?.content?.[0]?.text;
 const taskListPayload = taskListText ? JSON.parse(taskListText) : null;
 const mcpTask = taskListPayload?.tasks?.find((task) => task.title === "mcp metadata task");
-if (taskAddMcp.status !== 0 || !mcpTask || mcpTask.verifier !== "tester") {
+if (taskAddMcp.status !== 0 || !mcpTask || mcpTask.verifier !== "tester" || taskCheckPayload?.validation?.ready !== true) {
   console.error("[smoke:task-add-mcp] expected persisted MCP metadata");
   console.error(taskAddMcp.stderr || taskAddMcp.stdout);
   process.exit(1);
