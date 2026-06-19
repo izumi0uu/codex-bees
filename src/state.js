@@ -2519,12 +2519,14 @@ export function workerSession(input = {}) {
     reviewQueue,
     next
   });
+  const recommendedReason = deriveWorkerSessionReason(focus, next);
 
   return {
     kind: "worker_session",
     role: describeRole(role),
     workerId,
     mode,
+    recommendedReason,
     counts: {
       activeOwned: activeOwned.length,
       blockedOwned: blockedOwned.length,
@@ -4393,6 +4395,28 @@ function deriveTaskNextReason(relation) {
     return "verifier_observe_only";
   }
   return "no_next_candidate";
+}
+
+function deriveWorkerSessionReason(focus, next) {
+  if (focus?.kind === "active_task") {
+    return "active_task_focus";
+  }
+  if (focus?.kind === "review_task") {
+    return "review_task_focus";
+  }
+  if (focus?.kind === "blocked_task") {
+    return "blocked_task_focus";
+  }
+  if (focus?.kind === "awaiting_review") {
+    return "awaiting_review_focus";
+  }
+  if (focus?.kind === "pickup_next") {
+    return "pickup_next_focus";
+  }
+  if (next?.candidate?.id) {
+    return "next_candidate_visible";
+  }
+  return "idle_focus";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {

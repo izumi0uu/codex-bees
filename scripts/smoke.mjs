@@ -754,6 +754,7 @@ const ownerSession = JSON.parse(
 ).session;
 if (
   ownerSession.counts.activeOwned !== 1 ||
+  ownerSession.recommendedReason !== "active_task_focus" ||
   ownerSession.focus?.kind !== "active_task" ||
   ownerSession.activeOwned?.[0]?.summary?.id !== "task-1"
 ) {
@@ -4454,6 +4455,7 @@ const verifierSession = JSON.parse(
 ).session;
 if (
   verifierSession.counts.reviewQueue !== 1 ||
+  verifierSession.recommendedReason !== "review_task_focus" ||
   verifierSession.focus?.kind !== "review_task" ||
   verifierSession.reviewQueue?.[0]?.summary?.id !== "task-2"
 ) {
@@ -4742,6 +4744,7 @@ const workerSessionMcpLines = workerSessionMcp.stdout
 const workerSessionMcpPayload = JSON.parse(JSON.parse(workerSessionMcpLines[1]).result.content[0].text);
 if (
   workerSessionMcp.status !== 0 ||
+  workerSessionMcpPayload.session?.recommendedReason !== "review_task_focus" ||
   workerSessionMcpPayload.session?.focus?.kind !== "review_task" ||
   workerSessionMcpPayload.session?.reviewQueue?.[0]?.summary?.id !== "task-2"
 ) {

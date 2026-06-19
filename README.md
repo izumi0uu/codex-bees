@@ -178,7 +178,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `task:pickup` / `task_pickup` turn that candidate into action: claimable owner work is auto-claimed for the worker, while claimed or review-ready work returns the exact next handoff command. They also emit a machine-readable `recommendedReason` so automation can distinguish between claimable work, continue/review/release follow-up, observe-only states, and empty pickup fallback without reparsing relation labels or summary prose. This keeps the pickup loop explicit without hiding lifecycle transitions.
 
-`worker:session` / `worker_session` aggregate the real local workspace for one worker: active claimed tasks, review queue, recent handoff history, next candidate, and the current focus command. This is the closest surface yet to a repo-native agent console.
+`worker:session` / `worker_session` aggregate the real local workspace for one worker: active claimed tasks, review queue, recent handoff history, next candidate, and the current focus command. They also emit a machine-readable `recommendedReason` so automation can distinguish between active, review, blocked, awaiting-review, pickup-next, and idle worker focus states without reparsing the summary sentence. This is the closest surface yet to a repo-native agent console.
 
 `worker:handoff` / `worker_handoff` package that workspace into a return-ready payload: current focus, task brief, recent history, recent annotations, next candidate, and one summary sentence that another worker or leader can pick up immediately.
 
