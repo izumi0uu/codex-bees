@@ -184,6 +184,17 @@ if (
   console.error("[smoke:task-brief] expected execution brief with owner/verifier prompt paths");
   process.exit(1);
 }
+const taskHistoryComplete = JSON.parse(
+  run("task-history-complete", ["./src/index.js", "task:history", "--id", "task-3"]).stdout
+).history;
+if (
+  !Array.isArray(taskHistoryComplete.history) ||
+  taskHistoryComplete.history.length < 5 ||
+  taskHistoryComplete.history.at(-1)?.type !== "approved"
+) {
+  console.error("[smoke:task-history] expected completed task history with approval tail");
+  process.exit(1);
+}
 const testerInbox = JSON.parse(
   run("task-inbox-tester", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).inbox;
@@ -367,6 +378,15 @@ const ownerPickup = JSON.parse(
 ).pickup;
 if (ownerPickup.outcome !== "continue" || ownerPickup.task?.id !== "task-1" || ownerPickup.command !== "node ./src/index.js task:review --id task-1 --by review-worker") {
   console.error("[smoke:task-pickup] expected claimed task to resume with review follow-up");
+  process.exit(1);
+}
+const reviewTaskHistory = JSON.parse(
+  run("task-history-review-loop", ["./src/index.js", "task:history", "--id", "task-1"]).stdout
+).history;
+if (
+  reviewTaskHistory.history?.map((entry) => entry.type).join(",") !== "created,claimed,ready_for_review,changes_requested"
+) {
+  console.error("[smoke:task-history] expected review loop handoff history");
   process.exit(1);
 }
 
@@ -1044,6 +1064,18 @@ const taskGetPayload = taskGetText ? JSON.parse(taskGetText) : null;
 const taskBriefResult = taskAddMcpLines.length >= 6 ? JSON.parse(taskAddMcpLines[5]) : null;
 const taskBriefText = taskBriefResult?.result?.content?.[0]?.text;
 const taskBriefPayload = taskBriefText ? JSON.parse(taskBriefText) : null;
+const taskHistoryMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_history",
+      arguments: { id: "task-1" }
+    }
+  })
+].join("\n") + "\n";
 const taskCheckResult = taskAddMcpLines.length >= 7 ? JSON.parse(taskAddMcpLines[6]) : null;
 const taskCheckText = taskCheckResult?.result?.content?.[0]?.text;
 const taskCheckPayload = taskCheckText ? JSON.parse(taskCheckText) : null;
@@ -1054,12 +1086,23 @@ const taskListResult = taskAddMcpLines.length >= 14 ? JSON.parse(taskAddMcpLines
 const taskListText = taskListResult?.result?.content?.[0]?.text;
 const taskListPayload = taskListText ? JSON.parse(taskListText) : null;
 const mcpTask = taskListPayload?.tasks?.find((task) => task.title === "mcp metadata task");
+const taskHistoryMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: taskHistoryMcpInput,
+  encoding: "utf8"
+});
+const taskHistoryMcpLines = taskHistoryMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const taskHistoryMcpPayload = JSON.parse(JSON.parse(taskHistoryMcpLines[1]).result.content[0].text);
 if (
   taskAddMcp.status !== 0 ||
   !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
   taskStatusPayload?.status?.counts?.agents !== 4 ||
   taskGetPayload?.task?.id !== "task-1" ||
   taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
+  taskHistoryMcp.status !== 0 ||
+  taskHistoryMcpPayload.history?.history?.at(-1)?.type !== "approved" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||
@@ -1203,6 +1246,15 @@ if (
 ) {
   console.error("[smoke:task-pickup-mcp] expected review pickup payload");
   console.error(pickupMcp.stderr || pickupMcp.stdout);
+  process.exit(1);
+}
+const inboxHistory = JSON.parse(
+  run("task-history-inbox", ["./src/index.js", "task:history", "--id", "task-2"]).stdout
+).history;
+if (
+  inboxHistory.history?.map((entry) => entry.type).join(",") !== "created,claimed,ready_for_review"
+) {
+  console.error("[smoke:task-history] expected inbox review task history");
   process.exit(1);
 }
 
