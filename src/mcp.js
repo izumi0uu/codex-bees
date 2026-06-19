@@ -34,6 +34,7 @@ import {
   runtimeDashboard,
   runtimeDispatch,
   runtimeFocus,
+  runtimeHandoffs,
   runtimeReview,
   runtimeRoles,
   swarmOverview,
@@ -118,6 +119,14 @@ export const toolCatalog = [
       properties: {
         limit: { type: "integer", minimum: 1 }
       }
+    }
+  },
+  {
+    name: "runtime_handoffs",
+    description: "Build the next-actor handoff workspace for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
     }
   },
   {
@@ -965,6 +974,10 @@ function handleRequest(message) {
 
     if (name === "runtime_activity") {
       return createSuccess(id, createTextPayload({ activity: runtimeActivity({ limit: params.arguments?.limit }) }));
+    }
+
+    if (name === "runtime_handoffs") {
+      return createSuccess(id, createTextPayload({ handoffs: runtimeHandoffs() }));
     }
 
     if (name === "runtime_dashboard") {
