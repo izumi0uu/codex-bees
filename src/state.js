@@ -1388,10 +1388,12 @@ export function runtimeWorkspacePack(input = {}) {
   const review = runtimeReview();
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
+  const recommendedReason = deriveRuntimeWorkspacePackReason({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
 
   return {
     kind: "runtime_workspace_pack",
     recommendedSurface,
+    recommendedReason,
     overview: {
       dashboard: dashboard?.counts ?? null,
       dispatch: dispatch?.counts ?? null,
@@ -4409,6 +4411,31 @@ function deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDisp
     return "runtime:recovery";
   }
   return "runtime:dashboard";
+}
+
+function deriveRuntimeWorkspacePackReason({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery }) {
+  if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
+    return "parallel_launch_plan_ready";
+  }
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "parallel_dispatch_bundle_ready";
+  }
+  if ((dashboard?.counts?.blockedTasks ?? 0) > 0) {
+    return "blocked_tasks_priority";
+  }
+  if ((review?.counts?.totalPendingReview ?? 0) > 0) {
+    return "review_priority";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "dispatch_priority";
+  }
+  if ((dashboard?.counts?.leaderQueueItems ?? 0) > 0) {
+    return "leader_queue_visible";
+  }
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "recovery_visible";
+  }
+  return "default_dashboard_priority";
 }
 
 function buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery) {

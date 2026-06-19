@@ -1192,6 +1192,7 @@ const runtimeWorkspacePackMultiOwnerCli = JSON.parse(
 ).workspacePack;
 if (
   runtimeWorkspacePackMultiOwnerCli.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeWorkspacePackMultiOwnerCli.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeWorkspacePackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeWorkspacePackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
   runtimeWorkspacePackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
@@ -2034,6 +2035,7 @@ const runtimeWorkspacePackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeWo
 if (
   runtimeWorkspacePackMultiOwnerMcp.status !== 0 ||
   runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
   runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
@@ -2911,6 +2913,7 @@ const runtimeWorkspacePackCli = JSON.parse(
 ).workspacePack;
 if (
   runtimeWorkspacePackCli.recommendedSurface !== "runtime:recovery" ||
+  runtimeWorkspacePackCli.recommendedReason !== "blocked_tasks_priority" ||
   runtimeWorkspacePackCli.next?.dashboard?.swarmId !== "swarm-1" ||
   runtimeWorkspacePackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeWorkspacePackCli.next?.review?.taskId !== "task-2" ||
@@ -3838,6 +3841,7 @@ const runtimeWorkspacePackMcpPayload = JSON.parse(JSON.parse(runtimeWorkspacePac
 if (
   runtimeWorkspacePackMcp.status !== 0 ||
   runtimeWorkspacePackMcpPayload.workspacePack?.recommendedSurface !== "runtime:recovery" ||
+  runtimeWorkspacePackMcpPayload.workspacePack?.recommendedReason !== "blocked_tasks_priority" ||
   runtimeWorkspacePackMcpPayload.workspacePack?.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeWorkspacePackMcpPayload.workspacePack?.next?.review?.taskId !== "task-2" ||
   runtimeWorkspacePackMcpPayload.workspacePack?.next?.recovery?.taskId !== "task-1"
