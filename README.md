@@ -202,7 +202,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `swarm:closeout` / `swarm_closeout` add the closure layer for swarm leadership: current swarm bundle, execution brief, and the concrete explicit closeout command when every lane is done.
 
-`swarm:blockers` / `swarm_blockers` add the blocker layer for swarm leadership: blocked lanes only, their task reports, and the next unblock/requeue action.
+`swarm:blockers` / `swarm_blockers` add the blocker layer for swarm leadership: blocked lanes only, their task reports, and the next unblock/requeue action. They also emit a machine-readable `recommendedReason` so automation can distinguish a single unblock-ready lane, multiple blocked lanes, and empty blocker state without reparsing blocker arrays.
 
 `swarm:dispatch-bundle` / `swarm_dispatch_bundle` add the dispatch layer for swarm leadership: the next runnable lane, its task brief, and the concrete dispatch command. They also emit a machine-readable `recommendedReason` so automation can distinguish runnable dispatch lanes, ready-to-complete swarms, passive dispatchable visibility, and empty dispatch state without reparsing lane payloads.
 

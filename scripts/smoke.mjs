@@ -1676,6 +1676,7 @@ const swarmBlockersCli = JSON.parse(
 ).blockers;
 if (
   swarmBlockersCli.kind !== "swarm_blockers" ||
+  swarmBlockersCli.recommendedReason !== "blocked_lane_ready" ||
   swarmBlockersCli.blockedCount !== 1 ||
   swarmBlockersCli.blockers?.[0]?.taskId !== "task-1" ||
   swarmBlockersCli.blockers?.[0]?.report?.task?.id !== "task-1"
@@ -1706,6 +1707,7 @@ const swarmBlockersMcpLines = swarmBlockersMcp.stdout
 const swarmBlockersMcpPayload = JSON.parse(JSON.parse(swarmBlockersMcpLines[1]).result.content[0].text);
 if (
   swarmBlockersMcp.status !== 0 ||
+  swarmBlockersMcpPayload.blockers?.recommendedReason !== "blocked_lane_ready" ||
   swarmBlockersMcpPayload.blockers?.blockedCount !== 1 ||
   swarmBlockersMcpPayload.blockers?.blockers?.[0]?.recommendedNextAction !== "resolve_blocker_and_requeue"
 ) {

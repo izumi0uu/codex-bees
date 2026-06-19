@@ -401,9 +401,11 @@ export function swarmBlockers(id) {
       recommendedCommands: lane.recommendedCommands,
       report: lane.taskId ? taskReport(lane.taskId) : null
     }));
+  const recommendedReason = deriveSwarmBlockersReason({ blockedLanes });
 
   return {
     kind: "swarm_blockers",
+    recommendedReason,
     swarm: overview.swarm,
     derivedStatus: overview.derivedStatus,
     statusAligned: overview.statusAligned,
@@ -4644,6 +4646,16 @@ function deriveSwarmDispatchBundleReason({ overview, dispatchLane }) {
     return "dispatchable_lanes_visible";
   }
   return "no_dispatchable_lane";
+}
+
+function deriveSwarmBlockersReason({ blockedLanes }) {
+  if ((blockedLanes?.length ?? 0) > 1) {
+    return "multiple_blocked_lanes_visible";
+  }
+  if ((blockedLanes?.length ?? 0) === 1) {
+    return "blocked_lane_ready";
+  }
+  return "no_blocked_lanes";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
