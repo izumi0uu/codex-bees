@@ -1077,6 +1077,22 @@ if (
   console.error("[smoke:leader-assignment-dispatch] expected CLI leader dispatch package");
   process.exit(1);
 }
+const leaderAssignmentDispatchPackCli = JSON.parse(
+  run("leader-assignment-dispatch-pack-cli", ["./src/index.js", "leader:assignment-dispatch-pack"]).stdout
+).assignmentDispatchPack;
+const leaderAssignmentDispatchPackCliByOwner = new Map(
+  (leaderAssignmentDispatchPackCli.groups ?? []).map((group) => [group.owner?.id, group])
+);
+if (
+  leaderAssignmentDispatchPackCli.counts?.ownerGroups !== 2 ||
+  leaderAssignmentDispatchPackCli.counts?.totalAssignments !== 2 ||
+  leaderAssignmentDispatchPackCli.next?.owner?.id !== "executor" ||
+  leaderAssignmentDispatchPackCliByOwner.get("executor")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker <executor-worker> --task task-2" ||
+  leaderAssignmentDispatchPackCliByOwner.get("explore")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role explore --worker <explore-worker> --task task-1"
+) {
+  console.error("[smoke:leader-assignment-dispatch-pack] expected CLI batch leader dispatch package");
+  process.exit(1);
+}
 const assignmentPackExecutorCli = JSON.parse(
   run("runtime-assignment-pack-executor-cli", ["./src/index.js", "runtime:assignment-pack", "--role", "executor", "--worker", "worker-executor", "--mode", "owner"]).stdout
 ).assignmentPack;
@@ -1660,6 +1676,42 @@ if (
 ) {
   console.error("[smoke:leader-assignment-dispatch-mcp] expected MCP leader dispatch package");
   console.error(leaderAssignmentDispatchMcp.stderr || leaderAssignmentDispatchMcp.stdout);
+  process.exit(1);
+}
+const leaderAssignmentDispatchPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "leader_assignment_dispatch_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const leaderAssignmentDispatchPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: leaderAssignmentDispatchPackMcpInput,
+  encoding: "utf8"
+});
+const leaderAssignmentDispatchPackMcpLines = leaderAssignmentDispatchPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const leaderAssignmentDispatchPackMcpPayload = JSON.parse(JSON.parse(leaderAssignmentDispatchPackMcpLines[1]).result.content[0].text);
+const leaderAssignmentDispatchPackMcpByOwner = new Map(
+  (leaderAssignmentDispatchPackMcpPayload.assignmentDispatchPack?.groups ?? []).map((group) => [group.owner?.id, group])
+);
+if (
+  leaderAssignmentDispatchPackMcp.status !== 0 ||
+  leaderAssignmentDispatchPackMcpPayload.assignmentDispatchPack?.counts?.ownerGroups !== 2 ||
+  leaderAssignmentDispatchPackMcpPayload.assignmentDispatchPack?.counts?.totalAssignments !== 2 ||
+  leaderAssignmentDispatchPackMcpPayload.assignmentDispatchPack?.next?.owner?.id !== "executor" ||
+  leaderAssignmentDispatchPackMcpByOwner.get("executor")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker <executor-worker> --task task-2" ||
+  leaderAssignmentDispatchPackMcpByOwner.get("explore")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role explore --worker <explore-worker> --task task-1"
+) {
+  console.error("[smoke:leader-assignment-dispatch-pack-mcp] expected MCP batch leader dispatch package");
+  console.error(leaderAssignmentDispatchPackMcp.stderr || leaderAssignmentDispatchPackMcp.stdout);
   process.exit(1);
 }
 const assignmentPackExecutorMcpInput = [
