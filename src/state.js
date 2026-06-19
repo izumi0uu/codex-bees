@@ -366,9 +366,11 @@ export function swarmCloseout(id) {
   const brief = swarmBrief(id);
   const bundle = swarmBundle(id);
   const command = deriveSwarmCloseoutCommand(overview, brief);
+  const recommendedReason = deriveSwarmCloseoutReason({ overview, command });
 
   return {
     kind: "swarm_closeout",
+    recommendedReason,
     swarm: overview.swarm,
     derivedStatus: overview.derivedStatus,
     statusAligned: overview.statusAligned,
@@ -4656,6 +4658,16 @@ function deriveSwarmBlockersReason({ blockedLanes }) {
     return "blocked_lane_ready";
   }
   return "no_blocked_lanes";
+}
+
+function deriveSwarmCloseoutReason({ overview, command }) {
+  if (overview?.readyToComplete) {
+    return "swarm_closeout_ready";
+  }
+  if (command) {
+    return "followup_before_closeout";
+  }
+  return "no_closeout_action";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

@@ -200,7 +200,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `leader:assignments` / `leader_assignments` provide the owner-grouped dispatch surface for the leader lane: runnable lane work grouped by who should receive it next. It also emits a machine-readable `recommendedReason` so automation can distinguish between parallel owner-group pressure, multiple visible assignments, single next-assignment readiness, and empty dispatch state without re-deriving those branches from nested arrays.
 
-`swarm:closeout` / `swarm_closeout` add the closure layer for swarm leadership: current swarm bundle, execution brief, and the concrete explicit closeout command when every lane is done.
+`swarm:closeout` / `swarm_closeout` add the closure layer for swarm leadership: current swarm bundle, execution brief, and the concrete explicit closeout command when every lane is done. They also emit a machine-readable `recommendedReason` so automation can distinguish swarms that are ready to close, swarms that still require a follow-up action before closeout, and swarms with no closeout action available.
 
 `swarm:blockers` / `swarm_blockers` add the blocker layer for swarm leadership: blocked lanes only, their task reports, and the next unblock/requeue action. They also emit a machine-readable `recommendedReason` so automation can distinguish a single unblock-ready lane, multiple blocked lanes, and empty blocker state without reparsing blocker arrays.
 

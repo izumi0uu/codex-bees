@@ -1490,6 +1490,7 @@ const swarmCloseoutCli = JSON.parse(
 ).closeout;
 if (
   swarmCloseoutCli.kind !== "swarm_closeout" ||
+  swarmCloseoutCli.recommendedReason !== "swarm_closeout_ready" ||
   swarmCloseoutCli.readyToComplete !== true ||
   swarmCloseoutCli.command !== "node ./src/index.js swarm:done --id swarm-1" ||
   swarmCloseoutCli.bundle?.swarm?.id !== "swarm-1"
@@ -4168,6 +4169,7 @@ if (
   mcpSwarmTask.reviewedBy !== "tester" ||
   mcpSwarmTask.reviewOutcome !== "approved" ||
   swarmBundlePayload?.bundle?.lanes?.[0]?.report?.task?.id !== "task-1" ||
+  swarmCloseoutPayload?.closeout?.recommendedReason !== "swarm_closeout_ready" ||
   swarmCloseoutPayload?.closeout?.command !== "node ./src/index.js swarm:done --id swarm-1" ||
   leaderWorkspacePayload?.workspace?.recommendedReason !== "closeout_focus_priority" ||
   leaderWorkspacePayload?.workspace?.focus?.swarmId !== "swarm-1" ||
