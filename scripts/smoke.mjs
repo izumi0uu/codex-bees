@@ -2718,6 +2718,7 @@ const runtimeControlPackCli = JSON.parse(
 ).controlPack;
 if (
   runtimeControlPackCli.recommendedSurface !== "runtime:summary-pack" ||
+  runtimeControlPackCli.recommendedReason !== "summary_priority" ||
   runtimeControlPackCli.next?.summary?.taskId !== "task-1" ||
   runtimeControlPackCli.next?.workspace?.recovery?.taskId !== "task-1" ||
   runtimeControlPackCli.next?.operator?.handoff?.taskId !== "task-2" ||
@@ -3411,6 +3412,7 @@ const runtimeControlPackMcpPayload = JSON.parse(JSON.parse(runtimeControlPackMcp
 if (
   runtimeControlPackMcp.status !== 0 ||
   runtimeControlPackMcpPayload.controlPack?.recommendedSurface !== "runtime:summary-pack" ||
+  runtimeControlPackMcpPayload.controlPack?.recommendedReason !== "summary_priority" ||
   runtimeControlPackMcpPayload.controlPack?.next?.summary?.taskId !== "task-1" ||
   runtimeControlPackMcpPayload.controlPack?.next?.leader?.dispatch?.lane !== "lane-dashboard"
 ) {

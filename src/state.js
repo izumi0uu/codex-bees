@@ -1426,10 +1426,12 @@ export function runtimeControlPack(input = {}) {
   const operatorPack = runtimeOperatorPack();
   const leaderPack = runtimeLeaderPack(input);
   const recommendedSurface = deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack });
+  const recommendedReason = deriveRuntimeControlPackReason({ summaryPack, workspacePack, operatorPack, leaderPack });
 
   return {
     kind: "runtime_control_pack",
     recommendedSurface,
+    recommendedReason,
     overview: {
       summary: summaryPack?.overview ?? null,
       workspace: workspacePack?.overview ?? null,
@@ -4435,6 +4437,22 @@ function deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorP
     return "runtime:leader-pack";
   }
   return "runtime:summary-pack";
+}
+
+function deriveRuntimeControlPackReason({ summaryPack, workspacePack, operatorPack, leaderPack }) {
+  if (summaryPack?.recommendedSurface) {
+    return "summary_priority";
+  }
+  if (workspacePack?.recommendedSurface) {
+    return "workspace_priority";
+  }
+  if (operatorPack?.recommendedSurface) {
+    return "operator_priority";
+  }
+  if (leaderPack?.recommendedSurface) {
+    return "leader_priority";
+  }
+  return "default_summary_priority";
 }
 
 function buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack) {
