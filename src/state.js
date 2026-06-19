@@ -1137,6 +1137,38 @@ export function runtimeCloseoutPack() {
   };
 }
 
+export function runtimeReviewPack(input = {}) {
+  const review = runtimeReview();
+  const roles = runtimeRoles();
+  const verifierPack = input.role && input.workerId
+    ? runtimeVerifierPack({ role: input.role, workerId: input.workerId })
+    : null;
+  const recommendedSurface = deriveRuntimeReviewPackSurface({ review, roles, verifierPack });
+
+  return {
+    kind: "runtime_review_pack",
+    role: input.role ? describeRole(input.role) : null,
+    workerId: input.workerId ?? null,
+    recommendedSurface,
+    overview: {
+      review: review?.counts ?? null,
+      roles: roles?.counts ?? null,
+      verifier: verifierPack?.overview ?? null
+    },
+    next: {
+      review: review?.next ?? null,
+      role: roles?.next ?? null,
+      verifier: verifierPack?.next ?? null
+    },
+    surfaces: {
+      review,
+      roles,
+      verifierPack
+    },
+    summary: buildRuntimeReviewPackSummary(recommendedSurface, review, verifierPack, roles)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3346,6 +3378,28 @@ function buildRuntimeCloseoutPackSummary(recommendedSurface, closeout, summaryPa
     summaryPack?.summary ??
     "Runtime closeout pack has no current closure detail.";
   return `Runtime closeout pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeReviewPackSurface({ review, roles, verifierPack }) {
+  if (verifierPack?.recommendedSurface) {
+    return "runtime:verifier-pack";
+  }
+  if ((review?.counts?.totalPendingReview ?? 0) > 0) {
+    return "runtime:review";
+  }
+  if ((roles?.counts?.withPendingReview ?? 0) > 0) {
+    return "runtime:roles";
+  }
+  return "runtime:review";
+}
+
+function buildRuntimeReviewPackSummary(recommendedSurface, review, verifierPack, roles) {
+  const detail =
+    verifierPack?.summary ??
+    review?.summary ??
+    roles?.summary ??
+    "Runtime review pack has no current verifier-control detail.";
+  return `Runtime review pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
