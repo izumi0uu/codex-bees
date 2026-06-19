@@ -1022,7 +1022,12 @@ const queuedPlanSwarm = JSON.parse(
     "Queue a planner-driven swarm"
   ]).stdout
 );
-if (queuedPlanSwarm.kind !== "queued_plan_swarm" || queuedPlanSwarm.created.length !== 2) {
+if (
+  queuedPlanSwarm.kind !== "queued_plan_swarm" ||
+  queuedPlanSwarm.created.length !== 2 ||
+  queuedPlanSwarm.swarm?.status !== "active" ||
+  queuedPlanSwarm.swarm?.laneSource !== "planner"
+) {
   console.error("[smoke:plan-swarm-queue] expected queued planner swarm tasks");
   process.exit(1);
 }
@@ -1106,7 +1111,12 @@ run("swarm-start", ["./src/index.js", "swarm:start", "--id", "swarm-1", "--owner
 const swarmQueue = JSON.parse(
   run("swarm-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]).stdout
 );
-if (!Array.isArray(swarmQueue.created) || swarmQueue.created.length !== 2) {
+if (
+  swarmQueue.kind !== "swarm_queue" ||
+  swarmQueue.recommendedReason !== "multiple_lane_tasks_queued" ||
+  !Array.isArray(swarmQueue.created) ||
+  swarmQueue.created.length !== 2
+) {
   console.error("[smoke:swarm-queue] expected two queued swarm tasks");
   process.exit(1);
 }

@@ -3047,7 +3047,13 @@ export function queueSwarmTasks(input) {
 
   state.swarms[index] = updated;
   saveState(state);
+  const recommendedReason = deriveSwarmQueueReason({
+    swarm: updated,
+    created
+  });
   return {
+    kind: "swarm_queue",
+    recommendedReason,
     swarm: updated,
     created
   };
@@ -4804,6 +4810,19 @@ function deriveTaskValidationReason(validation) {
     return "task_validation_issues_present";
   }
   return "task_validation_visible";
+}
+
+function deriveSwarmQueueReason({ swarm, created }) {
+  if ((created?.length ?? 0) > 1) {
+    return "multiple_lane_tasks_queued";
+  }
+  if ((created?.length ?? 0) === 1) {
+    return "single_lane_task_queued";
+  }
+  if (swarm?.status === "active") {
+    return "active_swarm_queue_visible";
+  }
+  return "swarm_queue_visible";
 }
 
 function deriveSwarmBriefReason(recommended) {
