@@ -316,6 +316,18 @@ if (
   console.error("[smoke:runtime-control-pack] expected top-level runtime control pack");
   process.exit(1);
 }
+const runtimeSignalPackInitial = JSON.parse(
+  run("runtime-signal-pack-initial", ["./src/index.js", "runtime:signal-pack"]).stdout
+).signalPack;
+if (
+  runtimeSignalPackInitial.kind !== "runtime_signal_pack" ||
+  !runtimeSignalPackInitial.recommendedSurface ||
+  !runtimeSignalPackInitial.overview ||
+  !runtimeSignalPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-signal-pack] expected top-level runtime signal pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1757,6 +1769,19 @@ if (
   console.error("[smoke:runtime-control-pack] expected CLI control pack to recommend summary pack");
   process.exit(1);
 }
+const runtimeSignalPackCli = JSON.parse(
+  run("runtime-signal-pack-cli", ["./src/index.js", "runtime:signal-pack"]).stdout
+).signalPack;
+if (
+  runtimeSignalPackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeSignalPackCli.next?.focus?.taskId !== "task-1" ||
+  runtimeSignalPackCli.next?.alert?.taskId !== "task-1" ||
+  runtimeSignalPackCli.next?.activity?.taskId !== "task-4" ||
+  runtimeSignalPackCli.next?.role?.role?.id !== "tester"
+) {
+  console.error("[smoke:runtime-signal-pack] expected CLI signal pack to recommend focus");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -2283,6 +2308,37 @@ if (
 ) {
   console.error("[smoke:runtime-control-pack-mcp] expected MCP runtime control pack");
   console.error(runtimeControlPackMcp.stderr || runtimeControlPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeSignalPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_signal_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeSignalPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeSignalPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeSignalPackMcpLines = runtimeSignalPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeSignalPackMcpPayload = JSON.parse(JSON.parse(runtimeSignalPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeSignalPackMcp.status !== 0 ||
+  runtimeSignalPackMcpPayload.signalPack?.recommendedSurface !== "runtime:focus" ||
+  runtimeSignalPackMcpPayload.signalPack?.next?.focus?.taskId !== "task-1" ||
+  runtimeSignalPackMcpPayload.signalPack?.next?.role?.role?.id !== "tester"
+) {
+  console.error("[smoke:runtime-signal-pack-mcp] expected MCP runtime signal pack");
+  console.error(runtimeSignalPackMcp.stderr || runtimeSignalPackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
