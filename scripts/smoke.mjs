@@ -220,6 +220,18 @@ if (
   console.error("[smoke:runtime-recovery] expected top-level runtime recovery");
   process.exit(1);
 }
+const runtimeSummaryPackInitial = JSON.parse(
+  run("runtime-summary-pack-initial", ["./src/index.js", "runtime:summary-pack"]).stdout
+).summaryPack;
+if (
+  runtimeSummaryPackInitial.kind !== "runtime_summary_pack" ||
+  !runtimeSummaryPackInitial.recommendedSurface ||
+  !runtimeSummaryPackInitial.focus ||
+  !runtimeSummaryPackInitial.overview
+) {
+  console.error("[smoke:runtime-summary-pack] expected top-level runtime summary pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1477,6 +1489,18 @@ if (
   console.error("[smoke:runtime-recovery] expected CLI recovery workspace");
   process.exit(1);
 }
+const runtimeSummaryPackCli = JSON.parse(
+  run("runtime-summary-pack-cli", ["./src/index.js", "runtime:summary-pack"]).stdout
+).summaryPack;
+if (
+  runtimeSummaryPackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeSummaryPackCli.focus?.focus?.taskId !== "task-1" ||
+  runtimeSummaryPackCli.next?.recovery?.taskId !== "task-1" ||
+  runtimeSummaryPackCli.overview?.dashboard?.blockedTasks !== 1
+) {
+  console.error("[smoke:runtime-summary-pack] expected CLI summary pack to recommend focus");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1730,6 +1754,36 @@ if (
 ) {
   console.error("[smoke:runtime-recovery-mcp] expected MCP runtime recovery");
   console.error(runtimeRecoveryMcp.stderr || runtimeRecoveryMcp.stdout);
+  process.exit(1);
+}
+const runtimeSummaryPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_summary_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeSummaryPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeSummaryPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeSummaryPackMcpLines = runtimeSummaryPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeSummaryPackMcpPayload = JSON.parse(JSON.parse(runtimeSummaryPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeSummaryPackMcp.status !== 0 ||
+  runtimeSummaryPackMcpPayload.summaryPack?.recommendedSurface !== "runtime:focus" ||
+  runtimeSummaryPackMcpPayload.summaryPack?.focus?.focus?.taskId !== "task-1"
+) {
+  console.error("[smoke:runtime-summary-pack-mcp] expected MCP runtime summary pack");
+  console.error(runtimeSummaryPackMcp.stderr || runtimeSummaryPackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
