@@ -602,6 +602,39 @@ export function leaderAssignmentDispatchPack(input = {}) {
   };
 }
 
+export function leaderAssignmentDispatchBundle(input = {}) {
+  const dispatchPack = leaderAssignmentDispatchPack(input);
+  const launches = (dispatchPack?.groups ?? []).map((group, index) => ({
+    position: index + 1,
+    role: group.owner,
+    workerId: group.workerId,
+    taskId: group.next?.taskId ?? null,
+    swarmId: group.next?.swarmId ?? null,
+    objective: group.next?.objective ?? null,
+    lane: group.next?.lane ?? null,
+    assignment: group.next ?? null,
+    previewCommand: group.previewCommand,
+    pickupCommand: group.pickupCommand,
+    command: group.command,
+    summary: group.summary
+  }));
+  const next = launches[0] ?? null;
+
+  return {
+    kind: "leader_assignment_dispatch_bundle",
+    counts: {
+      launches: launches.length,
+      ownerGroups: dispatchPack?.counts?.ownerGroups ?? 0,
+      totalAssignments: dispatchPack?.counts?.totalAssignments ?? 0
+    },
+    next,
+    launches,
+    summary: next
+      ? `Leader assignment dispatch bundle has ${launches.length} worker launch${launches.length === 1 ? "" : "es"} ready; ${next.role?.id ?? next.role?.name ?? "unknown"} via ${next.workerId ?? "<worker-id>"} is first.`
+      : "Leader assignment dispatch bundle has no worker launches right now."
+  };
+}
+
 export function runtimeDashboard() {
   const state = loadState();
   const tasks = state.tasks.map(normalizeTask);
@@ -1134,9 +1167,10 @@ export function runtimeOperatorPack() {
 export function runtimeDispatchPack(input = {}) {
   const dispatch = runtimeDispatch();
   const assignmentDispatchPack = leaderAssignmentDispatchPack(input);
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
   const roles = runtimeRoles();
   const handoffs = runtimeHandoffs();
-  const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, roles, handoffs });
+  const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, roles, handoffs });
 
   return {
     kind: "runtime_dispatch_pack",
@@ -1144,22 +1178,25 @@ export function runtimeDispatchPack(input = {}) {
     overview: {
       dispatch: dispatch?.counts ?? null,
       assignmentDispatchPack: assignmentDispatchPack?.counts ?? null,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
       roles: roles?.counts ?? null,
       handoffs: handoffs?.counts ?? null
     },
     next: {
       dispatch: dispatch?.next ?? null,
       assignmentDispatch: assignmentDispatchPack?.next ?? null,
+      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
       role: roles?.next ?? null,
       handoff: handoffs?.next ?? null
     },
     surfaces: {
       dispatch,
       assignmentDispatchPack,
+      assignmentDispatchBundle,
       roles,
       handoffs
     },
-    summary: buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, handoffs, roles)
+    summary: buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, assignmentDispatchBundle, handoffs, roles)
   };
 }
 
@@ -1738,8 +1775,9 @@ export function runtimeLeaderPack(input = {}) {
   const queue = leaderQueue(input);
   const dispatch = runtimeDispatch();
   const assignmentDispatchPack = leaderAssignmentDispatchPack(input);
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
   const closeout = runtimeCloseout();
-  const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, closeout });
+  const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, closeout });
 
   return {
     kind: "runtime_leader_pack",
@@ -1754,6 +1792,7 @@ export function runtimeLeaderPack(input = {}) {
       queue: queue?.counts ?? null,
       dispatch: dispatch?.counts ?? null,
       assignmentDispatchPack: assignmentDispatchPack?.counts ?? null,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
       closeout: closeout?.counts ?? null
     },
     next: {
@@ -1761,6 +1800,7 @@ export function runtimeLeaderPack(input = {}) {
       queue: queue?.next ?? null,
       dispatch: dispatch?.next ?? null,
       assignmentDispatch: assignmentDispatchPack?.next ?? null,
+      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
       closeout: closeout?.next ?? null
     },
     surfaces: {
@@ -1768,9 +1808,10 @@ export function runtimeLeaderPack(input = {}) {
       queue,
       dispatch,
       assignmentDispatchPack,
+      assignmentDispatchBundle,
       closeout
     },
-    summary: buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack)
+    summary: buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack, assignmentDispatchBundle)
   };
 }
 
@@ -4087,7 +4128,10 @@ function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
   return `Runtime operator pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
-function deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, roles, handoffs }) {
+function deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, roles, handoffs }) {
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "leader:assignment-dispatch-bundle";
+  }
   if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
     return "leader:assignment-dispatch-pack";
   }
@@ -4107,8 +4151,9 @@ function deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, ro
   return "runtime:dispatch";
 }
 
-function buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, handoffs, roles) {
+function buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, assignmentDispatchBundle, handoffs, roles) {
   const detail =
+    assignmentDispatchBundle?.summary ??
     assignmentDispatchPack?.summary ??
     dispatch?.summary ??
     handoffs?.summary ??
@@ -4502,7 +4547,10 @@ function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, sessi
   return `Runtime assignment pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
-function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, closeout }) {
+function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, closeout }) {
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "leader:assignment-dispatch-bundle";
+  }
   if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
     return "leader:assignment-dispatch-pack";
   }
@@ -4521,12 +4569,12 @@ function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignment
   return "leader:workspace";
 }
 
-function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack) {
+function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack, assignmentDispatchBundle) {
   if (!workspace?.focus && !(queue?.counts?.total > 0)) {
     return `Runtime leader pack recommends ${recommendedSurface}; there is no active leader orchestration target right now.`;
   }
 
-  return `Runtime leader pack recommends ${recommendedSurface} next. ${assignmentDispatchPack?.summary ?? workspace?.summary ?? queue?.summary ?? ""}`.trim();
+  return `Runtime leader pack recommends ${recommendedSurface} next. ${assignmentDispatchBundle?.summary ?? assignmentDispatchPack?.summary ?? workspace?.summary ?? queue?.summary ?? ""}`.trim();
 }
 
 function deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role, workerId }) {
