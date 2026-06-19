@@ -1134,7 +1134,7 @@ export function runtimeRecovery() {
   };
 }
 
-export function runtimeSummaryPack() {
+export function runtimeSummaryPack(input = {}) {
   const dashboard = runtimeDashboard();
   const alerts = runtimeAlerts();
   const focus = runtimeFocus();
@@ -1274,10 +1274,10 @@ export function runtimeRecoveryPack() {
   };
 }
 
-export function runtimeCloseoutPack() {
+export function runtimeCloseoutPack(input = {}) {
   const closeout = runtimeCloseout();
-  const summaryPack = runtimeSummaryPack();
-  const leaderPack = runtimeLeaderPack();
+  const summaryPack = runtimeSummaryPack(input);
+  const leaderPack = runtimeLeaderPack(input);
   const recommendedSurface = deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack });
 
   return {
@@ -1334,7 +1334,7 @@ export function runtimeReviewPack(input = {}) {
   };
 }
 
-export function runtimeQueuePack() {
+export function runtimeQueuePack(input = {}) {
   const queue = leaderQueue();
   const dashboard = runtimeDashboard();
   const focus = runtimeFocus();
@@ -1360,11 +1360,11 @@ export function runtimeQueuePack() {
   };
 }
 
-export function runtimeWorkspacePack() {
+export function runtimeWorkspacePack(input = {}) {
   const dashboard = runtimeDashboard();
   const dispatch = runtimeDispatch();
-  const assignmentDispatchBundle = leaderAssignmentDispatchBundle();
-  const assignmentLaunchPlan = leaderAssignmentLaunchPlan();
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
+  const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const review = runtimeReview();
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
@@ -1400,11 +1400,11 @@ export function runtimeWorkspacePack() {
   };
 }
 
-export function runtimeControlPack() {
-  const summaryPack = runtimeSummaryPack();
-  const workspacePack = runtimeWorkspacePack();
+export function runtimeControlPack(input = {}) {
+  const summaryPack = runtimeSummaryPack(input);
+  const workspacePack = runtimeWorkspacePack(input);
   const operatorPack = runtimeOperatorPack();
-  const leaderPack = runtimeLeaderPack();
+  const leaderPack = runtimeLeaderPack(input);
   const recommendedSurface = deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack });
 
   return {
@@ -1641,13 +1641,13 @@ export function runtimeRolePack(input = {}) {
   };
 }
 
-export function runtimeExecutionPack() {
+export function runtimeExecutionPack(input = {}) {
   const focus = runtimeFocus();
   const dispatch = runtimeDispatch();
-  const assignmentDispatchBundle = leaderAssignmentDispatchBundle();
-  const assignmentLaunchPlan = leaderAssignmentLaunchPlan();
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
+  const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const roles = runtimeRoles();
-  const queuePack = runtimeQueuePack();
+  const queuePack = runtimeQueuePack(input);
   const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
 
   return {
