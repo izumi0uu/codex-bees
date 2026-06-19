@@ -244,6 +244,18 @@ if (
   console.error("[smoke:runtime-leader-pack] expected top-level runtime leader pack");
   process.exit(1);
 }
+const runtimeOperatorPackInitial = JSON.parse(
+  run("runtime-operator-pack-initial", ["./src/index.js", "runtime:operator-pack"]).stdout
+).operatorPack;
+if (
+  runtimeOperatorPackInitial.kind !== "runtime_operator_pack" ||
+  !runtimeOperatorPackInitial.recommendedSurface ||
+  !runtimeOperatorPackInitial.overview ||
+  !runtimeOperatorPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-operator-pack] expected top-level runtime operator pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1537,6 +1549,19 @@ if (
   console.error("[smoke:runtime-leader-pack] expected CLI leader pack to recommend dispatch");
   process.exit(1);
 }
+const runtimeOperatorPackCli = JSON.parse(
+  run("runtime-operator-pack-cli", ["./src/index.js", "runtime:operator-pack"]).stdout
+).operatorPack;
+if (
+  runtimeOperatorPackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeOperatorPackCli.focus?.focus?.taskId !== "task-1" ||
+  runtimeOperatorPackCli.next?.handoff?.taskId !== "task-2" ||
+  runtimeOperatorPackCli.overview?.alerts?.high !== 1 ||
+  runtimeOperatorPackCli.surfaces?.closeout?.counts?.tasksReady !== 0
+) {
+  console.error("[smoke:runtime-operator-pack] expected CLI operator pack to recommend focus");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1850,6 +1875,37 @@ if (
 ) {
   console.error("[smoke:runtime-leader-pack-mcp] expected MCP runtime leader pack");
   console.error(runtimeLeaderPackMcp.stderr || runtimeLeaderPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeOperatorPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_operator_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeOperatorPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeOperatorPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeOperatorPackMcpLines = runtimeOperatorPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeOperatorPackMcpPayload = JSON.parse(JSON.parse(runtimeOperatorPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeOperatorPackMcp.status !== 0 ||
+  runtimeOperatorPackMcpPayload.operatorPack?.recommendedSurface !== "runtime:focus" ||
+  runtimeOperatorPackMcpPayload.operatorPack?.focus?.focus?.taskId !== "task-1" ||
+  runtimeOperatorPackMcpPayload.operatorPack?.next?.handoff?.taskId !== "task-2"
+) {
+  console.error("[smoke:runtime-operator-pack-mcp] expected MCP runtime operator pack");
+  console.error(runtimeOperatorPackMcp.stderr || runtimeOperatorPackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
