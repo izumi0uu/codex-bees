@@ -566,6 +566,58 @@ export function runtimeDashboard() {
   };
 }
 
+export function runtimeAlerts() {
+  const dashboard = runtimeDashboard();
+  const alerts = [];
+
+  for (const task of dashboard.blockedTasks) {
+    alerts.push({
+      kind: "blocked_task",
+      severity: "high",
+      taskId: task.id,
+      swarmId: task.swarmId,
+      lane: task.lane,
+      owner: task.owner,
+      summary: `Task ${task.id} is blocked${task.swarmId ? ` in ${task.swarmId}` : ""}.`
+    });
+  }
+
+  for (const task of dashboard.pendingReview) {
+    alerts.push({
+      kind: "pending_review",
+      severity: "medium",
+      taskId: task.id,
+      swarmId: task.swarmId,
+      lane: task.lane,
+      verifier: task.verifier,
+      summary: `Task ${task.id} is waiting on verifier ${task.verifier ?? "unknown"}.`
+    });
+  }
+
+  const readySwarms = listSwarmOverviews()
+    .filter((swarm) => swarm.readyToComplete)
+    .map((swarm) => ({
+      kind: "swarm_ready_to_complete",
+      severity: "medium",
+      swarmId: swarm.swarm.id,
+      summary: `Swarm ${swarm.swarm.id} is ready to complete.`
+    }));
+  alerts.push(...readySwarms);
+
+  alerts.sort(compareRuntimeAlerts);
+
+  return {
+    kind: "runtime_alerts",
+    counts: {
+      total: alerts.length,
+      high: alerts.filter((alert) => alert.severity === "high").length,
+      medium: alerts.filter((alert) => alert.severity === "medium").length
+    },
+    alerts,
+    summary: buildRuntimeAlertsSummary(alerts)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -1875,6 +1927,24 @@ function buildRuntimeDashboardSummary(queue, blockedTasks, pendingReview, active
     return `Runtime dashboard is ready with ${nextSwarm} at the head of the leader queue.`;
   }
   return "Runtime dashboard has no active coordination work right now.";
+}
+
+function compareRuntimeAlerts(left, right) {
+  const severityRank = { high: 0, medium: 1, low: 2 };
+  const leftRank = severityRank[left.severity] ?? 9;
+  const rightRank = severityRank[right.severity] ?? 9;
+  if (leftRank !== rightRank) {
+    return leftRank - rightRank;
+  }
+  return (left.taskId ?? left.swarmId ?? "").localeCompare(right.taskId ?? right.swarmId ?? "");
+}
+
+function buildRuntimeAlertsSummary(alerts) {
+  if (alerts.length === 0) {
+    return "Runtime alerts has no active alerts right now.";
+  }
+  const top = alerts[0];
+  return `Runtime alerts has ${alerts.length} active alert${alerts.length === 1 ? "" : "s"}; ${top.summary}`;
 }
 
 function buildLeaderWorkspaceSwarmEntry(overview) {
