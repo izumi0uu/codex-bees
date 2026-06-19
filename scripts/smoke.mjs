@@ -1063,7 +1063,11 @@ run("swarm-list", ["./src/index.js", "swarm:list"]);
 const swarmValidation = JSON.parse(
   run("swarm-check", ["./src/index.js", "swarm:check", "--id", "swarm-1"]).stdout
 ).validation;
-if (!swarmValidation.ready) {
+if (
+  swarmValidation.kind !== "swarm_validation" ||
+  swarmValidation.recommendedReason !== "swarm_ready_to_queue" ||
+  !swarmValidation.ready
+) {
   console.error("[smoke:swarm-check] expected bounded swarm to validate cleanly");
   process.exit(1);
 }
@@ -1613,7 +1617,11 @@ run("swarm-init-invalid", [
 const invalidSwarmValidation = JSON.parse(
   run("swarm-check-invalid", ["./src/index.js", "swarm:check", "--id", "swarm-1"]).stdout
 ).validation;
-if (invalidSwarmValidation.ready || invalidSwarmValidation.overlaps.length === 0) {
+if (
+  invalidSwarmValidation.recommendedReason !== "swarm_scope_overlap_detected" ||
+  invalidSwarmValidation.ready ||
+  invalidSwarmValidation.overlaps.length === 0
+) {
   console.error("[smoke:swarm-check] expected invalid swarm overlap or metadata issues");
   process.exit(1);
 }
@@ -1643,6 +1651,7 @@ const invalidSwarmRoleValidation = JSON.parse(
   run("swarm-check-invalid-role", ["./src/index.js", "swarm:check", "--id", "swarm-1"]).stdout
 ).validation;
 if (
+  invalidSwarmRoleValidation.recommendedReason !== "lane_validation_issues_present" ||
   invalidSwarmRoleValidation.ready ||
   !invalidSwarmRoleValidation.lanes?.[0]?.issues?.some((issue) => issue.code === "unknown_owner")
 ) {

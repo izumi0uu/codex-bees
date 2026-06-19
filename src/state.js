@@ -2730,7 +2730,12 @@ export function validateSwarm(id) {
   if (!swarm) {
     return null;
   }
-  return validateSwarmValue(swarm);
+  const validation = validateSwarmValue(swarm);
+  return {
+    kind: "swarm_validation",
+    recommendedReason: deriveSwarmValidationReason(validation),
+    ...validation
+  };
 }
 
 export function runtimeRoleCatalog() {
@@ -4756,6 +4761,25 @@ function deriveSwarmSyncReason({ previousStatus, derivedStatus, changed }) {
     return "planned_swarm_unchanged";
   }
   return "swarm_sync_visible";
+}
+
+function deriveSwarmValidationReason(validation) {
+  if (!validation) {
+    return "validation_unavailable";
+  }
+  if (validation.ready) {
+    return "swarm_ready_to_queue";
+  }
+  if ((validation.overlaps?.length ?? 0) > 0) {
+    return "swarm_scope_overlap_detected";
+  }
+  if ((validation.lanes ?? []).some((lane) => lane.ready === false)) {
+    return "lane_validation_issues_present";
+  }
+  if ((validation.issues?.length ?? 0) > 0) {
+    return "swarm_validation_issues_present";
+  }
+  return "swarm_validation_visible";
 }
 
 function deriveSwarmBriefReason(recommended) {

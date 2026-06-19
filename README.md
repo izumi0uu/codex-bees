@@ -160,7 +160,7 @@ Swarm contracts can carry bounded parallel execution detail:
 - `--lane-source manual`
 - `--lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer","scope":["src/index.js"]}]'`
 
-`swarm:check` validates that each lane has owner, verifier, scope, acceptance, and verification metadata before queueing. It also rejects overlapping lane scopes and unknown lane roles, so planner-generated and manually-authored swarms stay parallel-safe before execution begins.
+`swarm:check` validates that each lane has owner, verifier, scope, acceptance, and verification metadata before queueing. It also rejects overlapping lane scopes and unknown lane roles, and now emits a machine-readable `recommendedReason` so automation can distinguish queue-ready swarms, lane-level metadata failures, top-level swarm issues, and scope overlap conflicts before deciding whether queueing is safe.
 
 `task:brief` / `task_brief` and `swarm:brief` / `swarm_brief` turn stored coordination state into execution-ready handoff payloads. Task briefs resolve shipped role prompt paths, summarize queue/review state, identify the next actor, suggest the next CLI action, and emit a machine-readable `recommendedReason` so automation can distinguish between claimable, claimed, verifier-pending, blocked, released, and completed execution states without inferring from queue status alone. Swarm briefs keep the same execution-handoff role for bounded parallel lanes and emit machine-readable reasons for queueing planned lanes, review-ready lanes, runnable dispatch lanes, active claimed lanes, blocked lanes, and completed swarms.
 
