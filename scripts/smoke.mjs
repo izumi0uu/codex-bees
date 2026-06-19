@@ -207,6 +207,7 @@ const runtimeDispatchInitial = JSON.parse(
   run("runtime-dispatch-initial", ["./src/index.js", "runtime:dispatch"]).stdout
 ).dispatch;
 if (
+  runtimeDispatchInitial.recommendedReason !== "no_dispatch_ready" ||
   runtimeDispatchInitial.kind !== "runtime_dispatch" ||
   !Array.isArray(runtimeDispatchInitial.groups)
 ) {
@@ -2641,6 +2642,7 @@ const runtimeDispatchCli = JSON.parse(
   run("runtime-dispatch-cli", ["./src/index.js", "runtime:dispatch"]).stdout
 ).dispatch;
 if (
+  runtimeDispatchCli.recommendedReason !== "next_dispatch_ready" ||
   runtimeDispatchCli.counts?.ownerGroups !== 1 ||
   runtimeDispatchCli.counts?.totalAssignments !== 1 ||
   runtimeDispatchCli.next?.lane !== "lane-dashboard" ||
@@ -3142,6 +3144,7 @@ const runtimeDispatchMcpLines = runtimeDispatchMcp.stdout
 const runtimeDispatchMcpPayload = JSON.parse(JSON.parse(runtimeDispatchMcpLines[1]).result.content[0].text);
 if (
   runtimeDispatchMcp.status !== 0 ||
+  runtimeDispatchMcpPayload.dispatch?.recommendedReason !== "next_dispatch_ready" ||
   runtimeDispatchMcpPayload.dispatch?.counts?.ownerGroups !== 1 ||
   runtimeDispatchMcpPayload.dispatch?.counts?.totalAssignments !== 1 ||
   runtimeDispatchMcpPayload.dispatch?.next?.lane !== "lane-dashboard" ||

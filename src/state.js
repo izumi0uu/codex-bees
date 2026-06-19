@@ -845,12 +845,15 @@ export function runtimeDispatch() {
     }))
   }));
   const next = groups[0]?.assignments?.[0] ?? null;
+  const totalAssignments = groups.reduce((total, group) => total + (group.count ?? 0), 0);
+  const recommendedReason = deriveRuntimeDispatchReason({ groups, totalAssignments, next });
 
   return {
     kind: "runtime_dispatch",
+    recommendedReason,
     counts: {
       ownerGroups: groups.length,
-      totalAssignments: groups.reduce((total, group) => total + (group.count ?? 0), 0)
+      totalAssignments
     },
     groups,
     next,
@@ -4495,6 +4498,22 @@ function deriveLeaderWorkspaceReason({ swarmEntries, focusEntry }) {
     return "tracked_swarms_visible";
   }
   return "no_swarms_tracked";
+}
+
+function deriveRuntimeDispatchReason({ groups, totalAssignments, next }) {
+  if ((groups?.length ?? 0) > 1) {
+    return "parallel_owner_groups_visible";
+  }
+  if ((totalAssignments ?? 0) > 1) {
+    return "multiple_assignments_visible";
+  }
+  if (next?.taskId) {
+    return "next_dispatch_ready";
+  }
+  if ((groups?.length ?? 0) > 0) {
+    return "owner_group_visible";
+  }
+  return "no_dispatch_ready";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
