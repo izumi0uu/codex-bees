@@ -17,6 +17,8 @@ const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
   ["catalog", ["./src/index.js", "catalog"]],
+  ["status", ["./src/index.js", "status"]],
+  ["capabilities", ["./src/index.js", "capabilities"]],
   ["tools", ["./src/mcp.js", "--tools"]],
   [
     "memory-store",
@@ -121,6 +123,25 @@ if (
   !runtimeCatalog.skills.some((skill) => skill.id === "project-development")
 ) {
   console.error("[smoke:catalog] expected shipped agent and skill catalog");
+  process.exit(1);
+}
+const runtimeStatus = JSON.parse(run("status-verify", ["./src/index.js", "status"]).stdout).status;
+if (
+  runtimeStatus.product !== "codex-bees" ||
+  runtimeStatus.counts?.agents !== 4 ||
+  runtimeStatus.counts?.skills !== 2 ||
+  runtimeStatus.counts?.capabilities < 6
+) {
+  console.error("[smoke:status] expected runtime summary counts");
+  process.exit(1);
+}
+const runtimeCapabilities = JSON.parse(run("capabilities-verify", ["./src/index.js", "capabilities"]).stdout).capabilities;
+if (
+  !Array.isArray(runtimeCapabilities) ||
+  !runtimeCapabilities.some((capability) => capability.id === "swarm_coordination") ||
+  !runtimeCapabilities.some((capability) => capability.id === "runtime_catalog")
+) {
+  console.error("[smoke:capabilities] expected runtime capability inventory");
   process.exit(1);
 }
 
@@ -793,6 +814,15 @@ const taskAddMcpInput = [
     id: 3,
     method: "tools/call",
     params: {
+      name: "runtime_status",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
       name: "task_add",
       arguments: {
         title: "mcp metadata task",
@@ -808,7 +838,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 4,
+    id: 5,
     method: "tools/call",
     params: {
       name: "task_check",
@@ -817,7 +847,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 5,
+    id: 6,
     method: "tools/call",
     params: {
       name: "task_claim",
@@ -826,7 +856,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 6,
+    id: 7,
     method: "tools/call",
     params: {
       name: "task_ready_for_review",
@@ -835,7 +865,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 7,
+    id: 8,
     method: "tools/call",
     params: {
       name: "task_reject",
@@ -849,7 +879,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 8,
+    id: 9,
     method: "tools/call",
     params: {
       name: "task_claim",
@@ -858,7 +888,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 9,
+    id: 10,
     method: "tools/call",
     params: {
       name: "task_ready_for_review",
@@ -867,7 +897,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 10,
+    id: 11,
     method: "tools/call",
     params: {
       name: "task_approve",
@@ -880,7 +910,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 11,
+    id: 12,
     method: "tools/call",
     params: {
       name: "task_list",
@@ -900,19 +930,23 @@ const taskAddMcpLines = taskAddMcp.stdout
 const taskCatalogResult = taskAddMcpLines.length >= 2 ? JSON.parse(taskAddMcpLines[1]) : null;
 const taskCatalogText = taskCatalogResult?.result?.content?.[0]?.text;
 const taskCatalogPayload = taskCatalogText ? JSON.parse(taskCatalogText) : null;
-const taskCheckResult = taskAddMcpLines.length >= 4 ? JSON.parse(taskAddMcpLines[3]) : null;
+const taskStatusResult = taskAddMcpLines.length >= 3 ? JSON.parse(taskAddMcpLines[2]) : null;
+const taskStatusText = taskStatusResult?.result?.content?.[0]?.text;
+const taskStatusPayload = taskStatusText ? JSON.parse(taskStatusText) : null;
+const taskCheckResult = taskAddMcpLines.length >= 5 ? JSON.parse(taskAddMcpLines[4]) : null;
 const taskCheckText = taskCheckResult?.result?.content?.[0]?.text;
 const taskCheckPayload = taskCheckText ? JSON.parse(taskCheckText) : null;
-const taskRejectResult = taskAddMcpLines.length >= 7 ? JSON.parse(taskAddMcpLines[6]) : null;
+const taskRejectResult = taskAddMcpLines.length >= 8 ? JSON.parse(taskAddMcpLines[7]) : null;
 const taskRejectText = taskRejectResult?.result?.content?.[0]?.text;
 const taskRejectPayload = taskRejectText ? JSON.parse(taskRejectText) : null;
-const taskListResult = taskAddMcpLines.length >= 11 ? JSON.parse(taskAddMcpLines[10]) : null;
+const taskListResult = taskAddMcpLines.length >= 12 ? JSON.parse(taskAddMcpLines[11]) : null;
 const taskListText = taskListResult?.result?.content?.[0]?.text;
 const taskListPayload = taskListText ? JSON.parse(taskListText) : null;
 const mcpTask = taskListPayload?.tasks?.find((task) => task.title === "mcp metadata task");
 if (
   taskAddMcp.status !== 0 ||
   !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
+  taskStatusPayload?.status?.counts?.agents !== 4 ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||
