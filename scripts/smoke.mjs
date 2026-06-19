@@ -1137,6 +1137,7 @@ const leaderAssignmentDispatchBundleCli = JSON.parse(
 ).assignmentDispatchBundle;
 if (
   leaderAssignmentDispatchBundleCli.counts?.launches !== 2 ||
+  leaderAssignmentDispatchBundleCli.recommendedReason !== "parallel_worker_launches_ready" ||
   leaderAssignmentDispatchBundleCli.next?.role?.id !== "executor" ||
   leaderAssignmentDispatchBundleCli.launches?.[0]?.assignmentPackCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
   leaderAssignmentDispatchBundleCli.launches?.[0]?.sessionCommand !== "node ./src/index.js worker:session --role executor --worker worker-executor --mode owner" ||
@@ -1981,6 +1982,7 @@ const leaderAssignmentDispatchBundleMcpPayload = JSON.parse(JSON.parse(leaderAss
 if (
   leaderAssignmentDispatchBundleMcp.status !== 0 ||
   leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.counts?.launches !== 2 ||
+  leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.recommendedReason !== "parallel_worker_launches_ready" ||
   leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.next?.role?.id !== "executor" ||
   leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.launches?.[0]?.assignmentPackCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
   leaderAssignmentDispatchBundleMcpPayload.assignmentDispatchBundle?.launches?.[0]?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2"

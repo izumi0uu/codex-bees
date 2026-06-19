@@ -625,9 +625,11 @@ export function leaderAssignmentDispatchBundle(input = {}) {
     summary: group.summary
   }));
   const next = launches[0] ?? null;
+  const recommendedReason = deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next });
 
   return {
     kind: "leader_assignment_dispatch_bundle",
+    recommendedReason,
     counts: {
       launches: launches.length,
       ownerGroups: dispatchPack?.counts?.ownerGroups ?? 0,
@@ -4311,6 +4313,22 @@ function deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next })
     return "owner_group_visible";
   }
   return "no_assignment_dispatch_ready";
+}
+
+function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
+  if ((launches?.length ?? 0) > 1) {
+    return "parallel_worker_launches_ready";
+  }
+  if ((dispatchPack?.counts?.ownerGroups ?? 0) > 1) {
+    return "parallel_owner_groups_visible";
+  }
+  if (next?.taskId) {
+    return "next_worker_launch_ready";
+  }
+  if ((dispatchPack?.counts?.totalAssignments ?? 0) > 0) {
+    return "assignment_dispatch_visible";
+  }
+  return "no_worker_launch_ready";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
