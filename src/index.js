@@ -75,6 +75,7 @@ import {
   swarmCloseout,
   swarmDispatchBundle,
   swarmBrief,
+  taskAssignmentPickup,
   taskInbox,
   taskHistory,
   taskPickup,
@@ -155,6 +156,7 @@ function printHelp() {
   write(`  codex-bees task:brief      Render an execution brief for one task\n`);
   write(`  codex-bees task:inbox      List role-relevant tasks in execution priority order\n`);
   write(`  codex-bees task:next       Resolve the next task a role should pick up\n`);
+  write(`  codex-bees task:assignment-pickup Claim or resume the next leader-assigned task for one worker\n`);
   write(`  codex-bees task:pickup-preview Preview what the next pickup would do for one worker\n`);
   write(`  codex-bees task:pickup     Claim or resume the next task for one worker\n`);
   write(`  codex-bees worker:session  Show the current execution workspace for one worker\n`);
@@ -702,6 +704,18 @@ function handleTaskPickupPreview() {
     mode: readOption("--mode")
   });
   write(JSON.stringify({ pickupPreview }, null, 2) + "\n");
+}
+
+function handleTaskAssignmentPickup() {
+  const role = requireOption("--role");
+  const workerId = requireOption("--worker");
+  const assignmentPickup = taskAssignmentPickup({
+    role,
+    workerId,
+    mode: readOption("--mode"),
+    taskId: readOption("--task")
+  });
+  write(JSON.stringify({ assignmentPickup }, null, 2) + "\n");
 }
 
 function handleTaskPickup() {
@@ -1416,6 +1430,9 @@ async function runCommand(command) {
       return;
     case "task:next":
       handleTaskNext();
+      return;
+    case "task:assignment-pickup":
+      handleTaskAssignmentPickup();
       return;
     case "task:pickup-preview":
       handleTaskPickupPreview();

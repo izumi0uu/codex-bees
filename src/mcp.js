@@ -69,6 +69,7 @@ import {
   swarmCloseout,
   swarmDispatchBundle,
   swarmBrief,
+  taskAssignmentPickup,
   taskInbox,
   taskHistory,
   taskPickup,
@@ -559,6 +560,20 @@ export const toolCatalog = [
         role: { type: "string" },
         workerId: { type: "string" },
         mode: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_assignment_pickup",
+    description: "Claim or resume the next leader-assigned task for one worker.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" },
+        taskId: { type: "string" }
       }
     }
   },
@@ -1610,6 +1625,24 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ pickup }));
+    }
+
+    if (name === "task_assignment_pickup") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "task_assignment_pickup requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "task_assignment_pickup requires arguments.workerId");
+      }
+
+      const assignmentPickup = taskAssignmentPickup({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode,
+        taskId: params.arguments.taskId
+      });
+
+      return createSuccess(id, createTextPayload({ assignmentPickup }));
     }
 
     if (name === "task_pickup_preview") {
