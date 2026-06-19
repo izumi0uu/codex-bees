@@ -1229,6 +1229,23 @@ if (
   console.error("[smoke:runtime-leader-pack] expected CLI leader pack to propagate mapped worker commands into batch dispatch surface");
   process.exit(1);
 }
+const runtimeQueuePackMappedCli = JSON.parse(
+  run("runtime-queue-pack-mapped-cli", [
+    "./src/index.js",
+    "runtime:queue-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).queuePack;
+if (
+  runtimeQueuePackMappedCli.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeQueuePackMappedCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeQueuePackMappedCli.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
+  runtimeQueuePackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[1]?.workerId !== "worker-explore"
+) {
+  console.error("[smoke:runtime-queue-pack] expected CLI queue pack to surface mapped launch plan when multiple owner groups are ready");
+  process.exit(1);
+}
 const runtimeWorkspacePackMappedCli = JSON.parse(
   run("runtime-workspace-pack-mapped-cli", [
     "./src/index.js",
@@ -2294,6 +2311,38 @@ if (
   console.error(runtimeLeaderPackMappedMcp.stderr || runtimeLeaderPackMappedMcp.stdout);
   process.exit(1);
 }
+const runtimeQueuePackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_queue_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const runtimeQueuePackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeQueuePackMappedMcpInput,
+  encoding: "utf8"
+});
+const runtimeQueuePackMappedMcpLines = runtimeQueuePackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeQueuePackMappedMcpPayload = JSON.parse(JSON.parse(runtimeQueuePackMappedMcpLines[1]).result.content[0].text);
+if (
+  runtimeQueuePackMappedMcp.status !== 0 ||
+  runtimeQueuePackMappedMcpPayload.queuePack?.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeQueuePackMappedMcpPayload.queuePack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeQueuePackMappedMcpPayload.queuePack?.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
+  runtimeQueuePackMappedMcpPayload.queuePack?.surfaces?.assignmentLaunchPlan?.steps?.[1]?.workerId !== "worker-explore"
+) {
+  console.error("[smoke:runtime-queue-pack-mcp] expected MCP queue pack to surface mapped launch plan when multiple owner groups are ready");
+  console.error(runtimeQueuePackMappedMcp.stderr || runtimeQueuePackMappedMcp.stdout);
+  process.exit(1);
+}
 const assignmentPackExecutorMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -2557,13 +2606,14 @@ const runtimeQueuePackCli = JSON.parse(
   run("runtime-queue-pack-cli", ["./src/index.js", "runtime:queue-pack"]).stdout
 ).queuePack;
 if (
-  runtimeQueuePackCli.recommendedSurface !== "leader:queue" ||
+  runtimeQueuePackCli.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
   runtimeQueuePackCli.next?.queue?.swarmId !== "swarm-1" ||
   runtimeQueuePackCli.next?.focus?.taskId !== "task-1" ||
-  runtimeQueuePackCli.overview?.queue?.total !== 1 ||
+  runtimeQueuePackCli.next?.assignmentLaunch?.workerId !== "<executor-worker>" ||
+  runtimeQueuePackCli.overview?.assignmentDispatchBundle?.launches !== 1 ||
   runtimeQueuePackCli.surfaces?.dashboard?.leader?.queue?.next?.swarmId !== "swarm-1"
 ) {
-  console.error("[smoke:runtime-queue-pack] expected CLI queue pack to recommend leader queue");
+  console.error("[smoke:runtime-queue-pack] expected CLI queue pack to surface assignment launch context before raw leader queue");
   process.exit(1);
 }
 const runtimeHandoffsCli = JSON.parse(
@@ -3087,11 +3137,12 @@ const runtimeQueuePackMcpLines = runtimeQueuePackMcp.stdout
 const runtimeQueuePackMcpPayload = JSON.parse(JSON.parse(runtimeQueuePackMcpLines[1]).result.content[0].text);
 if (
   runtimeQueuePackMcp.status !== 0 ||
-  runtimeQueuePackMcpPayload.queuePack?.recommendedSurface !== "leader:queue" ||
+  runtimeQueuePackMcpPayload.queuePack?.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
   runtimeQueuePackMcpPayload.queuePack?.next?.queue?.swarmId !== "swarm-1" ||
-  runtimeQueuePackMcpPayload.queuePack?.overview?.queue?.total !== 1
+  runtimeQueuePackMcpPayload.queuePack?.next?.assignmentLaunch?.workerId !== "<executor-worker>" ||
+  runtimeQueuePackMcpPayload.queuePack?.overview?.assignmentDispatchBundle?.launches !== 1
 ) {
-  console.error("[smoke:runtime-queue-pack-mcp] expected MCP runtime queue pack");
+  console.error("[smoke:runtime-queue-pack-mcp] expected MCP runtime queue pack to surface assignment launch context before raw leader queue");
   console.error(runtimeQueuePackMcp.stderr || runtimeQueuePackMcp.stdout);
   process.exit(1);
 }

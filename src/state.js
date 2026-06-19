@@ -1338,25 +1338,33 @@ export function runtimeQueuePack(input = {}) {
   const queue = leaderQueue();
   const dashboard = runtimeDashboard();
   const focus = runtimeFocus();
-  const recommendedSurface = deriveRuntimeQueuePackSurface({ queue, dashboard, focus });
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
+  const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
+  const recommendedSurface = deriveRuntimeQueuePackSurface({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan });
 
   return {
     kind: "runtime_queue_pack",
     recommendedSurface,
     overview: {
       queue: queue?.counts ?? null,
-      dashboard: dashboard?.counts ?? null
+      dashboard: dashboard?.counts ?? null,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
+      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
     },
     next: {
       queue: queue?.next ?? null,
-      focus: focus?.focus ?? null
+      focus: focus?.focus ?? null,
+      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+      assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
     },
     surfaces: {
       queue,
       dashboard,
-      focus
+      focus,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan
     },
-    summary: buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard)
+    summary: buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard, assignmentDispatchBundle, assignmentLaunchPlan)
   };
 }
 
@@ -4296,7 +4304,13 @@ function buildRuntimeReviewPackSummary(recommendedSurface, review, verifierPack,
   return `Runtime review pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
-function deriveRuntimeQueuePackSurface({ queue, dashboard, focus }) {
+function deriveRuntimeQueuePackSurface({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan }) {
+  if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
+    return "leader:assignment-launch-plan";
+  }
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 0) {
+    return "leader:assignment-dispatch-bundle";
+  }
   if ((queue?.counts?.total ?? 0) > 0) {
     return "leader:queue";
   }
@@ -4309,8 +4323,10 @@ function deriveRuntimeQueuePackSurface({ queue, dashboard, focus }) {
   return "leader:queue";
 }
 
-function buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard) {
+function buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard, assignmentDispatchBundle, assignmentLaunchPlan) {
   const detail =
+    assignmentLaunchPlan?.summary ??
+    assignmentDispatchBundle?.summary ??
     queue?.summary ??
     focus?.summary ??
     dashboard?.summary ??
