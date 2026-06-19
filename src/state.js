@@ -1323,6 +1323,38 @@ export function runtimeHandoffPack() {
   };
 }
 
+export function runtimeTriagePack() {
+  const focus = runtimeFocus();
+  const alerts = runtimeAlerts();
+  const review = runtimeReview();
+  const recovery = runtimeRecovery();
+  const recommendedSurface = deriveRuntimeTriagePackSurface({ focus, alerts, review, recovery });
+
+  return {
+    kind: "runtime_triage_pack",
+    recommendedSurface,
+    overview: {
+      focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
+      alerts: alerts?.counts ?? null,
+      review: review?.counts ?? null,
+      recovery: recovery?.counts ?? null
+    },
+    next: {
+      focus: focus?.focus ?? null,
+      alert: alerts?.alerts?.[0] ?? null,
+      review: review?.next ?? null,
+      recovery: recovery?.next ?? null
+    },
+    surfaces: {
+      focus,
+      alerts,
+      review,
+      recovery
+    },
+    summary: buildRuntimeTriagePackSummary(recommendedSurface, focus, alerts, review, recovery)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3683,6 +3715,32 @@ function buildRuntimeHandoffPackSummary(recommendedSurface, handoffs, review, re
     dispatch?.summary ??
     "Runtime handoff pack has no current transfer detail.";
   return `Runtime handoff pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeTriagePackSurface({ focus, alerts, review, recovery }) {
+  if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task") {
+    return "runtime:focus";
+  }
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "runtime:recovery";
+  }
+  if ((review?.counts?.totalPendingReview ?? 0) > 0) {
+    return "runtime:review";
+  }
+  if ((alerts?.counts?.high ?? 0) > 0 || (alerts?.counts?.medium ?? 0) > 0) {
+    return "runtime:alerts";
+  }
+  return "runtime:focus";
+}
+
+function buildRuntimeTriagePackSummary(recommendedSurface, focus, alerts, review, recovery) {
+  const detail =
+    focus?.summary ??
+    recovery?.summary ??
+    review?.summary ??
+    alerts?.summary ??
+    "Runtime triage pack has no current triage detail.";
+  return `Runtime triage pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
