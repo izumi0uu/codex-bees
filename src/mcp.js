@@ -29,6 +29,7 @@ import {
   queueSwarmTasks,
   rejectTask,
   releaseTask,
+  runtimeActivity,
   runtimeAlerts,
   runtimeDashboard,
   runtimeDispatch,
@@ -107,6 +108,16 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_activity",
+    description: "Build the recent runtime activity stream for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "integer", minimum: 1 }
+      }
     }
   },
   {
@@ -950,6 +961,10 @@ function handleRequest(message) {
 
     if (name === "runtime_capabilities") {
       return createSuccess(id, createTextPayload({ capabilities: getCapabilityCatalog() }));
+    }
+
+    if (name === "runtime_activity") {
+      return createSuccess(id, createTextPayload({ activity: runtimeActivity({ limit: params.arguments?.limit }) }));
     }
 
     if (name === "runtime_dashboard") {

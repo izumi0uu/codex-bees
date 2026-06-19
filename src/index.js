@@ -34,6 +34,7 @@ import {
   queueSwarmTasks,
   rejectTask,
   releaseTask,
+  runtimeActivity,
   runtimeAlerts,
   runtimeDashboard,
   runtimeDispatch,
@@ -87,6 +88,7 @@ function printHelp() {
   write(`  codex-bees status          Print runtime state and surface summary\n`);
   write(`  codex-bees capabilities    Print the shipped runtime capability inventory\n`);
   write(`  codex-bees runtime:alerts  Build the top-level orchestration alert stream\n`);
+  write(`  codex-bees runtime:activity Build the recent runtime activity stream\n`);
   write(`  codex-bees runtime:dashboard Build the top-level orchestration dashboard\n`);
   write(`  codex-bees runtime:dispatch Build the owner-grouped dispatch workspace\n`);
   write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
@@ -199,6 +201,10 @@ function printStatus() {
 
 function printCapabilities() {
   write(JSON.stringify({ capabilities: getCapabilityCatalog() }, null, 2) + "\n");
+}
+
+function printRuntimeActivity() {
+  write(JSON.stringify({ activity: runtimeActivity({ limit: readPositiveIntegerOption("--limit") }) }, null, 2) + "\n");
 }
 
 function printRuntimeDashboard() {
@@ -1035,6 +1041,9 @@ async function runCommand(command) {
       return;
     case "capabilities":
       printCapabilities();
+      return;
+    case "runtime:activity":
+      printRuntimeActivity();
       return;
     case "runtime:dashboard":
       printRuntimeDashboard();
