@@ -432,6 +432,17 @@ if (
   console.error("[smoke:worker-session] expected owner annotation in worker session");
   process.exit(1);
 }
+const ownerHandoff = JSON.parse(
+  run("worker-handoff-owner", ["./src/index.js", "worker:handoff", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
+).handoff;
+if (
+  ownerHandoff.focus?.kind !== "active_task" ||
+  ownerHandoff.currentTask?.id !== "task-1" ||
+  ownerHandoff.recentAnnotations?.at(-1)?.content !== "worker needs another pass before review"
+) {
+  console.error("[smoke:worker-handoff] expected owner handoff package with current task context");
+  process.exit(1);
+}
 const reviewTaskHistory = JSON.parse(
   run("task-history-review-loop", ["./src/index.js", "task:history", "--id", "task-1"]).stdout
 ).history;
@@ -1264,6 +1275,17 @@ if (
   console.error("[smoke:worker-session] expected verifier session review focus");
   process.exit(1);
 }
+const verifierHandoff = JSON.parse(
+  run("worker-handoff-verifier", ["./src/index.js", "worker:handoff", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).handoff;
+if (
+  verifierHandoff.focus?.kind !== "review_task" ||
+  verifierHandoff.currentTask?.id !== "task-2" ||
+  verifierHandoff.summary?.includes("verifier") !== true
+) {
+  console.error("[smoke:worker-handoff] expected verifier handoff package");
+  process.exit(1);
+}
 const ownerPickupClaim = JSON.parse(
   run("task-pickup-claim", ["./src/index.js", "task:pickup", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
 ).pickup;
@@ -1376,6 +1398,36 @@ if (
 ) {
   console.error("[smoke:worker-session-mcp] expected review-focused worker session");
   console.error(workerSessionMcp.stderr || workerSessionMcp.stdout);
+  process.exit(1);
+}
+const workerHandoffMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "worker_handoff",
+      arguments: { role: "tester", workerId: "tester-worker", mode: "verifier" }
+    }
+  })
+].join("\n") + "\n";
+const workerHandoffMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: workerHandoffMcpInput,
+  encoding: "utf8"
+});
+const workerHandoffMcpLines = workerHandoffMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const workerHandoffMcpPayload = JSON.parse(JSON.parse(workerHandoffMcpLines[1]).result.content[0].text);
+if (
+  workerHandoffMcp.status !== 0 ||
+  workerHandoffMcpPayload.handoff?.focus?.kind !== "review_task" ||
+  workerHandoffMcpPayload.handoff?.currentTask?.id !== "task-2"
+) {
+  console.error("[smoke:worker-handoff-mcp] expected verifier handoff payload");
+  console.error(workerHandoffMcp.stderr || workerHandoffMcp.stdout);
   process.exit(1);
 }
 const inboxHistory = JSON.parse(
