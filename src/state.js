@@ -1580,21 +1580,29 @@ export function runtimeAssignmentPack(input = {}) {
   const assignments = leaderAssignments();
   const roleAssignments = (assignments?.groups ?? []).find((group) => group.owner?.id === input.role) ?? null;
   const assignment = roleAssignments?.assignments?.[0] ?? null;
-  const pickupPack = runtimePickupPack({
+  const session = workerSession({
     role: input.role,
     workerId: input.workerId,
     mode,
     limit: input.limit
   });
-  const rolePack = runtimeRolePack({
+  const next = taskNext({
     role: input.role,
     workerId: input.workerId,
     mode
   });
+  const pickup = previewTaskPickup({
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+  const roleEntry = runtimeRoles()?.roles?.find((entry) => entry.role?.id === input.role) ?? null;
   const recommendedSurface = deriveRuntimeAssignmentPackSurface({
     assignment,
-    pickupPack,
-    rolePack,
+    session,
+    next,
+    pickup,
+    roleEntry,
     role: input.role,
     workerId: input.workerId,
     mode
@@ -1611,23 +1619,35 @@ export function runtimeAssignmentPack(input = {}) {
         count: roleAssignments?.count ?? 0,
         ownerGroups: assignments?.counts?.ownerGroups ?? 0
       },
-      pickup: pickupPack?.overview?.pickup ?? null,
-      role: rolePack?.overview?.role ?? null,
-      session: pickupPack?.overview?.session ?? null
+      pickup: pickup
+        ? {
+            outcome: pickup.outcome,
+            command: pickup.command,
+            candidateId: pickup.candidate?.id ?? null
+          }
+        : null,
+      role: roleEntry?.counts ?? null,
+      session: session?.counts ?? null
     },
     next: {
       assignment,
-      pickup: pickupPack?.next?.pickup ?? null,
-      candidate: pickupPack?.next?.candidate ?? null,
-      focus: pickupPack?.next?.focus ?? null
+      pickup,
+      candidate: next?.candidate ?? null,
+      focus: session?.focus ?? null
     },
     surfaces: {
-      assignments,
       roleAssignments,
-      pickupPack,
-      rolePack
+      session,
+      next,
+      pickup,
+      role: roleEntry,
+      roleAssignments,
+      assignments: {
+        counts: assignments?.counts ?? null,
+        next: assignments?.next ?? null
+      }
     },
-    summary: buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, pickupPack, roleAssignments)
+    summary: buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, session, pickup, next, roleAssignments)
   };
 }
 
@@ -4196,26 +4216,43 @@ function buildRuntimePickupPackSummary(recommendedSurface, session, pickup, next
   return `Runtime pickup pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
-function deriveRuntimeAssignmentPackSurface({ assignment, pickupPack, rolePack, role, workerId, mode }) {
-  if (pickupPack?.recommendedSurface === "worker:session" || pickupPack?.recommendedSurface === "worker:closeout" || pickupPack?.recommendedSurface === "worker:handoff") {
-    return pickupPack.recommendedSurface;
+function deriveRuntimeAssignmentPackSurface({ assignment, session, next, pickup, roleEntry, role, workerId, mode }) {
+  if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
+    return "worker:session";
   }
-  if (assignment?.taskId && pickupPack?.next?.candidate?.id !== assignment.taskId) {
+  if (session?.focus?.kind === "review_task") {
+    return "worker:closeout";
+  }
+  if (session?.focus?.kind === "awaiting_review") {
+    return "worker:handoff";
+  }
+  if (assignment?.taskId && next?.candidate?.id !== assignment.taskId) {
     return `task:pickup --role ${role} --worker ${workerId} --mode ${mode}`;
   }
-  if (pickupPack?.recommendedSurface) {
-    return pickupPack.recommendedSurface;
+  if (pickup?.outcome === "claimable") {
+    return `task:pickup --role ${role} --worker ${workerId} --mode ${mode}`;
   }
-  return rolePack?.recommendedSurface ?? "leader:assignments";
+  if (pickup?.command) {
+    return pickup.command.replace("node ./src/index.js ", "");
+  }
+  if (next?.candidate?.id) {
+    return "task:next";
+  }
+  if (roleEntry?.nextAction?.command) {
+    return roleEntry.nextAction.command.replace("node ./src/index.js ", "");
+  }
+  return "leader:assignments";
 }
 
-function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, pickupPack, roleAssignments) {
-  if (assignment?.taskId && pickupPack?.next?.candidate?.id !== assignment.taskId) {
+function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, session, pickup, next, roleAssignments) {
+  if (assignment?.taskId && next?.candidate?.id !== assignment.taskId) {
     return `Runtime assignment pack recommends ${recommendedSurface} next. Leader has assignment ${assignment.taskId} ready for this worker.`;
   }
 
   const detail =
-    pickupPack?.summary ??
+    session?.focus?.reason ??
+    (pickup?.outcome === "claimable" ? `Worker can claim ${pickup.candidate?.id} now.` : null) ??
+    (pickup?.candidate?.id ? `Worker should move ${pickup.candidate.id} next.` : null) ??
     (roleAssignments?.count ? `Role has ${roleAssignments.count} leader assignment${roleAssignments.count === 1 ? "" : "s"} queued.` : null) ??
     "worker has no immediate assignment handoff.";
 
