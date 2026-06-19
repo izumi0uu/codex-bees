@@ -911,6 +911,34 @@ export function runtimeHandoffs() {
   };
 }
 
+export function runtimeCloseout() {
+  const tasks = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => task.queueStatus === "done")
+    .map((task) => buildRuntimeCloseoutTaskEntry(task))
+    .sort(compareRuntimeCloseoutTasks);
+  const swarms = listSwarmOverviews()
+    .filter((overview) => overview.readyToComplete)
+    .map((overview) => buildRuntimeCloseoutSwarmEntry(overview))
+    .sort(compareRuntimeCloseoutSwarms);
+  const nextTask = tasks[0] ?? null;
+  const nextSwarm = swarms[0] ?? null;
+  const next = chooseRuntimeCloseoutNext(nextTask, nextSwarm);
+
+  return {
+    kind: "runtime_closeout",
+    counts: {
+      tasksReady: tasks.length,
+      swarmsReady: swarms.length,
+      totalReady: tasks.length + swarms.length
+    },
+    tasks,
+    swarms,
+    next,
+    summary: buildRuntimeCloseoutSummary(tasks, swarms, next)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -2644,6 +2672,96 @@ function buildRuntimeHandoffsSummary(groups, next) {
   }
 
   return `Runtime handoffs should route ${next.taskId} to ${next.actor?.id ?? "the next actor"} first.`;
+}
+
+function buildRuntimeCloseoutTaskEntry(task) {
+  const report = taskReport(task.id);
+  return {
+    kind: "task",
+    taskId: task.id,
+    title: task.title,
+    owner: task.owner,
+    verifier: task.verifier,
+    swarmId: task.swarmId,
+    lane: task.lane,
+    reviewOutcome: task.reviewOutcome,
+    reviewedBy: task.reviewedBy,
+    reviewedAt: task.reviewedAt,
+    report,
+    command: report?.closure?.nextGate?.command ?? null,
+    updatedAt: task.updatedAt ?? null,
+    summary: buildRuntimeCloseoutTaskSummary(task)
+  };
+}
+
+function buildRuntimeCloseoutTaskSummary(task) {
+  if (task.reviewOutcome === "approved") {
+    return `Task ${task.id} was approved and is ready for final archive or handoff.`;
+  }
+  return `Task ${task.id} is done and ready for closeout packaging.`;
+}
+
+function buildRuntimeCloseoutSwarmEntry(overview) {
+  const closeout = swarmCloseout(overview.swarm.id);
+  return {
+    kind: "swarm",
+    swarmId: overview.swarm.id,
+    objective: overview.swarm.objective,
+    owner: overview.swarm.owner,
+    counts: overview.counts,
+    derivedStatus: overview.derivedStatus,
+    closeout,
+    command: closeout?.command ?? null,
+    updatedAt: overview.swarm.updatedAt ?? null,
+    summary: closeout?.summary ?? `Swarm ${overview.swarm.id} is ready for closeout.`
+  };
+}
+
+function compareRuntimeCloseoutTasks(left, right) {
+  const approvedLeft = left.reviewOutcome === "approved" ? 0 : 1;
+  const approvedRight = right.reviewOutcome === "approved" ? 0 : 1;
+  if (approvedLeft !== approvedRight) {
+    return approvedLeft - approvedRight;
+  }
+  const byReviewedAt = (right.reviewedAt ?? "").localeCompare(left.reviewedAt ?? "");
+  if (byReviewedAt !== 0) {
+    return byReviewedAt;
+  }
+  return (left.taskId ?? "").localeCompare(right.taskId ?? "");
+}
+
+function compareRuntimeCloseoutSwarms(left, right) {
+  const byUpdatedAt = (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");
+  if (byUpdatedAt !== 0) {
+    return byUpdatedAt;
+  }
+  return (left.swarmId ?? "").localeCompare(right.swarmId ?? "");
+}
+
+function chooseRuntimeCloseoutNext(nextTask, nextSwarm) {
+  if (nextTask && nextTask.reviewOutcome === "approved") {
+    return nextTask;
+  }
+  if (nextSwarm) {
+    return nextSwarm;
+  }
+  return nextTask ?? null;
+}
+
+function buildRuntimeCloseoutSummary(tasks, swarms, next) {
+  if (tasks.length === 0 && swarms.length === 0) {
+    return "Runtime closeout has no finished tasks or swarms waiting on final closure.";
+  }
+
+  if (!next) {
+    return `Runtime closeout is tracking ${tasks.length + swarms.length} finished artifact${tasks.length + swarms.length === 1 ? "" : "s"}.`;
+  }
+
+  if (next.kind === "task") {
+    return `Runtime closeout should package ${next.taskId} first.`;
+  }
+
+  return `Runtime closeout should finish swarm ${next.swarmId} first.`;
 }
 
 function compareRuntimeRoleEntries(left, right) {
