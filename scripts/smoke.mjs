@@ -1107,7 +1107,17 @@ if (!Array.isArray(swarmGet.lanes) || swarmGet.lanes.length !== 2 || swarmGet.ma
   console.error("[smoke:swarm-get] expected persisted lanes and maxWorkers");
   process.exit(1);
 }
-run("swarm-start", ["./src/index.js", "swarm:start", "--id", "swarm-1", "--owner", "leader"]);
+const startedSwarm = JSON.parse(
+  run("swarm-start", ["./src/index.js", "swarm:start", "--id", "swarm-1", "--owner", "leader"]).stdout
+).activated;
+if (
+  startedSwarm.kind !== "swarm_lifecycle" ||
+  startedSwarm.recommendedReason !== "swarm_activated" ||
+  startedSwarm.swarm?.status !== "active"
+) {
+  console.error("[smoke:swarm-start] expected activated swarm lifecycle payload");
+  process.exit(1);
+}
 const swarmQueue = JSON.parse(
   run("swarm-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]).stdout
 );

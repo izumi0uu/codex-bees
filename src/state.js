@@ -3194,10 +3194,18 @@ export function releaseTask(input) {
 }
 
 export function activateSwarm(input) {
-  return transitionSwarm({
+  const result = transitionSwarm({
     ...input,
     nextStatus: "active"
   });
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "swarm_lifecycle",
+    recommendedReason: "swarm_activated",
+    swarm: result
+  };
 }
 
 export function blockSwarm(input) {
