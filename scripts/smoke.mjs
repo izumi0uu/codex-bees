@@ -323,6 +323,7 @@ const runtimeCloseoutPackInitial = JSON.parse(
 if (
   runtimeCloseoutPackInitial.kind !== "runtime_closeout_pack" ||
   !runtimeCloseoutPackInitial.recommendedSurface ||
+  typeof runtimeCloseoutPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeCloseoutPackInitial.overview ||
   !runtimeCloseoutPackInitial.surfaces
 ) {
@@ -3488,6 +3489,10 @@ const runtimeCloseoutPackCli = JSON.parse(
 if (
   runtimeCloseoutPackCli.recommendedSurface !== "runtime:closeout" ||
   runtimeCloseoutPackCli.recommendedReason !== "no_closeout_ready" ||
+  runtimeCloseoutPackCli.metadata?.hasCloseout !== false ||
+  runtimeCloseoutPackCli.metadata?.hasSummaryCloseout !== false ||
+  runtimeCloseoutPackCli.metadata?.hasLeaderCloseout !== false ||
+  runtimeCloseoutPackCli.counts?.surfacedNextEntries !== Object.values(runtimeCloseoutPackCli.next ?? {}).filter(Boolean).length ||
   runtimeCloseoutPackCli.next?.closeout !== null ||
   runtimeCloseoutPackCli.overview?.closeout?.totalReady !== 0 ||
   runtimeCloseoutPackCli.surfaces?.summaryPack?.overview?.closeout?.totalReady !== 0
