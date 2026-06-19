@@ -379,7 +379,7 @@ The foundation layer is in place:
 
 `memory:list` / `memory_list` return the explicit memory retrieval view. They emit `kind: "memory_view"` with `recommendedReason: "memory_list_has_results"` or `recommendedReason: "memory_list_empty"` so automation can distinguish non-empty and empty filtered memory listings without inferring from array length alone.
 
-`memory:search` / `memory_search` return the explicit memory search view. They emit `kind: "memory_search_view"` with `recommendedReason: "memory_search_has_results"` or `recommendedReason: "memory_search_empty"` so automation can distinguish successful and empty filtered searches without inferring from result-array length alone.
+`memory:search` / `memory_search` return the explicit memory search view. They emit `kind: "memory_search_view"` with `recommendedReason: "memory_search_has_results"` or `recommendedReason: "memory_search_empty"`, plus `counts.totalResults`, so automation can distinguish successful and empty filtered searches without inferring only from result-array length.
 
 ## Why this project exists
 

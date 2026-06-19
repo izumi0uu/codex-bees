@@ -649,6 +649,7 @@ const searchedMemories = JSON.parse(
 if (
   searchedMemories.kind !== "memory_search_view" ||
   searchedMemories.recommendedReason !== "memory_search_has_results" ||
+  searchedMemories.counts?.totalResults !== searchedMemories.results.length ||
   searchedMemories.query !== "metadata" ||
   !Array.isArray(searchedMemories.results) ||
   searchedMemories.results.length === 0
@@ -6093,6 +6094,7 @@ if (
   !memoryListPayload?.memories?.memories?.some((memory) => memory.namespace === "mcp-smoke") ||
   memorySearchPayload?.kind !== "memory_search_view" ||
   memorySearchPayload?.recommendedReason !== "memory_search_has_results" ||
+  memorySearchPayload?.counts?.totalResults !== memorySearchPayload.results.length ||
   memorySearchPayload?.query !== "smoke coverage" ||
   !Array.isArray(memorySearchPayload?.results) ||
   memorySearchPayload.results.length === 0

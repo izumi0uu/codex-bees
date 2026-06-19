@@ -3035,6 +3035,9 @@ export function searchMemoriesView(query, filters = {}, limit = 10) {
   return {
     kind: "memory_search_view",
     recommendedReason,
+    counts: {
+      totalResults: results.length
+    },
     query,
     results
   };
