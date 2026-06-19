@@ -1500,6 +1500,77 @@ export function runtimeExecutionPack() {
   };
 }
 
+export function runtimePickupPack(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const mode = normalizeNextMode(input.mode);
+  const session = workerSession({
+    role: input.role,
+    workerId: input.workerId,
+    mode,
+    limit: input.limit
+  });
+  const next = taskNext({
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+  const pickup = previewTaskPickup({
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+  const rolePack = runtimeRolePack({
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+  const recommendedSurface = deriveRuntimePickupPackSurface({
+    session,
+    pickup,
+    next,
+    rolePack,
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+
+  return {
+    kind: "runtime_pickup_pack",
+    role: describeRole(input.role),
+    workerId: input.workerId,
+    mode,
+    recommendedSurface,
+    overview: {
+      session: session?.counts ?? null,
+      inbox: session?.inbox?.counts ?? null,
+      pickup: pickup
+        ? {
+            outcome: pickup.outcome,
+            command: pickup.command,
+            candidateId: pickup.candidate?.id ?? null
+          }
+        : null,
+      role: rolePack?.overview?.role ?? null
+    },
+    next: {
+      focus: session?.focus ?? null,
+      candidate: next?.candidate ?? null,
+      brief: pickup?.brief ?? next?.brief ?? null,
+      pickup
+    },
+    surfaces: {
+      session,
+      next,
+      pickup,
+      rolePack
+    },
+    summary: buildRuntimePickupPackSummary(recommendedSurface, session, pickup, next)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -1843,6 +1914,61 @@ export function taskPickup(input = {}) {
     task: currentTask,
     brief: next.brief,
     command
+  };
+}
+
+export function previewTaskPickup(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const next = taskNext({
+    role: input.role,
+    workerId: input.workerId,
+    mode: input.mode ?? "any"
+  });
+
+  if (!next?.candidate) {
+    return {
+      kind: "task_pickup_preview",
+      role: describeRole(input.role),
+      workerId: input.workerId,
+      mode: next?.mode ?? normalizeNextMode(input.mode),
+      outcome: "none",
+      candidate: null,
+      task: null,
+      brief: null,
+      command: null
+    };
+  }
+
+  const relation = next.candidate.relation;
+  const currentTask = getTask(next.candidate.id);
+
+  if (relation === "owner_claimable") {
+    return {
+      kind: "task_pickup_preview",
+      role: describeRole(input.role),
+      workerId: input.workerId,
+      mode: next.mode,
+      outcome: "claimable",
+      candidate: next.candidate,
+      task: currentTask,
+      brief: next.brief,
+      command: `node ./src/index.js task:pickup --role ${input.role} --worker ${input.workerId} --mode ${next.mode}`
+    };
+  }
+
+  return {
+    kind: "task_pickup_preview",
+    role: describeRole(input.role),
+    workerId: input.workerId,
+    mode: next.mode,
+    outcome: pickupOutcome(relation),
+    candidate: next.candidate,
+    task: currentTask,
+    brief: next.brief,
+    command: pickupFollowupCommand(next.candidate, input.workerId)
   };
 }
 
@@ -3973,6 +4099,41 @@ function buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, r
     queuePack?.summary ??
     "Runtime execution pack has no current execution detail.";
   return `Runtime execution pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimePickupPackSurface({ session, pickup, next, rolePack, role, workerId, mode }) {
+  if (pickup?.outcome === "claimable") {
+    return `task:pickup --role ${role} --worker ${workerId} --mode ${mode}`;
+  }
+  if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
+    return "worker:session";
+  }
+  if (session?.focus?.kind === "review_task") {
+    return "worker:closeout";
+  }
+  if (session?.focus?.kind === "awaiting_review") {
+    return "worker:handoff";
+  }
+  if (pickup?.command) {
+    return pickup.command.replace("node ./src/index.js ", "");
+  }
+  if (next?.candidate?.id) {
+    return "task:next";
+  }
+  return rolePack?.recommendedSurface ?? "worker:session";
+}
+
+function buildRuntimePickupPackSummary(recommendedSurface, session, pickup, next) {
+  const detail =
+    pickup?.outcome === "claimable"
+      ? `Worker can claim ${pickup.candidate?.id} now.`
+      : session?.focus?.reason
+        ? session.focus.reason
+        : next?.candidate?.id
+          ? `Next visible candidate is ${next.candidate.id}.`
+          : "worker has no immediate pickup target.";
+
+  return `Runtime pickup pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
