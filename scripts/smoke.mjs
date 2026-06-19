@@ -304,6 +304,18 @@ if (
   console.error("[smoke:runtime-operator-pack] expected top-level runtime operator pack");
   process.exit(1);
 }
+const runtimeControlPackInitial = JSON.parse(
+  run("runtime-control-pack-initial", ["./src/index.js", "runtime:control-pack"]).stdout
+).controlPack;
+if (
+  runtimeControlPackInitial.kind !== "runtime_control_pack" ||
+  !runtimeControlPackInitial.recommendedSurface ||
+  !runtimeControlPackInitial.overview ||
+  !runtimeControlPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-control-pack] expected top-level runtime control pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1732,6 +1744,19 @@ if (
   console.error("[smoke:runtime-operator-pack] expected CLI operator pack to recommend focus");
   process.exit(1);
 }
+const runtimeControlPackCli = JSON.parse(
+  run("runtime-control-pack-cli", ["./src/index.js", "runtime:control-pack"]).stdout
+).controlPack;
+if (
+  runtimeControlPackCli.recommendedSurface !== "runtime:summary-pack" ||
+  runtimeControlPackCli.next?.summary?.taskId !== "task-1" ||
+  runtimeControlPackCli.next?.workspace?.recovery?.taskId !== "task-1" ||
+  runtimeControlPackCli.next?.operator?.handoff?.taskId !== "task-2" ||
+  runtimeControlPackCli.next?.leader?.dispatch?.lane !== "lane-dashboard"
+) {
+  console.error("[smoke:runtime-control-pack] expected CLI control pack to recommend summary pack");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -2227,6 +2252,37 @@ if (
 ) {
   console.error("[smoke:runtime-operator-pack-mcp] expected MCP runtime operator pack");
   console.error(runtimeOperatorPackMcp.stderr || runtimeOperatorPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeControlPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_control_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeControlPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeControlPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeControlPackMcpLines = runtimeControlPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeControlPackMcpPayload = JSON.parse(JSON.parse(runtimeControlPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeControlPackMcp.status !== 0 ||
+  runtimeControlPackMcpPayload.controlPack?.recommendedSurface !== "runtime:summary-pack" ||
+  runtimeControlPackMcpPayload.controlPack?.next?.summary?.taskId !== "task-1" ||
+  runtimeControlPackMcpPayload.controlPack?.next?.leader?.dispatch?.lane !== "lane-dashboard"
+) {
+  console.error("[smoke:runtime-control-pack-mcp] expected MCP runtime control pack");
+  console.error(runtimeControlPackMcp.stderr || runtimeControlPackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
