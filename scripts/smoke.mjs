@@ -1130,52 +1130,73 @@ if (
   console.error("[smoke:leader-assignment-dispatch-bundle] expected CLI multi-worker launch bundle");
   process.exit(1);
 }
+const leaderAssignmentLaunchPlanCli = JSON.parse(
+  run("leader-assignment-launch-plan-cli", [
+    "./src/index.js",
+    "leader:assignment-launch-plan",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).assignmentLaunchPlan;
+if (
+  leaderAssignmentLaunchPlanCli.counts?.steps !== 2 ||
+  leaderAssignmentLaunchPlanCli.next?.workerId !== "worker-executor" ||
+  leaderAssignmentLaunchPlanCli.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
+  leaderAssignmentLaunchPlanCli.steps?.[1]?.previewCommand !== "node ./src/index.js task:assignment-preview --role explore --worker worker-explore --task task-1"
+) {
+  console.error("[smoke:leader-assignment-launch-plan] expected CLI launch plan");
+  process.exit(1);
+}
 const runtimeDispatchPackMultiOwnerCli = JSON.parse(
   run("runtime-dispatch-pack-multi-owner-cli", ["./src/index.js", "runtime:dispatch-pack"]).stdout
 ).dispatchPack;
 if (
-  runtimeDispatchPackMultiOwnerCli.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeDispatchPackMultiOwnerCli.recommendedSurface !== "leader:assignment-launch-plan" ||
   runtimeDispatchPackMultiOwnerCli.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeDispatchPackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
-  runtimeDispatchPackMultiOwnerCli.next?.assignmentLaunch?.role?.id !== "executor" ||
-  runtimeDispatchPackMultiOwnerCli.surfaces?.assignmentDispatchBundle?.launches?.length !== 2
+  runtimeDispatchPackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeDispatchPackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>" ||
+  runtimeDispatchPackMultiOwnerCli.surfaces?.assignmentLaunchPlan?.steps?.length !== 2
 ) {
-  console.error("[smoke:runtime-dispatch-pack] expected CLI dispatch pack to expose multi-worker launch bundle when multiple owner groups are ready");
+  console.error("[smoke:runtime-dispatch-pack] expected CLI dispatch pack to expose launch plan when multiple owner groups are ready");
   process.exit(1);
 }
 const runtimeLeaderPackMultiOwnerCli = JSON.parse(
   run("runtime-leader-pack-multi-owner-cli", ["./src/index.js", "runtime:leader-pack"]).stdout
 ).leaderPack;
 if (
-  runtimeLeaderPackMultiOwnerCli.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeLeaderPackMultiOwnerCli.recommendedSurface !== "leader:assignment-launch-plan" ||
   runtimeLeaderPackMultiOwnerCli.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeLeaderPackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
-  runtimeLeaderPackMultiOwnerCli.next?.assignmentLaunch?.role?.id !== "executor" ||
-  runtimeLeaderPackMultiOwnerCli.surfaces?.assignmentDispatchBundle?.launches?.length !== 2
+  runtimeLeaderPackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeLeaderPackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>" ||
+  runtimeLeaderPackMultiOwnerCli.surfaces?.assignmentLaunchPlan?.steps?.length !== 2
 ) {
-  console.error("[smoke:runtime-leader-pack] expected CLI leader pack to prioritize multi-worker launch bundle when multiple owner groups are ready");
+  console.error("[smoke:runtime-leader-pack] expected CLI leader pack to prioritize launch plan when multiple owner groups are ready");
   process.exit(1);
 }
 const runtimeWorkspacePackMultiOwnerCli = JSON.parse(
   run("runtime-workspace-pack-multi-owner-cli", ["./src/index.js", "runtime:workspace-pack"]).stdout
 ).workspacePack;
 if (
-  runtimeWorkspacePackMultiOwnerCli.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeWorkspacePackMultiOwnerCli.recommendedSurface !== "leader:assignment-launch-plan" ||
   runtimeWorkspacePackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
-  runtimeWorkspacePackMultiOwnerCli.next?.assignmentLaunch?.role?.id !== "executor"
+  runtimeWorkspacePackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeWorkspacePackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
 ) {
-  console.error("[smoke:runtime-workspace-pack] expected CLI workspace pack to prioritize multi-worker launch bundle when multiple owner groups are ready");
+  console.error("[smoke:runtime-workspace-pack] expected CLI workspace pack to prioritize launch plan when multiple owner groups are ready");
   process.exit(1);
 }
 const runtimeExecutionPackMultiOwnerCli = JSON.parse(
   run("runtime-execution-pack-multi-owner-cli", ["./src/index.js", "runtime:execution-pack"]).stdout
 ).executionPack;
 if (
-  runtimeExecutionPackMultiOwnerCli.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeExecutionPackMultiOwnerCli.recommendedSurface !== "leader:assignment-launch-plan" ||
   runtimeExecutionPackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
-  runtimeExecutionPackMultiOwnerCli.next?.assignmentLaunch?.role?.id !== "executor"
+  runtimeExecutionPackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeExecutionPackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
 ) {
-  console.error("[smoke:runtime-execution-pack] expected CLI execution pack to prioritize multi-worker launch bundle when multiple owner groups are ready");
+  console.error("[smoke:runtime-execution-pack] expected CLI execution pack to prioritize launch plan when multiple owner groups are ready");
   process.exit(1);
 }
 const runtimeDispatchPackMappedCli = JSON.parse(
@@ -1894,6 +1915,37 @@ if (
   console.error(leaderAssignmentDispatchBundleMcp.stderr || leaderAssignmentDispatchBundleMcp.stdout);
   process.exit(1);
 }
+const leaderAssignmentLaunchPlanMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "leader_assignment_launch_plan",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const leaderAssignmentLaunchPlanMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: leaderAssignmentLaunchPlanMcpInput,
+  encoding: "utf8"
+});
+const leaderAssignmentLaunchPlanMcpLines = leaderAssignmentLaunchPlanMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const leaderAssignmentLaunchPlanMcpPayload = JSON.parse(JSON.parse(leaderAssignmentLaunchPlanMcpLines[1]).result.content[0].text);
+if (
+  leaderAssignmentLaunchPlanMcp.status !== 0 ||
+  leaderAssignmentLaunchPlanMcpPayload.assignmentLaunchPlan?.counts?.steps !== 2 ||
+  leaderAssignmentLaunchPlanMcpPayload.assignmentLaunchPlan?.next?.workerId !== "worker-executor" ||
+  leaderAssignmentLaunchPlanMcpPayload.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner"
+) {
+  console.error("[smoke:leader-assignment-launch-plan-mcp] expected MCP launch plan");
+  console.error(leaderAssignmentLaunchPlanMcp.stderr || leaderAssignmentLaunchPlanMcp.stdout);
+  process.exit(1);
+}
 const runtimeWorkspacePackMultiOwnerMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -1917,11 +1969,12 @@ const runtimeWorkspacePackMultiOwnerMcpLines = runtimeWorkspacePackMultiOwnerMcp
 const runtimeWorkspacePackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeWorkspacePackMultiOwnerMcpLines[1]).result.content[0].text);
 if (
   runtimeWorkspacePackMultiOwnerMcp.status !== 0 ||
-  runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.recommendedSurface !== "leader:assignment-launch-plan" ||
   runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.overview?.assignmentDispatchBundle?.launches !== 2 ||
-  runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.next?.assignmentLaunch?.role?.id !== "executor"
+  runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeWorkspacePackMultiOwnerMcpPayload.workspacePack?.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
 ) {
-  console.error("[smoke:runtime-workspace-pack-mcp] expected MCP workspace pack to prioritize multi-worker launch bundle when multiple owner groups are ready");
+  console.error("[smoke:runtime-workspace-pack-mcp] expected MCP workspace pack to prioritize launch plan when multiple owner groups are ready");
   console.error(runtimeWorkspacePackMultiOwnerMcp.stderr || runtimeWorkspacePackMultiOwnerMcp.stdout);
   process.exit(1);
 }
@@ -1948,11 +2001,12 @@ const runtimeExecutionPackMultiOwnerMcpLines = runtimeExecutionPackMultiOwnerMcp
 const runtimeExecutionPackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeExecutionPackMultiOwnerMcpLines[1]).result.content[0].text);
 if (
   runtimeExecutionPackMultiOwnerMcp.status !== 0 ||
-  runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.recommendedSurface !== "leader:assignment-launch-plan" ||
   runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.overview?.assignmentDispatchBundle?.launches !== 2 ||
-  runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.next?.assignmentLaunch?.role?.id !== "executor"
+  runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
 ) {
-  console.error("[smoke:runtime-execution-pack-mcp] expected MCP execution pack to prioritize multi-worker launch bundle when multiple owner groups are ready");
+  console.error("[smoke:runtime-execution-pack-mcp] expected MCP execution pack to prioritize launch plan when multiple owner groups are ready");
   console.error(runtimeExecutionPackMultiOwnerMcp.stderr || runtimeExecutionPackMultiOwnerMcp.stdout);
   process.exit(1);
 }
@@ -1979,12 +2033,13 @@ const runtimeDispatchPackMultiOwnerMcpLines = runtimeDispatchPackMultiOwnerMcp.s
 const runtimeDispatchPackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeDispatchPackMultiOwnerMcpLines[1]).result.content[0].text);
 if (
   runtimeDispatchPackMultiOwnerMcp.status !== 0 ||
-  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.recommendedSurface !== "leader:assignment-launch-plan" ||
   runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.overview?.assignmentDispatchBundle?.launches !== 2 ||
-  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.next?.assignmentLaunch?.role?.id !== "executor"
+  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
 ) {
-  console.error("[smoke:runtime-dispatch-pack-mcp] expected MCP dispatch pack to expose multi-worker launch bundle when multiple owner groups are ready");
+  console.error("[smoke:runtime-dispatch-pack-mcp] expected MCP dispatch pack to expose launch plan when multiple owner groups are ready");
   console.error(runtimeDispatchPackMultiOwnerMcp.stderr || runtimeDispatchPackMultiOwnerMcp.stdout);
   process.exit(1);
 }
@@ -2011,12 +2066,13 @@ const runtimeLeaderPackMultiOwnerMcpLines = runtimeLeaderPackMultiOwnerMcp.stdou
 const runtimeLeaderPackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeLeaderPackMultiOwnerMcpLines[1]).result.content[0].text);
 if (
   runtimeLeaderPackMultiOwnerMcp.status !== 0 ||
-  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
+  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.recommendedSurface !== "leader:assignment-launch-plan" ||
   runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.overview?.assignmentDispatchBundle?.launches !== 2 ||
-  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.next?.assignmentLaunch?.role?.id !== "executor"
+  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
 ) {
-  console.error("[smoke:runtime-leader-pack-mcp] expected MCP leader pack to prioritize multi-worker launch bundle when multiple owner groups are ready");
+  console.error("[smoke:runtime-leader-pack-mcp] expected MCP leader pack to prioritize launch plan when multiple owner groups are ready");
   console.error(runtimeLeaderPackMultiOwnerMcp.stderr || runtimeLeaderPackMultiOwnerMcp.stdout);
   process.exit(1);
 }
