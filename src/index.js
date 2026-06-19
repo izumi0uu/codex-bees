@@ -37,6 +37,7 @@ import {
   runtimeAlerts,
   runtimeDashboard,
   runtimeDispatch,
+  runtimeFocus,
   runtimeReview,
   runtimeRoles,
   swarmOverview,
@@ -88,6 +89,7 @@ function printHelp() {
   write(`  codex-bees runtime:alerts  Build the top-level orchestration alert stream\n`);
   write(`  codex-bees runtime:dashboard Build the top-level orchestration dashboard\n`);
   write(`  codex-bees runtime:dispatch Build the owner-grouped dispatch workspace\n`);
+  write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
   write(`  codex-bees runtime:review  Build the verifier-grouped review workspace\n`);
   write(`  codex-bees runtime:roles   Build the role-level orchestration queue view\n`);
   write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
@@ -205,6 +207,10 @@ function printRuntimeDashboard() {
 
 function printRuntimeDispatch() {
   write(JSON.stringify({ dispatch: runtimeDispatch() }, null, 2) + "\n");
+}
+
+function printRuntimeFocus() {
+  write(JSON.stringify({ focus: runtimeFocus() }, null, 2) + "\n");
 }
 
 function printRuntimeReview() {
@@ -1035,6 +1041,9 @@ async function runCommand(command) {
       return;
     case "runtime:dispatch":
       printRuntimeDispatch();
+      return;
+    case "runtime:focus":
+      printRuntimeFocus();
       return;
     case "runtime:review":
       printRuntimeReview();

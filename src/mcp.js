@@ -32,6 +32,7 @@ import {
   runtimeAlerts,
   runtimeDashboard,
   runtimeDispatch,
+  runtimeFocus,
   runtimeReview,
   runtimeRoles,
   swarmOverview,
@@ -119,6 +120,14 @@ export const toolCatalog = [
   {
     name: "runtime_dispatch",
     description: "Build the owner-grouped dispatch workspace for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_focus",
+    description: "Build the single next-action runtime focus for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -949,6 +958,10 @@ function handleRequest(message) {
 
     if (name === "runtime_dispatch") {
       return createSuccess(id, createTextPayload({ dispatch: runtimeDispatch() }));
+    }
+
+    if (name === "runtime_focus") {
+      return createSuccess(id, createTextPayload({ focus: runtimeFocus() }));
     }
 
     if (name === "runtime_review") {
