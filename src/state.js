@@ -1571,6 +1571,66 @@ export function runtimePickupPack(input = {}) {
   };
 }
 
+export function runtimeAssignmentPack(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const mode = normalizeNextMode(input.mode);
+  const assignments = leaderAssignments();
+  const roleAssignments = (assignments?.groups ?? []).find((group) => group.owner?.id === input.role) ?? null;
+  const assignment = roleAssignments?.assignments?.[0] ?? null;
+  const pickupPack = runtimePickupPack({
+    role: input.role,
+    workerId: input.workerId,
+    mode,
+    limit: input.limit
+  });
+  const rolePack = runtimeRolePack({
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+  const recommendedSurface = deriveRuntimeAssignmentPackSurface({
+    assignment,
+    pickupPack,
+    rolePack,
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+
+  return {
+    kind: "runtime_assignment_pack",
+    role: describeRole(input.role),
+    workerId: input.workerId,
+    mode,
+    recommendedSurface,
+    overview: {
+      assignments: {
+        count: roleAssignments?.count ?? 0,
+        ownerGroups: assignments?.counts?.ownerGroups ?? 0
+      },
+      pickup: pickupPack?.overview?.pickup ?? null,
+      role: rolePack?.overview?.role ?? null,
+      session: pickupPack?.overview?.session ?? null
+    },
+    next: {
+      assignment,
+      pickup: pickupPack?.next?.pickup ?? null,
+      candidate: pickupPack?.next?.candidate ?? null,
+      focus: pickupPack?.next?.focus ?? null
+    },
+    surfaces: {
+      assignments,
+      roleAssignments,
+      pickupPack,
+      rolePack
+    },
+    summary: buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, pickupPack, roleAssignments)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -4134,6 +4194,32 @@ function buildRuntimePickupPackSummary(recommendedSurface, session, pickup, next
           : "worker has no immediate pickup target.";
 
   return `Runtime pickup pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeAssignmentPackSurface({ assignment, pickupPack, rolePack, role, workerId, mode }) {
+  if (pickupPack?.recommendedSurface === "worker:session" || pickupPack?.recommendedSurface === "worker:closeout" || pickupPack?.recommendedSurface === "worker:handoff") {
+    return pickupPack.recommendedSurface;
+  }
+  if (assignment?.taskId && pickupPack?.next?.candidate?.id !== assignment.taskId) {
+    return `task:pickup --role ${role} --worker ${workerId} --mode ${mode}`;
+  }
+  if (pickupPack?.recommendedSurface) {
+    return pickupPack.recommendedSurface;
+  }
+  return rolePack?.recommendedSurface ?? "leader:assignments";
+}
+
+function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, pickupPack, roleAssignments) {
+  if (assignment?.taskId && pickupPack?.next?.candidate?.id !== assignment.taskId) {
+    return `Runtime assignment pack recommends ${recommendedSurface} next. Leader has assignment ${assignment.taskId} ready for this worker.`;
+  }
+
+  const detail =
+    pickupPack?.summary ??
+    (roleAssignments?.count ? `Role has ${roleAssignments.count} leader assignment${roleAssignments.count === 1 ? "" : "s"} queued.` : null) ??
+    "worker has no immediate assignment handoff.";
+
+  return `Runtime assignment pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
