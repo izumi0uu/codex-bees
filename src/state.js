@@ -353,6 +353,29 @@ export function swarmBundle(id) {
   };
 }
 
+export function swarmCloseout(id) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const brief = swarmBrief(id);
+  const bundle = swarmBundle(id);
+  const command = deriveSwarmCloseoutCommand(overview, brief);
+
+  return {
+    kind: "swarm_closeout",
+    swarm: overview.swarm,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    readyToComplete: overview.readyToComplete,
+    brief,
+    bundle,
+    command,
+    summary: buildSwarmCloseoutSummary(overview, command)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -1573,6 +1596,26 @@ function buildSwarmBundleSummary(overview, laneBundles) {
   }
 
   return `Swarm ${overview.swarm.id} remains active with ${overview.counts.totalLanes} tracked lanes.`;
+}
+
+function deriveSwarmCloseoutCommand(overview, brief) {
+  if (overview.readyToComplete) {
+    return `node ./src/index.js swarm:done --id ${overview.swarm.id}`;
+  }
+
+  return brief?.recommendedCommands?.[0] ?? null;
+}
+
+function buildSwarmCloseoutSummary(overview, command) {
+  if (overview.readyToComplete) {
+    return `Swarm ${overview.swarm.id} can be explicitly closed out now that all ${overview.counts.totalLanes} lanes are done.`;
+  }
+
+  if (command) {
+    return `Swarm ${overview.swarm.id} is not ready for closeout yet; continue with the next orchestration action first.`;
+  }
+
+  return `Swarm ${overview.swarm.id} has no closeout action available yet.`;
 }
 
 function buildLeaderWorkspaceSwarmEntry(overview) {
