@@ -1114,6 +1114,7 @@ const leaderAssignmentDispatchCli = JSON.parse(
   run("leader-assignment-dispatch-cli", ["./src/index.js", "leader:assignment-dispatch", "--role", "executor", "--worker", "worker-executor"]).stdout
 ).assignmentDispatch;
 if (
+  leaderAssignmentDispatchCli.recommendedReason !== "assignment_dispatch_ready" ||
   leaderAssignmentDispatchCli.assignment?.taskId !== "task-2" ||
   leaderAssignmentDispatchCli.previewCommand !== "node ./src/index.js task:assignment-preview --role executor --worker worker-executor --task task-2" ||
   leaderAssignmentDispatchCli.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2"
@@ -1915,6 +1916,7 @@ const leaderAssignmentDispatchMcpLines = leaderAssignmentDispatchMcp.stdout
 const leaderAssignmentDispatchMcpPayload = JSON.parse(JSON.parse(leaderAssignmentDispatchMcpLines[1]).result.content[0].text);
 if (
   leaderAssignmentDispatchMcp.status !== 0 ||
+  leaderAssignmentDispatchMcpPayload.assignmentDispatch?.recommendedReason !== "assignment_dispatch_ready" ||
   leaderAssignmentDispatchMcpPayload.assignmentDispatch?.assignment?.taskId !== "task-2" ||
   leaderAssignmentDispatchMcpPayload.assignmentDispatch?.previewCommand !== "node ./src/index.js task:assignment-preview --role executor --worker worker-executor --task task-2" ||
   leaderAssignmentDispatchMcpPayload.assignmentDispatch?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2"

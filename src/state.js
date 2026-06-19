@@ -544,10 +544,12 @@ export function leaderAssignmentDispatch(input = {}) {
   const assignment = input.taskId
     ? (ownerGroup?.assignments ?? []).find((item) => item.taskId === input.taskId) ?? null
     : ownerGroup?.assignments?.[0] ?? null;
+  const recommendedReason = deriveLeaderAssignmentDispatchReason({ ownerId, ownerGroup, assignment, requestedTaskId: input.taskId ?? null });
 
   if (!assignment) {
     return {
       kind: "leader_assignment_dispatch",
+      recommendedReason,
       role: ownerGroup?.owner ?? describeRole(ownerId),
       workerId: input.workerId ?? null,
       assignment: null,
@@ -565,6 +567,7 @@ export function leaderAssignmentDispatch(input = {}) {
 
   return {
     kind: "leader_assignment_dispatch",
+    recommendedReason,
     role: assignment.owner,
     workerId: input.workerId ?? null,
     assignment,
@@ -4446,6 +4449,22 @@ function deriveLeaderQueueReason({ items, actionable, next }) {
     return "queue_items_visible";
   }
   return "no_queue_items";
+}
+
+function deriveLeaderAssignmentDispatchReason({ ownerId, ownerGroup, assignment, requestedTaskId }) {
+  if (assignment?.taskId) {
+    return "assignment_dispatch_ready";
+  }
+  if (requestedTaskId && ownerGroup) {
+    return "requested_assignment_missing";
+  }
+  if (ownerGroup) {
+    return "owner_group_visible";
+  }
+  if (ownerId) {
+    return "owner_has_no_assignments";
+  }
+  return "no_assignment_dispatch_ready";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
