@@ -620,6 +620,53 @@ if (
   console.error("[smoke:runtime-worker-pack] expected owner worker pack");
   process.exit(1);
 }
+const ownerPackCli = JSON.parse(
+  run("runtime-owner-pack-cli", ["./src/index.js", "runtime:owner-pack", "--role", "executor", "--worker", "review-worker"]).stdout
+).ownerPack;
+if (
+  ownerPackCli.kind !== "runtime_owner_pack" ||
+  ownerPackCli.recommendedSurface !== "worker:session" ||
+  ownerPackCli.next?.focus?.kind !== "active_task" ||
+  ownerPackCli.surfaces?.handoff?.currentTask?.id !== "task-1" ||
+  ownerPackCli.mode !== "owner"
+) {
+  console.error("[smoke:runtime-owner-pack] expected CLI owner pack");
+  process.exit(1);
+}
+const ownerPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_owner_pack",
+      arguments: {
+        role: "executor",
+        workerId: "review-worker"
+      }
+    }
+  })
+].join("\n") + "\n";
+const ownerPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: ownerPackMcpInput,
+  encoding: "utf8"
+});
+const ownerPackMcpLines = ownerPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const ownerPackMcpPayload = JSON.parse(JSON.parse(ownerPackMcpLines[1]).result.content[0].text);
+if (
+  ownerPackMcp.status !== 0 ||
+  ownerPackMcpPayload.ownerPack?.recommendedSurface !== "worker:session" ||
+  ownerPackMcpPayload.ownerPack?.next?.focus?.taskId !== "task-1" ||
+  ownerPackMcpPayload.ownerPack?.surfaces?.handoff?.currentTask?.id !== "task-1"
+) {
+  console.error("[smoke:runtime-owner-pack-mcp] expected MCP owner pack");
+  console.error(ownerPackMcp.stderr || ownerPackMcp.stdout);
+  process.exit(1);
+}
 const reviewTaskHistory = JSON.parse(
   run("task-history-review-loop", ["./src/index.js", "task:history", "--id", "task-1"]).stdout
 ).history;
