@@ -739,6 +739,18 @@ if (
   console.error("[smoke:swarm-bundle] expected CLI swarm bundle with lane reports");
   process.exit(1);
 }
+const swarmCloseoutCli = JSON.parse(
+  run("swarm-closeout-cli", ["./src/index.js", "swarm:closeout", "--id", "swarm-1"]).stdout
+).closeout;
+if (
+  swarmCloseoutCli.kind !== "swarm_closeout" ||
+  swarmCloseoutCli.readyToComplete !== true ||
+  swarmCloseoutCli.command !== "node ./src/index.js swarm:done --id swarm-1" ||
+  swarmCloseoutCli.bundle?.swarm?.id !== "swarm-1"
+) {
+  console.error("[smoke:swarm-closeout] expected CLI swarm closeout bundle with explicit close command");
+  process.exit(1);
+}
 run("leader-workspace-swarm-init", [
   "./src/index.js",
   "swarm:init",
@@ -970,13 +982,22 @@ const swarmMcpInput = [
     id: 12,
     method: "tools/call",
     params: {
+      name: "swarm_closeout",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 13,
+    method: "tools/call",
+    params: {
       name: "task_list",
       arguments: {}
     }
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 13,
+    id: 14,
     method: "tools/call",
     params: {
       name: "swarm_list",
@@ -985,7 +1006,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 14,
+    id: 15,
     method: "tools/call",
     params: {
       name: "leader_workspace",
@@ -1014,13 +1035,16 @@ const swarmOverviewPayload = swarmOverviewText ? JSON.parse(swarmOverviewText) :
 const swarmBundleResult = swarmMcpLines.length >= 11 ? JSON.parse(swarmMcpLines[10]) : null;
 const swarmBundleText = swarmBundleResult?.result?.content?.[0]?.text;
 const swarmBundlePayload = swarmBundleText ? JSON.parse(swarmBundleText) : null;
-const swarmTaskListResult = swarmMcpLines.length >= 12 ? JSON.parse(swarmMcpLines[11]) : null;
+const swarmCloseoutResult = swarmMcpLines.length >= 12 ? JSON.parse(swarmMcpLines[11]) : null;
+const swarmCloseoutText = swarmCloseoutResult?.result?.content?.[0]?.text;
+const swarmCloseoutPayload = swarmCloseoutText ? JSON.parse(swarmCloseoutText) : null;
+const swarmTaskListResult = swarmMcpLines.length >= 13 ? JSON.parse(swarmMcpLines[12]) : null;
 const swarmTaskListText = swarmTaskListResult?.result?.content?.[0]?.text;
 const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) : null;
-const swarmListDetailedResult = swarmMcpLines.length >= 13 ? JSON.parse(swarmMcpLines[12]) : null;
+const swarmListDetailedResult = swarmMcpLines.length >= 14 ? JSON.parse(swarmMcpLines[13]) : null;
 const swarmListDetailedText = swarmListDetailedResult?.result?.content?.[0]?.text;
 const swarmListDetailedPayload = swarmListDetailedText ? JSON.parse(swarmListDetailedText) : null;
-const leaderWorkspaceResult = swarmMcpLines.length >= 14 ? JSON.parse(swarmMcpLines[13]) : null;
+const leaderWorkspaceResult = swarmMcpLines.length >= 15 ? JSON.parse(swarmMcpLines[14]) : null;
 const leaderWorkspaceText = leaderWorkspaceResult?.result?.content?.[0]?.text;
 const leaderWorkspacePayload = leaderWorkspaceText ? JSON.parse(leaderWorkspaceText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
@@ -1032,6 +1056,7 @@ if (
   mcpSwarmTask.reviewedBy !== "tester" ||
   mcpSwarmTask.reviewOutcome !== "approved" ||
   swarmBundlePayload?.bundle?.lanes?.[0]?.report?.task?.id !== "task-1" ||
+  swarmCloseoutPayload?.closeout?.command !== "node ./src/index.js swarm:done --id swarm-1" ||
   leaderWorkspacePayload?.workspace?.focus?.swarmId !== "swarm-1" ||
   leaderWorkspacePayload?.workspace?.focus?.bundle?.swarm?.id !== "swarm-1" ||
   swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||
