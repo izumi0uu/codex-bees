@@ -1837,6 +1837,7 @@ export function runtimeAssignmentPack(input = {}) {
     workerId: input.workerId,
     mode
   });
+  const recommendedReason = deriveRuntimeAssignmentPackReason({ assignment, session, next, pickup, roleEntry });
 
   return {
     kind: "runtime_assignment_pack",
@@ -1844,6 +1845,7 @@ export function runtimeAssignmentPack(input = {}) {
     workerId: input.workerId,
     mode,
     recommendedSurface,
+    recommendedReason,
     overview: {
       assignments: {
         count: roleAssignments?.count ?? 0,
@@ -4962,6 +4964,37 @@ function deriveRuntimeAssignmentPackSurface({ assignment, session, next, pickup,
     return roleEntry.nextAction.command.replace("node ./src/index.js ", "");
   }
   return "leader:assignments";
+}
+
+function deriveRuntimeAssignmentPackReason({ assignment, session, next, pickup, roleEntry }) {
+  if (session?.focus?.kind === "active_task") {
+    return "active_task_priority";
+  }
+  if (session?.focus?.kind === "blocked_task") {
+    return "blocked_task_priority";
+  }
+  if (session?.focus?.kind === "review_task") {
+    return "review_task_priority";
+  }
+  if (session?.focus?.kind === "awaiting_review") {
+    return "awaiting_review_priority";
+  }
+  if (assignment?.taskId) {
+    return "leader_assignment_ready";
+  }
+  if (pickup?.outcome === "claimable") {
+    return "claimable_pickup_ready";
+  }
+  if (pickup?.command) {
+    return "pickup_command_ready";
+  }
+  if (next?.candidate?.id) {
+    return "next_candidate_visible";
+  }
+  if (roleEntry?.nextAction?.command) {
+    return "role_action_fallback";
+  }
+  return "leader_assignments_fallback";
 }
 
 function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, session, pickup, next, roleAssignments) {

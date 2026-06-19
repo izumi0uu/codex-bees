@@ -1304,6 +1304,7 @@ const assignmentPackExecutorCli = JSON.parse(
 ).assignmentPack;
 if (
   assignmentPackExecutorCli.recommendedSurface !== "task:assignment-pickup --role executor --worker worker-executor --mode owner" ||
+  assignmentPackExecutorCli.recommendedReason !== "leader_assignment_ready" ||
   assignmentPackExecutorCli.next?.assignment?.taskId !== "task-2" ||
   assignmentPackExecutorCli.next?.pickup?.kind !== "task_assignment_preview" ||
   assignmentPackExecutorCli.next?.pickup?.outcome !== "claimable"
@@ -2390,6 +2391,7 @@ const assignmentPackExecutorMcpPayload = JSON.parse(JSON.parse(assignmentPackExe
 if (
   assignmentPackExecutorMcp.status !== 0 ||
   assignmentPackExecutorMcpPayload.assignmentPack?.recommendedSurface !== "task:assignment-pickup --role executor --worker worker-executor --mode owner" ||
+  assignmentPackExecutorMcpPayload.assignmentPack?.recommendedReason !== "leader_assignment_ready" ||
   assignmentPackExecutorMcpPayload.assignmentPack?.next?.assignment?.taskId !== "task-2" ||
   assignmentPackExecutorMcpPayload.assignmentPack?.next?.pickup?.kind !== "task_assignment_preview" ||
   assignmentPackExecutorMcpPayload.assignmentPack?.next?.pickup?.outcome !== "claimable"
@@ -3705,6 +3707,7 @@ const runtimeAssignmentPackMcpPayload = JSON.parse(JSON.parse(runtimeAssignmentP
 if (
   runtimeAssignmentPackMcp.status !== 0 ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.recommendedSurface !== "worker:closeout" ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.recommendedReason !== "review_task_priority" ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.kind !== "task_assignment_preview" ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.outcome !== "none" ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.candidate !== null ||
@@ -4534,6 +4537,7 @@ const runtimeAssignmentPackVerifier = JSON.parse(
 ).assignmentPack;
 if (
   runtimeAssignmentPackVerifier.recommendedSurface !== "worker:closeout" ||
+  runtimeAssignmentPackVerifier.recommendedReason !== "review_task_priority" ||
   runtimeAssignmentPackVerifier.next?.pickup?.kind !== "task_assignment_preview" ||
   runtimeAssignmentPackVerifier.next?.pickup?.outcome !== "none" ||
   runtimeAssignmentPackVerifier.next?.pickup?.candidate !== null ||
@@ -4570,6 +4574,7 @@ const runtimeAssignmentPackOwner = JSON.parse(
 ).assignmentPack;
 if (
   runtimeAssignmentPackOwner.recommendedSurface !== "task:next" ||
+  runtimeAssignmentPackOwner.recommendedReason !== "next_candidate_visible" ||
   runtimeAssignmentPackOwner.next?.pickup?.kind !== "task_assignment_preview" ||
   runtimeAssignmentPackOwner.next?.pickup?.outcome !== "none" ||
   runtimeAssignmentPackOwner.next?.pickup?.candidate !== null ||
