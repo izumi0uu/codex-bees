@@ -1508,6 +1508,7 @@ const leaderWorkspaceCli = JSON.parse(
 ).workspace;
 if (
   leaderWorkspaceCli.kind !== "leader_workspace" ||
+  leaderWorkspaceCli.recommendedReason !== "queue_focus_priority" ||
   leaderWorkspaceCli.counts?.totalSwarms !== 2 ||
   leaderWorkspaceCli.counts?.readyToComplete !== 1 ||
   leaderWorkspaceCli.focus?.swarmId !== "swarm-2" ||
@@ -4126,6 +4127,7 @@ if (
   mcpSwarmTask.reviewOutcome !== "approved" ||
   swarmBundlePayload?.bundle?.lanes?.[0]?.report?.task?.id !== "task-1" ||
   swarmCloseoutPayload?.closeout?.command !== "node ./src/index.js swarm:done --id swarm-1" ||
+  leaderWorkspacePayload?.workspace?.recommendedReason !== "closeout_focus_priority" ||
   leaderWorkspacePayload?.workspace?.focus?.swarmId !== "swarm-1" ||
   leaderWorkspacePayload?.workspace?.focus?.bundle?.swarm?.id !== "swarm-1" ||
   swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||

@@ -2118,9 +2118,11 @@ export function leaderWorkspace(input = {}) {
     .map((overview) => buildLeaderWorkspaceSwarmEntry(overview))
     .sort(compareLeaderWorkspaceEntries);
   const focusEntry = swarmEntries[0] ?? null;
+  const recommendedReason = deriveLeaderWorkspaceReason({ swarmEntries, focusEntry });
 
   return {
     kind: "leader_workspace",
+    recommendedReason,
     filters,
     counts: {
       totalSwarms: swarmEntries.length,
@@ -4465,6 +4467,34 @@ function deriveLeaderAssignmentDispatchReason({ ownerId, ownerGroup, assignment,
     return "owner_has_no_assignments";
   }
   return "no_assignment_dispatch_ready";
+}
+
+function deriveLeaderWorkspaceReason({ swarmEntries, focusEntry }) {
+  if (focusEntry?.recommendedNextAction?.startsWith("review_lane:")) {
+    return "review_focus_priority";
+  }
+  if (focusEntry?.recommendedNextAction?.startsWith("dispatch_lane:")) {
+    return "dispatch_focus_priority";
+  }
+  if (focusEntry?.recommendedNextAction === "queue_swarm_lanes") {
+    return "queue_focus_priority";
+  }
+  if (focusEntry?.recommendedNextAction === "complete" || focusEntry?.readyToComplete) {
+    return "closeout_focus_priority";
+  }
+  if (focusEntry?.recommendedNextAction?.startsWith("continue_lane:")) {
+    return "active_execution_focus";
+  }
+  if (focusEntry?.recommendedNextAction?.startsWith("unblock_lane:")) {
+    return "blocked_focus_priority";
+  }
+  if (focusEntry?.id) {
+    return "tracked_swarm_focus";
+  }
+  if ((swarmEntries?.length ?? 0) > 0) {
+    return "tracked_swarms_visible";
+  }
+  return "no_swarms_tracked";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
