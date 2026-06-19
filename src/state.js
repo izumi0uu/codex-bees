@@ -111,6 +111,22 @@ export function getSwarm(id) {
   return swarm ? normalizeSwarm(swarm) : null;
 }
 
+export function validateTask(id) {
+  const task = loadState().tasks.map(normalizeTask).find((item) => item.id === id);
+  if (!task) {
+    return null;
+  }
+  return validateTaskValue(task);
+}
+
+export function validateSwarm(id) {
+  const swarm = loadState().swarms.map(normalizeSwarm).find((item) => item.id === id);
+  if (!swarm) {
+    return null;
+  }
+  return validateSwarmValue(swarm);
+}
+
 export function syncSwarmStatus(id) {
   const state = loadState();
   const index = state.swarms.findIndex((item) => item.id === id);
@@ -333,6 +349,10 @@ export function queueSwarmTasks(input) {
   if (!Array.isArray(current.lanes) || current.lanes.length === 0) {
     return { error: `Swarm ${current.id} has no lanes to queue` };
   }
+  const validation = validateSwarmValue(current);
+  if (!validation.ready) {
+    return { error: `Swarm ${current.id} is not ready to queue`, validation };
+  }
   if (current.lanes.some((lane) => lane.taskId)) {
     return { error: `Swarm ${current.id} already has queued lane tasks` };
   }
@@ -428,6 +448,11 @@ export function dispatchSwarmLane(input) {
   }
 
   const currentTask = normalizeTask(state.tasks[taskIndex]);
+  const taskValidation = validateTaskValue(currentTask);
+  if (!taskValidation.ready) {
+    return { error: `Lane task ${currentTask.id} is not ready to dispatch`, validation: taskValidation };
+  }
+
   const nextTask = normalizeTask({
     ...currentTask,
     queueStatus: "claimed",
@@ -640,6 +665,102 @@ function normalizeState(state) {
 }
 
 
+
+function validateTaskValue(task) {
+  const issues = [];
+
+  if (!task.title?.trim()) {
+    issues.push({ code: "missing_title", message: "Task title is required" });
+  }
+  if (!task.owner?.trim()) {
+    issues.push({ code: "missing_owner", message: "Task owner is required for bounded execution" });
+  }
+  if (!task.verifier?.trim()) {
+    issues.push({ code: "missing_verifier", message: "Task verifier is required for bounded execution" });
+  }
+  if (!Array.isArray(task.scope) || task.scope.length === 0) {
+    issues.push({ code: "missing_scope", message: "Task scope is required for bounded execution" });
+  }
+  if (!Array.isArray(task.acceptance) || task.acceptance.length === 0) {
+    issues.push({ code: "missing_acceptance", message: "Task acceptance checks are required" });
+  }
+  if (!Array.isArray(task.verification) || task.verification.length === 0) {
+    issues.push({ code: "missing_verification", message: "Task verification steps are required" });
+  }
+  if (task.queueStatus === "claimed" && !task.claimedBy) {
+    issues.push({ code: "missing_claimed_by", message: "Claimed tasks must record claimedBy" });
+  }
+
+  return {
+    task,
+    ready: issues.length === 0,
+    issues
+  };
+}
+
+function validateSwarmValue(swarm) {
+  const issues = [];
+  const laneReports = [];
+
+  if (!swarm.objective?.trim()) {
+    issues.push({ code: "missing_objective", message: "Swarm objective is required" });
+  }
+  if (!Array.isArray(swarm.lanes) || swarm.lanes.length === 0) {
+    issues.push({ code: "missing_lanes", message: "Swarm must contain at least one lane" });
+  }
+
+  for (const lane of swarm.lanes) {
+    const laneIssues = [];
+    if (!lane.owner?.trim()) {
+      laneIssues.push({ code: "missing_owner", message: "Lane owner is required" });
+    }
+    if (!lane.verifier?.trim()) {
+      laneIssues.push({ code: "missing_verifier", message: "Lane verifier is required" });
+    }
+    if (!Array.isArray(lane.scope) || lane.scope.length === 0) {
+      laneIssues.push({ code: "missing_scope", message: "Lane scope is required" });
+    }
+    if (!Array.isArray(lane.acceptance) || lane.acceptance.length === 0) {
+      laneIssues.push({ code: "missing_acceptance", message: "Lane acceptance checks are required" });
+    }
+    if (!Array.isArray(lane.verification) || lane.verification.length === 0) {
+      laneIssues.push({ code: "missing_verification", message: "Lane verification steps are required" });
+    }
+
+    laneReports.push({
+      lane: lane.lane,
+      ready: laneIssues.length === 0,
+      issues: laneIssues
+    });
+  }
+
+  const overlapIssues = [];
+  const seen = new Map();
+  for (const lane of swarm.lanes) {
+    for (const path of lane.scope ?? []) {
+      const owners = seen.get(path) ?? [];
+      for (const otherLane of owners) {
+        overlapIssues.push({
+          code: "scope_overlap",
+          message: `Lanes ${otherLane} and ${lane.lane} overlap on ${path}` ,
+          lanes: [otherLane, lane.lane],
+          path
+        });
+      }
+      owners.push(lane.lane);
+      seen.set(path, owners);
+    }
+  }
+
+  return {
+    swarm,
+    ready: issues.length === 0 && laneReports.every((lane) => lane.ready) && overlapIssues.length === 0,
+    issues,
+    lanes: laneReports,
+    overlaps: overlapIssues
+  };
+}
+
 function deriveSwarmStatus(swarm, tasks) {
   if (swarm.status === "cancelled") {
     return "cancelled";
@@ -733,6 +854,13 @@ function transitionTask(input) {
 
   if (input.requireClaimedBy && !input.claimedBy) {
     return { error: "claimedBy is required for this transition" };
+  }
+
+  if (nextQueueStatus === "claimed") {
+    const validation = validateTaskValue(current);
+    if (!validation.ready) {
+      return { error: `Task ${current.id} is not ready to claim`, validation };
+    }
   }
 
   if (current.claimedBy && current.claimedBy !== input.claimedBy) {
