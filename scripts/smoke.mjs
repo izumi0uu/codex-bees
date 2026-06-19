@@ -658,6 +658,20 @@ if (
   console.error("[smoke:swarm-dispatch-bundle] expected CLI dispatch bundle with next lane task brief");
   process.exit(1);
 }
+const leaderAssignmentsCli = JSON.parse(
+  run("leader-assignments-cli", ["./src/index.js", "leader:assignments"]).stdout
+).assignments;
+if (
+  leaderAssignmentsCli.kind !== "leader_assignments" ||
+  leaderAssignmentsCli.counts?.totalAssignments !== 2 ||
+  leaderAssignmentsCli.counts?.ownerGroups !== 2 ||
+  !leaderAssignmentsCli.groups?.some((group) => group.owner?.id === "explore") ||
+  !leaderAssignmentsCli.groups?.some((group) => group.owner?.id === "executor") ||
+  !leaderAssignmentsCli.groups?.flatMap((group) => group.assignments ?? []).some((assignment) => assignment.taskBrief?.task?.id === "task-1")
+) {
+  console.error("[smoke:leader-assignments] expected CLI leader assignments grouped by owner");
+  process.exit(1);
+}
 const dispatchedLane = JSON.parse(
   run("swarm-dispatch", [
     "./src/index.js",
@@ -1104,6 +1118,72 @@ if (
 ) {
   console.error("[smoke:leader-queue-mcp] expected MCP leader queue");
   console.error(leaderQueueMcp.stderr || leaderQueueMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("leader-assignments-swarm", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Leader assignments swarm",
+  "--owner",
+  "leader",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-assign-a",
+      summary: "Dispatch to explore",
+      owner: "explore",
+      verifier: "reviewer",
+      scope: ["src/index.js"],
+      acceptance: ["assignment grouped under explore"],
+      verification: ["leader assignments returns owner groups"]
+    },
+    {
+      lane: "lane-assign-b",
+      summary: "Dispatch to executor",
+      owner: "executor",
+      verifier: "tester",
+      scope: ["src/mcp.js"],
+      acceptance: ["assignment grouped under executor"],
+      verification: ["leader assignments returns second owner group"]
+    }
+  ])
+]);
+run("leader-assignments-swarm-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]);
+const leaderAssignmentsMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "leader_assignments",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const leaderAssignmentsMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: leaderAssignmentsMcpInput,
+  encoding: "utf8"
+});
+const leaderAssignmentsMcpLines = leaderAssignmentsMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const leaderAssignmentsMcpPayload = JSON.parse(JSON.parse(leaderAssignmentsMcpLines[1]).result.content[0].text);
+if (
+  leaderAssignmentsMcp.status !== 0 ||
+  leaderAssignmentsMcpPayload.assignments?.counts?.totalAssignments !== 2 ||
+  leaderAssignmentsMcpPayload.assignments?.counts?.ownerGroups !== 2 ||
+  !leaderAssignmentsMcpPayload.assignments?.groups?.some((group) => group.owner?.id === "explore") ||
+  !leaderAssignmentsMcpPayload.assignments?.groups?.some((group) => group.owner?.id === "executor") ||
+  !leaderAssignmentsMcpPayload.assignments?.groups?.flatMap((group) => group.assignments ?? []).some((assignment) => assignment.taskBrief?.task?.id === "task-1") ||
+  !leaderAssignmentsMcpPayload.assignments?.groups?.flatMap((group) => group.assignments ?? []).some((assignment) => assignment.taskBrief?.task?.id === "task-2")
+) {
+  console.error("[smoke:leader-assignments-mcp] expected MCP leader assignments");
+  console.error(leaderAssignmentsMcp.stderr || leaderAssignmentsMcp.stdout);
   process.exit(1);
 }
 
