@@ -228,7 +228,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:focus` / `runtime_focus` provide the single next-action workspace: one chosen current priority across blocked work, review pressure, dispatchable lanes, role pressure, and leader queue context.
 
-`runtime:handoff-pack` / `runtime_handoff_pack` provide the handoff-oriented package: handoffs, dispatch, review, and recovery combined into one next-actor transfer entrypoint with a recommended next surface.
+`runtime:handoff-pack` / `runtime_handoff_pack` provide the handoff-oriented package: handoffs, dispatch, review, and recovery combined into one next-actor transfer entrypoint with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between reviewer handoff pressure, review queue pressure, recovery queue pressure, and dispatch-ready transfer pressure without parsing summary prose.
 
 `runtime:handoffs` / `runtime_handoffs` provide the next-actor transfer workspace: queued pickups, blocked recoveries, and verifier decisions grouped by who should take the next action.
 

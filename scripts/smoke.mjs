@@ -2801,6 +2801,7 @@ const runtimeHandoffPackCli = JSON.parse(
 ).handoffPack;
 if (
   runtimeHandoffPackCli.recommendedSurface !== "runtime:handoffs" ||
+  runtimeHandoffPackCli.recommendedReason !== "review_handoffs_waiting" ||
   runtimeHandoffPackCli.next?.handoff?.taskId !== "task-2" ||
   runtimeHandoffPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeHandoffPackCli.next?.review?.taskId !== "task-2" ||
@@ -3483,6 +3484,7 @@ const runtimeHandoffPackMcpPayload = JSON.parse(JSON.parse(runtimeHandoffPackMcp
 if (
   runtimeHandoffPackMcp.status !== 0 ||
   runtimeHandoffPackMcpPayload.handoffPack?.recommendedSurface !== "runtime:handoffs" ||
+  runtimeHandoffPackMcpPayload.handoffPack?.recommendedReason !== "review_handoffs_waiting" ||
   runtimeHandoffPackMcpPayload.handoffPack?.next?.handoff?.taskId !== "task-2" ||
   runtimeHandoffPackMcpPayload.handoffPack?.next?.recovery?.taskId !== "task-1"
 ) {

@@ -1496,10 +1496,12 @@ export function runtimeHandoffPack() {
   const review = runtimeReview();
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeHandoffPackSurface({ handoffs, dispatch, review, recovery });
+  const recommendedReason = deriveRuntimeHandoffPackReason({ handoffs, dispatch, review, recovery });
 
   return {
     kind: "runtime_handoff_pack",
     recommendedSurface,
+    recommendedReason,
     overview: {
       handoffs: handoffs?.counts ?? null,
       dispatch: dispatch?.counts ?? null,
@@ -4561,6 +4563,22 @@ function deriveRuntimeHandoffPackSurface({ handoffs, dispatch, review, recovery 
     return "runtime:dispatch";
   }
   return "runtime:handoffs";
+}
+
+function deriveRuntimeHandoffPackReason({ handoffs, dispatch, review, recovery }) {
+  if ((handoffs?.counts?.reviewDecisions ?? 0) > 0) {
+    return "review_handoffs_waiting";
+  }
+  if ((review?.counts?.totalPendingReview ?? 0) > 0) {
+    return "review_queue_waiting";
+  }
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "recovery_queue_waiting";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "dispatch_handoff_waiting";
+  }
+  return "default_handoff_priority";
 }
 
 function buildRuntimeHandoffPackSummary(recommendedSurface, handoffs, review, recovery, dispatch) {
