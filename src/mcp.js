@@ -6,9 +6,12 @@ import {
   blockTask,
   claimTask,
   completeTask,
+  listMemories,
   listTasks,
   markTaskReadyForReview,
   releaseTask,
+  searchMemories,
+  storeMemory,
   updateTask
 } from "./state.js";
 
@@ -168,6 +171,52 @@ export const toolCatalog = [
       required: ["task"],
       properties: {
         task: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "memory_store",
+    description: "Store a persistent local memory for later recall.",
+    inputSchema: {
+      type: "object",
+      required: ["content"],
+      properties: {
+        content: { type: "string" },
+        namespace: { type: "string" },
+        kind: { type: "string" },
+        title: { type: "string" },
+        agent: { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "memory_list",
+    description: "List persistent local memories with optional filters.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        namespace: { type: "string" },
+        kind: { type: "string" },
+        agent: { type: "string" },
+        tags: { type: "array", items: { type: "string" } }
+      }
+    }
+  },
+  {
+    name: "memory_search",
+    description: "Search persistent local memories by query and optional filters.",
+    inputSchema: {
+      type: "object",
+      required: ["query"],
+      properties: {
+        query: { type: "string" },
+        namespace: { type: "string" },
+        kind: { type: "string" },
+        agent: { type: "string" },
+        tags: { type: "array", items: { type: "string" } },
+        limit: { type: "number" }
       }
     }
   }
@@ -463,6 +512,65 @@ function handleRequest(message) {
           {
             type: "text",
             text: JSON.stringify(queueTasksFromPlan(params.arguments.task, addTasks), null, 2)
+          }
+        ]
+      });
+    }
+
+    if (name === "memory_store") {
+      if (!params.arguments?.content) {
+        return createError(id, -32602, "memory_store requires arguments.content");
+      }
+
+      const memory = storeMemory({
+        content: params.arguments.content,
+        namespace: params.arguments.namespace,
+        kind: params.arguments.kind,
+        title: params.arguments.title,
+        agent: params.arguments.agent,
+        tags: params.arguments.tags,
+        notes: params.arguments.notes
+      });
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ stored: memory }, null, 2) }]
+      });
+    }
+
+    if (name === "memory_list") {
+      const memories = listMemories({
+        namespace: params.arguments?.namespace,
+        kind: params.arguments?.kind,
+        agent: params.arguments?.agent,
+        tags: params.arguments?.tags
+      });
+
+      return createSuccess(id, {
+        content: [{ type: "text", text: JSON.stringify({ memories }, null, 2) }]
+      });
+    }
+
+    if (name === "memory_search") {
+      if (!params.arguments?.query) {
+        return createError(id, -32602, "memory_search requires arguments.query");
+      }
+
+      const limit =
+        Number.isFinite(Number(params.arguments.limit)) && Number(params.arguments.limit) > 0
+          ? Number(params.arguments.limit)
+          : 10;
+      const results = searchMemories(params.arguments.query, {
+        namespace: params.arguments.namespace,
+        kind: params.arguments.kind,
+        agent: params.arguments.agent,
+        tags: params.arguments.tags
+      }).slice(0, limit);
+
+      return createSuccess(id, {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({ query: params.arguments.query, results }, null, 2)
           }
         ]
       });

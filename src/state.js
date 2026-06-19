@@ -11,7 +11,7 @@ import { cwd } from "node:process";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
-const STATE_VERSION = 1;
+const STATE_VERSION = 2;
 const VALID_QUEUE_STATUSES = new Set([
   "queued",
   "claimed",
@@ -34,7 +34,9 @@ function defaultState() {
   return {
     version: STATE_VERSION,
     nextId: 1,
+    nextMemoryId: 1,
     tasks: [],
+    memories: [],
     updatedAt: null
   };
 }
@@ -73,6 +75,10 @@ export function listTasks() {
   return loadState().tasks;
 }
 
+export function listMemories(filters = {}) {
+  return filterMemories(loadState().memories, filters);
+}
+
 export function addTask(input) {
   const state = loadState();
   const task = buildTask(input, state.nextId);
@@ -95,6 +101,36 @@ export function addTasks(inputs) {
 
   saveState(state);
   return created;
+}
+
+export function storeMemory(input) {
+  const state = loadState();
+  const memory = buildMemory(input, state.nextMemoryId);
+  state.memories.push(memory);
+  state.nextMemoryId += 1;
+  saveState(state);
+  return memory;
+}
+
+export function searchMemories(query, filters = {}) {
+  const memories = filterMemories(loadState().memories, filters);
+  if (!query?.trim()) {
+    return memories.map((memory) => ({ ...memory, score: 0 }));
+  }
+
+  const tokens = tokenize(query);
+  return memories
+    .map((memory) => ({
+      ...memory,
+      score: scoreMemory(memory, tokens)
+    }))
+    .filter((memory) => memory.score > 0)
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+      return right.updatedAt.localeCompare(left.updatedAt);
+    });
 }
 
 export function updateTask(input) {
@@ -185,14 +221,35 @@ function normalizeTask(task) {
   };
 }
 
+function normalizeMemory(memory) {
+  return {
+    ...memory,
+    namespace: memory.namespace ?? "default",
+    kind: memory.kind ?? "note",
+    title: memory.title ?? null,
+    content: memory.content ?? "",
+    agent: memory.agent ?? null,
+    tags: Array.isArray(memory.tags) ? memory.tags : [],
+    notes: memory.notes ?? null
+  };
+}
+
 function normalizeState(state) {
   if (!state || !Array.isArray(state.tasks)) {
     return defaultState();
   }
 
   const tasks = state.tasks.map(normalizeTask);
+  const memories = Array.isArray(state.memories) ? state.memories.map(normalizeMemory) : [];
   const maxTaskNumber = tasks.reduce((max, task) => {
     const match = /^task-(\d+)$/.exec(task.id ?? "");
+    if (!match) {
+      return max;
+    }
+    return Math.max(max, Number(match[1]));
+  }, 0);
+  const maxMemoryNumber = memories.reduce((max, memory) => {
+    const match = /^memory-(\d+)$/.exec(memory.id ?? "");
     if (!match) {
       return max;
     }
@@ -203,11 +260,17 @@ function normalizeState(state) {
     Number.isInteger(state.nextId) && state.nextId > maxTaskNumber
       ? state.nextId
       : maxTaskNumber + 1;
+  const nextMemoryId =
+    Number.isInteger(state.nextMemoryId) && state.nextMemoryId > maxMemoryNumber
+      ? state.nextMemoryId
+      : maxMemoryNumber + 1;
 
   return {
     version: STATE_VERSION,
     nextId,
+    nextMemoryId,
     tasks,
+    memories,
     updatedAt: state.updatedAt ?? null
   };
 }
@@ -288,6 +351,67 @@ function buildTask(input, nextId) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   });
+}
+
+function buildMemory(input, nextMemoryId) {
+  return normalizeMemory({
+    id: `memory-${nextMemoryId}`,
+    namespace: input.namespace ?? "default",
+    kind: input.kind ?? "note",
+    title: input.title ?? null,
+    content: input.content,
+    agent: input.agent ?? null,
+    tags: input.tags ?? [],
+    notes: input.notes ?? null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
+}
+
+function filterMemories(memories, filters = {}) {
+  return memories.filter((memory) => {
+    if (filters.namespace && memory.namespace !== filters.namespace) {
+      return false;
+    }
+    if (filters.kind && memory.kind !== filters.kind) {
+      return false;
+    }
+    if (filters.agent && memory.agent !== filters.agent) {
+      return false;
+    }
+    if (Array.isArray(filters.tags) && filters.tags.length > 0) {
+      const tagSet = new Set(memory.tags);
+      for (const tag of filters.tags) {
+        if (!tagSet.has(tag)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+}
+
+function tokenize(value) {
+  return value
+    .toLowerCase()
+    .split(/[^a-z0-9_-]+/i)
+    .map((token) => token.trim())
+    .filter(Boolean);
+}
+
+function scoreMemory(memory, tokens) {
+  const haystack = [
+    memory.title ?? "",
+    memory.content ?? "",
+    memory.namespace ?? "",
+    memory.kind ?? "",
+    memory.agent ?? "",
+    ...(memory.tags ?? [])
+  ]
+    .join(" \n")
+    .toLowerCase();
+
+  return tokens.reduce((score, token) => score + (haystack.includes(token) ? 1 : 0), 0);
 }
 
 function writeStateFile(state) {

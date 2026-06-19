@@ -9,6 +9,7 @@ Codex Bees packages a small command surface, a local MCP server, reusable skills
 - runs a local CLI for orchestration and diagnostics
 - exposes an MCP stdio surface for tool-driven workflows
 - can generate bounded execution plans and queue them into local work items
+- stores persistent local memory for later recall across execution lanes
 - keeps a small local task queue with explicit lifecycle states, single-owner transitions, and local state recovery
 - keeps agent roles narrow, explicit, and reviewable
 - favors small, observable coordination steps over opaque automation
@@ -46,6 +47,8 @@ node ./src/index.js doctor
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
 node ./src/index.js plan:queue --task "Queue a runtime change"
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js
+node ./src/index.js memory:store --content "Remember the MCP contract" --namespace runtime --tags mcp,contract
+node ./src/index.js memory:search --query "MCP contract" --namespace runtime
 node ./src/index.js task:claim --id task-1 --by explore
 node ./src/index.js task:block --id task-1 --by explore --notes "waiting on dependency"
 node ./src/index.js task:review --id task-1 --by explore
@@ -61,6 +64,13 @@ Task metadata can carry lane-ready execution detail:
 - `--scope src/index.js,src/mcp.js`
 - `--acceptance "first check|second check"`
 - `--verification "targeted command|smoke check"`
+
+Memory records can carry reusable execution context:
+
+- `--namespace runtime`
+- `--kind note`
+- `--agent tester`
+- `--tags mcp,contract`
 
 ## Repository layout
 
@@ -83,6 +93,7 @@ The foundation layer is in place:
 - a real CLI entrypoint
 - a minimal MCP stdio runtime
 - a planner that maps task briefs to bounded lanes and can queue those lanes as local tasks
+- a persistent local memory surface with namespace/tag filters and text search
 - a local task queue with explicit claim, block, review, release, and completion states plus persisted lane metadata
 - a versioned local state store with recovery for corrupt state files
 - a project-local development skill for intake, planning, execution, verification, and handoff

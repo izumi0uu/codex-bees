@@ -17,6 +17,28 @@ const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
   ["tools", ["./src/mcp.js", "--tools"]],
+  [
+    "memory-store",
+    [
+      "./src/index.js",
+      "memory:store",
+      "--content",
+      "Remember that smoke tests validate lane metadata",
+      "--namespace",
+      "smoke",
+      "--kind",
+      "note",
+      "--agent",
+      "tester",
+      "--tags",
+      "smoke,metadata"
+    ]
+  ],
+  ["memory-list", ["./src/index.js", "memory:list", "--namespace", "smoke"]],
+  [
+    "memory-search",
+    ["./src/index.js", "memory:search", "--query", "lane metadata", "--namespace", "smoke"]
+  ],
   ["plan", ["./src/index.js", "plan", "--task", "Add a doctor smoke check to the CLI"]],
   ["plan-queue", ["./src/index.js", "plan:queue", "--task", "Queue a runtime task"]],
   [
@@ -74,6 +96,30 @@ for (const [label, args, expectedStatus = 0] of checks) {
   run(label, args, expectedStatus);
 }
 
+const listedMemories = JSON.parse(
+  run("memory-list-verify", ["./src/index.js", "memory:list", "--namespace", "smoke"]).stdout
+).memories;
+const smokeMemory = listedMemories.find((memory) => memory.namespace === "smoke");
+if (!smokeMemory || smokeMemory.agent !== "tester") {
+  console.error("[smoke:memory-list] expected persisted memory with agent");
+  process.exit(1);
+}
+
+const searchedMemories = JSON.parse(
+  run("memory-search-verify", [
+    "./src/index.js",
+    "memory:search",
+    "--query",
+    "metadata",
+    "--namespace",
+    "smoke"
+  ]).stdout
+).results;
+if (!Array.isArray(searchedMemories) || searchedMemories.length === 0) {
+  console.error("[smoke:memory-search] expected at least one memory search result");
+  process.exit(1);
+}
+
 const listedTasks = JSON.parse(run("task-list-verify", ["./src/index.js", "task:list"]).stdout).tasks;
 const smokeTask = listedTasks.find((task) => task.id === "task-3");
 if (!smokeTask || smokeTask.verifier !== "tester" || smokeTask.lane !== "lane-smoke") {
@@ -113,7 +159,7 @@ if (!Array.isArray(recovered.tasks) || recovered.tasks.length !== 0) {
 }
 
 const corruptExists = existsSync(".codex-bees") &&
-  readFileSync(statePath, "utf8").includes("\"version\": 1");
+  readFileSync(statePath, "utf8").includes("\"version\": 2");
 if (!corruptExists) {
   console.error("[smoke:durability-recover] expected rebuilt state file with version");
   process.exit(1);
@@ -225,6 +271,59 @@ const mcpTask = taskListPayload?.tasks?.find((task) => task.title === "mcp metad
 if (taskAddMcp.status !== 0 || !mcpTask || mcpTask.verifier !== "tester") {
   console.error("[smoke:task-add-mcp] expected persisted MCP metadata");
   console.error(taskAddMcp.stderr || taskAddMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const memoryMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "memory_store",
+      arguments: {
+        content: "Remember MCP memory smoke coverage",
+        namespace: "mcp-smoke",
+        kind: "note",
+        tags: ["smoke", "memory"]
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "memory_search",
+      arguments: {
+        query: "smoke coverage",
+        namespace: "mcp-smoke",
+        limit: 5
+      }
+    }
+  })
+].join("\n") + "\n";
+
+const memoryMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: memoryMcpInput,
+  encoding: "utf8"
+});
+const memoryMcpLines = memoryMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const memorySearchResult = memoryMcpLines.length >= 3 ? JSON.parse(memoryMcpLines[2]) : null;
+const memorySearchText = memorySearchResult?.result?.content?.[0]?.text;
+const memorySearchPayload = memorySearchText ? JSON.parse(memorySearchText) : null;
+if (
+  memoryMcp.status !== 0 ||
+  !Array.isArray(memorySearchPayload?.results) ||
+  memorySearchPayload.results.length === 0
+) {
+  console.error("[smoke:memory-mcp] expected searchable MCP memory");
+  console.error(memoryMcp.stderr || memoryMcp.stdout);
   process.exit(1);
 }
 

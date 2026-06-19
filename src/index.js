@@ -11,10 +11,13 @@ import {
   blockTask,
   claimTask,
   completeTask,
+  listMemories,
   listTasks,
   markTaskReadyForReview,
   releaseTask,
+  searchMemories,
   stateFilePath,
+  storeMemory,
   updateTask
 } from "./state.js";
 
@@ -45,6 +48,9 @@ function printHelp() {
   write(`  codex-bees task:done     Mark a task as complete\n`);
   write(`  codex-bees task:release  Release a local coordination task\n`);
   write(`  codex-bees task:update   Update a local coordination task\n`);
+  write(`  codex-bees memory:store  Store a persistent local memory\n`);
+  write(`  codex-bees memory:list   List persistent local memories\n`);
+  write(`  codex-bees memory:search Search persistent local memories\n`);
   write(`  codex-bees --help        Show help\n`);
   write(`  codex-bees --version     Show version\n`);
 }
@@ -63,7 +69,8 @@ function runtimeContract() {
       "bootstrap codex-first runtime commands",
       "expose MCP tool catalog for local coordination",
       "provide a stable diagnostics surface for later orchestration layers",
-      "persist local work-item state for bounded multi-agent execution"
+      "persist local work-item state for bounded multi-agent execution",
+      "store and recall local memory across execution lanes"
     ],
     exclusions: [
       "third-party marketplace distribution",
@@ -282,6 +289,50 @@ function handlePlanQueue() {
   write(JSON.stringify(queueTasksFromPlan(task, addTasks), null, 2) + "\n");
 }
 
+function handleMemoryStore() {
+  const content = requireOption("--content");
+  const memory = storeMemory({
+    namespace: readOption("--namespace"),
+    kind: readOption("--kind"),
+    title: readOption("--title"),
+    agent: readOption("--agent"),
+    tags: readListOption("--tags"),
+    notes: readOption("--notes"),
+    content
+  });
+  write(JSON.stringify({ stored: memory }, null, 2) + "\n");
+}
+
+function handleMemoryList() {
+  write(
+    JSON.stringify(
+      {
+        memories: listMemories({
+          namespace: readOption("--namespace"),
+          kind: readOption("--kind"),
+          agent: readOption("--agent"),
+          tags: readListOption("--tags")
+        })
+      },
+      null,
+      2
+    ) + "\n"
+  );
+}
+
+function handleMemorySearch() {
+  const query = requireOption("--query");
+  const limit = Number(readOption("--limit") ?? "10");
+  const results = searchMemories(query, {
+    namespace: readOption("--namespace"),
+    kind: readOption("--kind"),
+    agent: readOption("--agent"),
+    tags: readListOption("--tags")
+  }).slice(0, Number.isFinite(limit) && limit > 0 ? limit : 10);
+
+  write(JSON.stringify({ query, results }, null, 2) + "\n");
+}
+
 async function runCommand(command) {
   switch (command) {
     case undefined:
@@ -341,6 +392,15 @@ async function runCommand(command) {
       return;
     case "task:update":
       handleTaskUpdate();
+      return;
+    case "memory:store":
+      handleMemoryStore();
+      return;
+    case "memory:list":
+      handleMemoryList();
+      return;
+    case "memory:search":
+      handleMemorySearch();
       return;
     case "--help":
     case "help":
