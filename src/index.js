@@ -31,7 +31,9 @@ import {
   stateFilePath,
   storeMemory,
   updateSwarm,
-  updateTask
+  updateTask,
+  validateSwarm,
+  validateTask
 } from "./state.js";
 
 const VERSION = "0.1.0";
@@ -62,10 +64,12 @@ function printHelp() {
   write(`  codex-bees task:done       Mark a task as complete\n`);
   write(`  codex-bees task:release    Release a local coordination task\n`);
   write(`  codex-bees task:update     Update a local coordination task\n`);
+  write(`  codex-bees task:check      Validate one local coordination task for bounded execution\n`);
   write(`  codex-bees swarm:init      Create a bounded local swarm contract\n`);
   write(`  codex-bees swarm:list      List local swarm contracts\n`);
   write(`  codex-bees swarm:get       Show one local swarm contract\n`);
   write(`  codex-bees swarm:update    Update a local swarm contract\n`);
+  write(`  codex-bees swarm:check     Validate one swarm contract for lane readiness\n`);
   write(`  codex-bees swarm:start     Mark a planned swarm active\n`);
   write(`  codex-bees swarm:block     Mark an active swarm blocked\n`);
   write(`  codex-bees swarm:done      Mark a swarm complete\n`);
@@ -273,6 +277,16 @@ function handleTaskUpdate() {
   write(JSON.stringify({ updated: task }, null, 2) + "\n");
 }
 
+function handleTaskCheck() {
+  const id = requireOption("--id");
+  const validation = validateTask(id);
+  if (!validation) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ validation }, null, 2) + "\n");
+}
+
 function handleTaskClaim() {
   const id = requireOption("--id");
   const claimedBy = requireOption("--by");
@@ -441,6 +455,16 @@ function handleSwarmUpdate() {
   }
 
   write(JSON.stringify({ updated: swarm }, null, 2) + "\n");
+}
+
+function handleSwarmCheck() {
+  const id = requireOption("--id");
+  const validation = validateSwarm(id);
+  if (!validation) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ validation }, null, 2) + "\n");
 }
 
 function handleSwarmOverview() {
@@ -690,6 +714,9 @@ async function runCommand(command) {
     case "task:update":
       handleTaskUpdate();
       return;
+    case "task:check":
+      handleTaskCheck();
+      return;
     case "swarm:init":
       handleSwarmInit();
       return;
@@ -701,6 +728,9 @@ async function runCommand(command) {
       return;
     case "swarm:update":
       handleSwarmUpdate();
+      return;
+    case "swarm:check":
+      handleSwarmCheck();
       return;
     case "swarm:overview":
       handleSwarmOverview();
