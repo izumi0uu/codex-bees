@@ -45,6 +45,7 @@ npm run smoke
 ```bash
 node ./src/index.js run
 node ./src/index.js tools
+node ./src/index.js catalog
 node ./src/index.js doctor
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
 node ./src/index.js plan:queue --task "Queue a runtime change"
@@ -79,7 +80,7 @@ Task metadata can carry lane-ready execution detail:
 - `--acceptance "first check|second check"`
 - `--verification "targeted command|smoke check"`
 
-`task:check` validates that a task is actually claimable before a worker takes it. A ready task needs a title, owner, verifier, scope, acceptance, and verification metadata; claiming an incomplete task is rejected.
+`task:check` validates that a task is actually claimable before a worker takes it. A ready task needs a title, owner, verifier, scope, acceptance, and verification metadata; claiming an incomplete task is rejected. Owner and verifier must also match shipped local agent roles from `.codex/agents`, so runtime ownership stays aligned with the repo’s real Codex execution surface.
 
 `task:review` hands work from the owner to the named verifier. After that point, only the verifier can close the task with `task:approve` / `task:done`, or send it back with `task:reject`. Review outcomes persist reviewer identity and optional `--evidence` so completion carries fresh verification context instead of skipping straight from worker claim to done.
 
@@ -91,7 +92,9 @@ Swarm contracts can carry bounded parallel execution detail:
 - `--lane-source manual`
 - `--lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer","scope":["src/index.js"]}]'`
 
-`swarm:check` validates that each lane has owner, verifier, scope, acceptance, and verification metadata before queueing. It also rejects overlapping lane scopes, so planner-generated and manually-authored swarms stay parallel-safe before execution begins.
+`swarm:check` validates that each lane has owner, verifier, scope, acceptance, and verification metadata before queueing. It also rejects overlapping lane scopes and unknown lane roles, so planner-generated and manually-authored swarms stay parallel-safe before execution begins.
+
+`catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
 
 Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. Swarm-linked task lifecycle changes automatically keep swarm status close to task reality, `swarm:list --detailed` gives leaders a multi-swarm dashboard, `swarm:overview` summarizes one swarm, `swarm:dispatch` claims the next runnable lane task for a worker, and `swarm:sync` provides an idempotent reconciliation step when leaders want an explicit status check.
 
@@ -130,6 +133,7 @@ The foundation layer is in place:
 - a versioned local state store with recovery for corrupt state files
 - a project-local development skill for intake, planning, execution, verification, and handoff
 - local skills and agent prompts for bounded orchestration
+- a repo-native runtime catalog that discovers shipped agents and skills and validates role ownership against them
 - MCP tools with discoverable input schemas
 - smoke checks for the current command surface
 

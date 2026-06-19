@@ -44,6 +44,7 @@ Every delegated lane must include:
 - conflict rule: do not revert or overwrite unrelated changes
 
 If any of these are missing, the lane is not ready to claim.
+Owner and verifier roles should come from the shipped local agent catalog, not invented ad hoc names.
 
 ## Queue states
 

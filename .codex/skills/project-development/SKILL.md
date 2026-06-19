@@ -33,6 +33,7 @@ Before executing, make sure the task has:
 - a concrete objective
 - explicit acceptance criteria or a close equivalent
 - a Codex-only boundary
+- owner/verifier roles that exist in the shipped local agent catalog
 - a likely write scope or a way to discover it
 - a verification path
 
