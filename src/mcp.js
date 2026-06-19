@@ -31,6 +31,7 @@ import {
   releaseTask,
   runtimeAlerts,
   runtimeDashboard,
+  runtimeDispatch,
   runtimeRoles,
   swarmOverview,
   syncSwarmStatus,
@@ -109,6 +110,14 @@ export const toolCatalog = [
   {
     name: "runtime_dashboard",
     description: "Build the top-level orchestration dashboard for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_dispatch",
+    description: "Build the owner-grouped dispatch workspace for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -927,6 +936,10 @@ function handleRequest(message) {
 
     if (name === "runtime_dashboard") {
       return createSuccess(id, createTextPayload({ dashboard: runtimeDashboard() }));
+    }
+
+    if (name === "runtime_dispatch") {
+      return createSuccess(id, createTextPayload({ dispatch: runtimeDispatch() }));
     }
 
     if (name === "runtime_alerts") {
