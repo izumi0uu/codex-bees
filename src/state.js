@@ -1081,6 +1081,34 @@ export function runtimeDispatchPack() {
   };
 }
 
+export function runtimeRecoveryPack() {
+  const recovery = runtimeRecovery();
+  const handoffs = runtimeHandoffs();
+  const focus = runtimeFocus();
+  const recommendedSurface = deriveRuntimeRecoveryPackSurface({ recovery, handoffs, focus });
+
+  return {
+    kind: "runtime_recovery_pack",
+    recommendedSurface,
+    focus,
+    overview: {
+      recovery: recovery?.counts ?? null,
+      handoffs: handoffs?.counts ?? null
+    },
+    next: {
+      recovery: recovery?.next ?? null,
+      handoff: handoffs?.next ?? null,
+      focus: focus?.focus ?? null
+    },
+    surfaces: {
+      recovery,
+      handoffs,
+      focus
+    },
+    summary: buildRuntimeRecoveryPackSummary(recommendedSurface, recovery, focus)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3248,6 +3276,27 @@ function buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, handoffs,
     roles?.summary ??
     "Runtime dispatch pack has no current dispatch detail.";
   return `Runtime dispatch pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeRecoveryPackSurface({ recovery, handoffs, focus }) {
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "runtime:recovery";
+  }
+  if ((handoffs?.counts?.blockedRecoveries ?? 0) > 0 || (handoffs?.counts?.ownerClaims ?? 0) > 0) {
+    return "runtime:handoffs";
+  }
+  if (focus?.focus?.type === "blocked_task") {
+    return "runtime:focus";
+  }
+  return "runtime:recovery";
+}
+
+function buildRuntimeRecoveryPackSummary(recommendedSurface, recovery, focus) {
+  const detail =
+    recovery?.summary ??
+    focus?.summary ??
+    "Runtime recovery pack has no current recovery detail.";
+  return `Runtime recovery pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
