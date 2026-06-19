@@ -352,6 +352,18 @@ if (
   console.error("[smoke:runtime-triage-pack] expected top-level runtime triage pack");
   process.exit(1);
 }
+const runtimeSessionPackInitial = JSON.parse(
+  run("runtime-session-pack-initial", ["./src/index.js", "runtime:session-pack", "--role", "executor", "--worker", "review-worker"]).stdout
+).sessionPack;
+if (
+  runtimeSessionPackInitial.kind !== "runtime_session_pack" ||
+  !runtimeSessionPackInitial.recommendedSurface ||
+  !runtimeSessionPackInitial.overview ||
+  !runtimeSessionPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-session-pack] expected top-level runtime session pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1832,6 +1844,18 @@ if (
   console.error("[smoke:runtime-triage-pack] expected CLI triage pack to recommend focus");
   process.exit(1);
 }
+const runtimeSessionPackCli = JSON.parse(
+  run("runtime-session-pack-cli", ["./src/index.js", "runtime:session-pack", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).sessionPack;
+if (
+  runtimeSessionPackCli.recommendedSurface !== "worker:closeout" ||
+  runtimeSessionPackCli.next?.verifier?.review?.taskId !== "task-2" ||
+  runtimeSessionPackCli.next?.role?.lane !== "verifier" ||
+  runtimeSessionPackCli.surfaces?.verifierPack?.recommendedSurface !== "worker:closeout"
+) {
+  console.error("[smoke:runtime-session-pack] expected CLI session pack to recommend verifier next");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -2451,6 +2475,41 @@ if (
 ) {
   console.error("[smoke:runtime-triage-pack-mcp] expected MCP runtime triage pack");
   console.error(runtimeTriagePackMcp.stderr || runtimeTriagePackMcp.stdout);
+  process.exit(1);
+}
+const runtimeSessionPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_session_pack",
+      arguments: {
+        role: "tester",
+        workerId: "tester-worker",
+        mode: "verifier"
+      }
+    }
+  })
+].join("\n") + "\n";
+const runtimeSessionPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeSessionPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeSessionPackMcpLines = runtimeSessionPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeSessionPackMcpPayload = JSON.parse(JSON.parse(runtimeSessionPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeSessionPackMcp.status !== 0 ||
+  runtimeSessionPackMcpPayload.sessionPack?.recommendedSurface !== "worker:closeout" ||
+  runtimeSessionPackMcpPayload.sessionPack?.next?.verifier?.review?.taskId !== "task-2" ||
+  runtimeSessionPackMcpPayload.sessionPack?.next?.role?.lane !== "verifier"
+) {
+  console.error("[smoke:runtime-session-pack-mcp] expected MCP runtime session pack");
+  console.error(runtimeSessionPackMcp.stderr || runtimeSessionPackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
