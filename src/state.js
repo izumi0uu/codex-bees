@@ -2982,6 +2982,18 @@ export function searchMemories(query, filters = {}) {
     });
 }
 
+export function searchMemoriesView(query, filters = {}, limit = 10) {
+  const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10;
+  const results = searchMemories(query, filters).slice(0, normalizedLimit);
+  const recommendedReason = results.length > 0 ? "memory_search_has_results" : "memory_search_empty";
+  return {
+    kind: "memory_search_view",
+    recommendedReason,
+    query,
+    results
+  };
+}
+
 export function updateTask(input) {
   const state = loadState();
   const index = state.tasks.findIndex((task) => task.id === input.id);

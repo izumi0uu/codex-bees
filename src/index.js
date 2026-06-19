@@ -80,6 +80,7 @@ import {
   runtimeRoles,
   swarmOverview,
   syncSwarmStatus,
+  searchMemoriesView,
   searchMemories,
   listMemoriesView,
   stateFilePath,
@@ -1378,14 +1379,18 @@ function handleMemoryList() {
 function handleMemorySearch() {
   const query = requireOption("--query");
   const limit = Number(readOption("--limit") ?? "10");
-  const results = searchMemories(query, {
-    namespace: readOption("--namespace"),
-    kind: readOption("--kind"),
-    agent: readOption("--agent"),
-    tags: readListOption("--tags")
-  }).slice(0, Number.isFinite(limit) && limit > 0 ? limit : 10);
+  const results = searchMemoriesView(
+    query,
+    {
+      namespace: readOption("--namespace"),
+      kind: readOption("--kind"),
+      agent: readOption("--agent"),
+      tags: readListOption("--tags")
+    },
+    limit
+  );
 
-  write(JSON.stringify({ query, results }, null, 2) + "\n");
+  write(JSON.stringify(results, null, 2) + "\n");
 }
 
 async function runCommand(command) {

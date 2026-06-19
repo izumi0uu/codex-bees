@@ -75,6 +75,7 @@ import {
   runtimeRoles,
   swarmOverview,
   syncSwarmStatus,
+  searchMemoriesView,
   searchMemories,
   listMemoriesView,
   storeMemory,
@@ -2584,17 +2585,18 @@ function handleRequest(message) {
         Number.isFinite(Number(params.arguments.limit)) && Number(params.arguments.limit) > 0
           ? Number(params.arguments.limit)
           : 10;
-      const results = searchMemories(params.arguments.query, {
-        namespace: params.arguments.namespace,
-        kind: params.arguments.kind,
-        agent: params.arguments.agent,
-        tags: params.arguments.tags
-      }).slice(0, limit);
-
-      return createSuccess(
-        id,
-        createTextPayload({ query: params.arguments.query, results })
+      const results = searchMemoriesView(
+        params.arguments.query,
+        {
+          namespace: params.arguments.namespace,
+          kind: params.arguments.kind,
+          agent: params.arguments.agent,
+          tags: params.arguments.tags
+        },
+        limit
       );
+
+      return createSuccess(id, createTextPayload(results));
     }
   }
 

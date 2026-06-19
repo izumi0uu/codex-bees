@@ -577,9 +577,15 @@ const searchedMemories = JSON.parse(
     "--namespace",
     "smoke"
   ]).stdout
-).results;
-if (!Array.isArray(searchedMemories) || searchedMemories.length === 0) {
-  console.error("[smoke:memory-search] expected at least one memory search result");
+);
+if (
+  searchedMemories.kind !== "memory_search_view" ||
+  searchedMemories.recommendedReason !== "memory_search_has_results" ||
+  searchedMemories.query !== "metadata" ||
+  !Array.isArray(searchedMemories.results) ||
+  searchedMemories.results.length === 0
+) {
+  console.error("[smoke:memory-search] expected CLI memory search view payload");
   process.exit(1);
 }
 
@@ -5773,6 +5779,9 @@ if (
   memoryListPayload?.memories?.kind !== "memory_view" ||
   memoryListPayload?.memories?.recommendedReason !== "memory_list_has_results" ||
   !memoryListPayload?.memories?.memories?.some((memory) => memory.namespace === "mcp-smoke") ||
+  memorySearchPayload?.kind !== "memory_search_view" ||
+  memorySearchPayload?.recommendedReason !== "memory_search_has_results" ||
+  memorySearchPayload?.query !== "smoke coverage" ||
   !Array.isArray(memorySearchPayload?.results) ||
   memorySearchPayload.results.length === 0
 ) {
