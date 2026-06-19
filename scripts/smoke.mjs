@@ -1628,6 +1628,18 @@ if (syncedSwarmGet.status !== "completed") {
   console.error("[smoke:swarm-sync] expected stored completed swarm status");
   process.exit(1);
 }
+const completedSwarmCli = JSON.parse(
+  run("swarm-done-cli", ["./src/index.js", "swarm:done", "--id", "swarm-1"]).stdout
+).completed;
+if (
+  completedSwarmCli.kind !== "swarm_lifecycle" ||
+  completedSwarmCli.recommendedReason !== "swarm_completed" ||
+  completedSwarmCli.swarm?.id !== "swarm-1" ||
+  completedSwarmCli.swarm?.status !== "completed"
+) {
+  console.error("[smoke:swarm-done] expected CLI completion lifecycle payload");
+  process.exit(1);
+}
 const detailedSwarmList = JSON.parse(
   run("swarm-list-detailed", ["./src/index.js", "swarm:list", "--detailed"]).stdout
 ).swarms;
@@ -4203,6 +4215,15 @@ const swarmMcpInput = [
       name: "leader_workspace",
       arguments: {}
     }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 16,
+    method: "tools/call",
+    params: {
+      name: "swarm_done",
+      arguments: { id: "swarm-1" }
+    }
   })
 ].join("\n") + "\n";
 
@@ -4247,6 +4268,9 @@ const swarmListDetailedPayload = swarmListDetailedText ? JSON.parse(swarmListDet
 const leaderWorkspaceResult = swarmMcpById.get(15) ?? null;
 const leaderWorkspaceText = leaderWorkspaceResult?.result?.content?.[0]?.text;
 const leaderWorkspacePayload = leaderWorkspaceText ? JSON.parse(leaderWorkspaceText) : null;
+const swarmDoneResult = swarmMcpById.get(16) ?? null;
+const swarmDoneText = swarmDoneResult?.result?.content?.[0]?.text;
+const swarmDonePayload = swarmDoneText ? JSON.parse(swarmDoneText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
@@ -4265,13 +4289,16 @@ if (
   leaderWorkspacePayload?.workspace?.recommendedReason !== "closeout_focus_priority" ||
   leaderWorkspacePayload?.workspace?.focus?.swarmId !== "swarm-1" ||
   leaderWorkspacePayload?.workspace?.focus?.bundle?.swarm?.id !== "swarm-1" ||
+  swarmDonePayload?.completed?.kind !== "swarm_lifecycle" ||
+  swarmDonePayload?.completed?.recommendedReason !== "swarm_completed" ||
+  swarmDonePayload?.completed?.swarm?.status !== "completed" ||
   swarmOverviewPayload?.overview?.kind !== "swarm_overview" ||
   swarmOverviewPayload?.overview?.recommendedReason !== "swarm_ready_to_complete" ||
   swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||
   swarmOverviewPayload?.overview?.readyToComplete !== true ||
   swarmListDetailedPayload?.swarms?.[0]?.derivedStatus !== "completed"
 ) {
-  console.error("[smoke:swarm-mcp] expected synced completion-aware MCP swarm overview");
+  console.error("[smoke:swarm-mcp] expected completion-aware MCP lifecycle payloads and overview");
   console.error(swarmMcp.stderr || swarmMcp.stdout);
   process.exit(1);
 }

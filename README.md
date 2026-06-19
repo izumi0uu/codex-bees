@@ -286,6 +286,8 @@ Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task
 
 `swarm:block` / `swarm_block` return the explicit lifecycle mutation result for blocking a swarm. They emit a machine-readable `recommendedReason` so automation can distinguish an intentional lifecycle block from task-derived blocked state that might later surface through `swarm:sync` or `swarm:overview`.
 
+`swarm:done` / `swarm_done` return the explicit lifecycle mutation result for completing a swarm. They emit a machine-readable `recommendedReason` so automation can treat explicit closeout as its own protocol step instead of inferring final completion only from nested swarm status.
+
 Memory records can carry reusable execution context:
 
 - `--namespace runtime`

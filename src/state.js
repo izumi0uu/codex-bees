@@ -3224,10 +3224,18 @@ export function blockSwarm(input) {
 }
 
 export function completeSwarm(input) {
-  return transitionSwarm({
+  const result = transitionSwarm({
     ...input,
     nextStatus: "completed"
   });
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "swarm_lifecycle",
+    recommendedReason: "swarm_completed",
+    swarm: result
+  };
 }
 
 export function cancelSwarm(input) {
