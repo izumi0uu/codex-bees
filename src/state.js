@@ -141,6 +141,9 @@ export function listSwarmsView(filters = {}, options = {}) {
     kind: "swarm_view",
     recommendedReason,
     detailed,
+    counts: {
+      totalSwarms: swarms.length
+    },
     swarms
   };
 }

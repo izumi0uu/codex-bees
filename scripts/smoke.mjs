@@ -2158,6 +2158,7 @@ if (
   detailedSwarmList.kind !== "swarm_view" ||
   detailedSwarmList.recommendedReason !== "swarm_list_has_results" ||
   detailedSwarmList.detailed !== true ||
+  detailedSwarmList.counts?.totalSwarms !== detailedSwarmList.swarms.length ||
   !Array.isArray(detailedSwarmList.swarms) ||
   detailedSwarmList.swarms[0]?.derivedStatus !== "completed"
 ) {
@@ -5016,6 +5017,7 @@ if (
   swarmListDetailedPayload?.swarms?.kind !== "swarm_view" ||
   swarmListDetailedPayload?.swarms?.recommendedReason !== "swarm_list_has_results" ||
   swarmListDetailedPayload?.swarms?.detailed !== true ||
+  swarmListDetailedPayload?.swarms?.counts?.totalSwarms !== swarmListDetailedPayload?.swarms?.swarms?.length ||
   swarmListDetailedPayload?.swarms?.swarms?.[0]?.derivedStatus !== "completed"
 ) {
   console.error("[smoke:swarm-mcp] expected completion-aware MCP lifecycle payloads and overview");
