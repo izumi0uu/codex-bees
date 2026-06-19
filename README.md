@@ -228,7 +228,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `swarm:bundle` / `swarm_bundle` package the leader-ready orchestration view with lane reports and a summary sentence. They also emit a machine-readable `recommendedReason` so automation can distinguish ready-to-complete swarms, review-waiting lanes, active claimed lanes, runnable dispatch lanes, and plain tracked swarm state without reparsing lane queues.
 
-`swarm:dispatch-bundle` / `swarm_dispatch_bundle` add the dispatch layer for swarm leadership: the next runnable lane, its task brief, and the concrete dispatch command. They also emit a machine-readable `recommendedReason` so automation can distinguish runnable dispatch lanes, ready-to-complete swarms, passive dispatchable visibility, and empty dispatch state without reparsing lane payloads.
+`swarm:dispatch-bundle` / `swarm_dispatch_bundle` add the dispatch layer for swarm leadership: the next runnable lane, its task brief, and the concrete dispatch command. They also emit lightweight `metadata` (`hasNextLane`, `hasTaskBrief`, `nextLaneId`) and compact `counts` for dispatchable lanes and next-lane commands, plus a machine-readable `recommendedReason` so automation can distinguish runnable dispatch lanes, ready-to-complete swarms, passive dispatchable visibility, and empty dispatch state without reparsing lane payloads.
 
 `plan` / `plan_task` return the explicit planner task payload. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane planning outcomes without inferring that only from the returned lane array length.
 

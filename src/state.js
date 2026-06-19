@@ -552,17 +552,28 @@ export function swarmDispatchBundle(id) {
     (lane) => lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released"
   ) ?? null;
   const recommendedReason = deriveSwarmDispatchBundleReason({ overview, dispatchLane });
+  const laneTaskBrief = dispatchLane?.taskId ? taskBrief(dispatchLane.taskId) : null;
+  const recommendedCommands = dispatchLane?.recommendedCommands ?? [];
 
   return {
     kind: "swarm_dispatch_bundle",
     recommendedReason,
+    metadata: {
+      hasNextLane: Boolean(dispatchLane),
+      hasTaskBrief: Boolean(laneTaskBrief),
+      nextLaneId: dispatchLane?.lane ?? null
+    },
+    counts: {
+      dispatchableLanes: overview.dispatchableCount,
+      nextLaneCommands: recommendedCommands.filter(Boolean).length
+    },
     swarm: overview.swarm,
     derivedStatus: overview.derivedStatus,
     statusAligned: overview.statusAligned,
     dispatchableCount: overview.dispatchableCount,
     nextLane: dispatchLane,
-    taskBrief: dispatchLane?.taskId ? taskBrief(dispatchLane.taskId) : null,
-    command: dispatchLane?.recommendedCommands?.[0] ?? null,
+    taskBrief: laneTaskBrief,
+    command: recommendedCommands[0] ?? null,
     summary: buildSwarmDispatchBundleSummary(overview, dispatchLane)
   };
 }

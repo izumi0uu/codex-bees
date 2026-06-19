@@ -1673,6 +1673,11 @@ const swarmDispatchBundleCli = JSON.parse(
 if (
   swarmDispatchBundleCli.kind !== "swarm_dispatch_bundle" ||
   swarmDispatchBundleCli.recommendedReason !== "dispatch_lane_ready" ||
+  swarmDispatchBundleCli.metadata?.hasNextLane !== true ||
+  swarmDispatchBundleCli.metadata?.hasTaskBrief !== true ||
+  swarmDispatchBundleCli.metadata?.nextLaneId !== "lane-alpha" ||
+  swarmDispatchBundleCli.counts?.dispatchableLanes !== swarmDispatchBundleCli.dispatchableCount ||
+  swarmDispatchBundleCli.counts?.nextLaneCommands !== swarmDispatchBundleCli.nextLane?.recommendedCommands?.filter(Boolean).length ||
   swarmDispatchBundleCli.dispatchableCount !== 2 ||
   swarmDispatchBundleCli.nextLane?.lane !== "lane-alpha" ||
   swarmDispatchBundleCli.taskBrief?.task?.id !== "task-1"
@@ -2501,6 +2506,10 @@ const swarmDispatchBundleMcpPayload = JSON.parse(JSON.parse(swarmDispatchBundleM
 if (
   swarmDispatchBundleMcp.status !== 0 ||
   swarmDispatchBundleMcpPayload.dispatchBundle?.recommendedReason !== "dispatch_lane_ready" ||
+  swarmDispatchBundleMcpPayload.dispatchBundle?.metadata?.hasTaskBrief !== true ||
+  swarmDispatchBundleMcpPayload.dispatchBundle?.metadata?.nextLaneId !== "lane-dispatch" ||
+  swarmDispatchBundleMcpPayload.dispatchBundle?.counts?.dispatchableLanes !== swarmDispatchBundleMcpPayload.dispatchBundle?.dispatchableCount ||
+  swarmDispatchBundleMcpPayload.dispatchBundle?.counts?.nextLaneCommands !== swarmDispatchBundleMcpPayload.dispatchBundle?.nextLane?.recommendedCommands?.filter(Boolean).length ||
   swarmDispatchBundleMcpPayload.dispatchBundle?.nextLane?.lane !== "lane-dispatch" ||
   swarmDispatchBundleMcpPayload.dispatchBundle?.taskBrief?.task?.id !== "task-1"
 ) {
