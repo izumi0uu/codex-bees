@@ -33,6 +33,7 @@ import {
   runtimeAlerts,
   runtimeCloseout,
   runtimeDashboard,
+  runtimeDispatchPack,
   runtimeDispatch,
   runtimeFocus,
   runtimeHandoffs,
@@ -229,6 +230,14 @@ export const toolCatalog = [
   {
     name: "runtime_dispatch",
     description: "Build the owner-grouped dispatch workspace for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_dispatch_pack",
+    description: "Build the dispatch-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1159,6 +1168,10 @@ function handleRequest(message) {
 
     if (name === "runtime_dispatch") {
       return createSuccess(id, createTextPayload({ dispatch: runtimeDispatch() }));
+    }
+
+    if (name === "runtime_dispatch_pack") {
+      return createSuccess(id, createTextPayload({ dispatchPack: runtimeDispatchPack() }));
     }
 
     if (name === "runtime_focus") {
