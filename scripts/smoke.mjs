@@ -678,7 +678,15 @@ if (testerNext.recommendedReason !== "no_next_candidate" || testerNext.candidate
 }
 
 const listedTasks = JSON.parse(run("task-list-verify", ["./src/index.js", "task:list"]).stdout).tasks;
-const smokeTask = listedTasks.find((task) => task.id === "task-3");
+if (
+  listedTasks.kind !== "task_view" ||
+  listedTasks.recommendedReason !== "task_list_has_results" ||
+  !Array.isArray(listedTasks.tasks)
+) {
+  console.error("[smoke:task-list] expected CLI task list view payload");
+  process.exit(1);
+}
+const smokeTask = listedTasks.tasks.find((task) => task.id === "task-3");
 if (!smokeTask || smokeTask.verifier !== "tester" || smokeTask.lane !== "lane-smoke") {
   console.error("[smoke:task-metadata] expected verifier and lane metadata");
   process.exit(1);
@@ -908,7 +916,12 @@ const statePath = ".codex-bees/state.json";
 writeFileSync(statePath, "{not valid json\n", "utf8");
 const recoveredList = run("durability-recover", ["./src/index.js", "task:list"]);
 const recovered = JSON.parse(recoveredList.stdout);
-if (!Array.isArray(recovered.tasks) || recovered.tasks.length !== 0) {
+if (
+  recovered.tasks?.kind !== "task_view" ||
+  recovered.tasks?.recommendedReason !== "task_list_empty" ||
+  !Array.isArray(recovered.tasks?.tasks) ||
+  recovered.tasks.tasks.length !== 0
+) {
   console.error("[smoke:durability-recover] expected recovered empty task list");
   process.exit(1);
 }
@@ -1047,7 +1060,7 @@ if (
   console.error("[smoke:task-reject] expected CLI task reject lifecycle payload");
   process.exit(1);
 }
-const rejectedTask = JSON.parse(run("review-task-list", ["./src/index.js", "task:list"]).stdout).tasks[0];
+const rejectedTask = JSON.parse(run("review-task-list", ["./src/index.js", "task:list"]).stdout).tasks.tasks[0];
 if (
   rejectedTask.queueStatus !== "claimed" ||
   rejectedTask.claimedBy !== "review-worker" ||
@@ -1341,7 +1354,7 @@ if (
 }
 const queuedPlanSwarmTasks = JSON.parse(
   run("plan-swarm-queue-task-list", ["./src/index.js", "task:list"]).stdout
-).tasks;
+).tasks.tasks;
 if (!queuedPlanSwarmTasks.every((task) => task.swarmId === "swarm-1")) {
   console.error("[smoke:plan-swarm-queue] expected swarm-linked tasks from planner");
   process.exit(1);
@@ -1791,7 +1804,7 @@ if (
   console.error("[smoke:swarm-overview] expected assignment pickup and dispatch to claim both lanes");
   process.exit(1);
 }
-const swarmTasks = JSON.parse(run("swarm-queue-task-list", ["./src/index.js", "task:list"]).stdout).tasks;
+const swarmTasks = JSON.parse(run("swarm-queue-task-list", ["./src/index.js", "task:list"]).stdout).tasks.tasks;
 if (
   !swarmTasks.every((task) => task.swarmId === "swarm-1") ||
   !swarmTasks.some((task) => task.id === "task-2" && task.claimedBy === "worker-executor")
@@ -4781,7 +4794,7 @@ const leaderWorkspacePayload = leaderWorkspaceText ? JSON.parse(leaderWorkspaceT
 const swarmDoneResult = swarmMcpById.get(16) ?? null;
 const swarmDoneText = swarmDoneResult?.result?.content?.[0]?.text;
 const swarmDonePayload = swarmDoneText ? JSON.parse(swarmDoneText) : null;
-const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
+const mcpSwarmTask = swarmTaskListPayload?.tasks?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
   swarmInitPayload?.created?.kind !== "swarm_mutation" ||
@@ -4791,6 +4804,8 @@ if (
   swarmBriefPayload?.brief?.recommendedReason !== "queue_swarm_lanes" ||
   swarmBriefPayload?.brief?.recommendedNextAction !== "queue_swarm_lanes" ||
   swarmCheckPayload?.validation?.ready !== true ||
+  swarmTaskListPayload?.tasks?.kind !== "task_view" ||
+  swarmTaskListPayload?.tasks?.recommendedReason !== "task_list_has_results" ||
   !mcpSwarmTask ||
   mcpSwarmTask.reviewedBy !== "tester" ||
   mcpSwarmTask.reviewOutcome !== "approved" ||
@@ -5052,7 +5067,7 @@ const taskApprovePayload = taskApproveText ? JSON.parse(taskApproveText) : null;
 const taskListResult = taskAddMcpLines.length >= 14 ? JSON.parse(taskAddMcpLines[13]) : null;
 const taskListText = taskListResult?.result?.content?.[0]?.text;
 const taskListPayload = taskListText ? JSON.parse(taskListText) : null;
-const mcpTask = taskListPayload?.tasks?.find((task) => task.title === "mcp metadata task");
+const mcpTask = taskListPayload?.tasks?.tasks?.find((task) => task.title === "mcp metadata task");
 const taskHistoryMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
   input: taskHistoryMcpInput,
   encoding: "utf8"
@@ -5158,6 +5173,8 @@ if (
   taskApprovePayload?.approved?.recommendedReason !== "task_approved" ||
   taskApprovePayload?.approved?.task?.queueStatus !== "done" ||
   taskApprovePayload?.approved?.task?.reviewedBy !== "tester" ||
+  taskListPayload?.tasks?.kind !== "task_view" ||
+  taskListPayload?.tasks?.recommendedReason !== "task_list_has_results" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||

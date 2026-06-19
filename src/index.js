@@ -40,6 +40,7 @@ import {
   listSwarmOverviews,
   listSwarms,
   listTasks,
+  listTasksView,
   markTaskReadyForReview,
   markTaskReadyForReviewLifecycle,
   queueSwarmTasks,
@@ -605,7 +606,7 @@ function readPositiveIntegerOption(flag) {
 }
 
 function printTasks() {
-  write(JSON.stringify({ tasks: listTasks() }, null, 2) + "\n");
+  write(JSON.stringify({ tasks: listTasksView() }, null, 2) + "\n");
 }
 
 function printSwarms() {

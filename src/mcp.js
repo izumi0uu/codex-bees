@@ -35,6 +35,7 @@ import {
   listSwarmOverviews,
   listSwarms,
   listTasks,
+  listTasksView,
   markTaskReadyForReview,
   markTaskReadyForReviewLifecycle,
   queueSwarmTasks,
@@ -1640,7 +1641,7 @@ function handleRequest(message) {
     }
 
     if (name === "task_list") {
-      return createSuccess(id, createTextPayload({ tasks: listTasks() }));
+      return createSuccess(id, createTextPayload({ tasks: listTasksView() }));
     }
 
     if (name === "task_add") {

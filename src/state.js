@@ -93,6 +93,16 @@ export function listTasks() {
   return loadState().tasks;
 }
 
+export function listTasksView() {
+  const tasks = listTasks();
+  const recommendedReason = tasks.length > 0 ? "task_list_has_results" : "task_list_empty";
+  return {
+    kind: "task_view",
+    recommendedReason,
+    tasks
+  };
+}
+
 export function listMemories(filters = {}) {
   return filterMemories(loadState().memories, filters);
 }
