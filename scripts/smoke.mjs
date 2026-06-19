@@ -870,6 +870,91 @@ if (
 run("swarm-queue-invalid-role", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
 
 rmSync(".codex-bees", { recursive: true, force: true });
+run("swarm-init-blocked", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Blocked swarm smoke",
+  "--owner",
+  "leader",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-blocked",
+      summary: "Blocked lane",
+      owner: "executor",
+      verifier: "tester",
+      scope: ["src/mcp.js"],
+      acceptance: ["blocked bundle reports this lane"],
+      verification: ["swarm blockers surface returns task report"]
+    }
+  ])
+]);
+run("swarm-queue-blocked", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]);
+run("swarm-dispatch-blocked", [
+  "./src/index.js",
+  "swarm:dispatch",
+  "--id",
+  "swarm-1",
+  "--by",
+  "blocked-worker",
+  "--owner",
+  "executor"
+]);
+run("swarm-task-block", [
+  "./src/index.js",
+  "task:block",
+  "--id",
+  "task-1",
+  "--by",
+  "blocked-worker",
+  "--notes",
+  "waiting on unblock context"
+]);
+const swarmBlockersCli = JSON.parse(
+  run("swarm-blockers-cli", ["./src/index.js", "swarm:blockers", "--id", "swarm-1"]).stdout
+).blockers;
+if (
+  swarmBlockersCli.kind !== "swarm_blockers" ||
+  swarmBlockersCli.blockedCount !== 1 ||
+  swarmBlockersCli.blockers?.[0]?.taskId !== "task-1" ||
+  swarmBlockersCli.blockers?.[0]?.report?.task?.id !== "task-1"
+) {
+  console.error("[smoke:swarm-blockers] expected CLI blocker bundle with blocked lane report");
+  process.exit(1);
+}
+const swarmBlockersMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "swarm_blockers",
+      arguments: { id: "swarm-1" }
+    }
+  })
+].join("\n") + "\n";
+const swarmBlockersMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: swarmBlockersMcpInput,
+  encoding: "utf8"
+});
+const swarmBlockersMcpLines = swarmBlockersMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const swarmBlockersMcpPayload = JSON.parse(JSON.parse(swarmBlockersMcpLines[1]).result.content[0].text);
+if (
+  swarmBlockersMcp.status !== 0 ||
+  swarmBlockersMcpPayload.blockers?.blockedCount !== 1 ||
+  swarmBlockersMcpPayload.blockers?.blockers?.[0]?.recommendedNextAction !== "resolve_blocker_and_requeue"
+) {
+  console.error("[smoke:swarm-blockers-mcp] expected MCP blocker bundle");
+  console.error(swarmBlockersMcp.stderr || swarmBlockersMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
 const swarmMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
