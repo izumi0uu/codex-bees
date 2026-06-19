@@ -208,6 +208,18 @@ if (
   console.error("[smoke:runtime-handoffs] expected top-level runtime handoffs");
   process.exit(1);
 }
+const runtimeRecoveryInitial = JSON.parse(
+  run("runtime-recovery-initial", ["./src/index.js", "runtime:recovery"]).stdout
+).recovery;
+if (
+  runtimeRecoveryInitial.kind !== "runtime_recovery" ||
+  !Array.isArray(runtimeRecoveryInitial.groups) ||
+  runtimeRecoveryInitial.counts?.totalEntries !== 0 ||
+  runtimeRecoveryInitial.next !== null
+) {
+  console.error("[smoke:runtime-recovery] expected top-level runtime recovery");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -578,6 +590,18 @@ if (
   reviewTaskReport.evidence?.annotations?.at(-1)?.content !== "worker needs another pass before review"
 ) {
   console.error("[smoke:task-report] expected changes-requested task report");
+  process.exit(1);
+}
+const reviewRuntimeRecovery = JSON.parse(
+  run("runtime-recovery-review-loop", ["./src/index.js", "runtime:recovery"]).stdout
+).recovery;
+if (
+  reviewRuntimeRecovery.counts?.changesRequested !== 1 ||
+  reviewRuntimeRecovery.next?.taskId !== "task-1" ||
+  reviewRuntimeRecovery.next?.recoveryType !== "changes_requested" ||
+  reviewRuntimeRecovery.groups?.some((group) => group.recoveryType === "changes_requested" && group.entries?.[0]?.taskId === "task-1") !== true
+) {
+  console.error("[smoke:runtime-recovery] expected changes-requested recovery workspace");
   process.exit(1);
 }
 
@@ -1440,6 +1464,19 @@ if (
   console.error("[smoke:runtime-handoffs] expected CLI next-actor handoff workspace");
   process.exit(1);
 }
+const runtimeRecoveryCli = JSON.parse(
+  run("runtime-recovery-cli", ["./src/index.js", "runtime:recovery"]).stdout
+).recovery;
+if (
+  runtimeRecoveryCli.counts?.recoveryGroups < 1 ||
+  runtimeRecoveryCli.counts?.blocked !== 1 ||
+  runtimeRecoveryCli.next?.taskId !== "task-1" ||
+  runtimeRecoveryCli.next?.recoveryType !== "blocked_recovery" ||
+  runtimeRecoveryCli.groups?.some((group) => group.recoveryType === "blocked_recovery" && group.entries?.[0]?.taskId === "task-1") !== true
+) {
+  console.error("[smoke:runtime-recovery] expected CLI recovery workspace");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1663,6 +1700,36 @@ if (
 ) {
   console.error("[smoke:runtime-handoffs-mcp] expected MCP runtime handoffs");
   console.error(runtimeHandoffsMcp.stderr || runtimeHandoffsMcp.stdout);
+  process.exit(1);
+}
+const runtimeRecoveryMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_recovery",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeRecoveryMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeRecoveryMcpInput,
+  encoding: "utf8"
+});
+const runtimeRecoveryMcpLines = runtimeRecoveryMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeRecoveryMcpPayload = JSON.parse(JSON.parse(runtimeRecoveryMcpLines[1]).result.content[0].text);
+if (
+  runtimeRecoveryMcp.status !== 0 ||
+  runtimeRecoveryMcpPayload.recovery?.counts?.blocked !== 1 ||
+  runtimeRecoveryMcpPayload.recovery?.next?.taskId !== "task-1"
+) {
+  console.error("[smoke:runtime-recovery-mcp] expected MCP runtime recovery");
+  console.error(runtimeRecoveryMcp.stderr || runtimeRecoveryMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
