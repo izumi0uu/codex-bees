@@ -780,9 +780,11 @@ export function runtimeAlerts() {
   alerts.push(...readySwarms);
 
   alerts.sort(compareRuntimeAlerts);
+  const recommendedReason = deriveRuntimeAlertsReason({ alerts });
 
   return {
     kind: "runtime_alerts",
+    recommendedReason,
     counts: {
       total: alerts.length,
       high: alerts.filter((alert) => alert.severity === "high").length,
@@ -4610,6 +4612,23 @@ function deriveRuntimeCloseoutReason({ tasks, swarms, next }) {
     return "closeout_items_visible";
   }
   return "no_closeout_ready";
+}
+
+function deriveRuntimeAlertsReason({ alerts }) {
+  const next = alerts?.[0] ?? null;
+  if (next?.kind === "blocked_task") {
+    return "blocked_tasks_priority";
+  }
+  if (next?.kind === "pending_review") {
+    return "pending_review_priority";
+  }
+  if (next?.kind === "swarm_ready_to_complete") {
+    return "swarm_closeout_priority";
+  }
+  if ((alerts?.length ?? 0) > 0) {
+    return "alerts_visible";
+  }
+  return "no_alerts_active";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

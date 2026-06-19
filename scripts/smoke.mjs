@@ -169,6 +169,18 @@ if (
   console.error("[smoke:runtime-activity] expected top-level runtime activity");
   process.exit(1);
 }
+const runtimeAlertsInitial = JSON.parse(
+  run("runtime-alerts-initial", ["./src/index.js", "runtime:alerts"]).stdout
+).alerts;
+if (
+  runtimeAlertsInitial.recommendedReason !== "no_alerts_active" ||
+  runtimeAlertsInitial.kind !== "runtime_alerts" ||
+  runtimeAlertsInitial.counts?.total !== 0 ||
+  runtimeAlertsInitial.alerts?.length !== 0
+) {
+  console.error("[smoke:runtime-alerts] expected top-level runtime alerts");
+  process.exit(1);
+}
 const runtimeCloseoutInitial = JSON.parse(
   run("runtime-closeout-initial", ["./src/index.js", "runtime:closeout"]).stdout
 ).closeout;
@@ -458,16 +470,6 @@ if (
   !runtimeReviewPackInitial.surfaces
 ) {
   console.error("[smoke:runtime-review-pack] expected top-level runtime review pack");
-  process.exit(1);
-}
-const runtimeAlertsInitial = JSON.parse(
-  run("runtime-alerts-initial", ["./src/index.js", "runtime:alerts"]).stdout
-).alerts;
-if (
-  runtimeAlertsInitial.kind !== "runtime_alerts" ||
-  !Array.isArray(runtimeAlertsInitial.alerts)
-) {
-  console.error("[smoke:runtime-alerts] expected top-level runtime alerts");
   process.exit(1);
 }
 const runtimeWorkspacePackInitial = JSON.parse(
@@ -2975,6 +2977,7 @@ const runtimeAlertsCli = JSON.parse(
   run("runtime-alerts-cli", ["./src/index.js", "runtime:alerts"]).stdout
 ).alerts;
 if (
+  runtimeAlertsCli.recommendedReason !== "blocked_tasks_priority" ||
   runtimeAlertsCli.counts?.high !== 1 ||
   runtimeAlertsCli.counts?.medium < 1 ||
   runtimeAlertsCli.alerts?.[0]?.kind !== "blocked_task"
@@ -3044,6 +3047,37 @@ if (
 ) {
   console.error("[smoke:runtime-activity-mcp] expected MCP runtime activity");
   console.error(runtimeActivityMcp.stderr || runtimeActivityMcp.stdout);
+  process.exit(1);
+}
+const runtimeAlertsMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_alerts",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeAlertsMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeAlertsMcpInput,
+  encoding: "utf8"
+});
+const runtimeAlertsMcpLines = runtimeAlertsMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeAlertsMcpPayload = JSON.parse(JSON.parse(runtimeAlertsMcpLines[1]).result.content[0].text);
+if (
+  runtimeAlertsMcp.status !== 0 ||
+  runtimeAlertsMcpPayload.alerts?.recommendedReason !== "blocked_tasks_priority" ||
+  runtimeAlertsMcpPayload.alerts?.counts?.high !== 1 ||
+  runtimeAlertsMcpPayload.alerts?.alerts?.[0]?.kind !== "blocked_task"
+) {
+  console.error("[smoke:runtime-alerts-mcp] expected MCP runtime alerts");
+  console.error(runtimeAlertsMcp.stderr || runtimeAlertsMcp.stdout);
   process.exit(1);
 }
 const runtimeCloseoutMcpInput = [
@@ -3875,36 +3909,6 @@ if (
 ) {
   console.error("[smoke:runtime-review-pack-mcp] expected MCP runtime review pack");
   console.error(runtimeReviewPackMcp.stderr || runtimeReviewPackMcp.stdout);
-  process.exit(1);
-}
-const runtimeAlertsMcpInput = [
-  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
-  JSON.stringify({
-    jsonrpc: "2.0",
-    id: 2,
-    method: "tools/call",
-    params: {
-      name: "runtime_alerts",
-      arguments: {}
-    }
-  })
-].join("\n") + "\n";
-const runtimeAlertsMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
-  input: runtimeAlertsMcpInput,
-  encoding: "utf8"
-});
-const runtimeAlertsMcpLines = runtimeAlertsMcp.stdout
-  .split("\n")
-  .map((line) => line.trim())
-  .filter(Boolean);
-const runtimeAlertsMcpPayload = JSON.parse(JSON.parse(runtimeAlertsMcpLines[1]).result.content[0].text);
-if (
-  runtimeAlertsMcp.status !== 0 ||
-  runtimeAlertsMcpPayload.alerts?.counts?.high !== 1 ||
-  runtimeAlertsMcpPayload.alerts?.alerts?.[0]?.kind !== "blocked_task"
-) {
-  console.error("[smoke:runtime-alerts-mcp] expected MCP runtime alerts");
-  console.error(runtimeAlertsMcp.stderr || runtimeAlertsMcp.stdout);
   process.exit(1);
 }
 const runtimeRolesMcpInput = [

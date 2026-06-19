@@ -270,7 +270,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `task:pickup-preview` / `task_pickup_preview` provide a read-only next-pickup preview: which task a worker would pick or review next, the execution brief already attached, and the exact next command without mutating queue ownership. They also emit a machine-readable `recommendedReason` so automation can distinguish between claimable, review, continue, blocked, observe-only, and no-candidate preview states before deciding whether to mutate queue ownership.
 
-`runtime:alerts` / `runtime_alerts` provide the compressed top-level alert stream: blocked tasks first, then pending review and swarm-ready-to-complete signals.
+`runtime:alerts` / `runtime_alerts` provide the compressed top-level alert stream: blocked tasks first, then pending review and swarm-ready-to-complete signals. They also emit a machine-readable `recommendedReason` so automation can distinguish blocked-task priority, pending-review priority, swarm-closeout priority, plain alert visibility, and empty alert state without reparsing the sorted alert list.
 
 `runtime:roles` / `runtime_roles` provide the role-level execution pressure view: which shipped roles currently have verifier load, blocked owner work, claimable owner work, and the next task lane each role should move. It also emits a machine-readable `recommendedReason` so automation can distinguish verifier pressure, blocked owner pressure, claimable owner pressure, active owner pressure, and plain tracked-role visibility without reparsing per-role counts first.
 
