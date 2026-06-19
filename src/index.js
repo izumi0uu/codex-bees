@@ -36,6 +36,7 @@ import {
   leaderAssignments,
   leaderQueue,
   leaderWorkspace,
+  getTaskView,
   listMemories,
   listSwarmOverviews,
   listSwarms,
@@ -686,7 +687,7 @@ function handleTaskUpdate() {
 
 function handleTaskGet() {
   const id = requireOption("--id");
-  const task = getTask(id);
+  const task = getTaskView(id);
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);

@@ -590,7 +590,13 @@ if (
 }
 
 const fetchedTask = JSON.parse(run("task-get-verify", ["./src/index.js", "task:get", "--id", "task-3"]).stdout).task;
-if (fetchedTask.id !== "task-3" || fetchedTask.owner !== "executor" || fetchedTask.verifier !== "tester") {
+if (
+  fetchedTask.kind !== "task_detail" ||
+  fetchedTask.recommendedReason !== "task_detail_loaded" ||
+  fetchedTask.task?.id !== "task-3" ||
+  fetchedTask.task?.owner !== "executor" ||
+  fetchedTask.task?.verifier !== "tester"
+) {
   console.error("[smoke:task-get] expected persisted task detail");
   process.exit(1);
 }
@@ -1755,7 +1761,11 @@ if (
 const assignmentPreviewExecutorState = JSON.parse(
   run("task-assignment-preview-state", ["./src/index.js", "task:get", "--id", "task-2"]).stdout
 ).task;
-if (assignmentPreviewExecutorState.queueStatus !== "queued") {
+if (
+  assignmentPreviewExecutorState.kind !== "task_detail" ||
+  assignmentPreviewExecutorState.recommendedReason !== "task_detail_loaded" ||
+  assignmentPreviewExecutorState.task?.queueStatus !== "queued"
+) {
   console.error("[smoke:task-assignment-preview] expected preview to preserve assigned task state");
   process.exit(1);
 }
@@ -5141,7 +5151,9 @@ if (
   taskAddPayload?.created?.kind !== "task_mutation" ||
   taskAddPayload?.created?.recommendedReason !== "task_created" ||
   taskAddPayload?.created?.task?.id !== "task-1" ||
-  taskGetPayload?.task?.id !== "task-1" ||
+  taskGetPayload?.task?.kind !== "task_detail" ||
+  taskGetPayload?.task?.recommendedReason !== "task_detail_loaded" ||
+  taskGetPayload?.task?.task?.id !== "task-1" ||
   taskBriefPayload?.brief?.recommendedReason !== "claimable_execution_brief" ||
   taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
   taskHistoryMcp.status !== 0 ||
@@ -5347,7 +5359,11 @@ if (
 const pickupPreviewVerifierState = JSON.parse(
   run("task-get-preview-state", ["./src/index.js", "task:get", "--id", "task-2"]).stdout
 ).task;
-if (pickupPreviewVerifierState.queueStatus !== "ready_for_review") {
+if (
+  pickupPreviewVerifierState.kind !== "task_detail" ||
+  pickupPreviewVerifierState.recommendedReason !== "task_detail_loaded" ||
+  pickupPreviewVerifierState.task?.queueStatus !== "ready_for_review"
+) {
   console.error("[smoke:task-pickup-preview] expected preview to preserve task state");
   process.exit(1);
 }

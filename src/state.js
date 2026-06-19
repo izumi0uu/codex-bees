@@ -132,6 +132,18 @@ export function getTask(id) {
   return task ? normalizeTask(task) : null;
 }
 
+export function getTaskView(id) {
+  const task = getTask(id);
+  if (!task) {
+    return null;
+  }
+  return {
+    kind: "task_detail",
+    recommendedReason: "task_detail_loaded",
+    task
+  };
+}
+
 export function taskHistory(id) {
   const task = getTask(id);
   if (!task) {

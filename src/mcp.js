@@ -21,6 +21,7 @@ import {
   completeTaskLifecycle,
   dispatchSwarmLane,
   getTask,
+  getTaskView,
   getSwarm,
   initSwarm,
   initSwarmMutation,
@@ -1671,7 +1672,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_get requires arguments.id");
       }
 
-      const task = getTask(params.arguments.id);
+      const task = getTaskView(params.arguments.id);
       if (!task) {
         return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
       }

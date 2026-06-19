@@ -152,6 +152,8 @@ Task metadata can carry lane-ready execution detail:
 
 `task:list` / `task_list` return the explicit task retrieval view. They emit `kind: "task_view"` with `recommendedReason: "task_list_has_results"` or `recommendedReason: "task_list_empty"` so automation can distinguish non-empty and empty task listings without inferring from array length alone.
 
+`task:get` / `task_get` return the explicit task detail view. They emit `kind: "task_detail"` with `recommendedReason: "task_detail_loaded"` so automation can distinguish one-task retrieval from list, brief, history, and report surfaces without inferring that only from nesting shape.
+
 `task:add` / `task_add` return the explicit mutation result for creating a local coordination task. They emit a machine-readable `recommendedReason` so automation can branch on task creation without inferring intent only from the nested task snapshot.
 
 `task:update` / `task_update` return the explicit mutation result for updating task metadata. They emit a machine-readable `recommendedReason` so automation can distinguish metadata edits from lifecycle moves without reparsing nested task fields alone.
