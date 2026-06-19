@@ -683,6 +683,40 @@ export function runtimeDispatch() {
   };
 }
 
+export function runtimeReview() {
+  const tasks = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => task.queueStatus === "ready_for_review")
+    .sort(compareTasksByUpdatedAt);
+  const groupsByVerifier = new Map();
+
+  for (const task of tasks) {
+    const verifierId = task.verifier ?? "unknown";
+    const current = groupsByVerifier.get(verifierId) ?? {
+      verifier: describeRole(verifierId),
+      count: 0,
+      tasks: []
+    };
+    current.tasks.push(buildRuntimeReviewTaskEntry(task, current.count + 1));
+    current.count += 1;
+    groupsByVerifier.set(verifierId, current);
+  }
+
+  const groups = [...groupsByVerifier.values()].sort(compareRuntimeReviewGroups);
+  const next = groups[0]?.tasks?.[0] ?? null;
+
+  return {
+    kind: "runtime_review",
+    counts: {
+      verifierGroups: groups.length,
+      totalPendingReview: tasks.length
+    },
+    groups,
+    next,
+    summary: buildRuntimeReviewSummary(groups, next)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -2160,6 +2194,51 @@ function buildRuntimeDispatchSummary(groups, next) {
   }
 
   return `Runtime dispatch has ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is the next handoff.`;
+}
+
+function buildRuntimeReviewTaskEntry(task, position) {
+  return {
+    position,
+    taskId: task.id,
+    title: task.title,
+    objective: task.objective,
+    swarmId: task.swarmId,
+    lane: task.lane,
+    owner: describeRole(task.owner),
+    claimedBy: task.claimedBy,
+    updatedAt: task.updatedAt,
+    recommendedNextActor: {
+      type: "verifier_role",
+      id: task.verifier,
+      claimedBy: null
+    },
+    recommendedNextAction: "review_and_decide",
+    recommendedCommands: [
+      `node ./src/index.js task:approve --id ${task.id} --by ${task.verifier ?? "<verifier-role>"}`,
+      `node ./src/index.js task:reject --id ${task.id} --by ${task.verifier ?? "<verifier-role>"} --status claimed --notes "<changes requested>"`
+    ],
+    taskBrief: taskBrief(task.id),
+    summary: `Review ${task.id} for verifier ${task.verifier ?? "unknown"}.`
+  };
+}
+
+function compareRuntimeReviewGroups(left, right) {
+  if (right.count !== left.count) {
+    return right.count - left.count;
+  }
+  return (left.verifier?.id ?? left.verifier?.name ?? "").localeCompare(right.verifier?.id ?? right.verifier?.name ?? "");
+}
+
+function buildRuntimeReviewSummary(groups, next) {
+  if (groups.length === 0) {
+    return "Runtime review has no verifier-grouped work ready right now.";
+  }
+
+  if (!next) {
+    return `Runtime review is tracking ${groups.length} verifier group${groups.length === 1 ? "" : "s"}.`;
+  }
+
+  return `Runtime review has ${groups.length} verifier group${groups.length === 1 ? "" : "s"}; ${next.taskId} is the next review decision.`;
 }
 
 function compareRuntimeRoleEntries(left, right) {
