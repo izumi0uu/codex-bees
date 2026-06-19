@@ -1157,6 +1157,7 @@ const leaderAssignmentLaunchPlanCli = JSON.parse(
 ).assignmentLaunchPlan;
 if (
   leaderAssignmentLaunchPlanCli.counts?.steps !== 2 ||
+  leaderAssignmentLaunchPlanCli.recommendedReason !== "parallel_startup_steps_ready" ||
   leaderAssignmentLaunchPlanCli.next?.workerId !== "worker-executor" ||
   leaderAssignmentLaunchPlanCli.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
   leaderAssignmentLaunchPlanCli.steps?.[1]?.previewCommand !== "node ./src/index.js task:assignment-preview --role explore --worker worker-explore --task task-1"
@@ -2015,6 +2016,7 @@ const leaderAssignmentLaunchPlanMcpPayload = JSON.parse(JSON.parse(leaderAssignm
 if (
   leaderAssignmentLaunchPlanMcp.status !== 0 ||
   leaderAssignmentLaunchPlanMcpPayload.assignmentLaunchPlan?.counts?.steps !== 2 ||
+  leaderAssignmentLaunchPlanMcpPayload.assignmentLaunchPlan?.recommendedReason !== "parallel_startup_steps_ready" ||
   leaderAssignmentLaunchPlanMcpPayload.assignmentLaunchPlan?.next?.workerId !== "worker-executor" ||
   leaderAssignmentLaunchPlanMcpPayload.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner"
 ) {

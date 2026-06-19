@@ -663,9 +663,11 @@ export function leaderAssignmentLaunchPlan(input = {}) {
     summary: `Start ${launch.workerId ?? "<worker-id>"} on ${launch.role?.id ?? launch.role?.name ?? "unknown"} for ${launch.taskId ?? "no-task"}.`
   }));
   const next = steps[0] ?? null;
+  const recommendedReason = deriveLeaderAssignmentLaunchPlanReason({ bundle, steps, next });
 
   return {
     kind: "leader_assignment_launch_plan",
+    recommendedReason,
     counts: {
       steps: steps.length,
       launches: bundle?.counts?.launches ?? 0,
@@ -4329,6 +4331,22 @@ function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, ne
     return "assignment_dispatch_visible";
   }
   return "no_worker_launch_ready";
+}
+
+function deriveLeaderAssignmentLaunchPlanReason({ bundle, steps, next }) {
+  if ((steps?.length ?? 0) > 1) {
+    return "parallel_startup_steps_ready";
+  }
+  if ((bundle?.counts?.launches ?? 0) > 1) {
+    return "parallel_launch_bundle_visible";
+  }
+  if (next?.workerId) {
+    return "next_startup_step_ready";
+  }
+  if ((bundle?.counts?.totalAssignments ?? 0) > 0) {
+    return "assignment_launch_context_visible";
+  }
+  return "no_startup_steps_ready";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
