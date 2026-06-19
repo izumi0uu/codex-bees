@@ -150,6 +150,10 @@ export function getRuntimeStatus({ version, toolCount }) {
   const memories = listMemories();
   const capabilities = getCapabilityCatalog();
   const highlights = capabilities.flatMap((capability) => capability.highlights ?? []).slice(0, 6);
+  const recommendedEntryPoints = {
+    cli: [...new Set(capabilities.flatMap((capability) => capability.preferredEntryPoints?.cli ?? []))].slice(0, 6),
+    mcp: [...new Set(capabilities.flatMap((capability) => capability.preferredEntryPoints?.mcp ?? []))].slice(0, 6)
+  };
 
   return {
     product: "codex-bees",
@@ -170,6 +174,7 @@ export function getRuntimeStatus({ version, toolCount }) {
       memoryNamespaces: countBy(memories, (memory) => memory.namespace)
     },
     highlights,
+    recommendedEntryPoints,
     catalog,
     capabilities: capabilities.map((capability) => ({
       id: capability.id,
