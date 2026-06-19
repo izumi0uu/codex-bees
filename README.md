@@ -51,6 +51,7 @@ node ./src/index.js status
 node ./src/index.js capabilities
 node ./src/index.js runtime:alerts
 node ./src/index.js runtime:dashboard
+node ./src/index.js runtime:dispatch
 node ./src/index.js runtime:roles
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
 node ./src/index.js plan:queue --task "Queue a runtime change"
@@ -156,6 +157,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `status` and the MCP `runtime_status` tool summarize the current local runtime: shipped tool/agent/skill counts, persisted task/swarm/memory counts, and queue status distribution. `capabilities` and `runtime_capabilities` provide a product-facing inventory of what this Codex-only runtime actually supports today.
 
 `runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload.
+
+`runtime:dispatch` / `runtime_dispatch` provide the owner-grouped dispatch workspace: which owner roles have ready work, the next dispatch candidate for each role, and the task brief already attached for handoff.
 
 `runtime:alerts` / `runtime_alerts` provide the compressed top-level alert stream: blocked tasks first, then pending review and swarm-ready-to-complete signals.
 
