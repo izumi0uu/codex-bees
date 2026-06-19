@@ -2288,6 +2288,7 @@ export function taskAssignmentPickup(input = {}) {
       workerId: input.workerId,
       mode: normalizeNextMode(input.mode),
       outcome: "none",
+      recommendedReason: "no_assignment_available",
       assignment: null,
       task: null,
       brief: null,
@@ -2303,6 +2304,7 @@ export function taskAssignmentPickup(input = {}) {
       workerId: input.workerId,
       mode: normalizeNextMode(input.mode),
       outcome: "error",
+      recommendedReason: "missing_assignment_task",
       assignment,
       task: null,
       brief: null,
@@ -2326,6 +2328,7 @@ export function taskAssignmentPickup(input = {}) {
         workerId: input.workerId,
         mode: normalizeNextMode(input.mode),
         outcome: "error",
+        recommendedReason: "assignment_claim_failed",
         assignment,
         task: claimed ?? task,
         brief,
@@ -2340,6 +2343,7 @@ export function taskAssignmentPickup(input = {}) {
       workerId: input.workerId,
       mode: normalizeNextMode(input.mode),
       outcome: "claimed",
+      recommendedReason: "claimable_assignment_work",
       assignment,
       candidate: summarizeInboxTask(claimed, input.role, input.workerId),
       task: claimed,
@@ -2354,6 +2358,7 @@ export function taskAssignmentPickup(input = {}) {
     workerId: input.workerId,
     mode: normalizeNextMode(input.mode),
     outcome: assignmentPickupOutcome(candidate.relation),
+    recommendedReason: deriveTaskAssignmentPickupReason(candidate.relation),
     assignment,
     candidate,
     task,
@@ -4430,6 +4435,19 @@ function deriveTaskPickupReason(relation) {
     return "observe_without_action";
   }
   return "non_claim_followup";
+}
+
+function deriveTaskAssignmentPickupReason(relation) {
+  if (relation === "verifier_review") {
+    return "review_assignment_work";
+  }
+  if (relation === "owner_claimed_by_worker") {
+    return "continue_assignment_work";
+  }
+  if (relation === "owner_blocked") {
+    return "blocked_assignment_work";
+  }
+  return "observe_assignment_work";
 }
 
 function deriveTaskAssignmentPreviewReason(relation) {

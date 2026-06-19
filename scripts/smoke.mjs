@@ -1366,6 +1366,7 @@ const assignmentPickupExecutorCli = JSON.parse(
 ).assignmentPickup;
 if (
   assignmentPickupExecutorCli.outcome !== "claimed" ||
+  assignmentPickupExecutorCli.recommendedReason !== "claimable_assignment_work" ||
   assignmentPickupExecutorCli.assignment?.taskId !== "task-2" ||
   assignmentPickupExecutorCli.task?.id !== "task-2" ||
   assignmentPickupExecutorCli.task?.claimedBy !== "worker-executor"
@@ -2489,6 +2490,7 @@ const taskAssignmentPickupExecutorMcpPayload = JSON.parse(JSON.parse(taskAssignm
 if (
   taskAssignmentPickupExecutorMcp.status !== 0 ||
   taskAssignmentPickupExecutorMcpPayload.assignmentPickup?.outcome !== "claimed" ||
+  taskAssignmentPickupExecutorMcpPayload.assignmentPickup?.recommendedReason !== "claimable_assignment_work" ||
   taskAssignmentPickupExecutorMcpPayload.assignmentPickup?.task?.id !== "task-2" ||
   taskAssignmentPickupExecutorMcpPayload.assignmentPickup?.task?.claimedBy !== "worker-executor"
 ) {
