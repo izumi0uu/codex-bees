@@ -3,7 +3,7 @@
 import { stdout, stderr, exit, argv, env } from "node:process";
 import { statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { startMcpServer, toolCatalog } from "./mcp.js";
+import { getToolCatalogView, startMcpServer, toolCatalog } from "./mcp.js";
 import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
@@ -1400,7 +1400,7 @@ async function runCommand(command) {
       await startMcpServer();
       return;
     case "tools":
-      write(JSON.stringify({ tools: toolCatalog }, null, 2) + "\n");
+      write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
       return;
     case "doctor":
       printDoctor();

@@ -1266,6 +1266,32 @@ export const toolCatalog = [
   }
 ];
 
+function toolGroupFromName(name) {
+  if (!name) {
+    return "unknown";
+  }
+  const [group] = name.split("_");
+  return group || "unknown";
+}
+
+export function getToolCatalogView() {
+  const groups = toolCatalog.reduce((counts, tool) => {
+    const group = toolGroupFromName(tool.name);
+    counts[group] = (counts[group] ?? 0) + 1;
+    return counts;
+  }, {});
+
+  return {
+    kind: "tool_catalog_view",
+    recommendedReason: toolCatalog.length > 0 ? "tool_catalog_loaded" : "tool_catalog_empty",
+    counts: {
+      totalTools: toolCatalog.length,
+      groups
+    },
+    tools: toolCatalog
+  };
+}
+
 const workerGuidelines = {
   fileOwnership: "one active writer per file",
   parallelism: "parallelize only with disjoint ownership",
@@ -2623,7 +2649,7 @@ export async function startMcpServer() {
 }
 
 if (process.argv.includes("--tools")) {
-  stdout.write(JSON.stringify({ tools: toolCatalog }, null, 2) + "\n");
+  stdout.write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
 } else if (process.argv.includes("--stdio")) {
   await startMcpServer();
 }

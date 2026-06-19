@@ -19,6 +19,7 @@ const checks = [
   ["catalog", ["./src/index.js", "catalog"]],
   ["status", ["./src/index.js", "status"]],
   ["capabilities", ["./src/index.js", "capabilities"]],
+  ["cli-tools", ["./src/index.js", "tools"]],
   ["tools", ["./src/mcp.js", "--tools"]],
   [
     "memory-store",
@@ -198,6 +199,30 @@ if (
   doctorView.contract?.contract?.transport?.mcp !== "stdio-jsonrpc"
 ) {
   console.error("[smoke:doctor] expected runtime doctor and contract views");
+  process.exit(1);
+}
+const cliToolsView = JSON.parse(run("tools-cli-verify", ["./src/index.js", "tools"]).stdout).tools;
+if (
+  cliToolsView.kind !== "tool_catalog_view" ||
+  cliToolsView.recommendedReason !== "tool_catalog_loaded" ||
+  cliToolsView.counts?.totalTools < 10 ||
+  cliToolsView.counts?.groups?.runtime < 1 ||
+  !Array.isArray(cliToolsView.tools) ||
+  !cliToolsView.tools.some((tool) => tool.name === "runtime_contract")
+) {
+  console.error("[smoke:tools-cli] expected tool catalog view");
+  process.exit(1);
+}
+const mcpToolsView = JSON.parse(run("tools-mcp-verify", ["./src/mcp.js", "--tools"]).stdout).tools;
+if (
+  mcpToolsView.kind !== "tool_catalog_view" ||
+  mcpToolsView.recommendedReason !== "tool_catalog_loaded" ||
+  mcpToolsView.counts?.totalTools < 10 ||
+  mcpToolsView.counts?.groups?.task < 1 ||
+  !Array.isArray(mcpToolsView.tools) ||
+  !mcpToolsView.tools.some((tool) => tool.name === "task_add")
+) {
+  console.error("[smoke:tools-mcp] expected MCP tool catalog view");
   process.exit(1);
 }
 const runtimeStatus = JSON.parse(run("status-verify", ["./src/index.js", "status"]).stdout).status;
