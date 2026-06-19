@@ -1053,6 +1053,34 @@ export function runtimeOperatorPack() {
   };
 }
 
+export function runtimeDispatchPack() {
+  const dispatch = runtimeDispatch();
+  const roles = runtimeRoles();
+  const handoffs = runtimeHandoffs();
+  const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, roles, handoffs });
+
+  return {
+    kind: "runtime_dispatch_pack",
+    recommendedSurface,
+    overview: {
+      dispatch: dispatch?.counts ?? null,
+      roles: roles?.counts ?? null,
+      handoffs: handoffs?.counts ?? null
+    },
+    next: {
+      dispatch: dispatch?.next ?? null,
+      role: roles?.next ?? null,
+      handoff: handoffs?.next ?? null
+    },
+    surfaces: {
+      dispatch,
+      roles,
+      handoffs
+    },
+    summary: buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, handoffs, roles)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3194,6 +3222,32 @@ function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
     alerts?.summary ??
     "Runtime operator pack has no current operator detail.";
   return `Runtime operator pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeDispatchPackSurface({ dispatch, roles, handoffs }) {
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "runtime:dispatch";
+  }
+  if ((handoffs?.counts?.totalHandoffs ?? 0) > 0) {
+    return "runtime:handoffs";
+  }
+  if (
+    (roles?.counts?.withPendingReview ?? 0) > 0 ||
+    (roles?.counts?.withBlockedOwnerWork ?? 0) > 0 ||
+    (roles?.counts?.withClaimableOwnerWork ?? 0) > 0
+  ) {
+    return "runtime:roles";
+  }
+  return "runtime:dispatch";
+}
+
+function buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, handoffs, roles) {
+  const detail =
+    dispatch?.summary ??
+    handoffs?.summary ??
+    roles?.summary ??
+    "Runtime dispatch pack has no current dispatch detail.";
+  return `Runtime dispatch pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
