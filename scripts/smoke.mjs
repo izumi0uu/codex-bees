@@ -4574,6 +4574,7 @@ const pickupPreviewVerifier = JSON.parse(
 ).pickupPreview;
 if (
   pickupPreviewVerifier.outcome !== "review" ||
+  pickupPreviewVerifier.recommendedReason !== "review_pickup_preview" ||
   pickupPreviewVerifier.candidate?.id !== "task-2" ||
   pickupPreviewVerifier.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
@@ -4619,6 +4620,7 @@ const pickupPreviewOwner = JSON.parse(
 ).pickupPreview;
 if (
   pickupPreviewOwner.outcome !== "claimable" ||
+  pickupPreviewOwner.recommendedReason !== "claimable_pickup_preview" ||
   pickupPreviewOwner.candidate?.id !== "task-1" ||
   pickupPreviewOwner.command !== "node ./src/index.js task:pickup --role executor --worker worker-owner --mode owner"
 ) {
@@ -4762,6 +4764,7 @@ const pickupPreviewMcpPayload = JSON.parse(JSON.parse(pickupPreviewMcpLines[1]).
 if (
   pickupPreviewMcp.status !== 0 ||
   pickupPreviewMcpPayload.pickupPreview?.outcome !== "review" ||
+  pickupPreviewMcpPayload.pickupPreview?.recommendedReason !== "review_pickup_preview" ||
   pickupPreviewMcpPayload.pickupPreview?.candidate?.id !== "task-2" ||
   pickupPreviewMcpPayload.pickupPreview?.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {

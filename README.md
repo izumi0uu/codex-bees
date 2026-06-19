@@ -268,7 +268,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:review` / `runtime_review` provide the verifier-grouped decision workspace: which verifier roles currently own pending review decisions, which task is next, and the task brief already attached for approve/reject handoff.
 
-`task:pickup-preview` / `task_pickup_preview` provide a read-only next-pickup preview: which task a worker would pick or review next, the execution brief already attached, and the exact next command without mutating queue ownership.
+`task:pickup-preview` / `task_pickup_preview` provide a read-only next-pickup preview: which task a worker would pick or review next, the execution brief already attached, and the exact next command without mutating queue ownership. They also emit a machine-readable `recommendedReason` so automation can distinguish between claimable, review, continue, blocked, observe-only, and no-candidate preview states before deciding whether to mutate queue ownership.
 
 `runtime:alerts` / `runtime_alerts` provide the compressed top-level alert stream: blocked tasks first, then pending review and swarm-ready-to-complete signals.
 

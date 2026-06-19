@@ -2440,6 +2440,7 @@ export function previewTaskPickup(input = {}) {
       workerId: input.workerId,
       mode: next?.mode ?? normalizeNextMode(input.mode),
       outcome: "none",
+      recommendedReason: "no_pickup_candidate",
       candidate: null,
       task: null,
       brief: null,
@@ -2457,6 +2458,7 @@ export function previewTaskPickup(input = {}) {
       workerId: input.workerId,
       mode: next.mode,
       outcome: "claimable",
+      recommendedReason: "claimable_pickup_preview",
       candidate: next.candidate,
       task: currentTask,
       brief: next.brief,
@@ -2470,6 +2472,7 @@ export function previewTaskPickup(input = {}) {
     workerId: input.workerId,
     mode: next.mode,
     outcome: pickupOutcome(relation),
+    recommendedReason: deriveTaskPickupPreviewReason(relation),
     candidate: next.candidate,
     task: currentTask,
     brief: next.brief,
@@ -4424,6 +4427,19 @@ function deriveTaskPickupReason(relation) {
     return "observe_without_action";
   }
   return "non_claim_followup";
+}
+
+function deriveTaskPickupPreviewReason(relation) {
+  if (relation === "verifier_review") {
+    return "review_pickup_preview";
+  }
+  if (relation === "owner_claimed_by_worker") {
+    return "continue_pickup_preview";
+  }
+  if (relation === "owner_blocked") {
+    return "blocked_pickup_preview";
+  }
+  return "observe_pickup_preview";
 }
 
 function deriveTaskNextReason(relation) {
