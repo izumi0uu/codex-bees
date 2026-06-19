@@ -1607,23 +1607,33 @@ export function runtimeQueuePack(input = {}) {
   const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const recommendedSurface = deriveRuntimeQueuePackSurface({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan });
   const recommendedReason = deriveRuntimeQueuePackReason({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan });
+  const nextEntries = {
+    queue: queue?.next ?? null,
+    focus: focus?.focus ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
+  };
 
   return {
     kind: "runtime_queue_pack",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasQueue: Boolean(queue?.next),
+      hasFocus: Boolean(focus?.focus),
+      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
+      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       queue: queue?.counts ?? null,
       dashboard: dashboard?.counts ?? null,
       assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
       assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
     },
-    next: {
-      queue: queue?.next ?? null,
-      focus: focus?.focus ?? null,
-      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-      assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
-    },
+    next: nextEntries,
     surfaces: {
       queue,
       dashboard,

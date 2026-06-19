@@ -383,6 +383,7 @@ const runtimeQueuePackInitial = JSON.parse(
 if (
   runtimeQueuePackInitial.kind !== "runtime_queue_pack" ||
   !runtimeQueuePackInitial.recommendedSurface ||
+  typeof runtimeQueuePackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeQueuePackInitial.overview ||
   !runtimeQueuePackInitial.surfaces
 ) {
@@ -3565,6 +3566,10 @@ const runtimeQueuePackCli = JSON.parse(
 if (
   runtimeQueuePackCli.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
   runtimeQueuePackCli.recommendedReason !== "assignment_launch_ready" ||
+  runtimeQueuePackCli.metadata?.hasQueue !== true ||
+  runtimeQueuePackCli.metadata?.hasFocus !== true ||
+  runtimeQueuePackCli.metadata?.hasAssignmentLaunch !== true ||
+  runtimeQueuePackCli.counts?.surfacedNextEntries !== Object.values(runtimeQueuePackCli.next ?? {}).filter(Boolean).length ||
   runtimeQueuePackCli.next?.queue?.swarmId !== "swarm-1" ||
   runtimeQueuePackCli.next?.focus?.taskId !== "task-1" ||
   runtimeQueuePackCli.next?.assignmentLaunch?.workerId !== "<executor-worker>" ||
