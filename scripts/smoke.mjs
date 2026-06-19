@@ -458,6 +458,7 @@ const runtimeOperatorPackInitial = JSON.parse(
 if (
   runtimeOperatorPackInitial.kind !== "runtime_operator_pack" ||
   !runtimeOperatorPackInitial.recommendedSurface ||
+  typeof runtimeOperatorPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeOperatorPackInitial.overview ||
   !runtimeOperatorPackInitial.surfaces
 ) {
@@ -3643,6 +3644,10 @@ const runtimeOperatorPackCli = JSON.parse(
 if (
   runtimeOperatorPackCli.recommendedSurface !== "runtime:focus" ||
   runtimeOperatorPackCli.recommendedReason !== "blocked_focus_priority" ||
+  runtimeOperatorPackCli.metadata?.hasFocus !== true ||
+  runtimeOperatorPackCli.metadata?.hasHandoff !== true ||
+  runtimeOperatorPackCli.metadata?.hasAlert !== true ||
+  runtimeOperatorPackCli.counts?.surfacedNextEntries !== Object.values(runtimeOperatorPackCli.next ?? {}).filter(Boolean).length ||
   runtimeOperatorPackCli.focus?.focus?.taskId !== "task-1" ||
   runtimeOperatorPackCli.next?.handoff?.taskId !== "task-2" ||
   runtimeOperatorPackCli.overview?.alerts?.high !== 1 ||
