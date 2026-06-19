@@ -28,6 +28,7 @@ import {
   getTask,
   getSwarm,
   initSwarm,
+  initSwarmMutation,
   leaderAssignmentDispatch,
   leaderAssignmentDispatchBundle,
   leaderAssignmentLaunchPlan,
@@ -1097,7 +1098,7 @@ function handlePlanSwarmQueue() {
 
 function handleSwarmInit() {
   const objective = requireOption("--objective");
-  const swarm = initSwarm({
+  const swarm = initSwarmMutation({
     objective,
     topology: readOption("--topology"),
     maxWorkers: readPositiveIntegerOption("--max-workers"),

@@ -23,6 +23,7 @@ import {
   getTask,
   getSwarm,
   initSwarm,
+  initSwarmMutation,
   leaderAssignmentDispatch,
   leaderAssignmentDispatchBundle,
   leaderAssignmentLaunchPlan,
@@ -2209,7 +2210,7 @@ function handleRequest(message) {
         return createError(id, -32602, "swarm_init requires arguments.objective");
       }
 
-      const swarm = initSwarm({
+      const swarm = initSwarmMutation({
         objective: params.arguments.objective,
         topology: params.arguments.topology,
         maxWorkers: params.arguments.maxWorkers,

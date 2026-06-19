@@ -2927,6 +2927,18 @@ export function initSwarm(input) {
   return swarm;
 }
 
+export function initSwarmMutation(input) {
+  const result = initSwarm(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "swarm_mutation",
+    recommendedReason: "swarm_created",
+    swarm: result
+  };
+}
+
 export function searchMemories(query, filters = {}) {
   const memories = filterMemories(loadState().memories, filters);
   if (!query?.trim()) {

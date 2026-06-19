@@ -1317,22 +1317,34 @@ const swarmLaneJson = JSON.stringify([
     verification: ["task:list includes swarmId"]
   }
 ]);
-run("swarm-init", [
-  "./src/index.js",
-  "swarm:init",
-  "--objective",
-  "Coordinate swarm smoke coverage",
-  "--owner",
-  "leader",
-  "--topology",
-  "bounded-local",
-  "--max-workers",
-  "2",
-  "--lane-source",
-  "smoke",
-  "--lanes",
-  swarmLaneJson
-]);
+const swarmCreatedCli = JSON.parse(
+  run("swarm-init", [
+    "./src/index.js",
+    "swarm:init",
+    "--objective",
+    "Coordinate swarm smoke coverage",
+    "--owner",
+    "leader",
+    "--topology",
+    "bounded-local",
+    "--max-workers",
+    "2",
+    "--lane-source",
+    "smoke",
+    "--lanes",
+    swarmLaneJson
+  ]).stdout
+).created;
+if (
+  swarmCreatedCli.kind !== "swarm_mutation" ||
+  swarmCreatedCli.recommendedReason !== "swarm_created" ||
+  swarmCreatedCli.swarm?.id !== "swarm-1" ||
+  swarmCreatedCli.swarm?.maxWorkers !== 2 ||
+  swarmCreatedCli.swarm?.lanes?.length !== 2
+) {
+  console.error("[smoke:swarm-init] expected CLI swarm init mutation payload");
+  process.exit(1);
+}
 run("swarm-list", ["./src/index.js", "swarm:list"]);
 const swarmValidation = JSON.parse(
   run("swarm-check", ["./src/index.js", "swarm:check", "--id", "swarm-1"]).stdout
@@ -4530,6 +4542,9 @@ const swarmMcpById = new Map(
     return [parsed.id, parsed];
   })
 );
+const swarmInitResult = swarmMcpById.get(2) ?? null;
+const swarmInitText = swarmInitResult?.result?.content?.[0]?.text;
+const swarmInitPayload = swarmInitText ? JSON.parse(swarmInitText) : null;
 const swarmBriefResult = swarmMcpById.get(3) ?? null;
 const swarmBriefText = swarmBriefResult?.result?.content?.[0]?.text;
 const swarmBriefPayload = swarmBriefText ? JSON.parse(swarmBriefText) : null;
@@ -4563,6 +4578,10 @@ const swarmDonePayload = swarmDoneText ? JSON.parse(swarmDoneText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
+  swarmInitPayload?.created?.kind !== "swarm_mutation" ||
+  swarmInitPayload?.created?.recommendedReason !== "swarm_created" ||
+  swarmInitPayload?.created?.swarm?.id !== "swarm-1" ||
+  swarmInitPayload?.created?.swarm?.lanes?.length !== 1 ||
   swarmBriefPayload?.brief?.recommendedReason !== "queue_swarm_lanes" ||
   swarmBriefPayload?.brief?.recommendedNextAction !== "queue_swarm_lanes" ||
   swarmCheckPayload?.validation?.ready !== true ||
