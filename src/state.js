@@ -280,6 +280,80 @@ export function taskNext(input = {}) {
   };
 }
 
+export function taskPickup(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const next = taskNext({
+    role: input.role,
+    workerId: input.workerId,
+    mode: input.mode ?? "any"
+  });
+
+  if (!next?.candidate) {
+    return {
+      kind: "task_pickup",
+      role: describeRole(input.role),
+      workerId: input.workerId,
+      mode: next?.mode ?? normalizeNextMode(input.mode),
+      outcome: "none",
+      candidate: null,
+      task: null,
+      brief: null,
+      command: null
+    };
+  }
+
+  const relation = next.candidate.relation;
+  if (relation === "owner_claimable") {
+    const claimed = claimTask({
+      id: next.candidate.id,
+      claimedBy: input.workerId
+    });
+    if (!claimed || claimed.error) {
+      return {
+        kind: "task_pickup",
+        role: describeRole(input.role),
+        workerId: input.workerId,
+        mode: next.mode,
+        outcome: "error",
+        candidate: next.candidate,
+        task: claimed ?? null,
+        brief: next.brief,
+        command: null,
+        error: claimed?.error ?? `Unable to claim task ${next.candidate.id}`
+      };
+    }
+
+    return {
+      kind: "task_pickup",
+      role: describeRole(input.role),
+      workerId: input.workerId,
+      mode: next.mode,
+      outcome: "claimed",
+      candidate: summarizeInboxTask(claimed, input.role, input.workerId),
+      task: claimed,
+      brief: taskBrief(claimed.id),
+      command: `node ./src/index.js task:review --id ${claimed.id} --by ${input.workerId}`
+    };
+  }
+
+  const currentTask = getTask(next.candidate.id);
+  const command = pickupFollowupCommand(next.candidate, input.workerId);
+  return {
+    kind: "task_pickup",
+    role: describeRole(input.role),
+    workerId: input.workerId,
+    mode: next.mode,
+    outcome: pickupOutcome(relation),
+    candidate: next.candidate,
+    task: currentTask,
+    brief: next.brief,
+    command
+  };
+}
+
 export function validateTask(id) {
   const task = loadState().tasks.map(normalizeTask).find((item) => item.id === id);
   if (!task) {
@@ -1055,6 +1129,32 @@ function buildSwarmHandoff(overview, recommended) {
     return `Swarm ${overview.swarm.id} has planned lanes but no queued tasks yet.`;
   }
   return `Swarm ${overview.swarm.id} is active with bounded local coordination state.`;
+}
+
+function pickupOutcome(relation) {
+  if (relation === "owner_claimed_by_worker") {
+    return "continue";
+  }
+  if (relation === "verifier_review") {
+    return "review";
+  }
+  if (relation === "owner_blocked") {
+    return "blocked";
+  }
+  return "observe";
+}
+
+function pickupFollowupCommand(candidate, workerId) {
+  if (candidate.relation === "owner_claimed_by_worker") {
+    return `node ./src/index.js task:review --id ${candidate.id} --by ${workerId}`;
+  }
+  if (candidate.relation === "verifier_review") {
+    return `node ./src/index.js task:approve --id ${candidate.id} --by ${candidate.verifier ?? "<verifier-role>"}`;
+  }
+  if (candidate.relation === "owner_blocked") {
+    return `node ./src/index.js task:release --id ${candidate.id} --by ${candidate.claimedBy ?? workerId}`;
+  }
+  return null;
 }
 
 function summarizeInboxTask(task, role, workerId) {
