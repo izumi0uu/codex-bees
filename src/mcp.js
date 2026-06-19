@@ -34,6 +34,7 @@ import {
   taskHistory,
   taskPickup,
   taskNext,
+  workerSession,
   updateSwarm,
   updateTask,
   taskBrief,
@@ -210,6 +211,20 @@ export const toolCatalog = [
         role: { type: "string" },
         workerId: { type: "string" },
         mode: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "worker_session",
+    description: "Show the current execution workspace for one worker.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" },
+        limit: { type: "number" }
       }
     }
   },
@@ -831,6 +846,24 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ pickup }));
+    }
+
+    if (name === "worker_session") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "worker_session requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "worker_session requires arguments.workerId");
+      }
+
+      const session = workerSession({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode,
+        limit: params.arguments.limit
+      });
+
+      return createSuccess(id, createTextPayload({ session }));
     }
 
     if (name === "task_update") {
