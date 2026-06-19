@@ -568,7 +568,7 @@ if (
 const testerInbox = JSON.parse(
   run("task-inbox-tester", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).inbox;
-if (testerInbox.counts.pendingReview !== 0 || testerInbox.tasks?.[0]?.relation !== "verifier_observe") {
+if (testerInbox.recommendedReason !== "observe_only_inbox" || testerInbox.counts.pendingReview !== 0 || testerInbox.tasks?.[0]?.relation !== "verifier_observe") {
   console.error("[smoke:task-inbox] expected tester inbox summary for completed task");
   process.exit(1);
 }
@@ -732,7 +732,7 @@ if (
 const reviewInbox = JSON.parse(
   run("task-inbox-reviewer", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).inbox;
-if (reviewInbox.counts.pendingReview !== 0 || reviewInbox.tasks?.[0]?.relation !== "verifier_observe") {
+if (reviewInbox.recommendedReason !== "observe_only_inbox" || reviewInbox.counts.pendingReview !== 0 || reviewInbox.tasks?.[0]?.relation !== "verifier_observe") {
   console.error("[smoke:task-inbox] expected verifier inbox to reflect post-rejection observe state");
   process.exit(1);
 }
@@ -4465,7 +4465,7 @@ run("inbox-task-ready-2", ["./src/index.js", "task:review", "--id", "task-2", "-
 const cliInbox = JSON.parse(
   run("task-inbox-cli", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).inbox;
-if (cliInbox.tasks?.[0]?.id !== "task-2" || cliInbox.tasks?.[0]?.relation !== "verifier_review") {
+if (cliInbox.recommendedReason !== "review_queue_visible" || cliInbox.tasks?.[0]?.id !== "task-2" || cliInbox.tasks?.[0]?.relation !== "verifier_review") {
   console.error("[smoke:task-inbox] expected verifier review task to rank first");
   process.exit(1);
 }
@@ -4703,6 +4703,7 @@ const inboxMcpPayload = JSON.parse(JSON.parse(inboxMcpLines[1]).result.content[0
 const nextMcpPayload = JSON.parse(JSON.parse(inboxMcpLines[2]).result.content[0].text);
 if (
   inboxMcp.status !== 0 ||
+  inboxMcpPayload.inbox?.recommendedReason !== "review_queue_visible" ||
   inboxMcpPayload.inbox?.tasks?.[0]?.id !== "task-2" ||
   nextMcpPayload.next?.recommendedReason !== "review_ready_candidate" ||
   nextMcpPayload.next?.candidate?.id !== "task-2" ||

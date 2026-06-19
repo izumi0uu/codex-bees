@@ -2147,10 +2147,26 @@ export function taskInbox(input = {}) {
     mode: input.mode ?? "any"
   });
 
+  const recommendedReason = deriveTaskInboxReason({ tasks: visibleTasks, next, counts: {
+    ownerClaimable: tasks.filter((task) => task.owner === input.role && isClaimableTask(task)).length,
+    ownerClaimedByWorker: input.workerId
+      ? tasks.filter(
+          (task) =>
+            task.owner === input.role &&
+            task.queueStatus === "claimed" &&
+            task.claimedBy === input.workerId
+        ).length
+      : 0,
+    ownerBlocked: tasks.filter((task) => task.owner === input.role && task.queueStatus === "blocked").length,
+    pendingReview: tasks.filter((task) => task.verifier === input.role && task.queueStatus === "ready_for_review").length,
+    completed: tasks.filter((task) => task.queueStatus === "done").length
+  } });
+
   return {
     kind: "role_inbox",
     role: describeRole(input.role, catalog),
     workerId: input.workerId ?? null,
+    recommendedReason,
     counts: {
       total: tasks.length,
       ownerClaimable: tasks.filter((task) => task.owner === input.role && isClaimableTask(task)).length,
@@ -4435,6 +4451,28 @@ function deriveTaskPickupReason(relation) {
     return "observe_without_action";
   }
   return "non_claim_followup";
+}
+
+function deriveTaskInboxReason({ tasks, next, counts }) {
+  if (counts.pendingReview > 0) {
+    return "review_queue_visible";
+  }
+  if (counts.ownerClaimedByWorker > 0) {
+    return "claimed_work_visible";
+  }
+  if (counts.ownerBlocked > 0) {
+    return "blocked_work_visible";
+  }
+  if (counts.ownerClaimable > 0) {
+    return "claimable_work_visible";
+  }
+  if (tasks[0]?.relation === "verifier_observe" || counts.completed > 0) {
+    return "observe_only_inbox";
+  }
+  if (next?.candidate?.id) {
+    return "next_candidate_visible";
+  }
+  return "empty_inbox";
 }
 
 function deriveTaskAssignmentPickupReason(relation) {
