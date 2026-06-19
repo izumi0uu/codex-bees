@@ -256,7 +256,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:signal-pack` / `runtime_signal_pack` provide the signal-oriented package: focus, alerts, activity, and role pressure combined into one monitoring entrypoint with a recommended next surface.
 
-`runtime:summary-pack` / `runtime_summary_pack` provide the automation-first rollup: current focus plus dashboard, alert, handoff, recovery, and closeout counts in one single payload with a recommended next surface. It also accepts `--workers` on CLI or `workerIds` over MCP so nested closeout and leader surfaces can retain concrete worker mappings when downstream automation drills into them.
+`runtime:summary-pack` / `runtime_summary_pack` provide the automation-first rollup: current focus plus dashboard, alert, handoff, recovery, closeout, and compact leader launch-context counts in one single payload with a recommended next surface. It also accepts `--workers` on CLI or `workerIds` over MCP so the surfaced assignment dispatch bundle and launch plan can retain concrete worker mappings when downstream automation needs a lightweight startup handoff without opening the larger leader-oriented packs.
 
 `runtime:triage-pack` / `runtime_triage_pack` provide the triage-oriented package: focus, alerts, review, and recovery combined into one issue-first operator entrypoint with a recommended next surface.
 
