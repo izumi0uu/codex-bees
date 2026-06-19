@@ -25,7 +25,9 @@ import {
   searchMemories,
   storeMemory,
   updateSwarm,
-  updateTask
+  updateTask,
+  validateSwarm,
+  validateTask
 } from "./state.js";
 
 export const toolCatalog = [
@@ -101,6 +103,17 @@ export const toolCatalog = [
         acceptance: { type: "array", items: { type: "string" } },
         verification: { type: "array", items: { type: "string" } },
         notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_check",
+    description: "Validate one task for bounded execution readiness.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
       }
     }
   },
@@ -251,6 +264,17 @@ export const toolCatalog = [
             }
           }
         }
+      }
+    }
+  },
+  {
+    name: "swarm_check",
+    description: "Validate one swarm for bounded lane readiness and scope overlap.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
       }
     }
   },
@@ -586,6 +610,19 @@ function handleRequest(message) {
       return createSuccess(id, createTextPayload({ updated: task }));
     }
 
+    if (name === "task_check") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_check requires arguments.id");
+      }
+
+      const validation = validateTask(params.arguments.id);
+      if (!validation) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ validation }));
+    }
+
     if (name === "task_claim") {
       if (!params.arguments?.id) {
         return createError(id, -32602, "task_claim requires arguments.id");
@@ -760,6 +797,19 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ updated: swarm }));
+    }
+
+    if (name === "swarm_check") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_check requires arguments.id");
+      }
+
+      const validation = validateSwarm(params.arguments.id);
+      if (!validation) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ validation }));
     }
 
     if (name === "swarm_overview") {
