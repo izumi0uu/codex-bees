@@ -44,6 +44,10 @@ function scriptFilePaths() {
     .filter((path) => fileExists(path));
 }
 
+function uniquePaths(paths) {
+  return Array.from(new Set(paths.filter(Boolean)));
+}
+
 function choosePrimaryScope(task) {
   const lower = task.toLowerCase();
 
@@ -101,6 +105,24 @@ function choosePrimaryScope(task) {
   return baseRepoPaths();
 }
 
+function chooseDiscoveryScope(primaryScope) {
+  const primarySet = new Set(primaryScope);
+  const candidates = uniquePaths([
+    ...Object.values(ROLE_FILES).filter(fileExists),
+    directoryExists(".codex/skills") ? ".codex/skills" : null,
+    fileExists("README.md") ? "README.md" : null,
+    ...scriptFilePaths(),
+    ...sourceFilePaths()
+  ]);
+
+  const disjoint = candidates.filter((path) => !primarySet.has(path));
+  if (disjoint.length > 0) {
+    return disjoint.slice(0, Math.min(4, disjoint.length));
+  }
+
+  return primaryScope.slice(0, Math.min(2, primaryScope.length));
+}
+
 function plannerEvidence(task) {
   return {
     task,
@@ -117,14 +139,15 @@ function plannerEvidence(task) {
 }
 
 function buildPlanLanes(task) {
-  const scope = choosePrimaryScope(task);
+  const implementationScope = choosePrimaryScope(task);
+  const discoveryScope = chooseDiscoveryScope(implementationScope);
   return [
     {
       lane: "lane-1",
       owner: "explore",
       verifier: "reviewer",
       summary: `Map scope and verification for: ${task}`,
-      scope,
+      scope: discoveryScope,
       acceptance: [
         "scope paths exist in the repository",
         "the plan maps the task brief to concrete files",
@@ -137,7 +160,7 @@ function buildPlanLanes(task) {
       owner: "executor",
       verifier: "tester",
       summary: `Implement the bounded repo change for: ${task}`,
-      scope,
+      scope: implementationScope,
       acceptance: [
         "the targeted files can be updated without crossing unrelated surfaces",
         "the change remains bounded to the selected scope",
