@@ -198,7 +198,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `leader:queue` / `leader_queue` provide the leaner decision surface for the leader lane: a prioritized multi-swarm action queue with the current next item already selected.
 
-`leader:assignments` / `leader_assignments` provide the owner-grouped dispatch surface for the leader lane: runnable lane work grouped by who should receive it next.
+`leader:assignments` / `leader_assignments` provide the owner-grouped dispatch surface for the leader lane: runnable lane work grouped by who should receive it next. It also emits a machine-readable `recommendedReason` so automation can distinguish between parallel owner-group pressure, multiple visible assignments, single next-assignment readiness, and empty dispatch state without re-deriving those branches from nested arrays.
 
 `swarm:closeout` / `swarm_closeout` add the closure layer for swarm leadership: current swarm bundle, execution brief, and the concrete explicit closeout command when every lane is done.
 

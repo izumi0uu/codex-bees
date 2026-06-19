@@ -514,15 +514,18 @@ export function leaderAssignments(input = {}) {
     }
     return (left.owner?.id ?? left.owner?.name ?? "").localeCompare(right.owner?.id ?? right.owner?.name ?? "");
   });
+  const next = assignments[0] ?? null;
+  const recommendedReason = deriveLeaderAssignmentsReason({ assignments, groups, next });
 
   return {
     kind: "leader_assignments",
+    recommendedReason,
     filters: workspace.filters,
     counts: {
       totalAssignments: assignments.length,
       ownerGroups: groups.length
     },
-    next: assignments[0] ?? null,
+    next,
     groups,
     summary: buildLeaderAssignmentsSummary(assignments, groups)
   };
@@ -4410,6 +4413,22 @@ function deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next })
     return "owner_group_visible";
   }
   return "no_assignment_dispatch_ready";
+}
+
+function deriveLeaderAssignmentsReason({ assignments, groups, next }) {
+  if ((groups?.length ?? 0) > 1) {
+    return "parallel_owner_groups_visible";
+  }
+  if ((assignments?.length ?? 0) > 1) {
+    return "multiple_assignments_visible";
+  }
+  if (next?.taskId) {
+    return "next_assignment_ready";
+  }
+  if ((groups?.length ?? 0) > 0) {
+    return "owner_group_visible";
+  }
+  return "no_dispatch_assignments";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

@@ -1100,6 +1100,7 @@ const leaderAssignmentsCli = JSON.parse(
 ).assignments;
 if (
   leaderAssignmentsCli.kind !== "leader_assignments" ||
+  leaderAssignmentsCli.recommendedReason !== "parallel_owner_groups_visible" ||
   leaderAssignmentsCli.counts?.totalAssignments !== 2 ||
   leaderAssignmentsCli.counts?.ownerGroups !== 2 ||
   !leaderAssignmentsCli.groups?.some((group) => group.owner?.id === "explore") ||
@@ -1877,6 +1878,7 @@ const leaderAssignmentsMcpLines = leaderAssignmentsMcp.stdout
 const leaderAssignmentsMcpPayload = JSON.parse(JSON.parse(leaderAssignmentsMcpLines[1]).result.content[0].text);
 if (
   leaderAssignmentsMcp.status !== 0 ||
+  leaderAssignmentsMcpPayload.assignments?.recommendedReason !== "parallel_owner_groups_visible" ||
   leaderAssignmentsMcpPayload.assignments?.counts?.totalAssignments !== 2 ||
   leaderAssignmentsMcpPayload.assignments?.counts?.ownerGroups !== 2 ||
   !leaderAssignmentsMcpPayload.assignments?.groups?.some((group) => group.owner?.id === "explore") ||
