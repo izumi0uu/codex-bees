@@ -144,6 +144,17 @@ if (
   console.error("[smoke:capabilities] expected runtime capability inventory");
   process.exit(1);
 }
+const runtimeDashboardInitial = JSON.parse(
+  run("runtime-dashboard-initial", ["./src/index.js", "runtime:dashboard"]).stdout
+).dashboard;
+if (
+  runtimeDashboardInitial.kind !== "runtime_dashboard" ||
+  runtimeDashboardInitial.counts?.tasks < 3 ||
+  runtimeDashboardInitial.leader?.queue?.kind !== "leader_queue"
+) {
+  console.error("[smoke:runtime-dashboard] expected top-level runtime dashboard");
+  process.exit(1);
+}
 
 const listedMemories = JSON.parse(
   run("memory-list-verify", ["./src/index.js", "memory:list", "--namespace", "smoke"]).stdout
@@ -1184,6 +1195,125 @@ if (
 ) {
   console.error("[smoke:leader-assignments-mcp] expected MCP leader assignments");
   console.error(leaderAssignmentsMcp.stderr || leaderAssignmentsMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("dashboard-task-blocked", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "dashboard blocked task",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/index.js",
+  "--acceptance",
+  "blocked visible",
+  "--verification",
+  "dashboard shows blocked"
+]);
+run("dashboard-task-blocked-claim", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "worker-blocked"]);
+run("dashboard-task-blocked-mark", ["./src/index.js", "task:block", "--id", "task-1", "--by", "worker-blocked"]);
+run("dashboard-task-review", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "dashboard review task",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/mcp.js",
+  "--acceptance",
+  "review visible",
+  "--verification",
+  "dashboard shows review"
+]);
+run("dashboard-task-review-claim", ["./src/index.js", "task:claim", "--id", "task-2", "--by", "worker-review"]);
+run("dashboard-task-review-ready", ["./src/index.js", "task:review", "--id", "task-2", "--by", "worker-review"]);
+run("dashboard-task-active", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "dashboard active task",
+  "--owner",
+  "explore",
+  "--verifier",
+  "reviewer",
+  "--scope",
+  "src/state.js",
+  "--acceptance",
+  "active visible",
+  "--verification",
+  "dashboard shows active"
+]);
+run("dashboard-task-active-claim", ["./src/index.js", "task:claim", "--id", "task-3", "--by", "worker-active"]);
+run("dashboard-swarm", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Dashboard swarm",
+  "--owner",
+  "leader",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-dashboard",
+      summary: "Queue visible in dashboard",
+      owner: "executor",
+      verifier: "tester",
+      scope: ["src/mcp.js"],
+      acceptance: ["dashboard queue visible"],
+      verification: ["dashboard leader queue available"]
+    }
+  ])
+]);
+const runtimeDashboardCli = JSON.parse(
+  run("runtime-dashboard-cli", ["./src/index.js", "runtime:dashboard"]).stdout
+).dashboard;
+if (
+  runtimeDashboardCli.counts?.blockedTasks !== 1 ||
+  runtimeDashboardCli.counts?.pendingReview !== 1 ||
+  runtimeDashboardCli.counts?.activeClaimed !== 1 ||
+  runtimeDashboardCli.leader?.queue?.next?.swarmId !== "swarm-1"
+) {
+  console.error("[smoke:runtime-dashboard] expected CLI dashboard counts and leader queue");
+  process.exit(1);
+}
+const runtimeDashboardMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_dashboard",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeDashboardMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeDashboardMcpInput,
+  encoding: "utf8"
+});
+const runtimeDashboardMcpLines = runtimeDashboardMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeDashboardMcpPayload = JSON.parse(JSON.parse(runtimeDashboardMcpLines[1]).result.content[0].text);
+if (
+  runtimeDashboardMcp.status !== 0 ||
+  runtimeDashboardMcpPayload.dashboard?.counts?.blockedTasks !== 1 ||
+  runtimeDashboardMcpPayload.dashboard?.counts?.pendingReview !== 1 ||
+  runtimeDashboardMcpPayload.dashboard?.counts?.activeClaimed !== 1 ||
+  runtimeDashboardMcpPayload.dashboard?.leader?.queue?.next?.swarmId !== "swarm-1"
+) {
+  console.error("[smoke:runtime-dashboard-mcp] expected MCP runtime dashboard");
+  console.error(runtimeDashboardMcp.stderr || runtimeDashboardMcp.stdout);
   process.exit(1);
 }
 
