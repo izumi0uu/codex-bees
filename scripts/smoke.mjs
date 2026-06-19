@@ -2720,9 +2720,14 @@ const runtimeSummaryPackMappedCli = JSON.parse(
 ).summaryPack;
 if (
   runtimeSummaryPackMappedCli.surfaces?.closeout?.counts?.totalReady !== 0 ||
-  runtimeSummaryPackMappedCli.recommendedSurface !== "runtime:focus"
+  runtimeSummaryPackMappedCli.recommendedSurface !== "runtime:focus" ||
+  runtimeSummaryPackMappedCli.overview?.assignmentLaunchPlan?.steps !== 1 ||
+  runtimeSummaryPackMappedCli.overview?.assignmentDispatchBundle?.launches !== 1 ||
+  runtimeSummaryPackMappedCli.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
+  runtimeSummaryPackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeSummaryPackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner"
 ) {
-  console.error("[smoke:runtime-summary-pack] expected CLI summary pack to preserve focus while accepting worker mappings");
+  console.error("[smoke:runtime-summary-pack] expected CLI summary pack to preserve focus while exposing compact mapped launch context");
   process.exit(1);
 }
 const runtimeCloseoutPackMappedCli = JSON.parse(
@@ -3266,6 +3271,39 @@ if (
 ) {
   console.error("[smoke:runtime-summary-pack-mcp] expected MCP runtime summary pack");
   console.error(runtimeSummaryPackMcp.stderr || runtimeSummaryPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeSummaryPackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_summary_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const runtimeSummaryPackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeSummaryPackMappedMcpInput,
+  encoding: "utf8"
+});
+const runtimeSummaryPackMappedMcpLines = runtimeSummaryPackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeSummaryPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeSummaryPackMappedMcpLines[1]).result.content[0].text);
+if (
+  runtimeSummaryPackMappedMcp.status !== 0 ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.overview?.assignmentLaunchPlan?.steps !== 1 ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.overview?.assignmentDispatchBundle?.launches !== 1 ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner"
+) {
+  console.error("[smoke:runtime-summary-pack-mcp] expected MCP summary pack to preserve compact mapped launch context");
+  console.error(runtimeSummaryPackMappedMcp.stderr || runtimeSummaryPackMappedMcp.stdout);
   process.exit(1);
 }
 const runtimeLeaderPackMcpInput = [

@@ -1141,6 +1141,8 @@ export function runtimeSummaryPack(input = {}) {
   const handoffs = runtimeHandoffs();
   const recovery = runtimeRecovery();
   const closeout = runtimeCloseout();
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
+  const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const recommendedSurface = deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard });
 
   return {
@@ -1152,20 +1154,26 @@ export function runtimeSummaryPack(input = {}) {
       alerts: alerts.counts,
       handoffs: handoffs.counts,
       recovery: recovery.counts,
-      closeout: closeout.counts
+      closeout: closeout.counts,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
+      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
     },
     next: {
       focus: focus.focus ?? null,
       handoff: handoffs.next ?? null,
       recovery: recovery.next ?? null,
-      closeout: closeout.next ?? null
+      closeout: closeout.next ?? null,
+      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+      assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
     },
     surfaces: {
       dashboard,
       alerts,
       handoffs,
       recovery,
-      closeout
+      closeout,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan
     },
     summary: buildRuntimeSummaryPackSummary(recommendedSurface, focus)
   };
