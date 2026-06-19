@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { cwd } from "node:process";
+import { listAgentRoleIds } from "./catalog.js";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
@@ -125,6 +126,12 @@ export function validateSwarm(id) {
     return null;
   }
   return validateSwarmValue(swarm);
+}
+
+export function runtimeRoleCatalog() {
+  return {
+    agents: listAgentRoleIds()
+  };
 }
 
 export function syncSwarmStatus(id) {
@@ -687,15 +694,28 @@ function normalizeState(state) {
 
 function validateTaskValue(task) {
   const issues = [];
+  const roleCatalog = runtimeRoleCatalog();
 
   if (!task.title?.trim()) {
     issues.push({ code: "missing_title", message: "Task title is required" });
   }
   if (!task.owner?.trim()) {
     issues.push({ code: "missing_owner", message: "Task owner is required for bounded execution" });
+  } else if (!roleCatalog.agents.includes(task.owner)) {
+    issues.push({
+      code: "unknown_owner",
+      message: `Task owner ${task.owner} is not a shipped agent role`,
+      allowed: roleCatalog.agents
+    });
   }
   if (!task.verifier?.trim()) {
     issues.push({ code: "missing_verifier", message: "Task verifier is required for bounded execution" });
+  } else if (!roleCatalog.agents.includes(task.verifier)) {
+    issues.push({
+      code: "unknown_verifier",
+      message: `Task verifier ${task.verifier} is not a shipped agent role`,
+      allowed: roleCatalog.agents
+    });
   }
   if (!Array.isArray(task.scope) || task.scope.length === 0) {
     issues.push({ code: "missing_scope", message: "Task scope is required for bounded execution" });
@@ -713,13 +733,15 @@ function validateTaskValue(task) {
   return {
     task,
     ready: issues.length === 0,
-    issues
+    issues,
+    catalog: roleCatalog
   };
 }
 
 function validateSwarmValue(swarm) {
   const issues = [];
   const laneReports = [];
+  const roleCatalog = runtimeRoleCatalog();
 
   if (!swarm.objective?.trim()) {
     issues.push({ code: "missing_objective", message: "Swarm objective is required" });
@@ -732,9 +754,21 @@ function validateSwarmValue(swarm) {
     const laneIssues = [];
     if (!lane.owner?.trim()) {
       laneIssues.push({ code: "missing_owner", message: "Lane owner is required" });
+    } else if (!roleCatalog.agents.includes(lane.owner)) {
+      laneIssues.push({
+        code: "unknown_owner",
+        message: `Lane owner ${lane.owner} is not a shipped agent role`,
+        allowed: roleCatalog.agents
+      });
     }
     if (!lane.verifier?.trim()) {
       laneIssues.push({ code: "missing_verifier", message: "Lane verifier is required" });
+    } else if (!roleCatalog.agents.includes(lane.verifier)) {
+      laneIssues.push({
+        code: "unknown_verifier",
+        message: `Lane verifier ${lane.verifier} is not a shipped agent role`,
+        allowed: roleCatalog.agents
+      });
     }
     if (!Array.isArray(lane.scope) || lane.scope.length === 0) {
       laneIssues.push({ code: "missing_scope", message: "Lane scope is required" });
@@ -776,7 +810,8 @@ function validateSwarmValue(swarm) {
     ready: issues.length === 0 && laneReports.every((lane) => lane.ready) && overlapIssues.length === 0,
     issues,
     lanes: laneReports,
-    overlaps: overlapIssues
+    overlaps: overlapIssues,
+    catalog: roleCatalog
   };
 }
 
