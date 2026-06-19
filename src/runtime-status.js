@@ -189,3 +189,21 @@ export function getRuntimeStatus({ version, toolCount }) {
     }))
   };
 }
+
+export function getRuntimeStatusView({ version, toolCount }) {
+  const status = getRuntimeStatus({ version, toolCount });
+  const trackedStateEntries =
+    status.counts.tasks +
+    status.counts.swarms +
+    status.counts.memories;
+
+  return {
+    kind: "runtime_status_view",
+    recommendedReason: trackedStateEntries > 0 ? "runtime_state_visible" : "runtime_state_empty",
+    counts: {
+      ...status.counts,
+      trackedStateEntries
+    },
+    status
+  };
+}

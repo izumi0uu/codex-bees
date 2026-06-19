@@ -186,16 +186,22 @@ if (
 }
 const runtimeStatus = JSON.parse(run("status-verify", ["./src/index.js", "status"]).stdout).status;
 if (
-  runtimeStatus.product !== "codex-bees" ||
+  runtimeStatus.kind !== "runtime_status_view" ||
+  runtimeStatus.recommendedReason !== "runtime_state_visible" ||
   runtimeStatus.counts?.agents !== 4 ||
   runtimeStatus.counts?.skills !== 2 ||
   runtimeStatus.counts?.capabilities < 6 ||
-  !Array.isArray(runtimeStatus.highlights) ||
-  !runtimeStatus.highlights.includes("runtime:queue-pack recommends launch context before raw leader queue review") ||
-  runtimeStatus.recommendedEntryPoints?.cli?.[0] !== "leader:assignment-launch-plan" ||
-  runtimeStatus.recommendedEntryPoints?.mcp?.[0] !== "leader_assignment_launch_plan" ||
-  !Array.isArray(runtimeStatus.useCases) ||
-  !runtimeStatus.useCases.includes("bring multiple workers online in leader-defined order")
+  runtimeStatus.counts?.trackedStateEntries !==
+    (runtimeStatus.status?.counts?.tasks ?? 0) +
+    (runtimeStatus.status?.counts?.swarms ?? 0) +
+    (runtimeStatus.status?.counts?.memories ?? 0) ||
+  runtimeStatus.status?.product !== "codex-bees" ||
+  !Array.isArray(runtimeStatus.status?.highlights) ||
+  !runtimeStatus.status.highlights.includes("runtime:queue-pack recommends launch context before raw leader queue review") ||
+  runtimeStatus.status?.recommendedEntryPoints?.cli?.[0] !== "leader:assignment-launch-plan" ||
+  runtimeStatus.status?.recommendedEntryPoints?.mcp?.[0] !== "leader_assignment_launch_plan" ||
+  !Array.isArray(runtimeStatus.status?.useCases) ||
+  !runtimeStatus.status.useCases.includes("bring multiple workers online in leader-defined order")
 ) {
   console.error("[smoke:status] expected runtime summary counts, highlights, recommended entrypoints, and use cases");
   process.exit(1);
@@ -5265,7 +5271,11 @@ if (
   taskCatalogPayload?.catalog?.recommendedReason !== "catalog_entries_loaded" ||
   taskCatalogPayload?.catalog?.counts?.agents !== 4 ||
   !taskCatalogPayload?.catalog?.catalog?.agents?.some((agent) => agent.id === "tester") ||
+  taskStatusPayload?.status?.kind !== "runtime_status_view" ||
+  taskStatusPayload?.status?.recommendedReason !== "runtime_state_empty" ||
   taskStatusPayload?.status?.counts?.agents !== 4 ||
+  taskStatusPayload?.status?.counts?.trackedStateEntries !== 0 ||
+  taskStatusPayload?.status?.status?.product !== "codex-bees" ||
   taskAddPayload?.created?.kind !== "task_mutation" ||
   taskAddPayload?.created?.recommendedReason !== "task_created" ||
   taskAddPayload?.created?.task?.id !== "task-1" ||
