@@ -221,8 +221,10 @@ export function queueTasksFromPlan(task, addTasks) {
   }));
 
   const created = addTasks(tasks);
+  const recommendedReason = created.length > 1 ? "multiple_plan_tasks_queued" : "single_plan_task_queued";
   return {
     kind: "queued_plan",
+    recommendedReason,
     objective: task,
     lanes: plan.lanes,
     created

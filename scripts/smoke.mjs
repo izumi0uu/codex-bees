@@ -1258,7 +1258,12 @@ const queuedPlan = run("queue-plan-cli", [
   "Queue a planner change"
 ]);
 const queuedPlanPayload = JSON.parse(queuedPlan.stdout);
-if (!Array.isArray(queuedPlanPayload.created) || queuedPlanPayload.created.length !== 2) {
+if (
+  queuedPlanPayload.kind !== "queued_plan" ||
+  queuedPlanPayload.recommendedReason !== "multiple_plan_tasks_queued" ||
+  !Array.isArray(queuedPlanPayload.created) ||
+  queuedPlanPayload.created.length !== 2
+) {
   console.error("[smoke:queue-plan-cli] expected two queued tasks");
   process.exit(1);
 }
@@ -1291,7 +1296,11 @@ const queuePlanLines = queuePlanMcp.stdout
 const queuePlanResult = queuePlanLines.length >= 2 ? JSON.parse(queuePlanLines[1]) : null;
 const queuePlanText = queuePlanResult?.result?.content?.[0]?.text;
 const queuePlanPayloadMcp = queuePlanText ? JSON.parse(queuePlanText) : null;
-if (queuePlanMcp.status !== 0 || queuePlanPayloadMcp?.kind !== "queued_plan") {
+if (
+  queuePlanMcp.status !== 0 ||
+  queuePlanPayloadMcp?.kind !== "queued_plan" ||
+  queuePlanPayloadMcp?.recommendedReason !== "multiple_plan_tasks_queued"
+) {
   console.error("[smoke:queue-plan-mcp] expected queued_plan response");
   console.error(queuePlanMcp.stderr || queuePlanMcp.stdout);
   process.exit(1);
