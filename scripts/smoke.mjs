@@ -154,6 +154,19 @@ if (
   console.error("[smoke:runtime-activity] expected top-level runtime activity");
   process.exit(1);
 }
+const runtimeCloseoutInitial = JSON.parse(
+  run("runtime-closeout-initial", ["./src/index.js", "runtime:closeout"]).stdout
+).closeout;
+if (
+  runtimeCloseoutInitial.kind !== "runtime_closeout" ||
+  !Array.isArray(runtimeCloseoutInitial.tasks) ||
+  !Array.isArray(runtimeCloseoutInitial.swarms) ||
+  runtimeCloseoutInitial.counts?.tasksReady < 1 ||
+  runtimeCloseoutInitial.tasks?.some((entry) => entry.taskId === "task-3" && entry.reviewOutcome === "approved") !== true
+) {
+  console.error("[smoke:runtime-closeout] expected top-level runtime closeout");
+  process.exit(1);
+}
 const runtimeDashboardInitial = JSON.parse(
   run("runtime-dashboard-initial", ["./src/index.js", "runtime:dashboard"]).stdout
 ).dashboard;
@@ -1358,6 +1371,19 @@ if (
   console.error("[smoke:runtime-activity] expected CLI runtime activity stream");
   process.exit(1);
 }
+const runtimeCloseoutCli = JSON.parse(
+  run("runtime-closeout-cli", ["./src/index.js", "runtime:closeout"]).stdout
+).closeout;
+if (
+  runtimeCloseoutCli.counts?.tasksReady !== 0 ||
+  runtimeCloseoutCli.counts?.swarmsReady !== 0 ||
+  runtimeCloseoutCli.counts?.totalReady !== 0 ||
+  runtimeCloseoutCli.next !== null ||
+  runtimeCloseoutCli.tasks?.length !== 0
+) {
+  console.error("[smoke:runtime-closeout] expected CLI runtime closeout workspace");
+  process.exit(1);
+}
 const runtimeDashboardCli = JSON.parse(
   run("runtime-dashboard-cli", ["./src/index.js", "runtime:dashboard"]).stdout
 ).dashboard;
@@ -1481,6 +1507,36 @@ if (
 ) {
   console.error("[smoke:runtime-activity-mcp] expected MCP runtime activity");
   console.error(runtimeActivityMcp.stderr || runtimeActivityMcp.stdout);
+  process.exit(1);
+}
+const runtimeCloseoutMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_closeout",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeCloseoutMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeCloseoutMcpInput,
+  encoding: "utf8"
+});
+const runtimeCloseoutMcpLines = runtimeCloseoutMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeCloseoutMcpPayload = JSON.parse(JSON.parse(runtimeCloseoutMcpLines[1]).result.content[0].text);
+if (
+  runtimeCloseoutMcp.status !== 0 ||
+  runtimeCloseoutMcpPayload.closeout?.counts?.tasksReady !== 0 ||
+  runtimeCloseoutMcpPayload.closeout?.next !== null
+) {
+  console.error("[smoke:runtime-closeout-mcp] expected MCP runtime closeout");
+  console.error(runtimeCloseoutMcp.stderr || runtimeCloseoutMcp.stdout);
   process.exit(1);
 }
 const runtimeDashboardMcpInput = [
