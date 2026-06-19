@@ -1101,6 +1101,7 @@ const leaderAssignmentDispatchPackCliByOwner = new Map(
 if (
   leaderAssignmentDispatchPackCli.counts?.ownerGroups !== 2 ||
   leaderAssignmentDispatchPackCli.counts?.totalAssignments !== 2 ||
+  leaderAssignmentDispatchPackCli.recommendedReason !== "parallel_owner_groups_ready" ||
   leaderAssignmentDispatchPackCli.next?.owner?.id !== "executor" ||
   leaderAssignmentDispatchPackCliByOwner.get("executor")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker <executor-worker> --task task-2" ||
   leaderAssignmentDispatchPackCliByOwner.get("explore")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role explore --worker <explore-worker> --task task-1"
@@ -1914,6 +1915,7 @@ if (
   leaderAssignmentDispatchPackMcp.status !== 0 ||
   leaderAssignmentDispatchPackMcpPayload.assignmentDispatchPack?.counts?.ownerGroups !== 2 ||
   leaderAssignmentDispatchPackMcpPayload.assignmentDispatchPack?.counts?.totalAssignments !== 2 ||
+  leaderAssignmentDispatchPackMcpPayload.assignmentDispatchPack?.recommendedReason !== "parallel_owner_groups_ready" ||
   leaderAssignmentDispatchPackMcpPayload.assignmentDispatchPack?.next?.owner?.id !== "executor" ||
   leaderAssignmentDispatchPackMcpByOwner.get("executor")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker <executor-worker> --task task-2" ||
   leaderAssignmentDispatchPackMcpByOwner.get("explore")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role explore --worker <explore-worker> --task task-1"

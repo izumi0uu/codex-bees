@@ -192,7 +192,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `leader:assignment-launch-plan` / `leader_assignment_launch_plan` provide the leader-ready startup checklist: one ordered startup step per worker launch with the concrete runtime commands the leader should run first.
 
-`leader:assignment-dispatch-pack` / `leader_assignment_dispatch_pack` provide the batch leader handoff package: one worker-targeted dispatch package per owner group so multiple workers can be started in parallel without re-deriving commands by hand. Pass `--workers` on CLI or `workerIds` over MCP to inject real role-to-worker mappings into the generated preview and pickup commands.
+`leader:assignment-dispatch-pack` / `leader_assignment_dispatch_pack` provide the batch leader handoff package: one worker-targeted dispatch package per owner group so multiple workers can be started in parallel without re-deriving commands by hand. It also emits a machine-readable `recommendedReason` so automation can distinguish between parallel owner-group readiness, multi-assignment pressure, single next-assignment readiness, and empty dispatch fallback before opening larger runtime packs. Pass `--workers` on CLI or `workerIds` over MCP to inject real role-to-worker mappings into the generated preview and pickup commands.
 
 `leader:workspace` / `leader_workspace` provide the symmetric orchestration artifact for the leader lane: multi-swarm counts, prioritized swarm focus, the next recommended action, and an embedded deep `swarm:bundle` for the current focus swarm.
 

@@ -587,9 +587,11 @@ export function leaderAssignmentDispatchPack(input = {}) {
     };
   });
   const next = groups[0] ?? null;
+  const recommendedReason = deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next });
 
   return {
     kind: "leader_assignment_dispatch_pack",
+    recommendedReason,
     counts: {
       ownerGroups: groups.length,
       totalAssignments: assignments?.counts?.totalAssignments ?? 0
@@ -4293,6 +4295,22 @@ function deriveRuntimeOperatorPackReason({ focus, handoffs, closeout, dashboard,
     return "dashboard_visibility";
   }
   return "default_focus_priority";
+}
+
+function deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next }) {
+  if ((groups?.length ?? 0) > 1) {
+    return "parallel_owner_groups_ready";
+  }
+  if ((assignments?.counts?.totalAssignments ?? 0) > 1) {
+    return "multiple_assignments_ready";
+  }
+  if (next?.next?.taskId) {
+    return "next_assignment_ready";
+  }
+  if ((assignments?.counts?.ownerGroups ?? 0) > 0) {
+    return "owner_group_visible";
+  }
+  return "no_assignment_dispatch_ready";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
