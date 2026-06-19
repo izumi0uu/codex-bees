@@ -485,6 +485,7 @@ const runtimeRolesInitial = JSON.parse(
 ).roles;
 if (
   runtimeRolesInitial.kind !== "runtime_roles" ||
+  runtimeRolesInitial.recommendedReason !== "claimable_role_pressure" ||
   !Array.isArray(runtimeRolesInitial.roles) ||
   runtimeRolesInitial.counts?.totalRoles < 4
 ) {
@@ -2980,6 +2981,7 @@ const runtimeRolesCli = JSON.parse(
   run("runtime-roles-cli", ["./src/index.js", "runtime:roles"]).stdout
 ).roles;
 if (
+  runtimeRolesCli.recommendedReason !== "review_role_pressure" ||
   runtimeRolesCli.counts?.withPendingReview !== 1 ||
   runtimeRolesCli.counts?.withBlockedOwnerWork !== 1 ||
   runtimeRolesCli.counts?.withClaimableOwnerWork !== 1 ||
@@ -3921,6 +3923,7 @@ const runtimeRolesMcpLines = runtimeRolesMcp.stdout
 const runtimeRolesMcpPayload = JSON.parse(JSON.parse(runtimeRolesMcpLines[1]).result.content[0].text);
 if (
   runtimeRolesMcp.status !== 0 ||
+  runtimeRolesMcpPayload.roles?.recommendedReason !== "review_role_pressure" ||
   runtimeRolesMcpPayload.roles?.counts?.withPendingReview !== 1 ||
   runtimeRolesMcpPayload.roles?.next?.role?.id !== "tester" ||
   runtimeRolesMcpPayload.roles?.roles?.find((entry) => entry.role?.id === "executor")?.counts?.ownerBlocked !== 1

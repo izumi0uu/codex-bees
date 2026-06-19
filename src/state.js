@@ -804,9 +804,11 @@ export function runtimeRoles(input = {}) {
     .filter(Boolean)
     .sort(compareRuntimeRoleEntries);
   const next = roles[0] ?? null;
+  const recommendedReason = deriveRuntimeRolesReason({ roles, next });
 
   return {
     kind: "runtime_roles",
+    recommendedReason,
     counts: {
       totalRoles: roles.length,
       withPendingReview: roles.filter((entry) => entry.counts.pendingReview > 0).length,
@@ -4553,6 +4555,25 @@ function deriveRuntimeHandoffsReason({ groups, next }) {
     return "actor_groups_visible";
   }
   return "no_handoffs_ready";
+}
+
+function deriveRuntimeRolesReason({ roles, next }) {
+  if (next?.counts?.pendingReview > 0) {
+    return "review_role_pressure";
+  }
+  if (next?.counts?.ownerBlocked > 0) {
+    return "blocked_role_pressure";
+  }
+  if (next?.counts?.ownerClaimable > 0) {
+    return "claimable_role_pressure";
+  }
+  if (next?.counts?.ownerClaimed > 0) {
+    return "active_role_pressure";
+  }
+  if ((roles?.length ?? 0) > 0) {
+    return "tracked_roles_visible";
+  }
+  return "no_roles_tracked";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
