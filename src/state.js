@@ -1468,6 +1468,38 @@ export function runtimeRolePack(input = {}) {
   };
 }
 
+export function runtimeExecutionPack() {
+  const focus = runtimeFocus();
+  const dispatch = runtimeDispatch();
+  const roles = runtimeRoles();
+  const queuePack = runtimeQueuePack();
+  const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, roles, queuePack });
+
+  return {
+    kind: "runtime_execution_pack",
+    recommendedSurface,
+    overview: {
+      focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
+      dispatch: dispatch?.counts ?? null,
+      roles: roles?.counts ?? null,
+      queue: queuePack?.overview?.queue ?? null
+    },
+    next: {
+      focus: focus?.focus ?? null,
+      dispatch: dispatch?.next ?? null,
+      role: roles?.next ?? null,
+      queue: queuePack?.next?.queue ?? null
+    },
+    surfaces: {
+      focus,
+      dispatch,
+      roles,
+      queuePack
+    },
+    summary: buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, roles, queuePack)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3915,6 +3947,32 @@ function buildRuntimeRolePackSummary(recommendedSurface, roleEntry, sessionPack,
     roleEntry?.summary ??
     "Runtime role pack has no current role detail.";
   return `Runtime role pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeExecutionPackSurface({ focus, dispatch, roles, queuePack }) {
+  if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task" || focus?.focus?.type === "dispatch_lane") {
+    return "runtime:focus";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "runtime:dispatch";
+  }
+  if ((roles?.counts?.withClaimableOwnerWork ?? 0) > 0 || (roles?.counts?.withActiveOwnerWork ?? 0) > 0) {
+    return "runtime:roles";
+  }
+  if ((queuePack?.overview?.queue?.total ?? 0) > 0) {
+    return "leader:queue";
+  }
+  return "runtime:focus";
+}
+
+function buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, roles, queuePack) {
+  const detail =
+    focus?.summary ??
+    dispatch?.summary ??
+    roles?.summary ??
+    queuePack?.summary ??
+    "Runtime execution pack has no current execution detail.";
+  return `Runtime execution pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
