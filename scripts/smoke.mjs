@@ -1384,8 +1384,45 @@ const plannedSwarm = JSON.parse(
     "Coordinate a planner-driven swarm"
   ]).stdout
 );
-if (plannedSwarm.kind !== "planned_swarm" || plannedSwarm.swarm?.laneSource !== "planner") {
+if (
+  plannedSwarm.kind !== "planned_swarm" ||
+  plannedSwarm.recommendedReason !== "multi_lane_swarm_ready" ||
+  plannedSwarm.swarm?.laneSource !== "planner"
+) {
   console.error("[smoke:plan-swarm] expected planner swarm payload");
+  process.exit(1);
+}
+const planSwarmMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "plan_swarm",
+      arguments: { task: "Plan an MCP swarm change" }
+    }
+  })
+].join("\n") + "\n";
+const planSwarmMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: planSwarmMcpInput,
+  encoding: "utf8"
+});
+const planSwarmLines = planSwarmMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const planSwarmResult = planSwarmLines.length >= 2 ? JSON.parse(planSwarmLines[1]) : null;
+const planSwarmText = planSwarmResult?.result?.content?.[0]?.text;
+const planSwarmPayload = planSwarmText ? JSON.parse(planSwarmText) : null;
+if (
+  planSwarmMcp.status !== 0 ||
+  planSwarmPayload?.kind !== "planned_swarm" ||
+  planSwarmPayload?.recommendedReason !== "multi_lane_swarm_ready" ||
+  planSwarmPayload?.swarm?.laneSource !== "planner"
+) {
+  console.error("[smoke:plan-swarm-mcp] expected planner swarm payload with machine-readable reason");
+  console.error(planSwarmMcp.stderr || planSwarmMcp.stdout);
   process.exit(1);
 }
 const queuedPlanSwarm = JSON.parse(

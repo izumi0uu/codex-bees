@@ -191,8 +191,10 @@ export function planTask(task) {
 
 export function planSwarm(task) {
   const plan = planTask(task);
+  const recommendedReason = plan.lanes.length > 1 ? "multi_lane_swarm_ready" : "single_lane_swarm_ready";
   return {
     kind: "planned_swarm",
+    recommendedReason,
     objective: task,
     evidence: plan.evidence,
     swarm: {

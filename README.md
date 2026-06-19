@@ -234,6 +234,8 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `plan:queue` / `queue_plan` return the explicit planner queue result: the planned lanes plus the local tasks created from them. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane planner queue events without inferring from the created-task array length alone.
 
+`plan:swarm` / `plan_swarm` return the explicit planner swarm payload. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane swarm planning outcomes without inferring that only from the returned lane array length.
+
 `plan:swarm:queue` / `queue_plan_swarm` return the explicit planner swarm queue result: the generated swarm contract plus the local lane tasks created from it. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane swarm queue events without inferring from the created-task array length alone.
 
 `catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
