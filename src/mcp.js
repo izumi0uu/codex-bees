@@ -20,6 +20,7 @@ import {
   queueSwarmTasks,
   releaseTask,
   swarmOverview,
+  syncSwarmStatus,
   searchMemories,
   storeMemory,
   updateSwarm,
@@ -272,6 +273,17 @@ export const toolCatalog = [
         id: { type: "string" },
         claimedBy: { type: "string" },
         owner: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_sync",
+    description: "Align swarm status with the current lane task reality.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
       }
     }
   },
@@ -779,6 +791,19 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ dispatched: result }));
+    }
+
+    if (name === "swarm_sync") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_sync requires arguments.id");
+      }
+
+      const result = syncSwarmStatus(params.arguments.id);
+      if (!result) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ synced: result }));
     }
 
     if (name === "swarm_activate") {
