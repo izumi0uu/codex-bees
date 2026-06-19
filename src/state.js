@@ -376,6 +376,39 @@ export function swarmCloseout(id) {
   };
 }
 
+export function swarmBlockers(id) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const brief = swarmBrief(id);
+  const blockedLanes = (brief?.lanes ?? [])
+    .filter((lane) => lane.taskQueueStatus === "blocked")
+    .map((lane) => ({
+      lane: lane.lane,
+      summary: lane.summary,
+      owner: lane.owner,
+      verifier: lane.verifier,
+      taskId: lane.taskId,
+      claimedBy: lane.claimedBy,
+      recommendedNextActor: lane.recommendedNextActor,
+      recommendedNextAction: lane.recommendedNextAction,
+      recommendedCommands: lane.recommendedCommands,
+      report: lane.taskId ? taskReport(lane.taskId) : null
+    }));
+
+  return {
+    kind: "swarm_blockers",
+    swarm: overview.swarm,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    blockedCount: blockedLanes.length,
+    blockers: blockedLanes,
+    summary: buildSwarmBlockersSummary(overview, blockedLanes)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -1616,6 +1649,18 @@ function buildSwarmCloseoutSummary(overview, command) {
   }
 
   return `Swarm ${overview.swarm.id} has no closeout action available yet.`;
+}
+
+function buildSwarmBlockersSummary(overview, blockedLanes) {
+  if (blockedLanes.length === 0) {
+    return `Swarm ${overview.swarm.id} has no blocked lanes right now.`;
+  }
+
+  if (blockedLanes.length === 1) {
+    return `Swarm ${overview.swarm.id} has 1 blocked lane (${blockedLanes[0].lane}) that needs unblock ownership.`;
+  }
+
+  return `Swarm ${overview.swarm.id} has ${blockedLanes.length} blocked lanes that need unblock ownership.`;
 }
 
 function buildLeaderWorkspaceSwarmEntry(overview) {
