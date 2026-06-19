@@ -2853,18 +2853,31 @@ export function verifierBundle(input = {}) {
   const reviewSnapshot = session?.reviewQueue?.[0] ?? null;
   const report = reviewSnapshot?.summary?.id ? taskReport(reviewSnapshot.summary.id) : null;
   const recommendedReason = deriveVerifierBundleReason({ reviewSnapshot, report, handoff });
+  const recentHistory = reviewSnapshot?.recentHistory ?? [];
+  const recentAnnotations = reviewSnapshot?.recentAnnotations ?? [];
+  const commands = buildVerifierDecisionCommands(reviewSnapshot?.summary, input.role);
 
   return {
     kind: "verifier_bundle",
     role: describeRole(input.role),
     workerId: input.workerId,
     recommendedReason,
+    metadata: {
+      hasCurrentTask: Boolean(reviewSnapshot?.summary?.id),
+      hasReport: Boolean(report),
+      reviewTaskId: reviewSnapshot?.summary?.id ?? null
+    },
+    counts: {
+      recentHistoryEntries: recentHistory.length,
+      recentAnnotationEntries: recentAnnotations.length,
+      decisionCommands: Object.values(commands).filter(Boolean).length
+    },
     handoff,
     currentTask: reviewSnapshot?.summary ?? null,
     report,
-    recentHistory: reviewSnapshot?.recentHistory ?? [],
-    recentAnnotations: reviewSnapshot?.recentAnnotations ?? [],
-    commands: buildVerifierDecisionCommands(reviewSnapshot?.summary, input.role),
+    recentHistory,
+    recentAnnotations,
+    commands,
     summary: buildVerifierBundleSummary(reviewSnapshot?.summary, input.role, input.workerId)
   };
 }

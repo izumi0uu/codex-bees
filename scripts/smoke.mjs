@@ -5637,6 +5637,12 @@ if (
 
 if (
   verifierBundleCli.recommendedReason !== "decision_target_ready" ||
+  verifierBundleCli.metadata?.hasCurrentTask !== true ||
+  verifierBundleCli.metadata?.hasReport !== true ||
+  verifierBundleCli.metadata?.reviewTaskId !== "task-2" ||
+  verifierBundleCli.counts?.recentHistoryEntries !== verifierBundleCli.recentHistory.length ||
+  verifierBundleCli.counts?.recentAnnotationEntries !== verifierBundleCli.recentAnnotations.length ||
+  verifierBundleCli.counts?.decisionCommands !== Object.values(verifierBundleCli.commands ?? {}).filter(Boolean).length ||
   verifierBundleCli.currentTask?.id !== "task-2" ||
   verifierBundleCli.report?.task?.id !== "task-2" ||
   verifierBundleCli.commands?.approve !== "node ./src/index.js task:approve --id task-2 --by tester"
