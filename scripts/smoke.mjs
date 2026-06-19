@@ -429,6 +429,7 @@ const runtimeReviewInitial = JSON.parse(
 ).review;
 if (
   runtimeReviewInitial.kind !== "runtime_review" ||
+  runtimeReviewInitial.recommendedReason !== "no_review_pending" ||
   !Array.isArray(runtimeReviewInitial.groups)
 ) {
   console.error("[smoke:runtime-review] expected top-level runtime review");
@@ -2917,6 +2918,7 @@ const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
 if (
+  runtimeReviewCli.recommendedReason !== "review_decision_ready" ||
   runtimeReviewCli.counts?.verifierGroups !== 1 ||
   runtimeReviewCli.counts?.totalPendingReview !== 1 ||
   runtimeReviewCli.next?.taskId !== "task-2" ||
@@ -3784,6 +3786,7 @@ const runtimeReviewMcpLines = runtimeReviewMcp.stdout
 const runtimeReviewMcpPayload = JSON.parse(JSON.parse(runtimeReviewMcpLines[1]).result.content[0].text);
 if (
   runtimeReviewMcp.status !== 0 ||
+  runtimeReviewMcpPayload.review?.recommendedReason !== "review_decision_ready" ||
   runtimeReviewMcpPayload.review?.counts?.verifierGroups !== 1 ||
   runtimeReviewMcpPayload.review?.counts?.totalPendingReview !== 1 ||
   runtimeReviewMcpPayload.review?.next?.taskId !== "task-2" ||

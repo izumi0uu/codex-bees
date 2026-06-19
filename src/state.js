@@ -867,9 +867,11 @@ export function runtimeReview() {
 
   const groups = [...groupsByVerifier.values()].sort(compareRuntimeReviewGroups);
   const next = groups[0]?.tasks?.[0] ?? null;
+  const recommendedReason = deriveRuntimeReviewReason({ groups, next, totalPendingReview: tasks.length });
 
   return {
     kind: "runtime_review",
+    recommendedReason,
     counts: {
       verifierGroups: groups.length,
       totalPendingReview: tasks.length
@@ -4451,6 +4453,19 @@ function deriveTaskPickupReason(relation) {
     return "observe_without_action";
   }
   return "non_claim_followup";
+}
+
+function deriveRuntimeReviewReason({ groups, next, totalPendingReview }) {
+  if (next?.taskId) {
+    return "review_decision_ready";
+  }
+  if (groups.length > 0) {
+    return "review_groups_visible";
+  }
+  if (totalPendingReview > 0) {
+    return "pending_review_visible";
+  }
+  return "no_review_pending";
 }
 
 function deriveTaskInboxReason({ tasks, next, counts }) {

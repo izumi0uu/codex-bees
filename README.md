@@ -266,7 +266,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:worker-pack` / `runtime_worker_pack` provide the worker-oriented package: worker session, handoff, closeout, and next candidate combined into one role-scoped payload with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between active/blocked work, review-task closeout pressure, handoff pressure, and pickup-next pressure without parsing the pack summary.
 
-`runtime:review` / `runtime_review` provide the verifier-grouped decision workspace: which verifier roles currently own pending review decisions, which task is next, and the task brief already attached for approve/reject handoff.
+`runtime:review` / `runtime_review` provide the verifier-grouped decision workspace: which verifier roles currently own pending review decisions, which task is next, and the task brief already attached for approve/reject handoff. They also emit a machine-readable `recommendedReason` so automation can distinguish between decision-ready review work, visible grouped review pressure, and empty review state without parsing the summary.
 
 `task:pickup-preview` / `task_pickup_preview` provide a read-only next-pickup preview: which task a worker would pick or review next, the execution brief already attached, and the exact next command without mutating queue ownership. They also emit a machine-readable `recommendedReason` so automation can distinguish between claimable, review, continue, blocked, observe-only, and no-candidate preview states before deciding whether to mutate queue ownership.
 
