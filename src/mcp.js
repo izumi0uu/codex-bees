@@ -35,6 +35,7 @@ import {
   taskHistory,
   taskPickup,
   taskNext,
+  workerHandoff,
   workerSession,
   updateSwarm,
   updateTask,
@@ -232,6 +233,20 @@ export const toolCatalog = [
   {
     name: "worker_session",
     description: "Show the current execution workspace for one worker.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" },
+        limit: { type: "number" }
+      }
+    }
+  },
+  {
+    name: "worker_handoff",
+    description: "Build a return-ready handoff package for one worker.",
     inputSchema: {
       type: "object",
       required: ["role", "workerId"],
@@ -903,6 +918,24 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ session }));
+    }
+
+    if (name === "worker_handoff") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "worker_handoff requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "worker_handoff requires arguments.workerId");
+      }
+
+      const handoff = workerHandoff({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode,
+        limit: params.arguments.limit
+      });
+
+      return createSuccess(id, createTextPayload({ handoff }));
     }
 
     if (name === "task_update") {

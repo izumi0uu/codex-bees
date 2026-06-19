@@ -41,6 +41,7 @@ import {
   taskHistory,
   taskPickup,
   taskNext,
+  workerHandoff,
   workerSession,
   updateSwarm,
   updateTask,
@@ -82,6 +83,7 @@ function printHelp() {
   write(`  codex-bees task:next       Resolve the next task a role should pick up\n`);
   write(`  codex-bees task:pickup     Claim or resume the next task for one worker\n`);
   write(`  codex-bees worker:session  Show the current execution workspace for one worker\n`);
+  write(`  codex-bees worker:handoff  Build a return-ready handoff package for one worker\n`);
   write(`  codex-bees task:claim      Claim a local coordination task\n`);
   write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
   write(`  codex-bees task:review     Mark a task as ready for review\n`);
@@ -408,6 +410,18 @@ function handleWorkerSession() {
     limit: readPositiveIntegerOption("--limit")
   });
   write(JSON.stringify({ session }, null, 2) + "\n");
+}
+
+function handleWorkerHandoff() {
+  const role = requireOption("--role");
+  const workerId = requireOption("--worker");
+  const handoff = workerHandoff({
+    role,
+    workerId,
+    mode: readOption("--mode"),
+    limit: readPositiveIntegerOption("--limit")
+  });
+  write(JSON.stringify({ handoff }, null, 2) + "\n");
 }
 
 function handleTaskCheck() {
@@ -907,6 +921,9 @@ async function runCommand(command) {
       return;
     case "worker:session":
       handleWorkerSession();
+      return;
+    case "worker:handoff":
+      handleWorkerHandoff();
       return;
     case "task:claim":
       handleTaskClaim();
