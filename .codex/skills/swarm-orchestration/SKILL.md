@@ -129,6 +129,7 @@ Use runtime helpers when available:
 - `swarm:dispatch` / `swarm_dispatch` to claim the next runnable lane task for one worker
 - `swarm:sync` / `swarm_sync` to reconcile or verify swarm status after lane progress changes; normal task lifecycle updates already keep swarm status close to task reality
 - `task:check` / `task_check` to confirm a queued lane task is still claimable before a worker takes it
+- `task:approve` / `task_approve` and `task:reject` / `task_reject` to let the designated verifier close or bounce a lane after `ready_for_review`
 
 1. Claim one ready lane.
 2. Restate the lane boundary before editing.
@@ -145,6 +146,7 @@ Every lane needs fresh evidence.
 - Prefer targeted validation before broader smoke checks.
 - Run `swarm:check` before queueing new lanes and when re-slicing planner output.
 - Run `task:check` before claiming a queued lane if metadata may have changed.
+- Treat `ready_for_review` as verifier-owned, not worker-owned; lane completion should come from the named verifier with evidence.
 - Verify the specific surface the lane was meant to change.
 - Do not mark a lane complete with intent alone, partial output, or stale results.
 - The leader accepts a lane only after reviewing both scope and evidence.

@@ -106,6 +106,7 @@ When using the local task runtime:
 - `claimed` means one owner is actively working it
 - `released` means ownership returned without completion
 - `blocked` means work cannot continue without dependency or clarification
+- `ready_for_review` means the owner is done and the verifier now owns the acceptance decision
 - `done` means acceptance was met and evidence reviewed
 
 Use release instead of freelancing when:

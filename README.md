@@ -64,7 +64,9 @@ node ./src/index.js memory:search --query "MCP contract" --namespace runtime
 node ./src/index.js task:claim --id task-1 --by explore
 node ./src/index.js task:block --id task-1 --by explore --notes "waiting on dependency"
 node ./src/index.js task:review --id task-1 --by explore
-node ./src/index.js task:done --id task-1 --by explore
+node ./src/index.js task:approve --id task-1 --by tester --evidence "targeted check|smoke check"
+node ./src/index.js task:reject --id task-1 --by tester --status claimed --notes "needs another pass"
+node ./src/index.js task:done --id task-1 --by tester --evidence "targeted check|smoke check"
 node ./src/index.js task:release --id task-1 --by explore
 node ./src/index.js mcp
 ```
@@ -78,6 +80,8 @@ Task metadata can carry lane-ready execution detail:
 - `--verification "targeted command|smoke check"`
 
 `task:check` validates that a task is actually claimable before a worker takes it. A ready task needs a title, owner, verifier, scope, acceptance, and verification metadata; claiming an incomplete task is rejected.
+
+`task:review` hands work from the owner to the named verifier. After that point, only the verifier can close the task with `task:approve` / `task:done`, or send it back with `task:reject`. Review outcomes persist reviewer identity and optional `--evidence` so completion carries fresh verification context instead of skipping straight from worker claim to done.
 
 Swarm contracts can carry bounded parallel execution detail:
 
