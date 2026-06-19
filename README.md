@@ -59,6 +59,7 @@ node ./src/index.js runtime:handoffs
 node ./src/index.js runtime:leader-pack
 node ./src/index.js runtime:recovery
 node ./src/index.js runtime:summary-pack
+node ./src/index.js runtime:worker-pack --role executor --worker worker-1
 node ./src/index.js runtime:review
 node ./src/index.js runtime:roles
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
@@ -181,6 +182,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:recovery` / `runtime_recovery` provide the recovery workspace: blocked tasks, released tasks, and changes-requested returns grouped by the kind of recovery path they need next.
 
 `runtime:summary-pack` / `runtime_summary_pack` provide the automation-first rollup: current focus plus dashboard, alert, handoff, recovery, and closeout counts in one single payload with a recommended next surface.
+
+`runtime:worker-pack` / `runtime_worker_pack` provide the worker-oriented package: worker session, handoff, closeout, and next candidate combined into one role-scoped payload with a recommended next surface.
 
 `runtime:review` / `runtime_review` provide the verifier-grouped decision workspace: which verifier roles currently own pending review decisions, which task is next, and the task brief already attached for approve/reject handoff.
 
