@@ -596,6 +596,18 @@ if (
   console.error("[smoke:worker-closeout] expected owner closeout bundle");
   process.exit(1);
 }
+const ownerWorkerPack = JSON.parse(
+  run("runtime-worker-pack-owner", ["./src/index.js", "runtime:worker-pack", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
+).workerPack;
+if (
+  ownerWorkerPack.kind !== "runtime_worker_pack" ||
+  ownerWorkerPack.recommendedSurface !== "worker:session" ||
+  ownerWorkerPack.next?.focus?.kind !== "active_task" ||
+  ownerWorkerPack.surfaces?.handoff?.currentTask?.id !== "task-1"
+) {
+  console.error("[smoke:runtime-worker-pack] expected owner worker pack");
+  process.exit(1);
+}
 const reviewTaskHistory = JSON.parse(
   run("task-history-review-loop", ["./src/index.js", "task:history", "--id", "task-1"]).stdout
 ).history;
@@ -2518,6 +2530,17 @@ if (
   console.error("[smoke:worker-closeout] expected verifier closeout bundle");
   process.exit(1);
 }
+const verifierWorkerPack = JSON.parse(
+  run("runtime-worker-pack-verifier", ["./src/index.js", "runtime:worker-pack", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).workerPack;
+if (
+  verifierWorkerPack.recommendedSurface !== "worker:closeout" ||
+  verifierWorkerPack.next?.focus?.kind !== "review_task" ||
+  verifierWorkerPack.surfaces?.closeout?.report?.task?.id !== "task-2"
+) {
+  console.error("[smoke:runtime-worker-pack] expected verifier worker pack");
+  process.exit(1);
+}
 const verifierBundleCli = JSON.parse(
   run("verifier-bundle-cli", ["./src/index.js", "verifier:bundle", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).bundle;
@@ -2731,6 +2754,40 @@ if (
 ) {
   console.error("[smoke:verifier-bundle-mcp] expected MCP verifier decision bundle");
   console.error(verifierBundleMcp.stderr || verifierBundleMcp.stdout);
+  process.exit(1);
+}
+const workerPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_worker_pack",
+      arguments: {
+        role: "tester",
+        workerId: "tester-worker",
+        mode: "verifier"
+      }
+    }
+  })
+].join("\n") + "\n";
+const workerPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: workerPackMcpInput,
+  encoding: "utf8"
+});
+const workerPackMcpLines = workerPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const workerPackMcpPayload = JSON.parse(JSON.parse(workerPackMcpLines[1]).result.content[0].text);
+if (
+  workerPackMcp.status !== 0 ||
+  workerPackMcpPayload.workerPack?.recommendedSurface !== "worker:closeout" ||
+  workerPackMcpPayload.workerPack?.surfaces?.closeout?.report?.task?.id !== "task-2"
+) {
+  console.error("[smoke:runtime-worker-pack-mcp] expected MCP worker pack");
+  console.error(workerPackMcp.stderr || workerPackMcp.stdout);
   process.exit(1);
 }
 const inboxHistory = JSON.parse(
