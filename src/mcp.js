@@ -1,5 +1,5 @@
 import { stdin, stdout, stderr } from "node:process";
-import { planTask, queueTasksFromPlan } from "./planner.js";
+import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import {
   activateSwarm,
   addTask,
@@ -326,6 +326,28 @@ export const toolCatalog = [
   {
     name: "queue_plan",
     description: "Generate a bounded execution plan and queue its lanes as local tasks.",
+    inputSchema: {
+      type: "object",
+      required: ["task"],
+      properties: {
+        task: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "plan_swarm",
+    description: "Generate a bounded local swarm contract from a task brief.",
+    inputSchema: {
+      type: "object",
+      required: ["task"],
+      properties: {
+        task: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "queue_plan_swarm",
+    description: "Generate a bounded local swarm contract and queue its lanes as local tasks.",
     inputSchema: {
       type: "object",
       required: ["task"],
@@ -813,6 +835,41 @@ function handleRequest(message) {
       return createSuccess(
         id,
         createTextPayload(queueTasksFromPlan(params.arguments.task, addTasks))
+      );
+    }
+
+    if (name === "plan_swarm") {
+      if (!params.arguments?.task) {
+        return createError(id, -32602, "plan_swarm requires arguments.task");
+      }
+
+      return createSuccess(id, createTextPayload(planSwarm(params.arguments.task)));
+    }
+
+    if (name === "queue_plan_swarm") {
+      if (!params.arguments?.task) {
+        return createError(id, -32602, "queue_plan_swarm requires arguments.task");
+      }
+
+      const planned = planSwarm(params.arguments.task);
+      const swarm = initSwarm(planned.swarm);
+      const queued = queueSwarmTasks({ id: swarm.id });
+      if (!queued) {
+        return createError(id, -32602, `Unknown swarm id: ${swarm.id}`);
+      }
+      if (queued.error) {
+        return createError(id, -32602, queued.error);
+      }
+
+      return createSuccess(
+        id,
+        createTextPayload({
+          kind: "queued_plan_swarm",
+          objective: params.arguments.task,
+          evidence: planned.evidence,
+          swarm: queued.swarm,
+          created: queued.created
+        })
       );
     }
 
