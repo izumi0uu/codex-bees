@@ -127,6 +127,50 @@ export function taskHistory(id) {
   };
 }
 
+export function taskReport(id) {
+  const task = getTask(id);
+  if (!task) {
+    return null;
+  }
+
+  const brief = taskBrief(id);
+  const reportEntries = buildTaskReportEntries(task);
+  return {
+    kind: "task_report",
+    task: {
+      id: task.id,
+      title: task.title,
+      objective: task.objective,
+      queueStatus: task.queueStatus,
+      owner: task.owner,
+      verifier: task.verifier,
+      claimedBy: task.claimedBy,
+      swarmId: task.swarmId,
+      lane: task.lane
+    },
+    closure: {
+      reviewState: deriveReviewState(task),
+      reviewedBy: task.reviewedBy,
+      reviewedAt: task.reviewedAt,
+      reviewOutcome: task.reviewOutcome,
+      reviewNotes: task.reviewNotes,
+      closureReady: task.queueStatus === "ready_for_review" || task.queueStatus === "done",
+      nextGate: taskReportNextGate(task)
+    },
+    acceptance: (task.acceptance ?? []).map((item) => ({
+      item,
+      status: task.reviewOutcome === "approved" || task.queueStatus === "done" ? "verified" : "pending"
+    })),
+    verification: task.verification ?? [],
+    evidence: {
+      reviewEvidence: task.reviewEvidence ?? [],
+      annotations: reportEntries.annotations,
+      recentHistory: reportEntries.history
+    },
+    brief
+  };
+}
+
 export function annotateTask(input = {}) {
   if (!input.id) {
     return null;
@@ -1175,6 +1219,42 @@ function deriveReviewState(task) {
     return "changes_requested";
   }
   return "not_started";
+}
+
+function taskReportNextGate(task) {
+  if (task.queueStatus === "done") {
+    return {
+      action: "archive_or_handoff",
+      command: null
+    };
+  }
+  if (task.queueStatus === "ready_for_review") {
+    return {
+      action: "verifier_decision",
+      command: `node ./src/index.js task:approve --id ${task.id} --by ${task.verifier ?? "<verifier-role>"}`
+    };
+  }
+  if (task.queueStatus === "claimed") {
+    return {
+      action: "complete_and_handoff",
+      command: `node ./src/index.js task:review --id ${task.id} --by ${task.claimedBy ?? "<worker-id>"}`
+    };
+  }
+  return {
+    action: "continue_execution",
+    command: null
+  };
+}
+
+function buildTaskReportEntries(task) {
+  const annotations = (task.annotations ?? []).filter((entry) =>
+    ["context", "handoff", "review-note", "evidence", "note"].includes(entry.kind)
+  );
+  const history = (task.history ?? []).slice(-10);
+  return {
+    annotations,
+    history
+  };
 }
 
 function recommendTaskAction(task) {
