@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
 import { getRuntimeCatalog } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
+import { getCapabilityCatalog, getRuntimeStatus } from "./runtime-status.js";
 import {
   activateSwarm,
   addTask,
@@ -57,6 +58,8 @@ function printHelp() {
   write(`  codex-bees tools           Print the current MCP tool catalog\n`);
   write(`  codex-bees catalog         Print the shipped local agent and skill catalog\n`);
   write(`  codex-bees doctor          Print runtime contract diagnostics\n`);
+  write(`  codex-bees status          Print runtime state and surface summary\n`);
+  write(`  codex-bees capabilities    Print the shipped runtime capability inventory\n`);
   write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
   write(`  codex-bees plan:queue      Generate a plan and queue its lanes as local tasks\n`);
   write(`  codex-bees plan:swarm      Generate a bounded swarm contract from a task brief\n`);
@@ -136,6 +139,14 @@ function printDoctor() {
 
 function printCatalog() {
   write(JSON.stringify({ catalog: getRuntimeCatalog() }, null, 2) + "\n");
+}
+
+function printStatus() {
+  write(JSON.stringify({ status: getRuntimeStatus({ version: VERSION, toolCount: toolCatalog.length }) }, null, 2) + "\n");
+}
+
+function printCapabilities() {
+  write(JSON.stringify({ capabilities: getCapabilityCatalog() }, null, 2) + "\n");
 }
 
 function readOption(flag) {
@@ -728,6 +739,12 @@ async function runCommand(command) {
       return;
     case "catalog":
       printCatalog();
+      return;
+    case "status":
+      printStatus();
+      return;
+    case "capabilities":
+      printCapabilities();
       return;
     case "plan":
       handlePlan();

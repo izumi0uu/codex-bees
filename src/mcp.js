@@ -1,6 +1,7 @@
 import { stdin, stdout, stderr } from "node:process";
 import { getRuntimeCatalog } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
+import { getCapabilityCatalog, getRuntimeStatus } from "./runtime-status.js";
 import {
   activateSwarm,
   addTask,
@@ -61,6 +62,22 @@ export const toolCatalog = [
   {
     name: "runtime_catalog",
     description: "Return the shipped local agent and skill catalog.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_status",
+    description: "Return the current runtime state summary and shipped surface counts.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_capabilities",
+    description: "Return the shipped capability inventory for the local Codex-only runtime.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -603,6 +620,17 @@ function handleRequest(message) {
 
     if (name === "runtime_catalog") {
       return createSuccess(id, createTextPayload({ catalog: getRuntimeCatalog() }));
+    }
+
+    if (name === "runtime_status") {
+      return createSuccess(
+        id,
+        createTextPayload({ status: getRuntimeStatus({ version: "0.1.0", toolCount: toolCatalog.length }) })
+      );
+    }
+
+    if (name === "runtime_capabilities") {
+      return createSuccess(id, createTextPayload({ capabilities: getCapabilityCatalog() }));
     }
 
     if (name === "task_list") {
