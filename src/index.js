@@ -1089,6 +1089,7 @@ function handlePlanSwarmQueue() {
     JSON.stringify(
       {
         kind: "queued_plan_swarm",
+        recommendedReason: queued.created.length > 1 ? "multiple_swarm_lane_tasks_queued" : "single_swarm_lane_task_queued",
         objective: task,
         evidence: planned.evidence,
         swarm: queued.swarm,

@@ -228,6 +228,8 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `plan:queue` / `queue_plan` return the explicit planner queue result: the planned lanes plus the local tasks created from them. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane planner queue events without inferring from the created-task array length alone.
 
+`plan:swarm:queue` / `queue_plan_swarm` return the explicit planner swarm queue result: the generated swarm contract plus the local lane tasks created from it. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane swarm queue events without inferring from the created-task array length alone.
+
 `catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
 
 `status` and the MCP `runtime_status` tool summarize the current local runtime: shipped tool/agent/skill counts, persisted task/swarm/memory counts, queue status distribution, a top-level highlight rollup of the most important orchestration semantics, a compact recommended-entrypoint rollup for consumers that need the best current CLI/MCP starting surfaces immediately, and a compact use-case rollup that says what those high-value orchestration surfaces are for. `capabilities` and `runtime_capabilities` provide the fuller product-facing inventory of what this Codex-only runtime actually supports today, including semantic highlights such as launch-first queue orchestration and compact launch context in summary surfaces, preferred entrypoints, and focused use cases for high-value capabilities.

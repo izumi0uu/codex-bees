@@ -1331,6 +1331,7 @@ const queuedPlanSwarm = JSON.parse(
 );
 if (
   queuedPlanSwarm.kind !== "queued_plan_swarm" ||
+  queuedPlanSwarm.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
   queuedPlanSwarm.created.length !== 2 ||
   queuedPlanSwarm.swarm?.status !== "active" ||
   queuedPlanSwarm.swarm?.laneSource !== "planner"
@@ -4842,7 +4843,11 @@ const queuePlanSwarmLines = queuePlanSwarmMcp.stdout
 const queuePlanSwarmResult = queuePlanSwarmLines.length >= 2 ? JSON.parse(queuePlanSwarmLines[1]) : null;
 const queuePlanSwarmText = queuePlanSwarmResult?.result?.content?.[0]?.text;
 const queuePlanSwarmPayload = queuePlanSwarmText ? JSON.parse(queuePlanSwarmText) : null;
-if (queuePlanSwarmMcp.status !== 0 || queuePlanSwarmPayload?.kind !== "queued_plan_swarm") {
+if (
+  queuePlanSwarmMcp.status !== 0 ||
+  queuePlanSwarmPayload?.kind !== "queued_plan_swarm" ||
+  queuePlanSwarmPayload?.recommendedReason !== "multiple_swarm_lane_tasks_queued"
+) {
   console.error("[smoke:queue-plan-swarm-mcp] expected queued_plan_swarm response");
   console.error(queuePlanSwarmMcp.stderr || queuePlanSwarmMcp.stdout);
   process.exit(1);
