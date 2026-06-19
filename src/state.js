@@ -127,6 +127,38 @@ export function taskHistory(id) {
   };
 }
 
+export function annotateTask(input = {}) {
+  if (!input.id) {
+    return null;
+  }
+
+  const state = loadState();
+  const index = state.tasks.findIndex((task) => task.id === input.id);
+  if (index < 0) {
+    return null;
+  }
+
+  const current = normalizeTask(state.tasks[index]);
+  if (!input.content?.trim()) {
+    return { error: "content is required for task annotation" };
+  }
+
+  const next = normalizeTask({
+    ...current,
+    annotations: appendTaskAnnotation(current, {
+      at: new Date().toISOString(),
+      actor: input.actor ?? current.claimedBy ?? null,
+      kind: input.kind ?? "note",
+      content: input.content.trim()
+    }),
+    updatedAt: new Date().toISOString()
+  });
+
+  state.tasks[index] = next;
+  saveState(state);
+  return next;
+}
+
 export function getSwarm(id) {
   const swarm = loadState().swarms.find((item) => item.id === id);
   return swarm ? normalizeSwarm(swarm) : null;
@@ -173,6 +205,10 @@ export function taskBrief(id) {
     history: {
       count: task.history?.length ?? 0,
       entries: task.history ?? []
+    },
+    annotations: {
+      count: task.annotations?.length ?? 0,
+      entries: (task.annotations ?? []).slice(-5)
     },
     validation,
     recommendedNextActor: recommended.actor,
@@ -916,7 +952,8 @@ function normalizeTask(task) {
     reviewOutcome: task.reviewOutcome ?? null,
     reviewNotes: task.reviewNotes ?? null,
     reviewEvidence: Array.isArray(task.reviewEvidence) ? task.reviewEvidence : null,
-    history: Array.isArray(task.history) ? task.history.map(normalizeTaskHistoryEntry) : []
+    history: Array.isArray(task.history) ? task.history.map(normalizeTaskHistoryEntry) : [],
+    annotations: Array.isArray(task.annotations) ? task.annotations.map(normalizeTaskAnnotation) : []
   };
 }
 
@@ -931,6 +968,16 @@ function normalizeTaskHistoryEntry(entry, index = 0) {
     notes: entry.notes ?? null,
     evidence: Array.isArray(entry.evidence) ? entry.evidence : [],
     outcome: entry.outcome ?? null
+  };
+}
+
+function normalizeTaskAnnotation(annotation, index = 0) {
+  return {
+    id: annotation.id ?? `annotation-${index + 1}`,
+    at: annotation.at ?? null,
+    actor: annotation.actor ?? null,
+    kind: annotation.kind ?? "note",
+    content: annotation.content ?? ""
   };
 }
 
@@ -1044,6 +1091,20 @@ function appendTaskHistoryEntry(task, entry) {
         ...entry
       },
       history.length
+    )
+  ];
+}
+
+function appendTaskAnnotation(task, annotation) {
+  const annotations = Array.isArray(task.annotations) ? task.annotations : [];
+  return [
+    ...annotations,
+    normalizeTaskAnnotation(
+      {
+        id: `annotation-${annotations.length + 1}`,
+        ...annotation
+      },
+      annotations.length
     )
   ];
 }
@@ -1251,7 +1312,8 @@ function buildSessionTaskSnapshot(task, role, workerId) {
   return {
     summary: summarizeInboxTask(task, role, workerId),
     brief: taskBrief(task.id),
-    recentHistory: (task.history ?? []).slice(-5)
+    recentHistory: (task.history ?? []).slice(-5),
+    recentAnnotations: (task.annotations ?? []).slice(-5)
   };
 }
 
@@ -1821,6 +1883,7 @@ function buildTask(input, nextId) {
     reviewOutcome: input.reviewOutcome ?? null,
     reviewNotes: input.reviewNotes ?? null,
     reviewEvidence: input.reviewEvidence ?? null,
+    annotations: input.annotations ?? [],
     history: [
       {
         id: "event-1",
