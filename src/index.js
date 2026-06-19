@@ -41,6 +41,7 @@ import {
   queueSwarmTasks,
   rejectTask,
   releaseTask,
+  releaseTaskLifecycle,
   runtimeActivity,
   runtimeAssignmentPack,
   runtimeAlerts,
@@ -950,7 +951,7 @@ function handleTaskClaim() {
 function handleTaskRelease() {
   const id = requireOption("--id");
   const claimedBy = readOption("--by");
-  const task = releaseTask({ id, claimedBy });
+  const task = releaseTaskLifecycle({ id, claimedBy });
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);

@@ -663,7 +663,19 @@ if (
   console.error("[smoke:task-claim] expected CLI task claim lifecycle payload");
   process.exit(1);
 }
-run("task-claim-lifecycle-release", ["./src/index.js", "task:release", "--id", "task-1", "--by", "claim-worker"]);
+const releasedLifecycleCli = JSON.parse(
+  run("task-release-lifecycle-cli", ["./src/index.js", "task:release", "--id", "task-1", "--by", "claim-worker"]).stdout
+).released;
+if (
+  releasedLifecycleCli.kind !== "task_lifecycle" ||
+  releasedLifecycleCli.recommendedReason !== "task_released" ||
+  releasedLifecycleCli.task?.id !== "task-1" ||
+  releasedLifecycleCli.task?.queueStatus !== "released" ||
+  releasedLifecycleCli.task?.claimedBy !== null
+) {
+  console.error("[smoke:task-release] expected CLI task release lifecycle payload");
+  process.exit(1);
+}
 
 rmSync(".codex-bees", { recursive: true, force: true });
 
@@ -4650,6 +4662,15 @@ const taskReadyForReviewPayload = taskReadyForReviewText ? JSON.parse(taskReadyF
 const taskRejectResult = taskAddMcpLines.length >= 10 ? JSON.parse(taskAddMcpLines[9]) : null;
 const taskRejectText = taskRejectResult?.result?.content?.[0]?.text;
 const taskRejectPayload = taskRejectText ? JSON.parse(taskRejectText) : null;
+const taskReclaimResult = taskAddMcpLines.length >= 11 ? JSON.parse(taskAddMcpLines[10]) : null;
+const taskReclaimText = taskReclaimResult?.result?.content?.[0]?.text;
+const taskReclaimPayload = taskReclaimText ? JSON.parse(taskReclaimText) : null;
+const taskReadyForReviewAgainResult = taskAddMcpLines.length >= 12 ? JSON.parse(taskAddMcpLines[11]) : null;
+const taskReadyForReviewAgainText = taskReadyForReviewAgainResult?.result?.content?.[0]?.text;
+const taskReadyForReviewAgainPayload = taskReadyForReviewAgainText ? JSON.parse(taskReadyForReviewAgainText) : null;
+const taskApproveResult = taskAddMcpLines.length >= 13 ? JSON.parse(taskAddMcpLines[12]) : null;
+const taskApproveText = taskApproveResult?.result?.content?.[0]?.text;
+const taskApprovePayload = taskApproveText ? JSON.parse(taskApproveText) : null;
 const taskListResult = taskAddMcpLines.length >= 14 ? JSON.parse(taskAddMcpLines[13]) : null;
 const taskListText = taskListResult?.result?.content?.[0]?.text;
 const taskListPayload = taskListText ? JSON.parse(taskListText) : null;
@@ -4740,10 +4761,16 @@ if (
   taskReadyForReviewPayload?.readyForReview?.kind !== "task_lifecycle" ||
   taskReadyForReviewPayload?.readyForReview?.recommendedReason !== "task_ready_for_review" ||
   taskReadyForReviewPayload?.readyForReview?.task?.queueStatus !== "ready_for_review" ||
+  taskRejectPayload?.rejected?.queueStatus !== "released" ||
+  taskReclaimPayload?.claimed?.kind !== "task_lifecycle" ||
+  taskReclaimPayload?.claimed?.recommendedReason !== "task_claimed" ||
+  taskReclaimPayload?.claimed?.task?.claimedBy !== "mcp-worker" ||
+  taskReadyForReviewAgainPayload?.readyForReview?.kind !== "task_lifecycle" ||
+  taskReadyForReviewAgainPayload?.readyForReview?.recommendedReason !== "task_ready_for_review" ||
+  taskApprovePayload?.approved?.queueStatus !== "done" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||
-  taskRejectPayload?.rejected?.queueStatus !== "released" ||
   mcpTask.reviewedBy !== "tester" ||
   mcpTask.reviewOutcome !== "approved"
 ) {

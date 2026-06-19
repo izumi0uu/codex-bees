@@ -156,6 +156,8 @@ Task metadata can carry lane-ready execution detail:
 
 `task:review` / `task_ready_for_review` return the explicit lifecycle mutation result for handing a claimed task to its verifier. They emit a machine-readable `recommendedReason` so automation can treat review handoff as its own protocol step instead of inferring it only from the nested task queue status.
 
+`task:release` / `task_release` return the explicit lifecycle mutation result for returning a claimed task to the queue. They emit a machine-readable `recommendedReason` so automation can distinguish an intentional owner-side release from blocked recovery or verifier-return flows without reparsing only the nested task queue status.
+
 `task:review` hands work from the owner to the named verifier. After that point, only the verifier can close the task with `task:approve` / `task:done`, or send it back with `task:reject`. Review outcomes persist reviewer identity and optional `--evidence` so completion carries fresh verification context instead of skipping straight from worker claim to done.
 
 Swarm contracts can carry bounded parallel execution detail:

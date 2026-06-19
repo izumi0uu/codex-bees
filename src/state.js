@@ -3229,6 +3229,18 @@ export function releaseTask(input) {
   });
 }
 
+export function releaseTaskLifecycle(input) {
+  const result = releaseTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_lifecycle",
+    recommendedReason: "task_released",
+    task: result
+  };
+}
+
 export function activateSwarm(input) {
   const result = transitionSwarm({
     ...input,

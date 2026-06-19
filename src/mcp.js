@@ -36,6 +36,7 @@ import {
   queueSwarmTasks,
   rejectTask,
   releaseTask,
+  releaseTaskLifecycle,
   runtimeActivity,
   runtimeAssignmentPack,
   runtimeAlerts,
@@ -2170,7 +2171,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_release requires arguments.id");
       }
 
-      const task = releaseTask({
+      const task = releaseTaskLifecycle({
         id: params.arguments.id,
         claimedBy: params.arguments.claimedBy
       });
