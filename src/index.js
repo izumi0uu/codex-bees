@@ -42,6 +42,7 @@ import {
   markTaskReadyForReviewLifecycle,
   queueSwarmTasks,
   rejectTask,
+  rejectTaskLifecycle,
   releaseTask,
   releaseTaskLifecycle,
   runtimeActivity,
@@ -1037,7 +1038,7 @@ function handleTaskReject() {
   const notes = readOption("--notes");
   const nextQueueStatus = readOption("--status");
   const reviewEvidence = readListOption("--evidence", "|");
-  const task = rejectTask({ id, reviewedBy, nextQueueStatus, notes, reviewEvidence });
+  const task = rejectTaskLifecycle({ id, reviewedBy, nextQueueStatus, notes, reviewEvidence });
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);

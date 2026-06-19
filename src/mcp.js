@@ -37,6 +37,7 @@ import {
   markTaskReadyForReviewLifecycle,
   queueSwarmTasks,
   rejectTask,
+  rejectTaskLifecycle,
   releaseTask,
   releaseTaskLifecycle,
   runtimeActivity,
@@ -2150,7 +2151,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_reject requires arguments.reviewedBy");
       }
 
-      const task = rejectTask({
+      const task = rejectTaskLifecycle({
         id: params.arguments.id,
         reviewedBy: params.arguments.reviewedBy,
         nextQueueStatus: params.arguments.nextQueueStatus,

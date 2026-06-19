@@ -916,7 +916,7 @@ run("review-task-add", [
 ]);
 run("review-task-claim", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "review-worker"]);
 run("review-task-ready", ["./src/index.js", "task:review", "--id", "task-1", "--by", "review-worker"]);
-run("review-task-reject", [
+const rejectedLifecycleCli = JSON.parse(run("review-task-reject", [
   "./src/index.js",
   "task:reject",
   "--id",
@@ -929,7 +929,17 @@ run("review-task-reject", [
   "needs another pass",
   "--evidence",
   "reviewed smoke rejection"
-]);
+]).stdout).rejected;
+if (
+  rejectedLifecycleCli.kind !== "task_lifecycle" ||
+  rejectedLifecycleCli.recommendedReason !== "task_changes_requested" ||
+  rejectedLifecycleCli.task?.queueStatus !== "claimed" ||
+  rejectedLifecycleCli.task?.reviewOutcome !== "changes_requested" ||
+  rejectedLifecycleCli.task?.reviewedBy !== "tester"
+) {
+  console.error("[smoke:task-reject] expected CLI task reject lifecycle payload");
+  process.exit(1);
+}
 const rejectedTask = JSON.parse(run("review-task-list", ["./src/index.js", "task:list"]).stdout).tasks[0];
 if (
   rejectedTask.queueStatus !== "claimed" ||
@@ -4831,7 +4841,9 @@ if (
   taskReadyForReviewPayload?.readyForReview?.kind !== "task_lifecycle" ||
   taskReadyForReviewPayload?.readyForReview?.recommendedReason !== "task_ready_for_review" ||
   taskReadyForReviewPayload?.readyForReview?.task?.queueStatus !== "ready_for_review" ||
-  taskRejectPayload?.rejected?.queueStatus !== "released" ||
+  taskRejectPayload?.rejected?.kind !== "task_lifecycle" ||
+  taskRejectPayload?.rejected?.recommendedReason !== "task_released_for_rework" ||
+  taskRejectPayload?.rejected?.task?.queueStatus !== "released" ||
   taskReclaimPayload?.claimed?.kind !== "task_lifecycle" ||
   taskReclaimPayload?.claimed?.recommendedReason !== "task_claimed" ||
   taskReclaimPayload?.claimed?.task?.claimedBy !== "mcp-worker" ||

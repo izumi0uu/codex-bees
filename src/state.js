@@ -3246,6 +3246,24 @@ export function rejectTask(input) {
   });
 }
 
+export function rejectTaskLifecycle(input) {
+  const result = rejectTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  let recommendedReason = "task_changes_requested";
+  if (result.queueStatus === "released") {
+    recommendedReason = "task_released_for_rework";
+  } else if (result.queueStatus === "blocked") {
+    recommendedReason = "task_blocked_for_rework";
+  }
+  return {
+    kind: "task_lifecycle",
+    recommendedReason,
+    task: result
+  };
+}
+
 export function releaseTask(input) {
   return transitionTask({
     ...input,
