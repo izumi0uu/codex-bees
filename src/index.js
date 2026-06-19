@@ -1381,7 +1381,12 @@ async function runCommand(command) {
       write(
         JSON.stringify(
           {
+            kind: "runtime_ready_view",
+            recommendedReason: "runtime_entry_ready",
             status: "ready",
+            counts: {
+              nextSteps: 5
+            },
             contract: getRuntimeContractView(),
             next: [
               "use `codex-bees doctor` to inspect runtime boundaries",

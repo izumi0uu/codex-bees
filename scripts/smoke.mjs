@@ -201,6 +201,18 @@ if (
   console.error("[smoke:doctor] expected runtime doctor and contract views");
   process.exit(1);
 }
+const runtimeReadyView = JSON.parse(run("run-verify", ["./src/index.js", "run"]).stdout);
+if (
+  runtimeReadyView.kind !== "runtime_ready_view" ||
+  runtimeReadyView.recommendedReason !== "runtime_entry_ready" ||
+  runtimeReadyView.status !== "ready" ||
+  runtimeReadyView.counts?.nextSteps !== 5 ||
+  runtimeReadyView.contract?.kind !== "runtime_contract_view" ||
+  runtimeReadyView.next?.[0] !== "use `codex-bees doctor` to inspect runtime boundaries"
+) {
+  console.error("[smoke:run] expected runtime readiness view");
+  process.exit(1);
+}
 const cliToolsView = JSON.parse(run("tools-cli-verify", ["./src/index.js", "tools"]).stdout).tools;
 if (
   cliToolsView.kind !== "tool_catalog_view" ||
