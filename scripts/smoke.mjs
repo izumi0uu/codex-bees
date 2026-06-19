@@ -185,6 +185,16 @@ if (
   console.error("[smoke:runtime-focus] expected top-level runtime focus");
   process.exit(1);
 }
+const runtimeHandoffsInitial = JSON.parse(
+  run("runtime-handoffs-initial", ["./src/index.js", "runtime:handoffs"]).stdout
+).handoffs;
+if (
+  runtimeHandoffsInitial.kind !== "runtime_handoffs" ||
+  !Array.isArray(runtimeHandoffsInitial.groups)
+) {
+  console.error("[smoke:runtime-handoffs] expected top-level runtime handoffs");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1386,6 +1396,24 @@ if (
   console.error("[smoke:runtime-focus] expected CLI runtime focus to prioritize blocked work");
   process.exit(1);
 }
+const runtimeHandoffsCli = JSON.parse(
+  run("runtime-handoffs-cli", ["./src/index.js", "runtime:handoffs"]).stdout
+).handoffs;
+if (
+  runtimeHandoffsCli.counts?.actorGroups !== 3 ||
+  runtimeHandoffsCli.counts?.totalHandoffs !== 3 ||
+  runtimeHandoffsCli.counts?.reviewDecisions !== 1 ||
+  runtimeHandoffsCli.counts?.blockedRecoveries !== 1 ||
+  runtimeHandoffsCli.counts?.ownerClaims !== 1 ||
+  runtimeHandoffsCli.next?.taskId !== "task-2" ||
+  runtimeHandoffsCli.next?.actor?.id !== "tester" ||
+  runtimeHandoffsCli.groups?.some((group) => group.actor?.id === "tester" && group.handoffs?.[0]?.taskId === "task-2") !== true ||
+  runtimeHandoffsCli.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-1")) !== true ||
+  runtimeHandoffsCli.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-4")) !== true
+) {
+  console.error("[smoke:runtime-handoffs] expected CLI next-actor handoff workspace");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1548,6 +1576,37 @@ if (
 ) {
   console.error("[smoke:runtime-focus-mcp] expected MCP runtime focus");
   console.error(runtimeFocusMcp.stderr || runtimeFocusMcp.stdout);
+  process.exit(1);
+}
+const runtimeHandoffsMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_handoffs",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeHandoffsMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeHandoffsMcpInput,
+  encoding: "utf8"
+});
+const runtimeHandoffsMcpLines = runtimeHandoffsMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeHandoffsMcpPayload = JSON.parse(JSON.parse(runtimeHandoffsMcpLines[1]).result.content[0].text);
+if (
+  runtimeHandoffsMcp.status !== 0 ||
+  runtimeHandoffsMcpPayload.handoffs?.counts?.totalHandoffs !== 3 ||
+  runtimeHandoffsMcpPayload.handoffs?.groups?.some((group) => group.actor?.id === "tester" && group.handoffs?.[0]?.taskId === "task-2") !== true ||
+  runtimeHandoffsMcpPayload.handoffs?.groups?.some((group) => group.actor?.id === "executor" && group.handoffs?.some((handoff) => handoff.taskId === "task-1")) !== true
+) {
+  console.error("[smoke:runtime-handoffs-mcp] expected MCP runtime handoffs");
+  console.error(runtimeHandoffsMcp.stderr || runtimeHandoffsMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
