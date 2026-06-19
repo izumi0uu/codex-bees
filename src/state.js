@@ -1169,6 +1169,32 @@ export function runtimeReviewPack(input = {}) {
   };
 }
 
+export function runtimeQueuePack() {
+  const queue = leaderQueue();
+  const dashboard = runtimeDashboard();
+  const focus = runtimeFocus();
+  const recommendedSurface = deriveRuntimeQueuePackSurface({ queue, dashboard, focus });
+
+  return {
+    kind: "runtime_queue_pack",
+    recommendedSurface,
+    overview: {
+      queue: queue?.counts ?? null,
+      dashboard: dashboard?.counts ?? null
+    },
+    next: {
+      queue: queue?.next ?? null,
+      focus: focus?.focus ?? null
+    },
+    surfaces: {
+      queue,
+      dashboard,
+      focus
+    },
+    summary: buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3400,6 +3426,28 @@ function buildRuntimeReviewPackSummary(recommendedSurface, review, verifierPack,
     roles?.summary ??
     "Runtime review pack has no current verifier-control detail.";
   return `Runtime review pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeQueuePackSurface({ queue, dashboard, focus }) {
+  if ((queue?.counts?.total ?? 0) > 0) {
+    return "leader:queue";
+  }
+  if ((dashboard?.counts?.leaderQueueItems ?? 0) > 0) {
+    return "runtime:dashboard";
+  }
+  if (focus?.focus?.type === "leader_queue_item") {
+    return "runtime:focus";
+  }
+  return "leader:queue";
+}
+
+function buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard) {
+  const detail =
+    queue?.summary ??
+    focus?.summary ??
+    dashboard?.summary ??
+    "Runtime queue pack has no current queue detail.";
+  return `Runtime queue pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
