@@ -214,6 +214,17 @@ if (taskBriefAnnotated.annotations?.entries?.at(-1)?.content !== "verified with 
   console.error("[smoke:task-annotate] expected annotation to appear in task brief");
   process.exit(1);
 }
+const taskReportDone = JSON.parse(
+  run("task-report-done", ["./src/index.js", "task:report", "--id", "task-3"]).stdout
+).report;
+if (
+  taskReportDone.closure?.reviewOutcome !== "approved" ||
+  taskReportDone.acceptance?.[0]?.status !== "verified" ||
+  taskReportDone.evidence?.annotations?.at(-1)?.content !== "verified with smoke coverage"
+) {
+  console.error("[smoke:task-report] expected approved task report with carried evidence");
+  process.exit(1);
+}
 const testerInbox = JSON.parse(
   run("task-inbox-tester", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).inbox;
@@ -450,6 +461,17 @@ if (
   reviewTaskHistory.history?.map((entry) => entry.type).join(",") !== "created,claimed,ready_for_review,changes_requested"
 ) {
   console.error("[smoke:task-history] expected review loop handoff history");
+  process.exit(1);
+}
+const reviewTaskReport = JSON.parse(
+  run("task-report-review-loop", ["./src/index.js", "task:report", "--id", "task-1"]).stdout
+).report;
+if (
+  reviewTaskReport.closure?.reviewOutcome !== "changes_requested" ||
+  reviewTaskReport.closure?.closureReady !== false ||
+  reviewTaskReport.evidence?.annotations?.at(-1)?.content !== "worker needs another pass before review"
+) {
+  console.error("[smoke:task-report] expected changes-requested task report");
   process.exit(1);
 }
 
@@ -1193,6 +1215,27 @@ const taskAnnotateMcpLines = taskAnnotateMcp.stdout
   .map((line) => line.trim())
   .filter(Boolean);
 const taskAnnotateMcpBrief = JSON.parse(JSON.parse(taskAnnotateMcpLines[2]).result.content[0].text);
+const taskReportMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_report",
+      arguments: { id: "task-1" }
+    }
+  })
+].join("\n") + "\n";
+const taskReportMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: taskReportMcpInput,
+  encoding: "utf8"
+});
+const taskReportMcpLines = taskReportMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const taskReportMcpPayload = JSON.parse(JSON.parse(taskReportMcpLines[1]).result.content[0].text);
 if (
   taskAddMcp.status !== 0 ||
   !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
@@ -1203,6 +1246,8 @@ if (
   taskHistoryMcpPayload.history?.history?.at(-1)?.type !== "approved" ||
   taskAnnotateMcp.status !== 0 ||
   taskAnnotateMcpBrief.brief?.annotations?.entries?.at(-1)?.content !== "reviewed through MCP flow" ||
+  taskReportMcp.status !== 0 ||
+  taskReportMcpPayload.report?.closure?.reviewOutcome !== "approved" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||
