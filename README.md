@@ -65,6 +65,7 @@ node ./src/index.js task:pickup --role executor --worker worker-1 --mode owner
 node ./src/index.js worker:session --role executor --worker worker-1 --mode owner
 node ./src/index.js worker:handoff --role executor --worker worker-1 --mode owner
 node ./src/index.js worker:closeout --role executor --worker worker-1 --mode owner
+node ./src/index.js verifier:bundle --role tester --worker tester-1
 node ./src/index.js task:check --id task-1
 node ./src/index.js swarm:init --objective "Ship a bounded runtime slice" --owner leader --max-workers 2 --lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer"}]'
 node ./src/index.js swarm:check --id swarm-1
@@ -125,6 +126,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `worker:handoff` / `worker_handoff` package that workspace into a return-ready payload: current focus, task brief, recent history, recent annotations, next candidate, and one summary sentence that another worker or leader can pick up immediately.
 
 `worker:closeout` / `worker_closeout` add the closure layer on top: current handoff, task report, and the concrete closeout command. This is the bundle a worker can emit when returning work for review, approval, or final archive.
+
+`verifier:bundle` / `verifier_bundle` provide the symmetric decision artifact for the verification lane: current review target, task report, recent context, and approve/reject commands. This keeps the reviewer side as productized as the worker side.
 
 `catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
 
