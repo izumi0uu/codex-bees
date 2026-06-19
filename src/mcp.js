@@ -10,6 +10,7 @@ import {
   approveTask,
   blockSwarm,
   blockTask,
+  blockTaskLifecycle,
   cancelSwarm,
   claimTask,
   claimTaskLifecycle,
@@ -2053,7 +2054,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_block requires arguments.id");
       }
 
-      const task = blockTask({
+      const task = blockTaskLifecycle({
         id: params.arguments.id,
         claimedBy: params.arguments.claimedBy,
         notes: params.arguments.notes

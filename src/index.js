@@ -15,6 +15,7 @@ import {
   approveTask,
   blockSwarm,
   blockTask,
+  blockTaskLifecycle,
   cancelSwarm,
   claimTask,
   claimTaskLifecycle,
@@ -964,7 +965,7 @@ function handleTaskBlock() {
   const id = requireOption("--id");
   const claimedBy = readOption("--by");
   const notes = readOption("--notes");
-  const task = blockTask({ id, claimedBy, notes });
+  const task = blockTaskLifecycle({ id, claimedBy, notes });
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);

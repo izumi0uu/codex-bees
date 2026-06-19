@@ -152,6 +152,8 @@ Task metadata can carry lane-ready execution detail:
 
 `task:claim` / `task_claim` return the explicit lifecycle mutation result for taking ownership of a task. They emit a machine-readable `recommendedReason` so automation can treat claim as its own protocol step instead of inferring it only from the nested task queue status.
 
+`task:block` / `task_block` return the explicit lifecycle mutation result for marking a claimed task blocked. They emit a machine-readable `recommendedReason` so automation can distinguish an intentional owner-side block from later recovery or handoff surfaces without reparsing only the nested task queue status.
+
 `task:review` hands work from the owner to the named verifier. After that point, only the verifier can close the task with `task:approve` / `task:done`, or send it back with `task:reject`. Review outcomes persist reviewer identity and optional `--evidence` so completion carries fresh verification context instead of skipping straight from worker claim to done.
 
 Swarm contracts can carry bounded parallel execution detail:

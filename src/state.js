@@ -3170,6 +3170,18 @@ export function blockTask(input) {
   });
 }
 
+export function blockTaskLifecycle(input) {
+  const result = blockTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_lifecycle",
+    recommendedReason: "task_blocked",
+    task: result
+  };
+}
+
 export function markTaskReadyForReview(input) {
   return transitionTask({
     ...input,

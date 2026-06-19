@@ -667,6 +667,39 @@ run("task-claim-lifecycle-release", ["./src/index.js", "task:release", "--id", "
 
 rmSync(".codex-bees", { recursive: true, force: true });
 
+run("task-block-lifecycle-add", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "block lifecycle task",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/mcp.js",
+  "--acceptance",
+  "block emits lifecycle envelope",
+  "--verification",
+  "task:block returns machine-readable reason"
+]);
+run("task-block-lifecycle-claim", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "block-worker"]);
+const blockedLifecycleCli = JSON.parse(
+  run("task-block-lifecycle-cli", ["./src/index.js", "task:block", "--id", "task-1", "--by", "block-worker", "--notes", "waiting on dependency"]).stdout
+).blocked;
+if (
+  blockedLifecycleCli.kind !== "task_lifecycle" ||
+  blockedLifecycleCli.recommendedReason !== "task_blocked" ||
+  blockedLifecycleCli.task?.id !== "task-1" ||
+  blockedLifecycleCli.task?.queueStatus !== "blocked" ||
+  blockedLifecycleCli.task?.claimedBy !== "block-worker"
+) {
+  console.error("[smoke:task-block] expected CLI task block lifecycle payload");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+
 const firstAdd = run("durability-add-1", [
   "./src/index.js",
   "task:add",
