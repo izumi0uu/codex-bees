@@ -1530,10 +1530,12 @@ export function runtimeTriagePack() {
   const review = runtimeReview();
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeTriagePackSurface({ focus, alerts, review, recovery });
+  const recommendedReason = deriveRuntimeTriagePackReason({ focus, alerts, review, recovery });
 
   return {
     kind: "runtime_triage_pack",
     recommendedSurface,
+    recommendedReason,
     overview: {
       focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
       alerts: alerts?.counts ?? null,
@@ -4605,6 +4607,28 @@ function deriveRuntimeTriagePackSurface({ focus, alerts, review, recovery }) {
     return "runtime:alerts";
   }
   return "runtime:focus";
+}
+
+function deriveRuntimeTriagePackReason({ focus, alerts, review, recovery }) {
+  if (focus?.focus?.type === "blocked_task") {
+    return "blocked_focus_priority";
+  }
+  if (focus?.focus?.type === "review_task") {
+    return "review_focus_priority";
+  }
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "recovery_priority";
+  }
+  if ((review?.counts?.totalPendingReview ?? 0) > 0) {
+    return "review_queue_priority";
+  }
+  if ((alerts?.counts?.high ?? 0) > 0) {
+    return "high_alert_priority";
+  }
+  if ((alerts?.counts?.medium ?? 0) > 0) {
+    return "medium_alert_priority";
+  }
+  return "default_focus_priority";
 }
 
 function buildRuntimeTriagePackSummary(recommendedSurface, focus, alerts, review, recovery) {

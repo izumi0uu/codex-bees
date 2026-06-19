@@ -2815,6 +2815,7 @@ const runtimeTriagePackCli = JSON.parse(
 ).triagePack;
 if (
   runtimeTriagePackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeTriagePackCli.recommendedReason !== "blocked_focus_priority" ||
   runtimeTriagePackCli.next?.focus?.taskId !== "task-1" ||
   runtimeTriagePackCli.next?.alert?.taskId !== "task-1" ||
   runtimeTriagePackCli.next?.review?.taskId !== "task-2" ||
@@ -3516,6 +3517,7 @@ const runtimeTriagePackMcpPayload = JSON.parse(JSON.parse(runtimeTriagePackMcpLi
 if (
   runtimeTriagePackMcp.status !== 0 ||
   runtimeTriagePackMcpPayload.triagePack?.recommendedSurface !== "runtime:focus" ||
+  runtimeTriagePackMcpPayload.triagePack?.recommendedReason !== "blocked_focus_priority" ||
   runtimeTriagePackMcpPayload.triagePack?.next?.focus?.taskId !== "task-1" ||
   runtimeTriagePackMcpPayload.triagePack?.next?.review?.taskId !== "task-2"
 ) {

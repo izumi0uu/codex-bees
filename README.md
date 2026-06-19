@@ -258,7 +258,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:summary-pack` / `runtime_summary_pack` provide the automation-first rollup: current focus plus dashboard, alert, handoff, recovery, closeout, and compact leader launch-context counts in one single payload with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can tell whether blocked focus, recovery, handoff pressure, closeout readiness, or dashboard queue visibility won the top-level priority decision. It also accepts `--workers` on CLI or `workerIds` over MCP so the surfaced assignment dispatch bundle and launch plan can retain concrete worker mappings when downstream automation needs a lightweight startup handoff without opening the larger leader-oriented packs.
 
-`runtime:triage-pack` / `runtime_triage_pack` provide the triage-oriented package: focus, alerts, review, and recovery combined into one issue-first operator entrypoint with a recommended next surface.
+`runtime:triage-pack` / `runtime_triage_pack` provide the triage-oriented package: focus, alerts, review, and recovery combined into one issue-first operator entrypoint with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between blocked/review focus, recovery pressure, review queue pressure, and high/medium alert pressure without parsing the pack summary.
 
 `runtime:verifier-pack` / `runtime_verifier_pack` provide the verifier-oriented package: review pressure, current verifier decision bundle, closeout-ready approval payload, and next review candidate combined into one role-scoped payload with a recommended next surface.
 
