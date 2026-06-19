@@ -1229,6 +1229,40 @@ if (
   console.error("[smoke:runtime-leader-pack] expected CLI leader pack to propagate mapped worker commands into batch dispatch surface");
   process.exit(1);
 }
+const runtimeWorkspacePackMappedCli = JSON.parse(
+  run("runtime-workspace-pack-mapped-cli", [
+    "./src/index.js",
+    "runtime:workspace-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).workspacePack;
+if (
+  runtimeWorkspacePackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeWorkspacePackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[1]?.workerId !== "worker-explore" ||
+  runtimeWorkspacePackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.previewCommand !== "node ./src/index.js task:assignment-preview --role executor --worker worker-executor --task task-2" ||
+  runtimeWorkspacePackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[1]?.previewCommand !== "node ./src/index.js task:assignment-preview --role explore --worker worker-explore --task task-1"
+) {
+  console.error("[smoke:runtime-workspace-pack] expected CLI workspace pack to propagate mapped worker ids into launch plan");
+  process.exit(1);
+}
+const runtimeExecutionPackMappedCli = JSON.parse(
+  run("runtime-execution-pack-mapped-cli", [
+    "./src/index.js",
+    "runtime:execution-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).executionPack;
+if (
+  runtimeExecutionPackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
+  runtimeExecutionPackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[1]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role explore --worker worker-explore --mode owner" ||
+  runtimeExecutionPackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.previewCommand !== "node ./src/index.js task:assignment-preview --role executor --worker worker-executor --task task-2" ||
+  runtimeExecutionPackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[1]?.previewCommand !== "node ./src/index.js task:assignment-preview --role explore --worker worker-explore --task task-1"
+) {
+  console.error("[smoke:runtime-execution-pack] expected CLI execution pack to propagate mapped worker commands into launch plan");
+  process.exit(1);
+}
 const assignmentPackExecutorCli = JSON.parse(
   run("runtime-assignment-pack-executor-cli", ["./src/index.js", "runtime:assignment-pack", "--role", "executor", "--worker", "worker-executor", "--mode", "owner"]).stdout
 ).assignmentPack;
@@ -2106,6 +2140,130 @@ if (
   console.error(runtimeDispatchPackMappedMcp.stderr || runtimeDispatchPackMappedMcp.stdout);
   process.exit(1);
 }
+const runtimeWorkspacePackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_workspace_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const runtimeWorkspacePackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeWorkspacePackMappedMcpInput,
+  encoding: "utf8"
+});
+const runtimeWorkspacePackMappedMcpLines = runtimeWorkspacePackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeWorkspacePackMappedMcpPayload = JSON.parse(JSON.parse(runtimeWorkspacePackMappedMcpLines[1]).result.content[0].text);
+if (
+  runtimeWorkspacePackMappedMcp.status !== 0 ||
+  runtimeWorkspacePackMappedMcpPayload.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeWorkspacePackMappedMcpPayload.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[1]?.workerId !== "worker-explore" ||
+  runtimeWorkspacePackMappedMcpPayload.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.previewCommand !== "node ./src/index.js task:assignment-preview --role executor --worker worker-executor --task task-2" ||
+  runtimeWorkspacePackMappedMcpPayload.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[1]?.previewCommand !== "node ./src/index.js task:assignment-preview --role explore --worker worker-explore --task task-1"
+) {
+  console.error("[smoke:runtime-workspace-pack-mcp] expected MCP workspace pack to propagate mapped worker ids into launch plan");
+  console.error(runtimeWorkspacePackMappedMcp.stderr || runtimeWorkspacePackMappedMcp.stdout);
+  process.exit(1);
+}
+const runtimeExecutionPackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_execution_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const runtimeExecutionPackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeExecutionPackMappedMcpInput,
+  encoding: "utf8"
+});
+const runtimeExecutionPackMappedMcpLines = runtimeExecutionPackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeExecutionPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeExecutionPackMappedMcpLines[1]).result.content[0].text);
+if (
+  runtimeExecutionPackMappedMcp.status !== 0 ||
+  runtimeExecutionPackMappedMcpPayload.executionPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeExecutionPackMappedMcpPayload.executionPack?.surfaces?.assignmentLaunchPlan?.steps?.[1]?.workerId !== "worker-explore" ||
+  runtimeExecutionPackMappedMcpPayload.executionPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
+  runtimeExecutionPackMappedMcpPayload.executionPack?.surfaces?.assignmentLaunchPlan?.steps?.[1]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role explore --worker worker-explore --mode owner"
+) {
+  console.error("[smoke:runtime-execution-pack-mcp] expected MCP execution pack to propagate mapped worker ids into launch plan");
+  console.error(runtimeExecutionPackMappedMcp.stderr || runtimeExecutionPackMappedMcp.stdout);
+  process.exit(1);
+}
+const runtimeCloseoutPackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_closeout_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const runtimeCloseoutPackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeCloseoutPackMappedMcpInput,
+  encoding: "utf8"
+});
+const runtimeCloseoutPackMappedMcpLines = runtimeCloseoutPackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeCloseoutPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeCloseoutPackMappedMcpLines[1]).result.content[0].text);
+if (
+  runtimeCloseoutPackMappedMcp.status !== 0 ||
+  runtimeCloseoutPackMappedMcpPayload.closeoutPack?.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeCloseoutPackMappedMcpPayload.closeoutPack?.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner"
+) {
+  console.error("[smoke:runtime-closeout-pack-mcp] expected MCP closeout pack to pass worker mappings into nested leader pack");
+  console.error(runtimeCloseoutPackMappedMcp.stderr || runtimeCloseoutPackMappedMcp.stdout);
+  process.exit(1);
+}
+const runtimeControlPackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_control_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const runtimeControlPackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeControlPackMappedMcpInput,
+  encoding: "utf8"
+});
+const runtimeControlPackMappedMcpLines = runtimeControlPackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeControlPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeControlPackMappedMcpLines[1]).result.content[0].text);
+if (
+  runtimeControlPackMappedMcp.status !== 0 ||
+  runtimeControlPackMappedMcpPayload.controlPack?.surfaces?.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeControlPackMappedMcpPayload.controlPack?.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor"
+) {
+  console.error("[smoke:runtime-control-pack-mcp] expected MCP control pack to pass worker mappings into nested workspace and leader packs");
+  console.error(runtimeControlPackMappedMcp.stderr || runtimeControlPackMappedMcp.stdout);
+  process.exit(1);
+}
 const runtimeLeaderPackMappedMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -2500,6 +2658,51 @@ if (
   runtimeControlPackCli.next?.leader?.dispatch?.lane !== "lane-dashboard"
 ) {
   console.error("[smoke:runtime-control-pack] expected CLI control pack to recommend summary pack");
+  process.exit(1);
+}
+const runtimeSummaryPackMappedCli = JSON.parse(
+  run("runtime-summary-pack-mapped-cli", [
+    "./src/index.js",
+    "runtime:summary-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).summaryPack;
+if (
+  runtimeSummaryPackMappedCli.surfaces?.closeout?.counts?.totalReady !== 0 ||
+  runtimeSummaryPackMappedCli.recommendedSurface !== "runtime:focus"
+) {
+  console.error("[smoke:runtime-summary-pack] expected CLI summary pack to preserve focus while accepting worker mappings");
+  process.exit(1);
+}
+const runtimeCloseoutPackMappedCli = JSON.parse(
+  run("runtime-closeout-pack-mapped-cli", [
+    "./src/index.js",
+    "runtime:closeout-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).closeoutPack;
+if (
+  runtimeCloseoutPackMappedCli.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeCloseoutPackMappedCli.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner"
+) {
+  console.error("[smoke:runtime-closeout-pack] expected CLI closeout pack to pass worker mappings into nested leader pack");
+  process.exit(1);
+}
+const runtimeControlPackMappedCli = JSON.parse(
+  run("runtime-control-pack-mapped-cli", [
+    "./src/index.js",
+    "runtime:control-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).controlPack;
+if (
+  runtimeControlPackMappedCli.surfaces?.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeControlPackMappedCli.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor"
+) {
+  console.error("[smoke:runtime-control-pack] expected CLI control pack to pass worker mappings into nested workspace and leader packs");
   process.exit(1);
 }
 const runtimeSignalPackCli = JSON.parse(
