@@ -568,7 +568,7 @@ export function leaderAssignmentDispatchPack(input = {}) {
   const assignments = leaderAssignments(input);
   const groups = (assignments?.groups ?? []).map((group) => {
     const ownerId = group.owner?.id ?? group.owner?.name ?? "unknown";
-    const workerId = input.workerId ?? `<${ownerId}-worker>`;
+    const workerId = input.workerIds?.[ownerId] ?? input.workerId ?? `<${ownerId}-worker>`;
     const dispatch = leaderAssignmentDispatch({
       ...input,
       role: ownerId,
@@ -1131,9 +1131,9 @@ export function runtimeOperatorPack() {
   };
 }
 
-export function runtimeDispatchPack() {
+export function runtimeDispatchPack(input = {}) {
   const dispatch = runtimeDispatch();
-  const assignmentDispatchPack = leaderAssignmentDispatchPack();
+  const assignmentDispatchPack = leaderAssignmentDispatchPack(input);
   const roles = runtimeRoles();
   const handoffs = runtimeHandoffs();
   const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, roles, handoffs });
