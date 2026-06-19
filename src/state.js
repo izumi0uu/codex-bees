@@ -2650,6 +2650,12 @@ export function previewTaskPickup(input = {}) {
       mode: next?.mode ?? normalizeNextMode(input.mode),
       outcome: "none",
       recommendedReason: "no_pickup_candidate",
+      metadata: {
+        hasCandidate: false,
+        hasTask: false,
+        hasBrief: false,
+        taskId: null
+      },
       candidate: null,
       task: null,
       brief: null,
@@ -2668,6 +2674,12 @@ export function previewTaskPickup(input = {}) {
       mode: next.mode,
       outcome: "claimable",
       recommendedReason: "claimable_pickup_preview",
+      metadata: {
+        hasCandidate: true,
+        hasTask: Boolean(currentTask),
+        hasBrief: Boolean(next.brief),
+        taskId: next.candidate.id
+      },
       candidate: next.candidate,
       task: currentTask,
       brief: next.brief,
@@ -2682,6 +2694,12 @@ export function previewTaskPickup(input = {}) {
     mode: next.mode,
     outcome: pickupOutcome(relation),
     recommendedReason: deriveTaskPickupPreviewReason(relation),
+    metadata: {
+      hasCandidate: true,
+      hasTask: Boolean(currentTask),
+      hasBrief: Boolean(next.brief),
+      taskId: next.candidate.id
+    },
     candidate: next.candidate,
     task: currentTask,
     brief: next.brief,

@@ -5663,6 +5663,10 @@ const pickupPreviewVerifier = JSON.parse(
 if (
   pickupPreviewVerifier.outcome !== "review" ||
   pickupPreviewVerifier.recommendedReason !== "review_pickup_preview" ||
+  pickupPreviewVerifier.metadata?.hasCandidate !== true ||
+  pickupPreviewVerifier.metadata?.hasTask !== true ||
+  pickupPreviewVerifier.metadata?.hasBrief !== true ||
+  pickupPreviewVerifier.metadata?.taskId !== "task-2" ||
   pickupPreviewVerifier.candidate?.id !== "task-2" ||
   pickupPreviewVerifier.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
@@ -5713,6 +5717,8 @@ const pickupPreviewOwner = JSON.parse(
 if (
   pickupPreviewOwner.outcome !== "claimable" ||
   pickupPreviewOwner.recommendedReason !== "claimable_pickup_preview" ||
+  pickupPreviewOwner.metadata?.hasCandidate !== true ||
+  pickupPreviewOwner.metadata?.taskId !== "task-1" ||
   pickupPreviewOwner.candidate?.id !== "task-1" ||
   pickupPreviewOwner.command !== "node ./src/index.js task:pickup --role executor --worker worker-owner --mode owner"
 ) {
@@ -5858,6 +5864,8 @@ if (
   pickupPreviewMcp.status !== 0 ||
   pickupPreviewMcpPayload.pickupPreview?.outcome !== "review" ||
   pickupPreviewMcpPayload.pickupPreview?.recommendedReason !== "review_pickup_preview" ||
+  pickupPreviewMcpPayload.pickupPreview?.metadata?.hasBrief !== true ||
+  pickupPreviewMcpPayload.pickupPreview?.metadata?.taskId !== "task-2" ||
   pickupPreviewMcpPayload.pickupPreview?.candidate?.id !== "task-2" ||
   pickupPreviewMcpPayload.pickupPreview?.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
