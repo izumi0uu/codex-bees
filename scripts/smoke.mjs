@@ -302,6 +302,18 @@ if (
   console.error("[smoke:runtime-review] expected top-level runtime review");
   process.exit(1);
 }
+const runtimeReviewPackInitial = JSON.parse(
+  run("runtime-review-pack-initial", ["./src/index.js", "runtime:review-pack"]).stdout
+).reviewPack;
+if (
+  runtimeReviewPackInitial.kind !== "runtime_review_pack" ||
+  !runtimeReviewPackInitial.recommendedSurface ||
+  !runtimeReviewPackInitial.overview ||
+  !runtimeReviewPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-review-pack] expected top-level runtime review pack");
+  process.exit(1);
+}
 const runtimeAlertsInitial = JSON.parse(
   run("runtime-alerts-initial", ["./src/index.js", "runtime:alerts"]).stdout
 ).alerts;
@@ -1696,6 +1708,19 @@ if (
   console.error("[smoke:runtime-review] expected CLI verifier-grouped review workspace");
   process.exit(1);
 }
+const runtimeReviewPackCli = JSON.parse(
+  run("runtime-review-pack-cli", ["./src/index.js", "runtime:review-pack", "--role", "tester", "--worker", "tester-worker"]).stdout
+).reviewPack;
+if (
+  runtimeReviewPackCli.recommendedSurface !== "runtime:verifier-pack" ||
+  runtimeReviewPackCli.next?.review?.taskId !== "task-2" ||
+  runtimeReviewPackCli.next?.verifier?.decision?.id !== "task-2" ||
+  runtimeReviewPackCli.overview?.review?.totalPendingReview !== 1 ||
+  runtimeReviewPackCli.surfaces?.verifierPack?.surfaces?.closeout?.report?.task?.id !== "task-2"
+) {
+  console.error("[smoke:runtime-review-pack] expected CLI review pack to recommend verifier pack");
+  process.exit(1);
+}
 const runtimeAlertsCli = JSON.parse(
   run("runtime-alerts-cli", ["./src/index.js", "runtime:alerts"]).stdout
 ).alerts;
@@ -2152,6 +2177,40 @@ if (
 ) {
   console.error("[smoke:runtime-review-mcp] expected MCP runtime review");
   console.error(runtimeReviewMcp.stderr || runtimeReviewMcp.stdout);
+  process.exit(1);
+}
+const runtimeReviewPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_review_pack",
+      arguments: {
+        role: "tester",
+        workerId: "tester-worker"
+      }
+    }
+  })
+].join("\n") + "\n";
+const runtimeReviewPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeReviewPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeReviewPackMcpLines = runtimeReviewPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeReviewPackMcpPayload = JSON.parse(JSON.parse(runtimeReviewPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeReviewPackMcp.status !== 0 ||
+  runtimeReviewPackMcpPayload.reviewPack?.recommendedSurface !== "runtime:verifier-pack" ||
+  runtimeReviewPackMcpPayload.reviewPack?.next?.review?.taskId !== "task-2" ||
+  runtimeReviewPackMcpPayload.reviewPack?.next?.verifier?.decision?.id !== "task-2"
+) {
+  console.error("[smoke:runtime-review-pack-mcp] expected MCP runtime review pack");
+  console.error(runtimeReviewPackMcp.stderr || runtimeReviewPackMcp.stdout);
   process.exit(1);
 }
 const runtimeAlertsMcpInput = [
