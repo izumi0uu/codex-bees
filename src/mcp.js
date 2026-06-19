@@ -29,6 +29,7 @@ import {
   queueSwarmTasks,
   rejectTask,
   releaseTask,
+  runtimeDashboard,
   swarmOverview,
   syncSwarmStatus,
   searchMemories,
@@ -98,6 +99,14 @@ export const toolCatalog = [
   {
     name: "runtime_capabilities",
     description: "Return the shipped capability inventory for the local Codex-only runtime.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_dashboard",
+    description: "Build the top-level orchestration dashboard for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -894,6 +903,10 @@ function handleRequest(message) {
 
     if (name === "runtime_capabilities") {
       return createSuccess(id, createTextPayload({ capabilities: getCapabilityCatalog() }));
+    }
+
+    if (name === "runtime_dashboard") {
+      return createSuccess(id, createTextPayload({ dashboard: runtimeDashboard() }));
     }
 
     if (name === "task_list") {
