@@ -195,6 +195,25 @@ if (
   console.error("[smoke:task-history] expected completed task history with approval tail");
   process.exit(1);
 }
+run("task-annotate-complete", [
+  "./src/index.js",
+  "task:annotate",
+  "--id",
+  "task-3",
+  "--by",
+  "tester",
+  "--kind",
+  "handoff",
+  "--content",
+  "verified with smoke coverage"
+]);
+const taskBriefAnnotated = JSON.parse(
+  run("task-brief-annotated", ["./src/index.js", "task:brief", "--id", "task-3"]).stdout
+).brief;
+if (taskBriefAnnotated.annotations?.entries?.at(-1)?.content !== "verified with smoke coverage") {
+  console.error("[smoke:task-annotate] expected annotation to appear in task brief");
+  process.exit(1);
+}
 const testerInbox = JSON.parse(
   run("task-inbox-tester", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).inbox;
@@ -389,6 +408,28 @@ if (
   ownerSession.activeOwned?.[0]?.summary?.id !== "task-1"
 ) {
   console.error("[smoke:worker-session] expected active owner session focus");
+  process.exit(1);
+}
+run("task-annotate-owner", [
+  "./src/index.js",
+  "task:annotate",
+  "--id",
+  "task-1",
+  "--by",
+  "review-worker",
+  "--kind",
+  "context",
+  "--content",
+  "worker needs another pass before review"
+]);
+const ownerSessionAnnotated = JSON.parse(
+  run("worker-session-owner-annotated", ["./src/index.js", "worker:session", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
+).session;
+if (
+  ownerSessionAnnotated.activeOwned?.[0]?.recentAnnotations?.at(-1)?.content !==
+  "worker needs another pass before review"
+) {
+  console.error("[smoke:worker-session] expected owner annotation in worker session");
   process.exit(1);
 }
 const reviewTaskHistory = JSON.parse(
@@ -1106,6 +1147,41 @@ const taskHistoryMcpLines = taskHistoryMcp.stdout
   .map((line) => line.trim())
   .filter(Boolean);
 const taskHistoryMcpPayload = JSON.parse(JSON.parse(taskHistoryMcpLines[1]).result.content[0].text);
+const taskAnnotateMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_annotate",
+      arguments: {
+        id: "task-1",
+        actor: "tester",
+        kind: "review-note",
+        content: "reviewed through MCP flow"
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "task_brief",
+      arguments: { id: "task-1" }
+    }
+  })
+].join("\n") + "\n";
+const taskAnnotateMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: taskAnnotateMcpInput,
+  encoding: "utf8"
+});
+const taskAnnotateMcpLines = taskAnnotateMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const taskAnnotateMcpBrief = JSON.parse(JSON.parse(taskAnnotateMcpLines[2]).result.content[0].text);
 if (
   taskAddMcp.status !== 0 ||
   !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
@@ -1114,6 +1190,8 @@ if (
   taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
   taskHistoryMcp.status !== 0 ||
   taskHistoryMcpPayload.history?.history?.at(-1)?.type !== "approved" ||
+  taskAnnotateMcp.status !== 0 ||
+  taskAnnotateMcpBrief.brief?.annotations?.entries?.at(-1)?.content !== "reviewed through MCP flow" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||
