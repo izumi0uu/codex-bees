@@ -43,6 +43,7 @@ import {
   runtimeOwnerPack,
   runtimeRecoveryPack,
   runtimeRecovery,
+  runtimeReviewPack,
   runtimeSummaryPack,
   runtimeVerifierPack,
   runtimeWorkerPack,
@@ -170,6 +171,17 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_review_pack",
+    description: "Build the review-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" }
+      }
     }
   },
   {
@@ -1110,6 +1122,15 @@ function handleRequest(message) {
 
     if (name === "runtime_recovery") {
       return createSuccess(id, createTextPayload({ recovery: runtimeRecovery() }));
+    }
+
+    if (name === "runtime_review_pack") {
+      return createSuccess(id, createTextPayload({
+        reviewPack: runtimeReviewPack({
+          role: params.arguments?.role,
+          workerId: params.arguments?.workerId
+        })
+      }));
     }
 
     if (name === "runtime_leader_pack") {
