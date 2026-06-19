@@ -2541,6 +2541,19 @@ if (
   console.error("[smoke:runtime-worker-pack] expected verifier worker pack");
   process.exit(1);
 }
+const verifierPackCli = JSON.parse(
+  run("runtime-verifier-pack-cli", ["./src/index.js", "runtime:verifier-pack", "--role", "tester", "--worker", "tester-worker"]).stdout
+).verifierPack;
+if (
+  verifierPackCli.kind !== "runtime_verifier_pack" ||
+  verifierPackCli.recommendedSurface !== "worker:closeout" ||
+  verifierPackCli.next?.decision?.id !== "task-2" ||
+  verifierPackCli.surfaces?.review?.counts?.totalPendingReview !== 1 ||
+  verifierPackCli.surfaces?.closeout?.report?.task?.id !== "task-2"
+) {
+  console.error("[smoke:runtime-verifier-pack] expected CLI verifier pack");
+  process.exit(1);
+}
 const verifierBundleCli = JSON.parse(
   run("verifier-bundle-cli", ["./src/index.js", "verifier:bundle", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).bundle;
@@ -2788,6 +2801,40 @@ if (
 ) {
   console.error("[smoke:runtime-worker-pack-mcp] expected MCP worker pack");
   console.error(workerPackMcp.stderr || workerPackMcp.stdout);
+  process.exit(1);
+}
+const verifierPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_verifier_pack",
+      arguments: {
+        role: "tester",
+        workerId: "tester-worker"
+      }
+    }
+  })
+].join("\n") + "\n";
+const verifierPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: verifierPackMcpInput,
+  encoding: "utf8"
+});
+const verifierPackMcpLines = verifierPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const verifierPackMcpPayload = JSON.parse(JSON.parse(verifierPackMcpLines[1]).result.content[0].text);
+if (
+  verifierPackMcp.status !== 0 ||
+  verifierPackMcpPayload.verifierPack?.recommendedSurface !== "worker:closeout" ||
+  verifierPackMcpPayload.verifierPack?.next?.decision?.id !== "task-2" ||
+  verifierPackMcpPayload.verifierPack?.surfaces?.closeout?.report?.task?.id !== "task-2"
+) {
+  console.error("[smoke:runtime-verifier-pack-mcp] expected MCP verifier pack");
+  console.error(verifierPackMcp.stderr || verifierPackMcp.stdout);
   process.exit(1);
 }
 const inboxHistory = JSON.parse(
