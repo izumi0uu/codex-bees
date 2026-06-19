@@ -49,6 +49,7 @@ import {
   runtimeReviewPack,
   runtimeSignalPack,
   runtimeSummaryPack,
+  runtimeTriagePack,
   runtimeVerifierPack,
   runtimeWorkspacePack,
   runtimeWorkerPack,
@@ -175,6 +176,14 @@ export const toolCatalog = [
   {
     name: "runtime_handoff_pack",
     description: "Build the handoff-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_triage_pack",
+    description: "Build the triage-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1169,6 +1178,10 @@ function handleRequest(message) {
 
     if (name === "runtime_handoff_pack") {
       return createSuccess(id, createTextPayload({ handoffPack: runtimeHandoffPack() }));
+    }
+
+    if (name === "runtime_triage_pack") {
+      return createSuccess(id, createTextPayload({ triagePack: runtimeTriagePack() }));
     }
 
     if (name === "runtime_handoffs") {
