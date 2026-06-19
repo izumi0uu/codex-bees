@@ -24,6 +24,7 @@ import {
   getSwarm,
   initSwarm,
   leaderAssignmentDispatch,
+  leaderAssignmentDispatchPack,
   leaderAssignments,
   leaderQueue,
   leaderWorkspace,
@@ -167,6 +168,7 @@ function printHelp() {
   write(`  codex-bees worker:closeout Build a closure-oriented bundle for one worker\n`);
   write(`  codex-bees verifier:bundle Build a decision-ready bundle for one verifier\n`);
   write(`  codex-bees leader:assignment-dispatch Build a worker-targeted dispatch package for one leader assignment\n`);
+  write(`  codex-bees leader:assignment-dispatch-pack Build worker-targeted dispatch packages across owner groups\n`);
   write(`  codex-bees leader:assignments Build owner-grouped dispatch assignments across swarms\n`);
   write(`  codex-bees leader:queue    Build a prioritized leader decision queue across swarms\n`);
   write(`  codex-bees leader:workspace Build a leader-ready orchestration workspace across swarms\n`);
@@ -829,6 +831,18 @@ function handleLeaderAssignmentDispatch() {
     owner: readOption("--owner")
   });
   write(JSON.stringify({ assignmentDispatch: dispatch }, null, 2) + "\n");
+}
+
+function handleLeaderAssignmentDispatchPack() {
+  const dispatchPack = leaderAssignmentDispatchPack({
+    role: readOption("--role") ?? readOption("--owner"),
+    workerId: readOption("--worker"),
+    taskId: readOption("--task"),
+    status: readOption("--status"),
+    topology: readOption("--topology"),
+    owner: readOption("--owner")
+  });
+  write(JSON.stringify({ assignmentDispatchPack: dispatchPack }, null, 2) + "\n");
 }
 
 function handleTaskCheck() {
@@ -1494,6 +1508,9 @@ async function runCommand(command) {
       return;
     case "leader:assignment-dispatch":
       handleLeaderAssignmentDispatch();
+      return;
+    case "leader:assignment-dispatch-pack":
+      handleLeaderAssignmentDispatchPack();
       return;
     case "task:claim":
       handleTaskClaim();

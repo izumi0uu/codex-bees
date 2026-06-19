@@ -19,6 +19,7 @@ import {
   getSwarm,
   initSwarm,
   leaderAssignmentDispatch,
+  leaderAssignmentDispatchPack,
   leaderAssignments,
   leaderQueue,
   leaderWorkspace,
@@ -713,6 +714,21 @@ export const toolCatalog = [
   {
     name: "leader_assignment_dispatch",
     description: "Build a worker-targeted dispatch package for one leader assignment.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        role: { type: "string" },
+        owner: { type: "string" },
+        workerId: { type: "string" },
+        taskId: { type: "string" },
+        status: { type: "string" },
+        topology: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "leader_assignment_dispatch_pack",
+    description: "Build worker-targeted dispatch packages across owner groups.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1823,6 +1839,19 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ assignmentDispatch }));
+    }
+
+    if (name === "leader_assignment_dispatch_pack") {
+      const assignmentDispatchPack = leaderAssignmentDispatchPack({
+        role: params.arguments?.role,
+        owner: params.arguments?.owner,
+        workerId: params.arguments?.workerId,
+        taskId: params.arguments?.taskId,
+        status: params.arguments?.status,
+        topology: params.arguments?.topology
+      });
+
+      return createSuccess(id, createTextPayload({ assignmentDispatchPack }));
     }
 
     if (name === "task_update") {
