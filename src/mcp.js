@@ -31,6 +31,7 @@ import {
   releaseTask,
   runtimeAlerts,
   runtimeDashboard,
+  runtimeRoles,
   swarmOverview,
   syncSwarmStatus,
   searchMemories,
@@ -119,6 +120,16 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_roles",
+    description: "Build the role-level orchestration queue view for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "integer", minimum: 1 }
+      }
     }
   },
   {
@@ -920,6 +931,10 @@ function handleRequest(message) {
 
     if (name === "runtime_alerts") {
       return createSuccess(id, createTextPayload({ alerts: runtimeAlerts() }));
+    }
+
+    if (name === "runtime_roles") {
+      return createSuccess(id, createTextPayload({ roles: runtimeRoles({ limit: params.arguments?.limit }) }));
     }
 
     if (name === "task_list") {
