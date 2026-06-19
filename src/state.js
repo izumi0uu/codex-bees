@@ -939,6 +939,48 @@ export function runtimeCloseout() {
   };
 }
 
+export function runtimeRecovery() {
+  const entries = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => isRuntimeRecoveryTask(task))
+    .map((task) => buildRuntimeRecoveryEntry(task))
+    .sort(compareRuntimeRecoveryEntries);
+  const groupsByType = new Map();
+
+  for (const entry of entries) {
+    const current = groupsByType.get(entry.recoveryType) ?? {
+      recoveryType: entry.recoveryType,
+      count: 0,
+      next: null,
+      entries: []
+    };
+    current.entries.push({
+      position: current.count + 1,
+      ...entry
+    });
+    current.count += 1;
+    current.next = current.entries[0] ?? null;
+    groupsByType.set(entry.recoveryType, current);
+  }
+
+  const groups = [...groupsByType.values()].sort(compareRuntimeRecoveryGroups);
+  const next = groups[0]?.entries?.[0] ?? null;
+
+  return {
+    kind: "runtime_recovery",
+    counts: {
+      recoveryGroups: groups.length,
+      totalEntries: entries.length,
+      blocked: entries.filter((entry) => entry.recoveryType === "blocked_recovery").length,
+      released: entries.filter((entry) => entry.recoveryType === "released_repickup").length,
+      changesRequested: entries.filter((entry) => entry.recoveryType === "changes_requested").length
+    },
+    groups,
+    next,
+    summary: buildRuntimeRecoverySummary(groups, next)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -2762,6 +2804,105 @@ function buildRuntimeCloseoutSummary(tasks, swarms, next) {
   }
 
   return `Runtime closeout should finish swarm ${next.swarmId} first.`;
+}
+
+function isRuntimeRecoveryTask(task) {
+  if (task.queueStatus === "blocked" || task.queueStatus === "released") {
+    return true;
+  }
+  return task.reviewOutcome === "changes_requested" && task.queueStatus !== "ready_for_review" && task.queueStatus !== "done";
+}
+
+function buildRuntimeRecoveryEntry(task) {
+  const brief = taskBrief(task.id);
+  return {
+    taskId: task.id,
+    title: task.title,
+    queueStatus: task.queueStatus,
+    reviewOutcome: task.reviewOutcome,
+    owner: task.owner,
+    verifier: task.verifier,
+    claimedBy: task.claimedBy,
+    swarmId: task.swarmId,
+    lane: task.lane,
+    recoveryType: runtimeRecoveryType(task),
+    recommendedNextActor: brief?.recommendedNextActor ?? null,
+    recommendedNextAction: brief?.recommendedNextAction ?? null,
+    recommendedCommands: brief?.recommendedCommands ?? [],
+    taskBrief: brief,
+    updatedAt: task.updatedAt ?? null,
+    summary: buildRuntimeRecoveryEntrySummary(task)
+  };
+}
+
+function runtimeRecoveryType(task) {
+  if (task.queueStatus === "blocked") {
+    return "blocked_recovery";
+  }
+  if (task.queueStatus === "released") {
+    return "released_repickup";
+  }
+  return "changes_requested";
+}
+
+function buildRuntimeRecoveryEntrySummary(task) {
+  if (task.queueStatus === "blocked") {
+    return `Task ${task.id} is blocked and needs unblock work before it can continue.`;
+  }
+  if (task.queueStatus === "released") {
+    return `Task ${task.id} was released and needs a fresh owner pickup.`;
+  }
+  return `Task ${task.id} came back with requested changes and needs another execution pass.`;
+}
+
+function compareRuntimeRecoveryEntries(left, right) {
+  const leftRank = runtimeRecoveryPriority(left);
+  const rightRank = runtimeRecoveryPriority(right);
+  if (leftRank !== rightRank) {
+    return leftRank - rightRank;
+  }
+  const byUpdatedAt = (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "");
+  if (byUpdatedAt !== 0) {
+    return byUpdatedAt;
+  }
+  return (left.taskId ?? "").localeCompare(right.taskId ?? "");
+}
+
+function compareRuntimeRecoveryGroups(left, right) {
+  const leftRank = runtimeRecoveryPriority(left.next ?? {});
+  const rightRank = runtimeRecoveryPriority(right.next ?? {});
+  if (leftRank !== rightRank) {
+    return leftRank - rightRank;
+  }
+  if ((right.count ?? 0) !== (left.count ?? 0)) {
+    return (right.count ?? 0) - (left.count ?? 0);
+  }
+  return (left.recoveryType ?? "").localeCompare(right.recoveryType ?? "");
+}
+
+function runtimeRecoveryPriority(entry) {
+  if (entry.recoveryType === "blocked_recovery") {
+    return 0;
+  }
+  if (entry.recoveryType === "changes_requested") {
+    return 1;
+  }
+  if (entry.recoveryType === "released_repickup") {
+    return 2;
+  }
+  return 3;
+}
+
+function buildRuntimeRecoverySummary(groups, next) {
+  if (groups.length === 0) {
+    return "Runtime recovery has no blocked, released, or change-requested tasks right now.";
+  }
+
+  if (!next) {
+    return `Runtime recovery is tracking ${groups.length} recovery group${groups.length === 1 ? "" : "s"}.`;
+  }
+
+  return `Runtime recovery should start with ${next.taskId} in ${next.recoveryType}.`;
 }
 
 function compareRuntimeRoleEntries(left, right) {
