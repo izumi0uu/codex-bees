@@ -1018,6 +1018,43 @@ export function runtimeSummaryPack() {
   };
 }
 
+export function runtimeLeaderPack(input = {}) {
+  const workspace = leaderWorkspace(input);
+  const queue = leaderQueue(input);
+  const dispatch = runtimeDispatch();
+  const closeout = runtimeCloseout();
+  const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout });
+
+  return {
+    kind: "runtime_leader_pack",
+    filters: workspace?.filters ?? {
+      status: input.status,
+      topology: input.topology,
+      owner: input.owner
+    },
+    recommendedSurface,
+    overview: {
+      workspace: workspace?.counts ?? null,
+      queue: queue?.counts ?? null,
+      dispatch: dispatch?.counts ?? null,
+      closeout: closeout?.counts ?? null
+    },
+    next: {
+      workspace: workspace?.focus ?? null,
+      queue: queue?.next ?? null,
+      dispatch: dispatch?.next ?? null,
+      closeout: closeout?.next ?? null
+    },
+    surfaces: {
+      workspace,
+      queue,
+      dispatch,
+      closeout
+    },
+    summary: buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -2964,6 +3001,30 @@ function deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, 
 function buildRuntimeSummaryPackSummary(recommendedSurface, focus) {
   const detail = focus?.summary ?? "Runtime summary pack has no current focus detail.";
   return `Runtime summary pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
+  if ((workspace?.counts?.pendingReview ?? 0) > 0 || (queue?.next?.recommendedNextAction ?? "").startsWith("review_lane:")) {
+    return "leader:workspace";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "runtime:dispatch";
+  }
+  if ((closeout?.counts?.swarmsReady ?? 0) > 0) {
+    return "runtime:closeout";
+  }
+  if ((queue?.counts?.total ?? 0) > 0) {
+    return "leader:queue";
+  }
+  return "leader:workspace";
+}
+
+function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue) {
+  if (!workspace?.focus && !(queue?.counts?.total > 0)) {
+    return `Runtime leader pack recommends ${recommendedSurface}; there is no active leader orchestration target right now.`;
+  }
+
+  return `Runtime leader pack recommends ${recommendedSurface} next. ${workspace?.summary ?? queue?.summary ?? ""}`.trim();
 }
 
 function compareRuntimeRoleEntries(left, right) {
