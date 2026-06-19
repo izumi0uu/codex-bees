@@ -222,6 +222,18 @@ if (
   console.error("[smoke:runtime-focus] expected top-level runtime focus");
   process.exit(1);
 }
+const runtimeQueuePackInitial = JSON.parse(
+  run("runtime-queue-pack-initial", ["./src/index.js", "runtime:queue-pack"]).stdout
+).queuePack;
+if (
+  runtimeQueuePackInitial.kind !== "runtime_queue_pack" ||
+  !runtimeQueuePackInitial.recommendedSurface ||
+  !runtimeQueuePackInitial.overview ||
+  !runtimeQueuePackInitial.surfaces
+) {
+  console.error("[smoke:runtime-queue-pack] expected top-level runtime queue pack");
+  process.exit(1);
+}
 const runtimeHandoffsInitial = JSON.parse(
   run("runtime-handoffs-initial", ["./src/index.js", "runtime:handoffs"]).stdout
 ).handoffs;
@@ -1614,6 +1626,19 @@ if (
   console.error("[smoke:runtime-focus] expected CLI runtime focus to prioritize blocked work");
   process.exit(1);
 }
+const runtimeQueuePackCli = JSON.parse(
+  run("runtime-queue-pack-cli", ["./src/index.js", "runtime:queue-pack"]).stdout
+).queuePack;
+if (
+  runtimeQueuePackCli.recommendedSurface !== "leader:queue" ||
+  runtimeQueuePackCli.next?.queue?.swarmId !== "swarm-1" ||
+  runtimeQueuePackCli.next?.focus?.taskId !== "task-1" ||
+  runtimeQueuePackCli.overview?.queue?.total !== 1 ||
+  runtimeQueuePackCli.surfaces?.dashboard?.leader?.queue?.next?.swarmId !== "swarm-1"
+) {
+  console.error("[smoke:runtime-queue-pack] expected CLI queue pack to recommend leader queue");
+  process.exit(1);
+}
 const runtimeHandoffsCli = JSON.parse(
   run("runtime-handoffs-cli", ["./src/index.js", "runtime:handoffs"]).stdout
 ).handoffs;
@@ -1962,6 +1987,37 @@ if (
 ) {
   console.error("[smoke:runtime-focus-mcp] expected MCP runtime focus");
   console.error(runtimeFocusMcp.stderr || runtimeFocusMcp.stdout);
+  process.exit(1);
+}
+const runtimeQueuePackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_queue_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeQueuePackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeQueuePackMcpInput,
+  encoding: "utf8"
+});
+const runtimeQueuePackMcpLines = runtimeQueuePackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeQueuePackMcpPayload = JSON.parse(JSON.parse(runtimeQueuePackMcpLines[1]).result.content[0].text);
+if (
+  runtimeQueuePackMcp.status !== 0 ||
+  runtimeQueuePackMcpPayload.queuePack?.recommendedSurface !== "leader:queue" ||
+  runtimeQueuePackMcpPayload.queuePack?.next?.queue?.swarmId !== "swarm-1" ||
+  runtimeQueuePackMcpPayload.queuePack?.overview?.queue?.total !== 1
+) {
+  console.error("[smoke:runtime-queue-pack-mcp] expected MCP runtime queue pack");
+  console.error(runtimeQueuePackMcp.stderr || runtimeQueuePackMcp.stdout);
   process.exit(1);
 }
 const runtimeHandoffsMcpInput = [
