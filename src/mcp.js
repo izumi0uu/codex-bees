@@ -32,6 +32,7 @@ import {
   runtimeAlerts,
   runtimeDashboard,
   runtimeDispatch,
+  runtimeReview,
   runtimeRoles,
   swarmOverview,
   syncSwarmStatus,
@@ -118,6 +119,14 @@ export const toolCatalog = [
   {
     name: "runtime_dispatch",
     description: "Build the owner-grouped dispatch workspace for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_review",
+    description: "Build the verifier-grouped review workspace for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -940,6 +949,10 @@ function handleRequest(message) {
 
     if (name === "runtime_dispatch") {
       return createSuccess(id, createTextPayload({ dispatch: runtimeDispatch() }));
+    }
+
+    if (name === "runtime_review") {
+      return createSuccess(id, createTextPayload({ review: runtimeReview() }));
     }
 
     if (name === "runtime_alerts") {
