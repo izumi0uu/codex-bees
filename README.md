@@ -168,7 +168,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `task:annotate` / `task_annotate` add lightweight persistent execution notes to a task. Use them for local handoff context, verifier hints, or worker breadcrumbs that should survive beyond a single chat turn.
 
-`task:report` / `task_report` build a delivery-ready package for one task: closure state, acceptance checklist, verification steps, review evidence, history, annotations, and the current next gate. It is the compact artifact for review-ready or done work.
+`task:report` / `task_report` build a delivery-ready package for one task: closure state, acceptance checklist, verification steps, review evidence, history, annotations, and the current next gate. They also emit a machine-readable `recommendedReason` so automation can distinguish between pending verifier decisions, approved closure readiness, changes-requested rework, blocked recovery, and plain execution-report states without inferring from queue status alone. It is the compact artifact for review-ready or done work.
 
 `task:inbox` / `task_inbox` give each shipped role a prioritized local work queue, and `task:next` / `task_next` resolve the single best next claim-or-review candidate with its full execution brief attached. They also emit a machine-readable `recommendedReason` so automation can distinguish between claimable owner work, continue/review/blocked candidates, observe-only states, and no-candidate fallback before mutating anything. This is the bridge from persisted coordination state to an actual Codex worker pickup loop.
 

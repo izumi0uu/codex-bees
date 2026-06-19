@@ -553,6 +553,7 @@ const taskReportDone = JSON.parse(
   run("task-report-done", ["./src/index.js", "task:report", "--id", "task-3"]).stdout
 ).report;
 if (
+  taskReportDone.recommendedReason !== "approved_closure_ready" ||
   taskReportDone.closure?.reviewOutcome !== "approved" ||
   taskReportDone.acceptance?.[0]?.status !== "verified" ||
   taskReportDone.evidence?.annotations?.at(-1)?.content !== "verified with smoke coverage"
@@ -882,6 +883,7 @@ const reviewTaskReport = JSON.parse(
   run("task-report-review-loop", ["./src/index.js", "task:report", "--id", "task-1"]).stdout
 ).report;
 if (
+  reviewTaskReport.recommendedReason !== "changes_requested_rework" ||
   reviewTaskReport.closure?.reviewOutcome !== "changes_requested" ||
   reviewTaskReport.closure?.closureReady !== false ||
   reviewTaskReport.evidence?.annotations?.at(-1)?.content !== "worker needs another pass before review"
@@ -4390,6 +4392,7 @@ if (
   taskAnnotateMcp.status !== 0 ||
   taskAnnotateMcpBrief.brief?.annotations?.entries?.at(-1)?.content !== "reviewed through MCP flow" ||
   taskReportMcp.status !== 0 ||
+  taskReportMcpPayload.report?.recommendedReason !== "approved_closure_ready" ||
   taskReportMcpPayload.report?.closure?.reviewOutcome !== "approved" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
@@ -4524,6 +4527,17 @@ if (
   verifierBundleCli.commands?.approve !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
   console.error("[smoke:verifier-bundle] expected CLI verifier decision bundle");
+  process.exit(1);
+}
+const verifierReportCli = JSON.parse(
+  run("task-report-verifier-loop", ["./src/index.js", "task:report", "--id", "task-2"]).stdout
+).report;
+if (
+  verifierReportCli.recommendedReason !== "review_decision_pending" ||
+  verifierReportCli.closure?.nextGate?.action !== "verifier_decision" ||
+  verifierReportCli.task?.id !== "task-2"
+) {
+  console.error("[smoke:task-report] expected verifier-pending task report");
   process.exit(1);
 }
 const pickupPreviewVerifier = JSON.parse(

@@ -135,8 +135,10 @@ export function taskReport(id) {
 
   const brief = taskBrief(id);
   const reportEntries = buildTaskReportEntries(task);
+  const recommendedReason = deriveTaskReportReason(task);
   return {
     kind: "task_report",
+    recommendedReason,
     task: {
       id: task.id,
       title: task.title,
@@ -3299,6 +3301,25 @@ function deriveReviewState(task) {
     return "changes_requested";
   }
   return "not_started";
+}
+
+function deriveTaskReportReason(task) {
+  if (task.queueStatus === "ready_for_review") {
+    return "review_decision_pending";
+  }
+  if (task.queueStatus === "done" || task.reviewOutcome === "approved") {
+    return "approved_closure_ready";
+  }
+  if (task.reviewOutcome === "changes_requested") {
+    return "changes_requested_rework";
+  }
+  if (task.queueStatus === "claimed") {
+    return "active_execution_report";
+  }
+  if (task.queueStatus === "blocked") {
+    return "blocked_recovery_report";
+  }
+  return "queued_execution_report";
 }
 
 function taskReportNextGate(task) {
