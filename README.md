@@ -57,6 +57,7 @@ node ./src/index.js runtime:dispatch
 node ./src/index.js runtime:focus
 node ./src/index.js runtime:handoffs
 node ./src/index.js runtime:leader-pack
+node ./src/index.js runtime:operator-pack
 node ./src/index.js runtime:recovery
 node ./src/index.js runtime:summary-pack
 node ./src/index.js runtime:verifier-pack --role tester --worker tester-1
@@ -179,6 +180,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:handoffs` / `runtime_handoffs` provide the next-actor transfer workspace: queued pickups, blocked recoveries, and verifier decisions grouped by who should take the next action.
 
 `runtime:leader-pack` / `runtime_leader_pack` provide the leader-oriented package: leader workspace, leader queue, dispatch pressure, and closeout readiness combined into one role-shaped payload with a recommended next surface.
+
+`runtime:operator-pack` / `runtime_operator_pack` provide the operator-oriented package: current focus plus dashboard, alerts, handoffs, and closeout readiness combined into one top-level operator payload with a recommended next surface.
 
 `runtime:recovery` / `runtime_recovery` provide the recovery workspace: blocked tasks, released tasks, and changes-requested returns grouped by the kind of recovery path they need next.
 
