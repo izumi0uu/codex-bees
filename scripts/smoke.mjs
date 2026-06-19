@@ -2571,6 +2571,7 @@ const runtimeCloseoutPackCli = JSON.parse(
 ).closeoutPack;
 if (
   runtimeCloseoutPackCli.recommendedSurface !== "runtime:closeout" ||
+  runtimeCloseoutPackCli.recommendedReason !== "no_closeout_ready" ||
   runtimeCloseoutPackCli.next?.closeout !== null ||
   runtimeCloseoutPackCli.overview?.closeout?.totalReady !== 0 ||
   runtimeCloseoutPackCli.surfaces?.summaryPack?.overview?.closeout?.totalReady !== 0
@@ -3029,6 +3030,7 @@ const runtimeCloseoutPackMcpPayload = JSON.parse(JSON.parse(runtimeCloseoutPackM
 if (
   runtimeCloseoutPackMcp.status !== 0 ||
   runtimeCloseoutPackMcpPayload.closeoutPack?.recommendedSurface !== "runtime:closeout" ||
+  runtimeCloseoutPackMcpPayload.closeoutPack?.recommendedReason !== "no_closeout_ready" ||
   runtimeCloseoutPackMcpPayload.closeoutPack?.overview?.closeout?.totalReady !== 0 ||
   runtimeCloseoutPackMcpPayload.closeoutPack?.next?.closeout !== null
 ) {

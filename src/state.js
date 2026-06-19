@@ -1295,10 +1295,12 @@ export function runtimeCloseoutPack(input = {}) {
   const summaryPack = runtimeSummaryPack(input);
   const leaderPack = runtimeLeaderPack(input);
   const recommendedSurface = deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack });
+  const recommendedReason = deriveRuntimeCloseoutPackReason({ closeout, summaryPack, leaderPack });
 
   return {
     kind: "runtime_closeout_pack",
     recommendedSurface,
+    recommendedReason,
     overview: {
       closeout: closeout?.counts ?? null,
       summary: summaryPack?.overview?.closeout ?? null,
@@ -4419,6 +4421,22 @@ function deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack })
     return "runtime:leader-pack";
   }
   return "runtime:closeout";
+}
+
+function deriveRuntimeCloseoutPackReason({ closeout, summaryPack, leaderPack }) {
+  if ((closeout?.counts?.tasksReady ?? 0) > 0) {
+    return "tasks_ready_for_closeout";
+  }
+  if ((closeout?.counts?.swarmsReady ?? 0) > 0) {
+    return "swarms_ready_for_closeout";
+  }
+  if ((summaryPack?.overview?.closeout?.totalReady ?? 0) > 0 || summaryPack?.next?.closeout) {
+    return "summary_closeout_context_visible";
+  }
+  if ((leaderPack?.overview?.closeout?.swarmsReady ?? 0) > 0 || leaderPack?.next?.closeout) {
+    return "leader_closeout_context_visible";
+  }
+  return "no_closeout_ready";
 }
 
 function buildRuntimeCloseoutPackSummary(recommendedSurface, closeout, summaryPack) {
