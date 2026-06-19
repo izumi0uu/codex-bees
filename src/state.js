@@ -292,9 +292,16 @@ export function getSwarmView(id) {
   if (!swarm) {
     return null;
   }
+  const overview = swarmOverview(id);
   return {
     kind: "swarm_detail",
     recommendedReason: "swarm_detail_loaded",
+    metadata: {
+      derivedStatus: overview?.derivedStatus ?? swarm.status,
+      statusAligned: overview?.statusAligned ?? true,
+      readyToComplete: overview?.readyToComplete ?? false,
+      dispatchableCount: overview?.dispatchableCount ?? 0
+    },
     swarm
   };
 }

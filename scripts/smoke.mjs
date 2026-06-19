@@ -1593,6 +1593,10 @@ const swarmGet = JSON.parse(
 if (
   swarmGet.kind !== "swarm_detail" ||
   swarmGet.recommendedReason !== "swarm_detail_loaded" ||
+  swarmGet.metadata?.derivedStatus !== "planned" ||
+  swarmGet.metadata?.statusAligned !== true ||
+  swarmGet.metadata?.readyToComplete !== false ||
+  swarmGet.metadata?.dispatchableCount !== 0 ||
   !swarmGet.swarm
 ) {
   console.error("[smoke:swarm-get] expected CLI swarm detail payload");
@@ -2139,6 +2143,10 @@ const syncedSwarmGet = JSON.parse(
 if (
   syncedSwarmGet.kind !== "swarm_detail" ||
   syncedSwarmGet.recommendedReason !== "swarm_detail_loaded" ||
+  syncedSwarmGet.metadata?.derivedStatus !== "completed" ||
+  syncedSwarmGet.metadata?.statusAligned !== true ||
+  syncedSwarmGet.metadata?.readyToComplete !== true ||
+  syncedSwarmGet.metadata?.dispatchableCount !== 0 ||
   syncedSwarmGet.swarm?.status !== "completed"
 ) {
   console.error("[smoke:swarm-sync] expected stored completed swarm status");
@@ -2565,6 +2573,9 @@ if (
   swarmUpdatePayload?.updated?.swarm?.notes !== "mcp update verified" ||
   swarmUpdateGetPayload?.swarm?.kind !== "swarm_detail" ||
   swarmUpdateGetPayload?.swarm?.recommendedReason !== "swarm_detail_loaded" ||
+  swarmUpdateGetPayload?.swarm?.metadata?.derivedStatus !== "planned" ||
+  swarmUpdateGetPayload?.swarm?.metadata?.statusAligned !== true ||
+  swarmUpdateGetPayload?.swarm?.metadata?.readyToComplete !== false ||
   swarmUpdateGetPayload?.swarm?.swarm?.objective !== "MCP swarm update refreshed" ||
   swarmUpdateGetPayload?.swarm?.swarm?.maxWorkers !== 4 ||
   swarmUpdateGetPayload?.swarm?.swarm?.laneSource !== "mcp-refresh" ||
