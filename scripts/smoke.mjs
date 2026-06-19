@@ -376,6 +376,18 @@ if (
   console.error("[smoke:runtime-role-pack] expected top-level runtime role pack");
   process.exit(1);
 }
+const runtimeExecutionPackInitial = JSON.parse(
+  run("runtime-execution-pack-initial", ["./src/index.js", "runtime:execution-pack"]).stdout
+).executionPack;
+if (
+  runtimeExecutionPackInitial.kind !== "runtime_execution_pack" ||
+  !runtimeExecutionPackInitial.recommendedSurface ||
+  !runtimeExecutionPackInitial.overview ||
+  !runtimeExecutionPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-execution-pack] expected top-level runtime execution pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1880,6 +1892,19 @@ if (
   console.error("[smoke:runtime-role-pack] expected CLI role pack to recommend worker closeout");
   process.exit(1);
 }
+const runtimeExecutionPackCli = JSON.parse(
+  run("runtime-execution-pack-cli", ["./src/index.js", "runtime:execution-pack"]).stdout
+).executionPack;
+if (
+  runtimeExecutionPackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeExecutionPackCli.next?.focus?.taskId !== "task-1" ||
+  runtimeExecutionPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeExecutionPackCli.next?.role?.role?.id !== "tester" ||
+  runtimeExecutionPackCli.next?.queue?.swarmId !== "swarm-1"
+) {
+  console.error("[smoke:runtime-execution-pack] expected CLI execution pack to recommend focus");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -2569,6 +2594,37 @@ if (
 ) {
   console.error("[smoke:runtime-role-pack-mcp] expected MCP runtime role pack");
   console.error(runtimeRolePackMcp.stderr || runtimeRolePackMcp.stdout);
+  process.exit(1);
+}
+const runtimeExecutionPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_execution_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeExecutionPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeExecutionPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeExecutionPackMcpLines = runtimeExecutionPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeExecutionPackMcpPayload = JSON.parse(JSON.parse(runtimeExecutionPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeExecutionPackMcp.status !== 0 ||
+  runtimeExecutionPackMcpPayload.executionPack?.recommendedSurface !== "runtime:focus" ||
+  runtimeExecutionPackMcpPayload.executionPack?.next?.focus?.taskId !== "task-1" ||
+  runtimeExecutionPackMcpPayload.executionPack?.next?.dispatch?.lane !== "lane-dashboard"
+) {
+  console.error("[smoke:runtime-execution-pack-mcp] expected MCP runtime execution pack");
+  console.error(runtimeExecutionPackMcp.stderr || runtimeExecutionPackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
