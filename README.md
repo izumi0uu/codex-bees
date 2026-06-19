@@ -50,6 +50,7 @@ node ./src/index.js doctor
 node ./src/index.js status
 node ./src/index.js capabilities
 node ./src/index.js runtime:activity
+node ./src/index.js runtime:closeout
 node ./src/index.js runtime:alerts
 node ./src/index.js runtime:dashboard
 node ./src/index.js runtime:dispatch
@@ -165,6 +166,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:dispatch` / `runtime_dispatch` provide the owner-grouped dispatch workspace: which owner roles have ready work, the next dispatch candidate for each role, and the task brief already attached for handoff.
 
 `runtime:activity` / `runtime_activity` provide the recent event stream: claims, blocks, review handoffs, approvals, and changes-requested events compressed into one top-level chronological feed.
+
+`runtime:closeout` / `runtime_closeout` provide the final closure workspace: approved done tasks and ready-to-complete swarms gathered into one operator view for explicit archive or finish actions.
 
 `runtime:focus` / `runtime_focus` provide the single next-action workspace: one chosen current priority across blocked work, review pressure, dispatchable lanes, role pressure, and leader queue context.
 
