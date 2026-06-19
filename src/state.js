@@ -3239,10 +3239,18 @@ export function completeSwarm(input) {
 }
 
 export function cancelSwarm(input) {
-  return transitionSwarm({
+  const result = transitionSwarm({
     ...input,
     nextStatus: "cancelled"
   });
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "swarm_lifecycle",
+    recommendedReason: "swarm_cancelled",
+    swarm: result
+  };
 }
 
 function normalizeTask(task) {

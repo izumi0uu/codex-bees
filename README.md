@@ -288,6 +288,8 @@ Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task
 
 `swarm:done` / `swarm_done` return the explicit lifecycle mutation result for completing a swarm. They emit a machine-readable `recommendedReason` so automation can treat explicit closeout as its own protocol step instead of inferring final completion only from nested swarm status.
 
+`swarm:cancel` / `swarm_cancel` return the explicit lifecycle mutation result for cancelling a swarm. They emit a machine-readable `recommendedReason` so automation can branch on intentional cancellation instead of conflating it with blocked or unfinished derived swarm state.
+
 Memory records can carry reusable execution context:
 
 - `--namespace runtime`

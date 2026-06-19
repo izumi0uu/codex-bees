@@ -1775,6 +1775,17 @@ if (
   console.error("[smoke:swarm-blockers] expected CLI blocker bundle with blocked lane report");
   process.exit(1);
 }
+const cancelledSwarmCli = JSON.parse(
+  run("swarm-cancel-lifecycle", ["./src/index.js", "swarm:cancel", "--id", "swarm-1", "--owner", "leader"]).stdout
+).cancelled;
+if (
+  cancelledSwarmCli.kind !== "swarm_lifecycle" ||
+  cancelledSwarmCli.recommendedReason !== "swarm_cancelled" ||
+  cancelledSwarmCli.swarm?.status !== "cancelled"
+) {
+  console.error("[smoke:swarm-cancel] expected cancelled swarm lifecycle payload");
+  process.exit(1);
+}
 const swarmBlockersMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -1784,6 +1795,15 @@ const swarmBlockersMcpInput = [
     params: {
       name: "swarm_blockers",
       arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "swarm_cancel",
+      arguments: { id: "swarm-1", owner: "leader" }
     }
   })
 ].join("\n") + "\n";
@@ -1795,14 +1815,26 @@ const swarmBlockersMcpLines = swarmBlockersMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const swarmBlockersMcpPayload = JSON.parse(JSON.parse(swarmBlockersMcpLines[1]).result.content[0].text);
+const swarmBlockersMcpById = new Map(
+  swarmBlockersMcpLines.map((line) => {
+    const parsed = JSON.parse(line);
+    return [parsed.id, parsed];
+  })
+);
+const swarmBlockersMcpText = swarmBlockersMcpById.get(2)?.result?.content?.[0]?.text;
+const swarmBlockersMcpPayload = swarmBlockersMcpText ? JSON.parse(swarmBlockersMcpText) : null;
+const swarmCancelMcpText = swarmBlockersMcpById.get(3)?.result?.content?.[0]?.text;
+const swarmCancelMcpPayload = swarmCancelMcpText ? JSON.parse(swarmCancelMcpText) : null;
 if (
   swarmBlockersMcp.status !== 0 ||
   swarmBlockersMcpPayload.blockers?.recommendedReason !== "blocked_lane_ready" ||
   swarmBlockersMcpPayload.blockers?.blockedCount !== 1 ||
-  swarmBlockersMcpPayload.blockers?.blockers?.[0]?.recommendedNextAction !== "resolve_blocker_and_requeue"
+  swarmBlockersMcpPayload.blockers?.blockers?.[0]?.recommendedNextAction !== "resolve_blocker_and_requeue" ||
+  swarmCancelMcpPayload?.cancelled?.kind !== "swarm_lifecycle" ||
+  swarmCancelMcpPayload?.cancelled?.recommendedReason !== "swarm_cancelled" ||
+  swarmCancelMcpPayload?.cancelled?.swarm?.status !== "cancelled"
 ) {
-  console.error("[smoke:swarm-blockers-mcp] expected MCP blocker bundle");
+  console.error("[smoke:swarm-blockers-mcp] expected MCP cancel lifecycle and blocker bundle");
   console.error(swarmBlockersMcp.stderr || swarmBlockersMcp.stdout);
   process.exit(1);
 }
