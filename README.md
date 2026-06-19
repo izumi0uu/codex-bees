@@ -66,6 +66,7 @@ node ./src/index.js runtime:queue-pack
 node ./src/index.js runtime:recovery
 node ./src/index.js runtime:recovery-pack
 node ./src/index.js runtime:review-pack --role tester --worker tester-1
+node ./src/index.js runtime:signal-pack
 node ./src/index.js runtime:summary-pack
 node ./src/index.js runtime:verifier-pack --role tester --worker tester-1
 node ./src/index.js runtime:workspace-pack
@@ -206,6 +207,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:recovery-pack` / `runtime_recovery_pack` provide the recovery-oriented package: recovery groups, next-actor handoffs, and current focus combined into one restart-friendly payload with a recommended next surface.
 
 `runtime:review-pack` / `runtime_review_pack` provide the review-oriented package: review groups, role pressure, and optional verifier-scoped control bundle combined into one verifier-control payload with a recommended next surface.
+
+`runtime:signal-pack` / `runtime_signal_pack` provide the signal-oriented package: focus, alerts, activity, and role pressure combined into one monitoring entrypoint with a recommended next surface.
 
 `runtime:summary-pack` / `runtime_summary_pack` provide the automation-first rollup: current focus plus dashboard, alert, handoff, recovery, and closeout counts in one single payload with a recommended next surface.
 
