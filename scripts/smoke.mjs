@@ -1093,6 +1093,30 @@ if (
   console.error("[smoke:leader-assignment-dispatch-pack] expected CLI batch leader dispatch package");
   process.exit(1);
 }
+const runtimeDispatchPackMultiOwnerCli = JSON.parse(
+  run("runtime-dispatch-pack-multi-owner-cli", ["./src/index.js", "runtime:dispatch-pack"]).stdout
+).dispatchPack;
+if (
+  runtimeDispatchPackMultiOwnerCli.recommendedSurface !== "leader:assignment-dispatch-pack" ||
+  runtimeDispatchPackMultiOwnerCli.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
+  runtimeDispatchPackMultiOwnerCli.next?.assignmentDispatch?.owner?.id !== "executor" ||
+  runtimeDispatchPackMultiOwnerCli.surfaces?.assignmentDispatchPack?.groups?.length !== 2
+) {
+  console.error("[smoke:runtime-dispatch-pack] expected CLI dispatch pack to expose batch leader dispatch when multiple owner groups are ready");
+  process.exit(1);
+}
+const runtimeLeaderPackMultiOwnerCli = JSON.parse(
+  run("runtime-leader-pack-multi-owner-cli", ["./src/index.js", "runtime:leader-pack"]).stdout
+).leaderPack;
+if (
+  runtimeLeaderPackMultiOwnerCli.recommendedSurface !== "leader:assignment-dispatch-pack" ||
+  runtimeLeaderPackMultiOwnerCli.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
+  runtimeLeaderPackMultiOwnerCli.next?.assignmentDispatch?.owner?.id !== "executor" ||
+  runtimeLeaderPackMultiOwnerCli.surfaces?.assignmentDispatchPack?.groups?.length !== 2
+) {
+  console.error("[smoke:runtime-leader-pack] expected CLI leader pack to prioritize batch leader dispatch when multiple owner groups are ready");
+  process.exit(1);
+}
 const assignmentPackExecutorCli = JSON.parse(
   run("runtime-assignment-pack-executor-cli", ["./src/index.js", "runtime:assignment-pack", "--role", "executor", "--worker", "worker-executor", "--mode", "owner"]).stdout
 ).assignmentPack;
@@ -1712,6 +1736,68 @@ if (
 ) {
   console.error("[smoke:leader-assignment-dispatch-pack-mcp] expected MCP batch leader dispatch package");
   console.error(leaderAssignmentDispatchPackMcp.stderr || leaderAssignmentDispatchPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeDispatchPackMultiOwnerMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_dispatch_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeDispatchPackMultiOwnerMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeDispatchPackMultiOwnerMcpInput,
+  encoding: "utf8"
+});
+const runtimeDispatchPackMultiOwnerMcpLines = runtimeDispatchPackMultiOwnerMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeDispatchPackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeDispatchPackMultiOwnerMcpLines[1]).result.content[0].text);
+if (
+  runtimeDispatchPackMultiOwnerMcp.status !== 0 ||
+  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.recommendedSurface !== "leader:assignment-dispatch-pack" ||
+  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
+  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.next?.assignmentDispatch?.owner?.id !== "executor"
+) {
+  console.error("[smoke:runtime-dispatch-pack-mcp] expected MCP dispatch pack to expose batch leader dispatch when multiple owner groups are ready");
+  console.error(runtimeDispatchPackMultiOwnerMcp.stderr || runtimeDispatchPackMultiOwnerMcp.stdout);
+  process.exit(1);
+}
+const runtimeLeaderPackMultiOwnerMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_leader_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeLeaderPackMultiOwnerMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeLeaderPackMultiOwnerMcpInput,
+  encoding: "utf8"
+});
+const runtimeLeaderPackMultiOwnerMcpLines = runtimeLeaderPackMultiOwnerMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeLeaderPackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeLeaderPackMultiOwnerMcpLines[1]).result.content[0].text);
+if (
+  runtimeLeaderPackMultiOwnerMcp.status !== 0 ||
+  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.recommendedSurface !== "leader:assignment-dispatch-pack" ||
+  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
+  runtimeLeaderPackMultiOwnerMcpPayload.leaderPack?.next?.assignmentDispatch?.owner?.id !== "executor"
+) {
+  console.error("[smoke:runtime-leader-pack-mcp] expected MCP leader pack to prioritize batch leader dispatch when multiple owner groups are ready");
+  console.error(runtimeLeaderPackMultiOwnerMcp.stderr || runtimeLeaderPackMultiOwnerMcp.stdout);
   process.exit(1);
 }
 const assignmentPackExecutorMcpInput = [
