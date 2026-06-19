@@ -735,6 +735,11 @@ const taskReportDone = JSON.parse(
 ).report;
 if (
   taskReportDone.recommendedReason !== "approved_closure_ready" ||
+  taskReportDone.counts?.acceptanceItems !== taskReportDone.acceptance.length ||
+  taskReportDone.counts?.verificationSteps !== taskReportDone.verification.length ||
+  taskReportDone.counts?.reviewEvidenceEntries !== taskReportDone.evidence?.reviewEvidence.length ||
+  taskReportDone.counts?.annotationEntries !== taskReportDone.evidence?.annotations.length ||
+  taskReportDone.counts?.recentHistoryEntries !== taskReportDone.evidence?.recentHistory.length ||
   taskReportDone.closure?.reviewOutcome !== "approved" ||
   taskReportDone.acceptance?.[0]?.status !== "verified" ||
   taskReportDone.evidence?.annotations?.at(-1)?.content !== "verified with smoke coverage"
@@ -1323,6 +1328,8 @@ const reviewTaskReport = JSON.parse(
 ).report;
 if (
   reviewTaskReport.recommendedReason !== "changes_requested_rework" ||
+  reviewTaskReport.counts?.annotationEntries !== reviewTaskReport.evidence?.annotations.length ||
+  reviewTaskReport.counts?.recentHistoryEntries !== reviewTaskReport.evidence?.recentHistory.length ||
   reviewTaskReport.closure?.reviewOutcome !== "changes_requested" ||
   reviewTaskReport.closure?.closureReady !== false ||
   reviewTaskReport.evidence?.annotations?.at(-1)?.content !== "worker needs another pass before review"
@@ -5628,6 +5635,8 @@ const verifierReportCli = JSON.parse(
 ).report;
 if (
   verifierReportCli.recommendedReason !== "review_decision_pending" ||
+  verifierReportCli.counts?.acceptanceItems !== verifierReportCli.acceptance.length ||
+  verifierReportCli.counts?.verificationSteps !== verifierReportCli.verification.length ||
   verifierReportCli.closure?.nextGate?.action !== "verifier_decision" ||
   verifierReportCli.task?.id !== "task-2"
 ) {

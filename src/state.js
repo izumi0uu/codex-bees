@@ -201,6 +201,12 @@ export function taskReport(id) {
   const brief = taskBrief(id);
   const reportEntries = buildTaskReportEntries(task);
   const recommendedReason = deriveTaskReportReason(task);
+  const acceptance = (task.acceptance ?? []).map((item) => ({
+    item,
+    status: task.reviewOutcome === "approved" || task.queueStatus === "done" ? "verified" : "pending"
+  }));
+  const verification = task.verification ?? [];
+  const reviewEvidence = task.reviewEvidence ?? [];
   return {
     kind: "task_report",
     recommendedReason,
@@ -224,13 +230,17 @@ export function taskReport(id) {
       closureReady: task.queueStatus === "ready_for_review" || task.queueStatus === "done",
       nextGate: taskReportNextGate(task)
     },
-    acceptance: (task.acceptance ?? []).map((item) => ({
-      item,
-      status: task.reviewOutcome === "approved" || task.queueStatus === "done" ? "verified" : "pending"
-    })),
-    verification: task.verification ?? [],
+    counts: {
+      acceptanceItems: acceptance.length,
+      verificationSteps: verification.length,
+      reviewEvidenceEntries: reviewEvidence.length,
+      annotationEntries: reportEntries.annotations.length,
+      recentHistoryEntries: reportEntries.history.length
+    },
+    acceptance,
+    verification,
     evidence: {
-      reviewEvidence: task.reviewEvidence ?? [],
+      reviewEvidence,
       annotations: reportEntries.annotations,
       recentHistory: reportEntries.history
     },
