@@ -49,6 +49,7 @@ import {
   runtimeLeaderPack,
   runtimeOperatorPack,
   runtimeOwnerPack,
+  runtimePickupPack,
   runtimeQueuePack,
   runtimeRecoveryPack,
   runtimeRecovery,
@@ -76,6 +77,7 @@ import {
   taskInbox,
   taskHistory,
   taskPickup,
+  previewTaskPickup,
   taskReport,
   taskNext,
   verifierBundle,
@@ -124,6 +126,7 @@ function printHelp() {
   write(`  codex-bees runtime:leader-pack Build the leader-oriented runtime package\n`);
   write(`  codex-bees runtime:operator-pack Build the operator-oriented runtime package\n`);
   write(`  codex-bees runtime:owner-pack Build the owner-oriented runtime package\n`);
+  write(`  codex-bees runtime:pickup-pack Build the start-work pickup package for one worker\n`);
   write(`  codex-bees runtime:queue-pack Build the queue-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery-pack Build the recovery-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
@@ -150,6 +153,7 @@ function printHelp() {
   write(`  codex-bees task:brief      Render an execution brief for one task\n`);
   write(`  codex-bees task:inbox      List role-relevant tasks in execution priority order\n`);
   write(`  codex-bees task:next       Resolve the next task a role should pick up\n`);
+  write(`  codex-bees task:pickup-preview Preview what the next pickup would do for one worker\n`);
   write(`  codex-bees task:pickup     Claim or resume the next task for one worker\n`);
   write(`  codex-bees worker:session  Show the current execution workspace for one worker\n`);
   write(`  codex-bees worker:handoff  Build a return-ready handoff package for one worker\n`);
@@ -269,6 +273,22 @@ function printRuntimeSignalPack() {
 
 function printRuntimeExecutionPack() {
   write(JSON.stringify({ executionPack: runtimeExecutionPack() }, null, 2) + "\n");
+}
+
+function printRuntimePickupPack() {
+  const role = readOption("--role");
+  const workerId = readOption("--worker");
+  if (!role || !workerId) {
+    writeErr("runtime:pickup-pack requires --role and --worker\n");
+    exit(1);
+  }
+  write(JSON.stringify({
+    pickupPack: runtimePickupPack({
+      role,
+      workerId,
+      mode: readOption("--mode")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeHandoffPack() {
@@ -653,6 +673,17 @@ function handleTaskNext() {
     mode: readOption("--mode")
   });
   write(JSON.stringify({ next }, null, 2) + "\n");
+}
+
+function handleTaskPickupPreview() {
+  const role = requireOption("--role");
+  const workerId = requireOption("--worker");
+  const pickupPreview = previewTaskPickup({
+    role,
+    workerId,
+    mode: readOption("--mode")
+  });
+  write(JSON.stringify({ pickupPreview }, null, 2) + "\n");
 }
 
 function handleTaskPickup() {
@@ -1257,6 +1288,9 @@ async function runCommand(command) {
     case "runtime:handoff-pack":
       printRuntimeHandoffPack();
       return;
+    case "runtime:pickup-pack":
+      printRuntimePickupPack();
+      return;
     case "runtime:triage-pack":
       printRuntimeTriagePack();
       return;
@@ -1361,6 +1395,9 @@ async function runCommand(command) {
       return;
     case "task:next":
       handleTaskNext();
+      return;
+    case "task:pickup-preview":
+      handleTaskPickupPreview();
       return;
     case "task:pickup":
       handleTaskPickup();

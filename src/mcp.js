@@ -44,6 +44,7 @@ import {
   runtimeLeaderPack,
   runtimeOperatorPack,
   runtimeOwnerPack,
+  runtimePickupPack,
   runtimeQueuePack,
   runtimeRecoveryPack,
   runtimeRecovery,
@@ -70,6 +71,7 @@ import {
   taskInbox,
   taskHistory,
   taskPickup,
+  previewTaskPickup,
   taskReport,
   taskNext,
   verifierBundle,
@@ -284,6 +286,19 @@ export const toolCatalog = [
       properties: {
         role: { type: "string" },
         workerId: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "runtime_pickup_pack",
+    description: "Build the start-work pickup package for one worker in local runtime work.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" }
       }
     }
   },
@@ -536,6 +551,19 @@ export const toolCatalog = [
   {
     name: "task_pickup",
     description: "Claim or resume the next task for one worker and return the follow-up brief.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_pickup_preview",
+    description: "Preview what the next task pickup would do for one worker without mutating state.",
     inputSchema: {
       type: "object",
       required: ["role", "workerId"],
@@ -1299,6 +1327,25 @@ function handleRequest(message) {
       );
     }
 
+    if (name === "runtime_pickup_pack") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "runtime_pickup_pack requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "runtime_pickup_pack requires arguments.workerId");
+      }
+      return createSuccess(
+        id,
+        createTextPayload({
+          pickupPack: runtimePickupPack({
+            role: params.arguments.role,
+            workerId: params.arguments.workerId,
+            mode: params.arguments.mode
+          })
+        })
+      );
+    }
+
     if (name === "runtime_role_pack") {
       if (!params.arguments?.role) {
         return createError(id, -32602, "runtime_role_pack requires arguments.role");
@@ -1530,6 +1577,23 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ pickup }));
+    }
+
+    if (name === "task_pickup_preview") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "task_pickup_preview requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "task_pickup_preview requires arguments.workerId");
+      }
+
+      const pickupPreview = previewTaskPickup({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode
+      });
+
+      return createSuccess(id, createTextPayload({ pickupPreview }));
     }
 
     if (name === "worker_session") {
