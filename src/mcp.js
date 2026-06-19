@@ -38,6 +38,7 @@ import {
   runtimeDispatchPack,
   runtimeDispatch,
   runtimeFocus,
+  runtimeHandoffPack,
   runtimeHandoffs,
   runtimeLeaderPack,
   runtimeOperatorPack,
@@ -169,6 +170,14 @@ export const toolCatalog = [
       properties: {
         limit: { type: "integer" }
       }
+    }
+  },
+  {
+    name: "runtime_handoff_pack",
+    description: "Build the handoff-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
     }
   },
   {
@@ -1156,6 +1165,10 @@ function handleRequest(message) {
 
     if (name === "runtime_signal_pack") {
       return createSuccess(id, createTextPayload({ signalPack: runtimeSignalPack({ limit: params.arguments?.limit }) }));
+    }
+
+    if (name === "runtime_handoff_pack") {
+      return createSuccess(id, createTextPayload({ handoffPack: runtimeHandoffPack() }));
     }
 
     if (name === "runtime_handoffs") {
