@@ -450,6 +450,7 @@ const runtimeLeaderPackInitial = JSON.parse(
 if (
   runtimeLeaderPackInitial.kind !== "runtime_leader_pack" ||
   !runtimeLeaderPackInitial.recommendedSurface ||
+  typeof runtimeLeaderPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeLeaderPackInitial.overview ||
   !runtimeLeaderPackInitial.surfaces
 ) {
@@ -3653,6 +3654,10 @@ const runtimeLeaderPackCli = JSON.parse(
 if (
   runtimeLeaderPackCli.recommendedSurface !== "runtime:dispatch" ||
   runtimeLeaderPackCli.recommendedReason !== "dispatch_priority" ||
+  runtimeLeaderPackCli.metadata?.hasWorkspace !== true ||
+  runtimeLeaderPackCli.metadata?.hasQueue !== true ||
+  runtimeLeaderPackCli.metadata?.hasDispatch !== true ||
+  runtimeLeaderPackCli.counts?.surfacedNextEntries !== Object.values(runtimeLeaderPackCli.next ?? {}).filter(Boolean).length ||
   runtimeLeaderPackCli.next?.workspace?.swarmId !== "swarm-1" ||
   runtimeLeaderPackCli.overview?.dispatch?.totalAssignments !== 1 ||
   runtimeLeaderPackCli.surfaces?.queue?.next?.swarmId !== "swarm-1"

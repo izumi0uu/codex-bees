@@ -2166,6 +2166,15 @@ export function runtimeLeaderPack(input = {}) {
   const closeout = runtimeCloseout();
   const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
   const recommendedReason = deriveRuntimeLeaderPackReason({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
+  const nextEntries = {
+    workspace: workspace?.focus ?? null,
+    queue: queue?.next ?? null,
+    dispatch: dispatch?.next ?? null,
+    assignmentDispatch: assignmentDispatchPack?.next ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
+    closeout: closeout?.next ?? null
+  };
 
   return {
     kind: "runtime_leader_pack",
@@ -2176,6 +2185,18 @@ export function runtimeLeaderPack(input = {}) {
     },
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasWorkspace: Boolean(workspace?.focus),
+      hasQueue: Boolean(queue?.next),
+      hasDispatch: Boolean(dispatch?.next),
+      hasAssignmentDispatch: Boolean(assignmentDispatchPack?.next),
+      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
+      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next),
+      hasCloseout: Boolean(closeout?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       workspace: workspace?.counts ?? null,
       queue: queue?.counts ?? null,
@@ -2185,15 +2206,7 @@ export function runtimeLeaderPack(input = {}) {
       assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null,
       closeout: closeout?.counts ?? null
     },
-    next: {
-      workspace: workspace?.focus ?? null,
-      queue: queue?.next ?? null,
-      dispatch: dispatch?.next ?? null,
-      assignmentDispatch: assignmentDispatchPack?.next ?? null,
-      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-      assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
-      closeout: closeout?.next ?? null
-    },
+    next: nextEntries,
     surfaces: {
       workspace,
       queue,
