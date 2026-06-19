@@ -326,6 +326,12 @@ export function taskBrief(id) {
   const catalog = getRuntimeCatalog();
   const recommended = recommendTaskAction(task);
   const recommendedReason = deriveTaskBriefReason(task, recommended);
+  const scope = task.scope ?? [];
+  const acceptance = task.acceptance ?? [];
+  const verification = task.verification ?? [];
+  const reviewEvidence = task.reviewEvidence ?? [];
+  const historyEntries = task.history ?? [];
+  const annotationEntries = task.annotations ?? [];
 
   return {
     kind: "task_execution_brief",
@@ -343,10 +349,18 @@ export function taskBrief(id) {
       claimedBy: task.claimedBy,
       notes: task.notes
     },
+    counts: {
+      scopeEntries: scope.length,
+      acceptanceItems: acceptance.length,
+      verificationSteps: verification.length,
+      reviewEvidenceEntries: reviewEvidence.length,
+      historyEntries: historyEntries.length,
+      annotationEntries: annotationEntries.length
+    },
     execution: {
-      scope: task.scope ?? [],
-      acceptance: task.acceptance ?? [],
-      verification: task.verification ?? []
+      scope,
+      acceptance,
+      verification
     },
     review: {
       state: deriveReviewState(task),
@@ -354,15 +368,15 @@ export function taskBrief(id) {
       reviewedAt: task.reviewedAt,
       outcome: task.reviewOutcome,
       notes: task.reviewNotes,
-      evidence: task.reviewEvidence ?? []
+      evidence: reviewEvidence
     },
     history: {
-      count: task.history?.length ?? 0,
-      entries: task.history ?? []
+      count: historyEntries.length,
+      entries: historyEntries
     },
     annotations: {
-      count: task.annotations?.length ?? 0,
-      entries: (task.annotations ?? []).slice(-5)
+      count: annotationEntries.length,
+      entries: annotationEntries.slice(-5)
     },
     validation,
     recommendedNextActor: recommended.actor,

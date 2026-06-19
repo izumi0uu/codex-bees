@@ -677,6 +677,12 @@ const taskExecutionBrief = JSON.parse(run("task-brief-verify", ["./src/index.js"
 if (
   taskExecutionBrief.kind !== "task_execution_brief" ||
   taskExecutionBrief.recommendedReason !== "completed_task_brief" ||
+  taskExecutionBrief.counts?.scopeEntries !== taskExecutionBrief.execution?.scope.length ||
+  taskExecutionBrief.counts?.acceptanceItems !== taskExecutionBrief.execution?.acceptance.length ||
+  taskExecutionBrief.counts?.verificationSteps !== taskExecutionBrief.execution?.verification.length ||
+  taskExecutionBrief.counts?.reviewEvidenceEntries !== taskExecutionBrief.review?.evidence.length ||
+  taskExecutionBrief.counts?.historyEntries !== taskExecutionBrief.history?.entries.length ||
+  taskExecutionBrief.counts?.annotationEntries !== taskExecutionBrief.annotations?.count ||
   taskExecutionBrief.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
   taskExecutionBrief.roles?.verifier?.promptPath !== ".codex/agents/tester.md" ||
   taskExecutionBrief.recommendedNextAction !== "complete"
@@ -1316,6 +1322,7 @@ const reviewTaskBrief = JSON.parse(
 ).brief;
 if (
   reviewTaskBrief.recommendedReason !== "claimed_execution_brief" ||
+  reviewTaskBrief.counts?.historyEntries !== reviewTaskBrief.history?.entries.length ||
   reviewTaskBrief.recommendedNextAction !== "continue_execution_and_handoff" ||
   reviewTaskBrief.coordination?.queueStatus !== "claimed" ||
   reviewTaskBrief.review?.state !== "changes_requested"
@@ -5614,6 +5621,7 @@ const verifierTaskBriefCli = JSON.parse(
 ).brief;
 if (
   verifierTaskBriefCli.recommendedReason !== "verifier_decision_brief" ||
+  verifierTaskBriefCli.counts?.reviewEvidenceEntries !== verifierTaskBriefCli.review?.evidence.length ||
   verifierTaskBriefCli.recommendedNextAction !== "review_and_decide" ||
   verifierTaskBriefCli.review?.state !== "pending_verifier"
 ) {
