@@ -169,6 +169,22 @@ if (!Array.isArray(searchedMemories) || searchedMemories.length === 0) {
   process.exit(1);
 }
 
+const fetchedTask = JSON.parse(run("task-get-verify", ["./src/index.js", "task:get", "--id", "task-3"]).stdout).task;
+if (fetchedTask.id !== "task-3" || fetchedTask.owner !== "executor" || fetchedTask.verifier !== "tester") {
+  console.error("[smoke:task-get] expected persisted task detail");
+  process.exit(1);
+}
+const taskExecutionBrief = JSON.parse(run("task-brief-verify", ["./src/index.js", "task:brief", "--id", "task-3"]).stdout).brief;
+if (
+  taskExecutionBrief.kind !== "task_execution_brief" ||
+  taskExecutionBrief.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
+  taskExecutionBrief.roles?.verifier?.promptPath !== ".codex/agents/tester.md" ||
+  taskExecutionBrief.recommendedNextAction !== "complete"
+) {
+  console.error("[smoke:task-brief] expected execution brief with owner/verifier prompt paths");
+  process.exit(1);
+}
+
 const listedTasks = JSON.parse(run("task-list-verify", ["./src/index.js", "task:list"]).stdout).tasks;
 const smokeTask = listedTasks.find((task) => task.id === "task-3");
 if (!smokeTask || smokeTask.verifier !== "tester" || smokeTask.lane !== "lane-smoke") {
@@ -449,6 +465,17 @@ if (!swarmValidation.ready) {
 const swarmGet = JSON.parse(
   run("swarm-get", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
 ).swarm;
+const swarmBriefPlanned = JSON.parse(
+  run("swarm-brief-planned", ["./src/index.js", "swarm:brief", "--id", "swarm-1"]).stdout
+).brief;
+if (
+  swarmBriefPlanned.kind !== "swarm_execution_brief" ||
+  swarmBriefPlanned.recommendedNextAction !== "queue_swarm_lanes" ||
+  swarmBriefPlanned.owner?.id !== "leader"
+) {
+  console.error("[smoke:swarm-brief] expected pre-queue swarm brief");
+  process.exit(1);
+}
 if (!Array.isArray(swarmGet.lanes) || swarmGet.lanes.length !== 2 || swarmGet.maxWorkers !== 2) {
   console.error("[smoke:swarm-get] expected persisted lanes and maxWorkers");
   process.exit(1);
@@ -537,6 +564,18 @@ run("swarm-task-2-approve", [
 const swarmOverviewReadyToComplete = JSON.parse(
   run("swarm-overview-ready-to-complete", ["./src/index.js", "swarm:overview", "--id", "swarm-1"]).stdout
 ).overview;
+const swarmExecutionBrief = JSON.parse(
+  run("swarm-brief-ready", ["./src/index.js", "swarm:brief", "--id", "swarm-1"]).stdout
+).brief;
+if (
+  swarmExecutionBrief.kind !== "swarm_execution_brief" ||
+  swarmExecutionBrief.recommendedNextAction !== "complete" ||
+  swarmExecutionBrief.nextLane !== null ||
+  swarmExecutionBrief.lanes?.[0]?.owner?.promptPath !== ".codex/agents/explore.md"
+) {
+  console.error("[smoke:swarm-brief] expected completion-ready swarm brief");
+  process.exit(1);
+}
 if (!swarmOverviewReadyToComplete.readyToComplete || swarmOverviewReadyToComplete.derivedStatus !== "completed" || swarmOverviewReadyToComplete.statusAligned !== true) {
   console.error("[smoke:swarm-overview] expected completion readiness and aligned completed status");
   process.exit(1);
@@ -651,7 +690,7 @@ const swarmMcpInput = [
     id: 3,
     method: "tools/call",
     params: {
-      name: "swarm_check",
+      name: "swarm_brief",
       arguments: { id: "swarm-1" }
     }
   }),
@@ -660,7 +699,7 @@ const swarmMcpInput = [
     id: 4,
     method: "tools/call",
     params: {
-      name: "swarm_queue_tasks",
+      name: "swarm_check",
       arguments: { id: "swarm-1" }
     }
   }),
@@ -669,13 +708,22 @@ const swarmMcpInput = [
     id: 5,
     method: "tools/call",
     params: {
+      name: "swarm_queue_tasks",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
       name: "swarm_dispatch",
       arguments: { id: "swarm-1", claimedBy: "mcp-worker", owner: "executor" }
     }
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 6,
+    id: 7,
     method: "tools/call",
     params: {
       name: "task_ready_for_review",
@@ -684,7 +732,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 7,
+    id: 8,
     method: "tools/call",
     params: {
       name: "task_done",
@@ -693,7 +741,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 8,
+    id: 9,
     method: "tools/call",
     params: {
       name: "swarm_sync",
@@ -702,7 +750,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 9,
+    id: 10,
     method: "tools/call",
     params: {
       name: "swarm_overview",
@@ -711,7 +759,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 10,
+    id: 11,
     method: "tools/call",
     params: {
       name: "task_list",
@@ -720,7 +768,7 @@ const swarmMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 11,
+    id: 12,
     method: "tools/call",
     params: {
       name: "swarm_list",
@@ -737,21 +785,25 @@ const swarmMcpLines = swarmMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const swarmCheckResult = swarmMcpLines.length >= 3 ? JSON.parse(swarmMcpLines[2]) : null;
+const swarmBriefResult = swarmMcpLines.length >= 3 ? JSON.parse(swarmMcpLines[2]) : null;
+const swarmBriefText = swarmBriefResult?.result?.content?.[0]?.text;
+const swarmBriefPayload = swarmBriefText ? JSON.parse(swarmBriefText) : null;
+const swarmCheckResult = swarmMcpLines.length >= 4 ? JSON.parse(swarmMcpLines[3]) : null;
 const swarmCheckText = swarmCheckResult?.result?.content?.[0]?.text;
 const swarmCheckPayload = swarmCheckText ? JSON.parse(swarmCheckText) : null;
-const swarmOverviewResult = swarmMcpLines.length >= 9 ? JSON.parse(swarmMcpLines[8]) : null;
+const swarmOverviewResult = swarmMcpLines.length >= 10 ? JSON.parse(swarmMcpLines[9]) : null;
 const swarmOverviewText = swarmOverviewResult?.result?.content?.[0]?.text;
 const swarmOverviewPayload = swarmOverviewText ? JSON.parse(swarmOverviewText) : null;
-const swarmTaskListResult = swarmMcpLines.length >= 10 ? JSON.parse(swarmMcpLines[9]) : null;
+const swarmTaskListResult = swarmMcpLines.length >= 11 ? JSON.parse(swarmMcpLines[10]) : null;
 const swarmTaskListText = swarmTaskListResult?.result?.content?.[0]?.text;
 const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) : null;
-const swarmListDetailedResult = swarmMcpLines.length >= 11 ? JSON.parse(swarmMcpLines[10]) : null;
+const swarmListDetailedResult = swarmMcpLines.length >= 12 ? JSON.parse(swarmMcpLines[11]) : null;
 const swarmListDetailedText = swarmListDetailedResult?.result?.content?.[0]?.text;
 const swarmListDetailedPayload = swarmListDetailedText ? JSON.parse(swarmListDetailedText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
+  swarmBriefPayload?.brief?.recommendedNextAction !== "queue_swarm_lanes" ||
   swarmCheckPayload?.validation?.ready !== true ||
   !mcpSwarmTask ||
   mcpSwarmTask.reviewedBy !== "tester" ||
@@ -841,7 +893,7 @@ const taskAddMcpInput = [
     id: 5,
     method: "tools/call",
     params: {
-      name: "task_check",
+      name: "task_get",
       arguments: { id: "task-1" }
     }
   }),
@@ -850,13 +902,31 @@ const taskAddMcpInput = [
     id: 6,
     method: "tools/call",
     params: {
+      name: "task_brief",
+      arguments: { id: "task-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 7,
+    method: "tools/call",
+    params: {
+      name: "task_check",
+      arguments: { id: "task-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 8,
+    method: "tools/call",
+    params: {
       name: "task_claim",
       arguments: { id: "task-1", claimedBy: "mcp-worker" }
     }
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 7,
+    id: 9,
     method: "tools/call",
     params: {
       name: "task_ready_for_review",
@@ -865,7 +935,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 8,
+    id: 10,
     method: "tools/call",
     params: {
       name: "task_reject",
@@ -879,7 +949,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 9,
+    id: 11,
     method: "tools/call",
     params: {
       name: "task_claim",
@@ -888,7 +958,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 10,
+    id: 12,
     method: "tools/call",
     params: {
       name: "task_ready_for_review",
@@ -897,7 +967,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 11,
+    id: 13,
     method: "tools/call",
     params: {
       name: "task_approve",
@@ -910,7 +980,7 @@ const taskAddMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 12,
+    id: 14,
     method: "tools/call",
     params: {
       name: "task_list",
@@ -933,13 +1003,19 @@ const taskCatalogPayload = taskCatalogText ? JSON.parse(taskCatalogText) : null;
 const taskStatusResult = taskAddMcpLines.length >= 3 ? JSON.parse(taskAddMcpLines[2]) : null;
 const taskStatusText = taskStatusResult?.result?.content?.[0]?.text;
 const taskStatusPayload = taskStatusText ? JSON.parse(taskStatusText) : null;
-const taskCheckResult = taskAddMcpLines.length >= 5 ? JSON.parse(taskAddMcpLines[4]) : null;
+const taskGetResult = taskAddMcpLines.length >= 5 ? JSON.parse(taskAddMcpLines[4]) : null;
+const taskGetText = taskGetResult?.result?.content?.[0]?.text;
+const taskGetPayload = taskGetText ? JSON.parse(taskGetText) : null;
+const taskBriefResult = taskAddMcpLines.length >= 6 ? JSON.parse(taskAddMcpLines[5]) : null;
+const taskBriefText = taskBriefResult?.result?.content?.[0]?.text;
+const taskBriefPayload = taskBriefText ? JSON.parse(taskBriefText) : null;
+const taskCheckResult = taskAddMcpLines.length >= 7 ? JSON.parse(taskAddMcpLines[6]) : null;
 const taskCheckText = taskCheckResult?.result?.content?.[0]?.text;
 const taskCheckPayload = taskCheckText ? JSON.parse(taskCheckText) : null;
-const taskRejectResult = taskAddMcpLines.length >= 8 ? JSON.parse(taskAddMcpLines[7]) : null;
+const taskRejectResult = taskAddMcpLines.length >= 10 ? JSON.parse(taskAddMcpLines[9]) : null;
 const taskRejectText = taskRejectResult?.result?.content?.[0]?.text;
 const taskRejectPayload = taskRejectText ? JSON.parse(taskRejectText) : null;
-const taskListResult = taskAddMcpLines.length >= 12 ? JSON.parse(taskAddMcpLines[11]) : null;
+const taskListResult = taskAddMcpLines.length >= 14 ? JSON.parse(taskAddMcpLines[13]) : null;
 const taskListText = taskListResult?.result?.content?.[0]?.text;
 const taskListPayload = taskListText ? JSON.parse(taskListText) : null;
 const mcpTask = taskListPayload?.tasks?.find((task) => task.title === "mcp metadata task");
@@ -947,6 +1023,8 @@ if (
   taskAddMcp.status !== 0 ||
   !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
   taskStatusPayload?.status?.counts?.agents !== 4 ||
+  taskGetPayload?.task?.id !== "task-1" ||
+  taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||
