@@ -340,6 +340,18 @@ if (
   console.error("[smoke:runtime-handoff-pack] expected top-level runtime handoff pack");
   process.exit(1);
 }
+const runtimeTriagePackInitial = JSON.parse(
+  run("runtime-triage-pack-initial", ["./src/index.js", "runtime:triage-pack"]).stdout
+).triagePack;
+if (
+  runtimeTriagePackInitial.kind !== "runtime_triage_pack" ||
+  !runtimeTriagePackInitial.recommendedSurface ||
+  !runtimeTriagePackInitial.overview ||
+  !runtimeTriagePackInitial.surfaces
+) {
+  console.error("[smoke:runtime-triage-pack] expected top-level runtime triage pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1807,6 +1819,19 @@ if (
   console.error("[smoke:runtime-handoff-pack] expected CLI handoff pack to recommend handoffs");
   process.exit(1);
 }
+const runtimeTriagePackCli = JSON.parse(
+  run("runtime-triage-pack-cli", ["./src/index.js", "runtime:triage-pack"]).stdout
+).triagePack;
+if (
+  runtimeTriagePackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeTriagePackCli.next?.focus?.taskId !== "task-1" ||
+  runtimeTriagePackCli.next?.alert?.taskId !== "task-1" ||
+  runtimeTriagePackCli.next?.review?.taskId !== "task-2" ||
+  runtimeTriagePackCli.next?.recovery?.taskId !== "task-1"
+) {
+  console.error("[smoke:runtime-triage-pack] expected CLI triage pack to recommend focus");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -2395,6 +2420,37 @@ if (
 ) {
   console.error("[smoke:runtime-handoff-pack-mcp] expected MCP runtime handoff pack");
   console.error(runtimeHandoffPackMcp.stderr || runtimeHandoffPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeTriagePackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_triage_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeTriagePackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeTriagePackMcpInput,
+  encoding: "utf8"
+});
+const runtimeTriagePackMcpLines = runtimeTriagePackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeTriagePackMcpPayload = JSON.parse(JSON.parse(runtimeTriagePackMcpLines[1]).result.content[0].text);
+if (
+  runtimeTriagePackMcp.status !== 0 ||
+  runtimeTriagePackMcpPayload.triagePack?.recommendedSurface !== "runtime:focus" ||
+  runtimeTriagePackMcpPayload.triagePack?.next?.focus?.taskId !== "task-1" ||
+  runtimeTriagePackMcpPayload.triagePack?.next?.review?.taskId !== "task-2"
+) {
+  console.error("[smoke:runtime-triage-pack-mcp] expected MCP runtime triage pack");
+  console.error(runtimeTriagePackMcp.stderr || runtimeTriagePackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
