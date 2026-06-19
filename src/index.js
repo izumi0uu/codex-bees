@@ -15,6 +15,7 @@ import {
   claimTask,
   completeSwarm,
   completeTask,
+  dispatchSwarmLane,
   getSwarm,
   initSwarm,
   listMemories,
@@ -23,6 +24,7 @@ import {
   markTaskReadyForReview,
   queueSwarmTasks,
   releaseTask,
+  swarmOverview,
   searchMemories,
   stateFilePath,
   storeMemory,
@@ -437,6 +439,37 @@ function handleSwarmUpdate() {
   write(JSON.stringify({ updated: swarm }, null, 2) + "\n");
 }
 
+function handleSwarmOverview() {
+  const id = requireOption("--id");
+  const overview = swarmOverview(id);
+  if (!overview) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ overview }, null, 2) + "\n");
+}
+
+function handleSwarmDispatch() {
+  const id = requireOption("--id");
+  const claimedBy = requireOption("--by");
+  const result = dispatchSwarmLane({
+    id,
+    claimedBy,
+    owner: readOption("--owner")
+  });
+
+  if (!result) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (result.error) {
+    writeErr(`${result.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ dispatched: result }, null, 2) + "\n");
+}
+
 function handleSwarmStart() {
   const id = requireOption("--id");
   const swarm = activateSwarm({
@@ -654,6 +687,12 @@ async function runCommand(command) {
       return;
     case "swarm:update":
       handleSwarmUpdate();
+      return;
+    case "swarm:overview":
+      handleSwarmOverview();
+      return;
+    case "swarm:dispatch":
+      handleSwarmDispatch();
       return;
     case "swarm:start":
       handleSwarmStart();
