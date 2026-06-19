@@ -618,6 +618,36 @@ export function runtimeAlerts() {
   };
 }
 
+export function runtimeRoles(input = {}) {
+  const catalog = getRuntimeCatalog();
+  const assignments = leaderAssignments();
+  const assignmentsByRole = new Map(
+    (assignments?.groups ?? []).map((group) => [group.owner?.id ?? group.owner?.name ?? "unknown", group.assignments ?? []])
+  );
+  const roles = catalog.agents
+    .map((agent) => buildRuntimeRoleEntry(agent.id, input.limit, assignmentsByRole.get(agent.id) ?? []))
+    .filter(Boolean)
+    .sort(compareRuntimeRoleEntries);
+  const next = roles[0] ?? null;
+
+  return {
+    kind: "runtime_roles",
+    counts: {
+      totalRoles: roles.length,
+      withPendingReview: roles.filter((entry) => entry.counts.pendingReview > 0).length,
+      withBlockedOwnerWork: roles.filter((entry) => entry.counts.ownerBlocked > 0).length,
+      withClaimableOwnerWork: roles.filter((entry) => entry.counts.ownerClaimable > 0).length,
+      withActiveOwnerWork: roles.filter((entry) => entry.counts.ownerClaimed > 0).length,
+      totalPendingReview: roles.reduce((total, entry) => total + entry.counts.pendingReview, 0),
+      totalBlockedOwnerWork: roles.reduce((total, entry) => total + entry.counts.ownerBlocked, 0),
+      totalClaimableOwnerWork: roles.reduce((total, entry) => total + entry.counts.ownerClaimable, 0)
+    },
+    roles,
+    next,
+    summary: buildRuntimeRolesSummary(roles, next)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -1945,6 +1975,172 @@ function buildRuntimeAlertsSummary(alerts) {
   }
   const top = alerts[0];
   return `Runtime alerts has ${alerts.length} active alert${alerts.length === 1 ? "" : "s"}; ${top.summary}`;
+}
+
+function buildRuntimeRoleEntry(roleId, limit, dispatchableAssignments = []) {
+  const role = describeRole(roleId);
+  const tasks = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => task.owner === roleId || task.verifier === roleId);
+  const inbox = taskInbox({ role: roleId, limit });
+  const ownerNext = taskNext({ role: roleId, mode: "owner" });
+  const verifierNext = taskNext({ role: roleId, mode: "verifier" });
+
+  if (!role.exists && tasks.length === 0 && dispatchableAssignments.length === 0) {
+    return null;
+  }
+
+  const nextAction = buildRuntimeRoleNextAction(roleId, ownerNext, verifierNext, dispatchableAssignments);
+
+  return {
+    role,
+    counts: {
+      total: tasks.length + dispatchableAssignments.length,
+      ownerClaimable: tasks.filter((task) => task.owner === roleId && isClaimableTask(task)).length + dispatchableAssignments.length,
+      ownerClaimed: tasks.filter((task) => task.owner === roleId && task.queueStatus === "claimed").length,
+      ownerBlocked: tasks.filter((task) => task.owner === roleId && task.queueStatus === "blocked").length,
+      pendingReview: tasks.filter((task) => task.verifier === roleId && task.queueStatus === "ready_for_review").length,
+      completed: tasks.filter((task) => task.queueStatus === "done").length,
+      dispatchableAssignments: dispatchableAssignments.length
+    },
+    ownerNext,
+    verifierNext,
+    nextAction,
+    tasks: inbox?.tasks ?? [],
+    assignments: dispatchableAssignments,
+    summary: buildRuntimeRoleEntrySummary(role, tasks, dispatchableAssignments, nextAction)
+  };
+}
+
+function buildRuntimeRoleNextAction(roleId, ownerNext, verifierNext, dispatchableAssignments = []) {
+  if (verifierNext?.candidate) {
+    return {
+      lane: "verifier",
+      task: verifierNext.candidate,
+      command: `node ./src/index.js task:next --role ${roleId} --mode verifier`,
+      reason: `Verifier lane can decide ${verifierNext.candidate.id} next.`
+    };
+  }
+
+  if (ownerNext?.candidate) {
+    return {
+      lane: "owner",
+      task: ownerNext.candidate,
+      command: `node ./src/index.js task:next --role ${roleId} --mode owner`,
+      reason: `Owner lane can move ${ownerNext.candidate.id} next.`
+    };
+  }
+
+  const assignment = dispatchableAssignments[0] ?? null;
+  if (assignment) {
+    return {
+      lane: "dispatch",
+      task: {
+        id: assignment.taskId,
+        lane: assignment.lane,
+        swarmId: assignment.swarmId,
+        owner: assignment.owner?.id ?? assignment.owner?.name ?? roleId,
+        verifier: assignment.verifier?.id ?? assignment.verifier?.name ?? null,
+        queueStatus: assignment.taskQueueStatus,
+        recommendedAction: assignment.recommendedNextAction,
+        summary: assignment.summary
+      },
+      command: assignment.recommendedCommands?.[0] ?? `node ./src/index.js leader:assignments`,
+      reason: `Leader can dispatch ${assignment.lane} from ${assignment.swarmId} to ${roleId}.`
+    };
+  }
+
+  return {
+    lane: "idle",
+    task: null,
+    command: null,
+    reason: `Role ${roleId} has no immediate owner or verifier work.`
+  };
+}
+
+function buildRuntimeRoleEntrySummary(role, tasks, dispatchableAssignments, nextAction) {
+  const total = tasks.length + dispatchableAssignments.length;
+  const pendingReview = tasks.filter((task) => task.verifier === role.id && task.queueStatus === "ready_for_review").length;
+  const ownerBlocked = tasks.filter((task) => task.owner === role.id && task.queueStatus === "blocked").length;
+  const ownerClaimable = tasks.filter((task) => task.owner === role.id && isClaimableTask(task)).length + dispatchableAssignments.length;
+  if (total === 0) {
+    return `Role ${role.id ?? role.name ?? "unknown"} has no tracked work right now.`;
+  }
+
+  if (pendingReview > 0 && nextAction.task?.id) {
+    return `Role ${role.id ?? role.name ?? "unknown"} has verifier pressure; ${nextAction.task.id} is the next review target.`;
+  }
+
+  if (ownerBlocked > 0 && nextAction.task?.id) {
+    return `Role ${role.id ?? role.name ?? "unknown"} has blocked owner work and should unblock ${nextAction.task.id} first.`;
+  }
+
+  if (ownerClaimable > 0 && nextAction.task?.lane && nextAction.lane === "dispatch") {
+    return `Role ${role.id ?? role.name ?? "unknown"} has dispatchable lane work; ${nextAction.task.lane} from ${nextAction.task.swarmId} is ready.`;
+  }
+
+  if (ownerClaimable > 0 && nextAction.task?.id) {
+    return `Role ${role.id ?? role.name ?? "unknown"} can claim ${nextAction.task.id} next.`;
+  }
+
+  if (nextAction.task?.id || nextAction.task?.lane) {
+    return `Role ${role.id ?? role.name ?? "unknown"} is tracking ${total} work item${total === 1 ? "" : "s"}; ${nextAction.task.id ?? nextAction.task.lane} is next.`;
+  }
+
+  return `Role ${role.id ?? role.name ?? "unknown"} is tracking ${total} work item${total === 1 ? "" : "s"}.`;
+}
+
+function buildRuntimeRolesSummary(roles, next) {
+  if (roles.length === 0) {
+    return "Runtime roles has no shipped roles to inspect.";
+  }
+
+  if (!next) {
+    return `Runtime roles is tracking ${roles.length} role${roles.length === 1 ? "" : "s"}.`;
+  }
+
+  if (next.counts.pendingReview > 0) {
+    return `Runtime roles should look at ${next.role.id} first because verifier work is waiting.`;
+  }
+  if (next.counts.ownerBlocked > 0) {
+    return `Runtime roles should look at ${next.role.id} first because blocked owner work is waiting.`;
+  }
+  if (next.counts.ownerClaimable > 0) {
+    return `Runtime roles should look at ${next.role.id} first because claimable owner work is waiting.`;
+  }
+  if (next.counts.ownerClaimed > 0) {
+    return `Runtime roles should look at ${next.role.id} first because active owner work is in flight.`;
+  }
+
+  return `Runtime roles is tracking ${roles.length} roles; ${next.role.id} is the next role to inspect.`;
+}
+
+function compareRuntimeRoleEntries(left, right) {
+  const leftRank = runtimeRolePriority(left);
+  const rightRank = runtimeRolePriority(right);
+  if (leftRank !== rightRank) {
+    return leftRank - rightRank;
+  }
+  return (left.role?.id ?? "").localeCompare(right.role?.id ?? "");
+}
+
+function runtimeRolePriority(entry) {
+  if (entry.counts.pendingReview > 0) {
+    return 0;
+  }
+  if (entry.counts.ownerBlocked > 0) {
+    return 1;
+  }
+  if (entry.counts.ownerClaimable > 0) {
+    return 2;
+  }
+  if (entry.counts.ownerClaimed > 0) {
+    return 3;
+  }
+  if (entry.counts.total > 0) {
+    return 4;
+  }
+  return 5;
 }
 
 function buildLeaderWorkspaceSwarmEntry(overview) {
