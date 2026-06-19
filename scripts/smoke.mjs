@@ -799,6 +799,18 @@ if (
   console.error("[smoke:leader-workspace] expected CLI leader workspace with prioritized swarm focus");
   process.exit(1);
 }
+const leaderQueueCli = JSON.parse(
+  run("leader-queue-cli", ["./src/index.js", "leader:queue"]).stdout
+).queue;
+if (
+  leaderQueueCli.kind !== "leader_queue" ||
+  leaderQueueCli.counts?.total !== 2 ||
+  leaderQueueCli.next?.swarmId !== "swarm-2" ||
+  leaderQueueCli.next?.recommendedNextAction !== "queue_swarm_lanes"
+) {
+  console.error("[smoke:leader-queue] expected CLI leader queue prioritized to the queued-next swarm");
+  process.exit(1);
+}
 if (!swarmOverviewReadyToComplete.readyToComplete || swarmOverviewReadyToComplete.derivedStatus !== "completed" || swarmOverviewReadyToComplete.statusAligned !== true) {
   console.error("[smoke:swarm-overview] expected completion readiness and aligned completed status");
   process.exit(1);
@@ -1016,6 +1028,82 @@ if (
 ) {
   console.error("[smoke:swarm-dispatch-bundle-mcp] expected MCP dispatch bundle");
   console.error(swarmDispatchBundleMcp.stderr || swarmDispatchBundleMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("leader-queue-swarm-done", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Leader queue done swarm",
+  "--owner",
+  "leader",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-done",
+      summary: "Done lane",
+      owner: "explore",
+      verifier: "reviewer",
+      scope: ["src/index.js"],
+      acceptance: ["done swarm exists"],
+      verification: ["leader queue ranks pending swarm first"]
+    }
+  ])
+]);
+run("leader-queue-swarm-done-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]);
+run("leader-queue-swarm-done-dispatch", ["./src/index.js", "swarm:dispatch", "--id", "swarm-1", "--by", "worker-done", "--owner", "explore"]);
+run("leader-queue-swarm-done-review", ["./src/index.js", "task:review", "--id", "task-1", "--by", "worker-done"]);
+run("leader-queue-swarm-done-approve", ["./src/index.js", "task:approve", "--id", "task-1", "--by", "reviewer"]);
+run("leader-queue-swarm-pending", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Leader queue pending swarm",
+  "--owner",
+  "leader",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-pending",
+      summary: "Pending lane",
+      owner: "executor",
+      verifier: "tester",
+      scope: ["src/mcp.js"],
+      acceptance: ["pending swarm exists"],
+      verification: ["leader queue returns it first"]
+    }
+  ])
+]);
+const leaderQueueMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "leader_queue",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const leaderQueueMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: leaderQueueMcpInput,
+  encoding: "utf8"
+});
+const leaderQueueMcpLines = leaderQueueMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const leaderQueueMcpPayload = JSON.parse(JSON.parse(leaderQueueMcpLines[1]).result.content[0].text);
+if (
+  leaderQueueMcp.status !== 0 ||
+  leaderQueueMcpPayload.queue?.next?.swarmId !== "swarm-2" ||
+  leaderQueueMcpPayload.queue?.next?.recommendedNextAction !== "queue_swarm_lanes"
+) {
+  console.error("[smoke:leader-queue-mcp] expected MCP leader queue");
+  console.error(leaderQueueMcp.stderr || leaderQueueMcp.stdout);
   process.exit(1);
 }
 
