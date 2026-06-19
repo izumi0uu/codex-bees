@@ -1144,10 +1144,12 @@ export function runtimeSummaryPack(input = {}) {
   const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
   const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const recommendedSurface = deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard });
+  const recommendedReason = deriveRuntimeSummaryPackReason({ focus, recovery, closeout, handoffs, dashboard });
 
   return {
     kind: "runtime_summary_pack",
     recommendedSurface,
+    recommendedReason,
     focus,
     overview: {
       dashboard: dashboard.counts,
@@ -4178,6 +4180,25 @@ function deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, 
     return "runtime:dashboard";
   }
   return "runtime:focus";
+}
+
+function deriveRuntimeSummaryPackReason({ focus, recovery, closeout, handoffs, dashboard }) {
+  if (focus?.focus?.type === "blocked_task") {
+    return "blocked_focus_priority";
+  }
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "recovery_work_waiting";
+  }
+  if ((handoffs?.counts?.totalHandoffs ?? 0) > 0) {
+    return "handoffs_waiting";
+  }
+  if ((closeout?.counts?.totalReady ?? 0) > 0) {
+    return "closeout_ready";
+  }
+  if ((dashboard?.counts?.leaderQueueItems ?? 0) > 0) {
+    return "dashboard_queue_visible";
+  }
+  return "no_higher_priority_runtime_signal";
 }
 
 function buildRuntimeSummaryPackSummary(recommendedSurface, focus) {

@@ -2680,6 +2680,7 @@ const runtimeSummaryPackCli = JSON.parse(
 ).summaryPack;
 if (
   runtimeSummaryPackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeSummaryPackCli.recommendedReason !== "blocked_focus_priority" ||
   runtimeSummaryPackCli.focus?.focus?.taskId !== "task-1" ||
   runtimeSummaryPackCli.next?.recovery?.taskId !== "task-1" ||
   runtimeSummaryPackCli.overview?.dashboard?.blockedTasks !== 1
@@ -2736,6 +2737,7 @@ const runtimeSummaryPackMappedCli = JSON.parse(
 if (
   runtimeSummaryPackMappedCli.surfaces?.closeout?.counts?.totalReady !== 0 ||
   runtimeSummaryPackMappedCli.recommendedSurface !== "runtime:focus" ||
+  runtimeSummaryPackMappedCli.recommendedReason !== "blocked_focus_priority" ||
   runtimeSummaryPackMappedCli.overview?.assignmentLaunchPlan?.steps !== 1 ||
   runtimeSummaryPackMappedCli.overview?.assignmentDispatchBundle?.launches !== 1 ||
   runtimeSummaryPackMappedCli.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
@@ -3283,6 +3285,7 @@ const runtimeSummaryPackMcpPayload = JSON.parse(JSON.parse(runtimeSummaryPackMcp
 if (
   runtimeSummaryPackMcp.status !== 0 ||
   runtimeSummaryPackMcpPayload.summaryPack?.recommendedSurface !== "runtime:focus" ||
+  runtimeSummaryPackMcpPayload.summaryPack?.recommendedReason !== "blocked_focus_priority" ||
   runtimeSummaryPackMcpPayload.summaryPack?.focus?.focus?.taskId !== "task-1"
 ) {
   console.error("[smoke:runtime-summary-pack-mcp] expected MCP runtime summary pack");
@@ -3312,6 +3315,7 @@ const runtimeSummaryPackMappedMcpLines = runtimeSummaryPackMappedMcp.stdout
 const runtimeSummaryPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeSummaryPackMappedMcpLines[1]).result.content[0].text);
 if (
   runtimeSummaryPackMappedMcp.status !== 0 ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.recommendedReason !== "blocked_focus_priority" ||
   runtimeSummaryPackMappedMcpPayload.summaryPack?.overview?.assignmentLaunchPlan?.steps !== 1 ||
   runtimeSummaryPackMappedMcpPayload.summaryPack?.overview?.assignmentDispatchBundle?.launches !== 1 ||
   runtimeSummaryPackMappedMcpPayload.summaryPack?.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
