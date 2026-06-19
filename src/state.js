@@ -1096,6 +1096,51 @@ export function runtimeWorkerPack(input = {}) {
   };
 }
 
+export function runtimeVerifierPack(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const normalized = {
+    ...input,
+    mode: "verifier"
+  };
+  const review = runtimeReview();
+  const bundle = verifierBundle(normalized);
+  const closeout = workerCloseout(normalized);
+  const next = taskNext({
+    role: input.role,
+    workerId: input.workerId,
+    mode: "verifier"
+  });
+  const recommendedSurface = deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role: input.role });
+
+  return {
+    kind: "runtime_verifier_pack",
+    role: describeRole(input.role),
+    workerId: input.workerId,
+    mode: "verifier",
+    recommendedSurface,
+    overview: {
+      review: review?.counts ?? null,
+      bundle: bundle?.currentTask ? { currentTask: bundle.currentTask.id } : { currentTask: null }
+    },
+    next: {
+      review: review?.next ?? null,
+      candidate: next?.candidate ?? null,
+      decision: bundle?.currentTask ?? null,
+      closeout: closeout?.report?.task ?? null
+    },
+    surfaces: {
+      review,
+      bundle,
+      closeout,
+      next
+    },
+    summary: buildRuntimeVerifierPackSummary(recommendedSurface, bundle, review)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -3090,6 +3135,24 @@ function deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next }) {
 function buildRuntimeWorkerPackSummary(recommendedSurface, session) {
   const detail = session?.focus?.reason ?? "worker has no current focus detail.";
   return `Runtime worker pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role }) {
+  if (bundle?.currentTask?.id || closeout?.report?.task?.id) {
+    return "worker:closeout";
+  }
+  if (review?.next?.taskId) {
+    return "runtime:review";
+  }
+  if (next?.candidate?.id) {
+    return `task:next --role ${role} --mode verifier`;
+  }
+  return "runtime:review";
+}
+
+function buildRuntimeVerifierPackSummary(recommendedSurface, bundle, review) {
+  const detail = bundle?.summary ?? review?.summary ?? "verifier has no current decision detail.";
+  return `Runtime verifier pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function compareRuntimeRoleEntries(left, right) {
