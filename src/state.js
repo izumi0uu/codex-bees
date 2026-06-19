@@ -105,6 +105,33 @@ export function getSwarm(id) {
   return swarm ? normalizeSwarm(swarm) : null;
 }
 
+export function syncSwarmStatus(id) {
+  const state = loadState();
+  const index = state.swarms.findIndex((item) => item.id === id);
+  if (index < 0) {
+    return null;
+  }
+
+  const current = normalizeSwarm(state.swarms[index]);
+  if (current.status === "cancelled") {
+    return { swarm: current, derivedStatus: "cancelled", changed: false };
+  }
+
+  const swarmTasks = state.tasks
+    .map(normalizeTask)
+    .filter((task) => task.swarmId === current.id);
+  const derivedStatus = deriveSwarmStatus(current, swarmTasks);
+  const next = normalizeSwarm({
+    ...current,
+    status: derivedStatus,
+    updatedAt: new Date().toISOString()
+  });
+
+  state.swarms[index] = next;
+  saveState(state);
+  return { swarm: next, derivedStatus, changed: next.status !== current.status };
+}
+
 export function swarmOverview(id) {
   const state = loadState();
   const swarm = state.swarms.find((item) => item.id === id);
@@ -148,13 +175,20 @@ export function swarmOverview(id) {
     unqueued: laneSummaries.filter((lane) => !lane.taskId).length
   };
 
+  const derivedStatus = deriveSwarmStatus(normalizedSwarm, swarmTasks);
+  const nextLane =
+    laneSummaries.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null;
+
   return {
     swarm: normalizedSwarm,
     counts,
     lanes: laneSummaries,
     tasks: swarmTasks,
-    nextLane:
-      laneSummaries.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null
+    nextLane,
+    derivedStatus,
+    statusAligned: normalizedSwarm.status === derivedStatus,
+    readyToComplete: counts.totalLanes > 0 && counts.done === counts.totalLanes,
+    dispatchableCount: counts.queued + counts.released
   };
 }
 
@@ -596,6 +630,39 @@ function normalizeState(state) {
     swarms,
     updatedAt: state.updatedAt ?? null
   };
+}
+
+
+function deriveSwarmStatus(swarm, tasks) {
+  if (swarm.status === "cancelled") {
+    return "cancelled";
+  }
+
+  const laneTaskIds = new Set(swarm.lanes.map((lane) => lane.taskId).filter(Boolean));
+  const relatedTasks = tasks.filter((task) => laneTaskIds.size === 0 || laneTaskIds.has(task.id));
+
+  if (swarm.lanes.length === 0 || relatedTasks.length === 0) {
+    return "planned";
+  }
+
+  const allDone = relatedTasks.length === swarm.lanes.length && relatedTasks.every((task) => task.queueStatus === "done");
+  if (allDone) {
+    return "completed";
+  }
+
+  const hasRunnable = relatedTasks.some((task) =>
+    ["queued", "released", "claimed", "ready_for_review"].includes(task.queueStatus)
+  );
+  if (hasRunnable) {
+    return "active";
+  }
+
+  const hasBlocked = relatedTasks.some((task) => task.queueStatus === "blocked");
+  if (hasBlocked) {
+    return "blocked";
+  }
+
+  return swarm.status === "completed" ? "completed" : "active";
 }
 
 function canTransition(from, to) {
