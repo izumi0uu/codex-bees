@@ -165,6 +165,17 @@ if (
   console.error("[smoke:runtime-alerts] expected top-level runtime alerts");
   process.exit(1);
 }
+const runtimeRolesInitial = JSON.parse(
+  run("runtime-roles-initial", ["./src/index.js", "runtime:roles"]).stdout
+).roles;
+if (
+  runtimeRolesInitial.kind !== "runtime_roles" ||
+  !Array.isArray(runtimeRolesInitial.roles) ||
+  runtimeRolesInitial.counts?.totalRoles < 4
+) {
+  console.error("[smoke:runtime-roles] expected top-level runtime roles");
+  process.exit(1);
+}
 
 const listedMemories = JSON.parse(
   run("memory-list-verify", ["./src/index.js", "memory:list", "--namespace", "smoke"]).stdout
@@ -1282,6 +1293,7 @@ run("dashboard-swarm", [
     }
   ])
 ]);
+run("dashboard-swarm-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]);
 const runtimeDashboardCli = JSON.parse(
   run("runtime-dashboard-cli", ["./src/index.js", "runtime:dashboard"]).stdout
 ).dashboard;
@@ -1303,6 +1315,21 @@ if (
   runtimeAlertsCli.alerts?.[0]?.kind !== "blocked_task"
 ) {
   console.error("[smoke:runtime-alerts] expected CLI alert stream with blocked task first");
+  process.exit(1);
+}
+const runtimeRolesCli = JSON.parse(
+  run("runtime-roles-cli", ["./src/index.js", "runtime:roles"]).stdout
+).roles;
+if (
+  runtimeRolesCli.counts?.withPendingReview !== 1 ||
+  runtimeRolesCli.counts?.withBlockedOwnerWork !== 1 ||
+  runtimeRolesCli.counts?.withClaimableOwnerWork !== 1 ||
+  runtimeRolesCli.next?.role?.id !== "tester" ||
+  runtimeRolesCli.roles?.find((entry) => entry.role?.id === "tester")?.nextAction?.lane !== "verifier" ||
+  runtimeRolesCli.roles?.find((entry) => entry.role?.id === "executor")?.counts?.ownerBlocked !== 1 ||
+  runtimeRolesCli.roles?.find((entry) => entry.role?.id === "explore")?.counts?.ownerClaimed !== 1
+) {
+  console.error("[smoke:runtime-roles] expected CLI runtime role pressure ordering");
   process.exit(1);
 }
 const runtimeDashboardMcpInput = [
@@ -1365,6 +1392,37 @@ if (
 ) {
   console.error("[smoke:runtime-alerts-mcp] expected MCP runtime alerts");
   console.error(runtimeAlertsMcp.stderr || runtimeAlertsMcp.stdout);
+  process.exit(1);
+}
+const runtimeRolesMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_roles",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeRolesMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeRolesMcpInput,
+  encoding: "utf8"
+});
+const runtimeRolesMcpLines = runtimeRolesMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeRolesMcpPayload = JSON.parse(JSON.parse(runtimeRolesMcpLines[1]).result.content[0].text);
+if (
+  runtimeRolesMcp.status !== 0 ||
+  runtimeRolesMcpPayload.roles?.counts?.withPendingReview !== 1 ||
+  runtimeRolesMcpPayload.roles?.next?.role?.id !== "tester" ||
+  runtimeRolesMcpPayload.roles?.roles?.find((entry) => entry.role?.id === "executor")?.counts?.ownerBlocked !== 1
+) {
+  console.error("[smoke:runtime-roles-mcp] expected MCP runtime role queue");
+  console.error(runtimeRolesMcp.stderr || runtimeRolesMcp.stdout);
   process.exit(1);
 }
 
