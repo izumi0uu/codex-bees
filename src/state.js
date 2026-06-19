@@ -315,6 +315,44 @@ export function swarmBrief(id) {
   };
 }
 
+export function swarmBundle(id) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const brief = swarmBrief(id);
+  const laneBundles = overview.lanes.map((laneSummary) => {
+    const task = laneSummary.taskId
+      ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
+      : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
+    return {
+      lane: laneSummary.lane,
+      summary: laneSummary.summary,
+      owner: laneSummary.owner,
+      verifier: laneSummary.verifier,
+      taskId: task?.id ?? null,
+      queueStatus: task?.queueStatus ?? null,
+      claimedBy: task?.claimedBy ?? null,
+      ready: laneSummary.ready,
+      done: laneSummary.done,
+      report: task ? taskReport(task.id) : null
+    };
+  });
+
+  return {
+    kind: "swarm_bundle",
+    swarm: overview.swarm,
+    brief,
+    counts: overview.counts,
+    derivedStatus: overview.derivedStatus,
+    readyToComplete: overview.readyToComplete,
+    nextLane: overview.nextLane,
+    lanes: laneBundles,
+    summary: buildSwarmBundleSummary(overview, laneBundles)
+  };
+}
+
 export function taskInbox(input = {}) {
   if (!input.role) {
     return null;
@@ -1472,6 +1510,29 @@ function buildSwarmHandoff(overview, recommended) {
     return `Swarm ${overview.swarm.id} has planned lanes but no queued tasks yet.`;
   }
   return `Swarm ${overview.swarm.id} is active with bounded local coordination state.`;
+}
+
+function buildSwarmBundleSummary(overview, laneBundles) {
+  if (overview.readyToComplete) {
+    return `Swarm ${overview.swarm.id} is ready to complete with ${overview.counts.done}/${overview.counts.totalLanes} lanes done.`;
+  }
+
+  const reviewLane = laneBundles.find((lane) => lane.queueStatus === "ready_for_review");
+  if (reviewLane) {
+    return `Swarm ${overview.swarm.id} has lane ${reviewLane.lane} waiting on verifier ${reviewLane.verifier}.`;
+  }
+
+  const claimedLane = laneBundles.find((lane) => lane.queueStatus === "claimed");
+  if (claimedLane) {
+    return `Swarm ${overview.swarm.id} is in progress on lane ${claimedLane.lane} with worker ${claimedLane.claimedBy ?? "unknown"}.`;
+  }
+
+  const nextLane = laneBundles.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released");
+  if (nextLane) {
+    return `Swarm ${overview.swarm.id} can dispatch lane ${nextLane.lane} next.`;
+  }
+
+  return `Swarm ${overview.swarm.id} remains active with ${overview.counts.totalLanes} tracked lanes.`;
 }
 
 function buildSessionTaskSnapshot(task, role, workerId) {
