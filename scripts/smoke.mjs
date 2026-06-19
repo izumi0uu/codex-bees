@@ -364,6 +364,18 @@ if (
   console.error("[smoke:runtime-session-pack] expected top-level runtime session pack");
   process.exit(1);
 }
+const runtimeRolePackInitial = JSON.parse(
+  run("runtime-role-pack-initial", ["./src/index.js", "runtime:role-pack", "--role", "executor", "--worker", "review-worker"]).stdout
+).rolePack;
+if (
+  runtimeRolePackInitial.kind !== "runtime_role_pack" ||
+  !runtimeRolePackInitial.recommendedSurface ||
+  !runtimeRolePackInitial.overview ||
+  !runtimeRolePackInitial.surfaces
+) {
+  console.error("[smoke:runtime-role-pack] expected top-level runtime role pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1856,6 +1868,18 @@ if (
   console.error("[smoke:runtime-session-pack] expected CLI session pack to recommend verifier next");
   process.exit(1);
 }
+const runtimeRolePackCli = JSON.parse(
+  run("runtime-role-pack-cli", ["./src/index.js", "runtime:role-pack", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).rolePack;
+if (
+  runtimeRolePackCli.recommendedSurface !== "worker:closeout" ||
+  runtimeRolePackCli.next?.role?.lane !== "verifier" ||
+  runtimeRolePackCli.next?.session?.verifier?.review?.taskId !== "task-2" ||
+  runtimeRolePackCli.surfaces?.sessionPack?.recommendedSurface !== "worker:closeout"
+) {
+  console.error("[smoke:runtime-role-pack] expected CLI role pack to recommend worker closeout");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -2510,6 +2534,41 @@ if (
 ) {
   console.error("[smoke:runtime-session-pack-mcp] expected MCP runtime session pack");
   console.error(runtimeSessionPackMcp.stderr || runtimeSessionPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeRolePackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_role_pack",
+      arguments: {
+        role: "tester",
+        workerId: "tester-worker",
+        mode: "verifier"
+      }
+    }
+  })
+].join("\n") + "\n";
+const runtimeRolePackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeRolePackMcpInput,
+  encoding: "utf8"
+});
+const runtimeRolePackMcpLines = runtimeRolePackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeRolePackMcpPayload = JSON.parse(JSON.parse(runtimeRolePackMcpLines[1]).result.content[0].text);
+if (
+  runtimeRolePackMcp.status !== 0 ||
+  runtimeRolePackMcpPayload.rolePack?.recommendedSurface !== "worker:closeout" ||
+  runtimeRolePackMcpPayload.rolePack?.next?.role?.lane !== "verifier" ||
+  runtimeRolePackMcpPayload.rolePack?.next?.session?.verifier?.review?.taskId !== "task-2"
+) {
+  console.error("[smoke:runtime-role-pack-mcp] expected MCP runtime role pack");
+  console.error(runtimeRolePackMcp.stderr || runtimeRolePackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
