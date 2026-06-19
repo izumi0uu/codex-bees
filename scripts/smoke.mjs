@@ -145,7 +145,9 @@ if (
   !runtimeCapabilities.find((capability) => capability.id === "runtime_catalog")?.highlights?.includes("runtime:queue-pack recommends launch context before raw leader queue review") ||
   !runtimeCapabilities.find((capability) => capability.id === "leader_orchestration")?.highlights?.includes("assignment-launch-plan provides ordered worker startup steps") ||
   runtimeCapabilities.find((capability) => capability.id === "runtime_catalog")?.preferredEntryPoints?.cli?.[0] !== "status" ||
-  runtimeCapabilities.find((capability) => capability.id === "leader_orchestration")?.preferredEntryPoints?.mcp?.[0] !== "leader_assignment_launch_plan"
+  runtimeCapabilities.find((capability) => capability.id === "leader_orchestration")?.preferredEntryPoints?.mcp?.[0] !== "leader_assignment_launch_plan" ||
+  !runtimeCapabilities.find((capability) => capability.id === "runtime_catalog")?.useCases?.includes("probe the runtime surface before choosing deeper orchestration tools") ||
+  !runtimeCapabilities.find((capability) => capability.id === "leader_orchestration")?.useCases?.includes("bring multiple workers online in leader-defined order")
 ) {
   console.error("[smoke:capabilities] expected runtime capability inventory");
   process.exit(1);
