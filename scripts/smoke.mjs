@@ -313,6 +313,36 @@ if (!Array.isArray(swarmQueue.created) || swarmQueue.created.length !== 2) {
   console.error("[smoke:swarm-queue] expected two queued swarm tasks");
   process.exit(1);
 }
+const swarmOverviewBeforeDispatch = JSON.parse(
+  run("swarm-overview-before-dispatch", ["./src/index.js", "swarm:overview", "--id", "swarm-1"]).stdout
+).overview;
+if (swarmOverviewBeforeDispatch.counts.queued !== 2 || swarmOverviewBeforeDispatch.nextLane?.lane !== "lane-alpha") {
+  console.error("[smoke:swarm-overview] expected queued lanes and next lane before dispatch");
+  process.exit(1);
+}
+const dispatchedLane = JSON.parse(
+  run("swarm-dispatch", [
+    "./src/index.js",
+    "swarm:dispatch",
+    "--id",
+    "swarm-1",
+    "--by",
+    "worker-alpha",
+    "--owner",
+    "explore"
+  ]).stdout
+).dispatched;
+if (dispatchedLane.task.claimedBy !== "worker-alpha" || dispatchedLane.lane.lane !== "lane-alpha") {
+  console.error("[smoke:swarm-dispatch] expected first lane claimed by worker-alpha");
+  process.exit(1);
+}
+const swarmOverviewAfterDispatch = JSON.parse(
+  run("swarm-overview-after-dispatch", ["./src/index.js", "swarm:overview", "--id", "swarm-1"]).stdout
+).overview;
+if (swarmOverviewAfterDispatch.counts.claimed !== 1 || swarmOverviewAfterDispatch.counts.queued !== 1) {
+  console.error("[smoke:swarm-overview] expected claimed and queued counts after dispatch");
+  process.exit(1);
+}
 const swarmTasks = JSON.parse(run("swarm-queue-task-list", ["./src/index.js", "task:list"]).stdout).tasks;
 if (!swarmTasks.every((task) => task.swarmId === "swarm-1")) {
   console.error("[smoke:swarm-queue] expected swarm task linkage");
@@ -362,6 +392,24 @@ const swarmMcpInput = [
     id: 4,
     method: "tools/call",
     params: {
+      name: "swarm_dispatch",
+      arguments: { id: "swarm-1", claimedBy: "mcp-worker", owner: "executor" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "swarm_overview",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
       name: "task_list",
       arguments: {}
     }
@@ -376,12 +424,19 @@ const swarmMcpLines = swarmMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const swarmTaskListResult = swarmMcpLines.length >= 4 ? JSON.parse(swarmMcpLines[3]) : null;
+const swarmOverviewResult = swarmMcpLines.length >= 5 ? JSON.parse(swarmMcpLines[4]) : null;
+const swarmOverviewText = swarmOverviewResult?.result?.content?.[0]?.text;
+const swarmOverviewPayload = swarmOverviewText ? JSON.parse(swarmOverviewText) : null;
+const swarmTaskListResult = swarmMcpLines.length >= 6 ? JSON.parse(swarmMcpLines[5]) : null;
 const swarmTaskListText = swarmTaskListResult?.result?.content?.[0]?.text;
 const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) : null;
-const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1");
-if (swarmMcp.status !== 0 || !mcpSwarmTask) {
-  console.error("[smoke:swarm-mcp] expected queued MCP swarm task");
+const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
+if (
+  swarmMcp.status !== 0 ||
+  !mcpSwarmTask ||
+  swarmOverviewPayload?.overview?.counts?.claimed !== 1
+) {
+  console.error("[smoke:swarm-mcp] expected queued and dispatched MCP swarm task");
   console.error(swarmMcp.stderr || swarmMcp.stdout);
   process.exit(1);
 }
