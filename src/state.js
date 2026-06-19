@@ -1331,11 +1331,29 @@ export function runtimeSummaryPack(input = {}) {
   const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const recommendedSurface = deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard });
   const recommendedReason = deriveRuntimeSummaryPackReason({ focus, recovery, closeout, handoffs, dashboard });
+  const nextEntries = {
+    focus: focus.focus ?? null,
+    handoff: handoffs.next ?? null,
+    recovery: recovery.next ?? null,
+    closeout: closeout.next ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
+  };
 
   return {
     kind: "runtime_summary_pack",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasFocus: Boolean(focus.focus),
+      hasRecovery: Boolean(recovery.next),
+      hasCloseout: Boolean(closeout.next),
+      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
+      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     focus,
     overview: {
       dashboard: dashboard.counts,
@@ -1346,14 +1364,7 @@ export function runtimeSummaryPack(input = {}) {
       assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
       assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
     },
-    next: {
-      focus: focus.focus ?? null,
-      handoff: handoffs.next ?? null,
-      recovery: recovery.next ?? null,
-      closeout: closeout.next ?? null,
-      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-      assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
-    },
+    next: nextEntries,
     surfaces: {
       dashboard,
       alerts,

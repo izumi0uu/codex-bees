@@ -433,6 +433,7 @@ const runtimeSummaryPackInitial = JSON.parse(
 if (
   runtimeSummaryPackInitial.kind !== "runtime_summary_pack" ||
   !runtimeSummaryPackInitial.recommendedSurface ||
+  typeof runtimeSummaryPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeSummaryPackInitial.focus ||
   !runtimeSummaryPackInitial.overview
 ) {
@@ -3613,6 +3614,9 @@ const runtimeSummaryPackCli = JSON.parse(
 if (
   runtimeSummaryPackCli.recommendedSurface !== "runtime:focus" ||
   runtimeSummaryPackCli.recommendedReason !== "blocked_focus_priority" ||
+  runtimeSummaryPackCli.metadata?.hasFocus !== true ||
+  runtimeSummaryPackCli.metadata?.hasRecovery !== true ||
+  runtimeSummaryPackCli.counts?.surfacedNextEntries !== Object.values(runtimeSummaryPackCli.next ?? {}).filter(Boolean).length ||
   runtimeSummaryPackCli.focus?.focus?.taskId !== "task-1" ||
   runtimeSummaryPackCli.next?.recovery?.taskId !== "task-1" ||
   runtimeSummaryPackCli.overview?.dashboard?.blockedTasks !== 1
