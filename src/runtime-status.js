@@ -27,8 +27,8 @@ const CAPABILITY_CATALOG = [
     id: "task_coordination",
     category: "coordination",
     description: "Persistent task queue with claim, block, release, and readiness validation.",
-    cliCommands: ["task:list", "task:add", "task:update", "task:check", "task:claim", "task:block", "task:release", "task:assignment-pickup"],
-    mcpTools: ["task_list", "task_add", "task_update", "task_check", "task_claim", "task_block", "task_release", "task_assignment_pickup"]
+    cliCommands: ["task:list", "task:add", "task:update", "task:check", "task:claim", "task:block", "task:release", "task:assignment-preview", "task:assignment-pickup"],
+    mcpTools: ["task_list", "task_add", "task_update", "task_check", "task_claim", "task_block", "task_release", "task_assignment_preview", "task_assignment_pickup"]
   },
   {
     id: "verifier_review",
@@ -90,8 +90,8 @@ const CAPABILITY_CATALOG = [
     id: "runtime_catalog",
     category: "introspection",
     description: "Repo-native discovery of shipped agents and skills with role-aware validation.",
-    cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:activity", "runtime:assignment-pack", "runtime:closeout", "runtime:closeout-pack", "runtime:control-pack", "runtime:dashboard", "runtime:dispatch", "runtime:dispatch-pack", "runtime:execution-pack", "runtime:focus", "runtime:handoff-pack", "runtime:handoffs", "runtime:leader-pack", "runtime:operator-pack", "runtime:owner-pack", "runtime:pickup-pack", "runtime:queue-pack", "runtime:recovery", "runtime:recovery-pack", "runtime:review", "runtime:review-pack", "runtime:role-pack", "runtime:session-pack", "runtime:signal-pack", "runtime:summary-pack", "runtime:triage-pack", "runtime:verifier-pack", "runtime:workspace-pack", "runtime:worker-pack", "runtime:alerts", "runtime:roles", "task:assignment-pickup", "task:pickup-preview"],
-    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_activity", "runtime_assignment_pack", "runtime_closeout", "runtime_closeout_pack", "runtime_control_pack", "runtime_dashboard", "runtime_dispatch", "runtime_dispatch_pack", "runtime_execution_pack", "runtime_focus", "runtime_handoff_pack", "runtime_handoffs", "runtime_leader_pack", "runtime_operator_pack", "runtime_owner_pack", "runtime_pickup_pack", "runtime_queue_pack", "runtime_recovery", "runtime_recovery_pack", "runtime_review", "runtime_review_pack", "runtime_role_pack", "runtime_session_pack", "runtime_signal_pack", "runtime_summary_pack", "runtime_triage_pack", "runtime_verifier_pack", "runtime_workspace_pack", "runtime_worker_pack", "runtime_alerts", "runtime_roles", "task_assignment_pickup", "task_pickup_preview"]
+    cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:activity", "runtime:assignment-pack", "runtime:closeout", "runtime:closeout-pack", "runtime:control-pack", "runtime:dashboard", "runtime:dispatch", "runtime:dispatch-pack", "runtime:execution-pack", "runtime:focus", "runtime:handoff-pack", "runtime:handoffs", "runtime:leader-pack", "runtime:operator-pack", "runtime:owner-pack", "runtime:pickup-pack", "runtime:queue-pack", "runtime:recovery", "runtime:recovery-pack", "runtime:review", "runtime:review-pack", "runtime:role-pack", "runtime:session-pack", "runtime:signal-pack", "runtime:summary-pack", "runtime:triage-pack", "runtime:verifier-pack", "runtime:workspace-pack", "runtime:worker-pack", "runtime:alerts", "runtime:roles", "task:assignment-preview", "task:assignment-pickup", "task:pickup-preview"],
+    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_activity", "runtime_assignment_pack", "runtime_closeout", "runtime_closeout_pack", "runtime_control_pack", "runtime_dashboard", "runtime_dispatch", "runtime_dispatch_pack", "runtime_execution_pack", "runtime_focus", "runtime_handoff_pack", "runtime_handoffs", "runtime_leader_pack", "runtime_operator_pack", "runtime_owner_pack", "runtime_pickup_pack", "runtime_queue_pack", "runtime_recovery", "runtime_recovery_pack", "runtime_review", "runtime_review_pack", "runtime_role_pack", "runtime_session_pack", "runtime_signal_pack", "runtime_summary_pack", "runtime_triage_pack", "runtime_verifier_pack", "runtime_workspace_pack", "runtime_worker_pack", "runtime_alerts", "runtime_roles", "task_assignment_preview", "task_assignment_pickup", "task_pickup_preview"]
   }
 ];
 

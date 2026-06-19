@@ -70,6 +70,7 @@ import {
   swarmDispatchBundle,
   swarmBrief,
   taskAssignmentPickup,
+  previewTaskAssignment,
   taskInbox,
   taskHistory,
   taskPickup,
@@ -560,6 +561,20 @@ export const toolCatalog = [
         role: { type: "string" },
         workerId: { type: "string" },
         mode: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_assignment_preview",
+    description: "Preview the next leader-assigned task for one worker without mutating state.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" },
+        taskId: { type: "string" }
       }
     }
   },
@@ -1643,6 +1658,24 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ assignmentPickup }));
+    }
+
+    if (name === "task_assignment_preview") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "task_assignment_preview requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "task_assignment_preview requires arguments.workerId");
+      }
+
+      const assignmentPreview = previewTaskAssignment({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode,
+        taskId: params.arguments.taskId
+      });
+
+      return createSuccess(id, createTextPayload({ assignmentPreview }));
     }
 
     if (name === "task_pickup_preview") {
