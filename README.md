@@ -9,6 +9,7 @@ Codex Bees packages a small command surface, a local MCP server, reusable skills
 - runs a local CLI for orchestration and diagnostics
 - exposes an MCP stdio surface for tool-driven workflows
 - can generate bounded execution plans and queue them into local work items
+- can generate planner-driven swarm contracts and queue them into executable local tasks
 - can stage bounded local swarms and queue their lanes into executable local tasks
 - stores persistent local memory for later recall across execution lanes
 - keeps a small local task queue with explicit lifecycle states, single-owner transitions, and local state recovery
@@ -47,6 +48,8 @@ node ./src/index.js tools
 node ./src/index.js doctor
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
 node ./src/index.js plan:queue --task "Queue a runtime change"
+node ./src/index.js plan:swarm --task "Parallelize a runtime change"
+node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm"
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js
 node ./src/index.js swarm:init --objective "Ship a bounded runtime slice" --owner leader --max-workers 2 --lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer"}]'
 node ./src/index.js swarm:queue --id swarm-1
@@ -106,7 +109,7 @@ The foundation layer is in place:
 
 - a real CLI entrypoint
 - a minimal MCP stdio runtime
-- a planner that maps task briefs to bounded lanes and can queue those lanes as local tasks
+- a planner that maps task briefs to bounded lanes, can emit swarm contracts, and can queue those lanes as local tasks
 - a bounded local swarm surface that can register lanes and queue them into executable local tasks
 - a persistent local memory surface with namespace/tag filters and text search
 - a local task queue with explicit claim, block, review, release, and completion states plus persisted lane metadata

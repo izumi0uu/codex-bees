@@ -21,12 +21,12 @@ Do not start a swarm for vague work, one-file work, or tasks that still need dis
 
 ## Core model
 
-Treat the swarm as a small queue of bounded lanes.
+Treat the swarm as a small queue of bounded lanes. A swarm may be created manually or generated from planner output with `laneSource: "planner"`.
 
 - **Leader**: owns the objective, queue, lane assignment, and final integration.
 - **Worker**: claims one lane, stays inside its boundary, and returns evidence.
 - **Lane**: one bounded unit of work with a clear outcome and scope.
-- **Queue**: the ordered list of lanes waiting to be claimed, in progress, blocked, or ready to verify.
+- **Queue**: the ordered list of lanes waiting to be claimed, in progress, blocked, or `ready_for_review`.
 
 Keep the model product-facing and reusable. Slice by user-visible surface, system boundary, or validation target — not by organization-specific labels or admin categories.
 
@@ -47,16 +47,29 @@ If any of these are missing, the lane is not ready to claim.
 
 ## Queue states
 
-Use simple queue semantics.
+Use simple queue semantics for lane tasks, and keep them distinct from swarm-level status.
 
 - **queued**: ready for a worker to claim
 - **claimed**: owned by one worker and in progress
 - **blocked**: cannot proceed without a dependency, clarification, or re-slice
-- **ready for review**: worker finished and returned evidence
+- **ready_for_review**: worker finished and returned evidence
 - **done**: leader reviewed the result and accepted the lane
 - **released**: lane ownership returned to the queue without being accepted
 
 A lane can only have one active owner at a time.
+
+
+## Swarm-level lifecycle
+
+A swarm has its own lifecycle separate from lane task states.
+
+- **planned**: swarm contract exists but execution has not started
+- **active**: swarm is live and can queue or work lanes
+- **blocked**: swarm cannot progress without dependency or re-slice
+- **completed**: swarm objective is satisfied
+- **cancelled**: swarm was intentionally stopped
+
+Do not confuse a blocked lane with a blocked swarm. Escalate to swarm-level `blocked` only when the swarm as a whole cannot continue.
 
 ## Claim rules
 
@@ -82,6 +95,17 @@ A release should include:
 - files touched, if any
 - blocker or reason for release
 - recommendation for re-queue, re-slice, or reassignment
+
+
+## Planner-generated swarms
+
+When a planner already mapped disjoint lane ownership, the leader may generate a swarm directly from planner output instead of manually rewriting the same lanes. In that path:
+
+- preserve planner lane identifiers unless re-slicing is necessary
+- keep `laneSource` as `planner` so later audits can distinguish planned vs manual swarms
+- queue swarm lanes into tasks only after reviewing that the generated scopes are still valid
+
+Use manual swarm authoring only when the planner output is missing lane detail or needs structural changes before execution.
 
 ## Leader workflow
 

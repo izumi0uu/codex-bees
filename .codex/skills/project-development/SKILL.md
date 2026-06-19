@@ -62,6 +62,8 @@ Stop and escalate when:
 
 Map the task to exact files and verification.
 
+If the work clearly benefits from bounded parallel execution, prefer a planner→swarm path instead of manually recreating lanes later. Use a generated swarm when the plan already identifies disjoint lane ownership and you want those lanes to become executable local tasks without re-slicing.
+
 For each lane, define:
 
 - lane identifier
@@ -120,7 +122,8 @@ Preferred order:
 1. targeted command or inspection for the changed surface
 2. CLI or MCP contract check if the change affects runtime behavior
 3. smoke validation when the changed surface participates in the public command surface
-4. README/help parity check when commands or behavior changed
+4. swarm/task parity check when planner output is meant to become executable lanes
+5. README/help parity check when commands or behavior changed
 
 Do not mark work complete from intent alone.
 
@@ -195,3 +198,19 @@ A development slice is complete only when:
 - changed files stay within the claimed boundary
 - docs/help are updated if the public surface changed
 - follow-up work, if any, is explicitly separated instead of hidden inside the claim
+
+## Planner to swarm handoff
+
+When the planning stage already produces bounded lane ownership, prefer one of these execution bridges:
+
+- `plan:queue` when the plan should become local tasks directly
+- `plan:swarm` when the plan should become an inspectable swarm contract first
+- `plan:swarm:queue` when the plan should become a swarm and immediately queue executable lane tasks
+
+Use the swarm path when you need:
+
+- a durable multi-lane coordination envelope
+- explicit swarm-level status separate from task-level status
+- future worker claiming against lanes that were planned, not improvised
+
+Do not create a swarm just to wrap one trivial local edit.
