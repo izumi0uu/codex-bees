@@ -159,7 +159,7 @@ if (!Array.isArray(recovered.tasks) || recovered.tasks.length !== 0) {
 }
 
 const corruptExists = existsSync(".codex-bees") &&
-  readFileSync(statePath, "utf8").includes("\"version\": 2");
+  readFileSync(statePath, "utf8").includes("\"version\": 3");
 if (!corruptExists) {
   console.error("[smoke:durability-recover] expected rebuilt state file with version");
   process.exit(1);
@@ -221,6 +221,133 @@ const queuePlanPayloadMcp = queuePlanText ? JSON.parse(queuePlanText) : null;
 if (queuePlanMcp.status !== 0 || queuePlanPayloadMcp?.kind !== "queued_plan") {
   console.error("[smoke:queue-plan-mcp] expected queued_plan response");
   console.error(queuePlanMcp.stderr || queuePlanMcp.stdout);
+  process.exit(1);
+}
+
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const swarmLaneJson = JSON.stringify([
+  {
+    lane: "lane-alpha",
+    summary: "Map runtime boundary",
+    owner: "explore",
+    verifier: "reviewer",
+    scope: ["src/index.js"],
+    acceptance: ["scope captured"],
+    verification: ["swarm:get returns lane"]
+  },
+  {
+    lane: "lane-beta",
+    summary: "Implement bounded change",
+    owner: "executor",
+    verifier: "tester",
+    scope: ["src/state.js", "src/mcp.js"],
+    acceptance: ["tasks queued from swarm"],
+    verification: ["task:list includes swarmId"]
+  }
+]);
+run("swarm-init", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Coordinate swarm smoke coverage",
+  "--owner",
+  "leader",
+  "--topology",
+  "bounded-local",
+  "--max-workers",
+  "2",
+  "--lane-source",
+  "smoke",
+  "--lanes",
+  swarmLaneJson
+]);
+run("swarm-list", ["./src/index.js", "swarm:list"]);
+const swarmGet = JSON.parse(
+  run("swarm-get", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
+).swarm;
+if (!Array.isArray(swarmGet.lanes) || swarmGet.lanes.length !== 2 || swarmGet.maxWorkers !== 2) {
+  console.error("[smoke:swarm-get] expected persisted lanes and maxWorkers");
+  process.exit(1);
+}
+run("swarm-start", ["./src/index.js", "swarm:start", "--id", "swarm-1", "--owner", "leader"]);
+const swarmQueue = JSON.parse(
+  run("swarm-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]).stdout
+);
+if (!Array.isArray(swarmQueue.created) || swarmQueue.created.length !== 2) {
+  console.error("[smoke:swarm-queue] expected two queued swarm tasks");
+  process.exit(1);
+}
+const swarmTasks = JSON.parse(run("swarm-queue-task-list", ["./src/index.js", "task:list"]).stdout).tasks;
+if (!swarmTasks.every((task) => task.swarmId === "swarm-1")) {
+  console.error("[smoke:swarm-queue] expected swarm task linkage");
+  process.exit(1);
+}
+run("swarm-done", ["./src/index.js", "swarm:done", "--id", "swarm-1", "--owner", "leader"]);
+run("swarm-queue-invalid", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const swarmMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "swarm_init",
+      arguments: {
+        objective: "MCP swarm smoke",
+        owner: "leader",
+        maxWorkers: 2,
+        lanes: [
+          {
+            lane: "lane-mcp",
+            summary: "MCP lane",
+            owner: "executor",
+            verifier: "tester",
+            scope: ["src/mcp.js"],
+            acceptance: ["lane persisted"],
+            verification: ["swarm_get returns lane"]
+          }
+        ]
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "swarm_queue_tasks",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "task_list",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+
+const swarmMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: swarmMcpInput,
+  encoding: "utf8"
+});
+const swarmMcpLines = swarmMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const swarmTaskListResult = swarmMcpLines.length >= 4 ? JSON.parse(swarmMcpLines[3]) : null;
+const swarmTaskListText = swarmTaskListResult?.result?.content?.[0]?.text;
+const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) : null;
+const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1");
+if (swarmMcp.status !== 0 || !mcpSwarmTask) {
+  console.error("[smoke:swarm-mcp] expected queued MCP swarm task");
+  console.error(swarmMcp.stderr || swarmMcp.stdout);
   process.exit(1);
 }
 
