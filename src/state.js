@@ -1484,21 +1484,30 @@ export function runtimeRecoveryPack() {
   const focus = runtimeFocus();
   const recommendedSurface = deriveRuntimeRecoveryPackSurface({ recovery, handoffs, focus });
   const recommendedReason = deriveRuntimeRecoveryPackReason({ recovery, handoffs, focus });
+  const nextEntries = {
+    recovery: recovery?.next ?? null,
+    handoff: handoffs?.next ?? null,
+    focus: focus?.focus ?? null
+  };
 
   return {
     kind: "runtime_recovery_pack",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasRecovery: Boolean(recovery?.next),
+      hasHandoff: Boolean(handoffs?.next),
+      hasFocus: Boolean(focus?.focus)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     focus,
     overview: {
       recovery: recovery?.counts ?? null,
       handoffs: handoffs?.counts ?? null
     },
-    next: {
-      recovery: recovery?.next ?? null,
-      handoff: handoffs?.next ?? null,
-      focus: focus?.focus ?? null
-    },
+    next: nextEntries,
     surfaces: {
       recovery,
       handoffs,

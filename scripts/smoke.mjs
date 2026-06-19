@@ -422,6 +422,7 @@ const runtimeRecoveryPackInitial = JSON.parse(
 if (
   runtimeRecoveryPackInitial.kind !== "runtime_recovery_pack" ||
   !runtimeRecoveryPackInitial.recommendedSurface ||
+  typeof runtimeRecoveryPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeRecoveryPackInitial.overview ||
   !runtimeRecoveryPackInitial.surfaces
 ) {
@@ -3607,6 +3608,10 @@ const runtimeRecoveryPackCli = JSON.parse(
 if (
   runtimeRecoveryPackCli.recommendedSurface !== "runtime:recovery" ||
   runtimeRecoveryPackCli.recommendedReason !== "blocked_recovery_priority" ||
+  runtimeRecoveryPackCli.metadata?.hasRecovery !== true ||
+  runtimeRecoveryPackCli.metadata?.hasHandoff !== true ||
+  runtimeRecoveryPackCli.metadata?.hasFocus !== true ||
+  runtimeRecoveryPackCli.counts?.surfacedNextEntries !== Object.values(runtimeRecoveryPackCli.next ?? {}).filter(Boolean).length ||
   runtimeRecoveryPackCli.next?.recovery?.taskId !== "task-1" ||
   runtimeRecoveryPackCli.next?.handoff?.taskId !== "task-2" ||
   runtimeRecoveryPackCli.overview?.recovery?.blocked !== 1 ||
