@@ -38,6 +38,7 @@ import {
   stateFilePath,
   storeMemory,
   swarmBundle,
+  swarmCloseout,
   swarmBrief,
   taskInbox,
   taskHistory,
@@ -107,6 +108,7 @@ function printHelp() {
   write(`  codex-bees swarm:get       Show one local swarm contract\n`);
   write(`  codex-bees swarm:brief     Render an execution brief for one swarm\n`);
   write(`  codex-bees swarm:bundle    Build a leader-ready orchestration bundle for one swarm\n`);
+  write(`  codex-bees swarm:closeout  Build a closure-oriented bundle for one swarm\n`);
   write(`  codex-bees swarm:update    Update a local swarm contract\n`);
   write(`  codex-bees swarm:check     Validate one swarm contract for lane readiness\n`);
   write(`  codex-bees swarm:start     Mark a planned swarm active\n`);
@@ -687,6 +689,16 @@ function handleSwarmBundle() {
   write(JSON.stringify({ bundle }, null, 2) + "\n");
 }
 
+function handleSwarmCloseout() {
+  const id = requireOption("--id");
+  const closeout = swarmCloseout(id);
+  if (!closeout) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ closeout }, null, 2) + "\n");
+}
+
 function handleSwarmUpdate() {
   const id = requireOption("--id");
   const swarm = updateSwarm({
@@ -1040,6 +1052,9 @@ async function runCommand(command) {
       return;
     case "swarm:bundle":
       handleSwarmBundle();
+      return;
+    case "swarm:closeout":
+      handleSwarmCloseout();
       return;
     case "swarm:update":
       handleSwarmUpdate();
