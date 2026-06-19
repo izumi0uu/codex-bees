@@ -184,6 +184,22 @@ if (
   console.error("[smoke:catalog] expected shipped agent and skill catalog");
   process.exit(1);
 }
+const doctorView = JSON.parse(run("doctor-verify", ["./src/index.js", "doctor"]).stdout);
+if (
+  doctorView.kind !== "runtime_doctor_view" ||
+  doctorView.recommendedReason !== "doctor_ready" ||
+  doctorView.status !== "ok" ||
+  doctorView.executable !== true ||
+  doctorView.catalog?.kind !== "runtime_catalog_view" ||
+  doctorView.contract?.kind !== "runtime_contract_view" ||
+  doctorView.contract?.recommendedReason !== "contract_loaded" ||
+  doctorView.contract?.counts?.architectureLayers !== 5 ||
+  doctorView.contract?.contract?.deliveryBoundary !== "codex-only runtime" ||
+  doctorView.contract?.contract?.transport?.mcp !== "stdio-jsonrpc"
+) {
+  console.error("[smoke:doctor] expected runtime doctor and contract views");
+  process.exit(1);
+}
 const runtimeStatus = JSON.parse(run("status-verify", ["./src/index.js", "status"]).stdout).status;
 if (
   runtimeStatus.kind !== "runtime_status_view" ||
@@ -5327,6 +5343,40 @@ if (
 ) {
   console.error("[smoke:task-add-mcp] expected persisted MCP metadata");
   console.error(taskAddMcp.stderr || taskAddMcp.stdout);
+  process.exit(1);
+}
+
+const runtimeContractMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_contract",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeContractMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeContractMcpInput,
+  encoding: "utf8"
+});
+const runtimeContractMcpLines = runtimeContractMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeContractMcpPayload = JSON.parse(JSON.parse(runtimeContractMcpLines[1]).result.content[0].text);
+if (
+  runtimeContractMcp.status !== 0 ||
+  runtimeContractMcpPayload.contract?.kind !== "runtime_contract_view" ||
+  runtimeContractMcpPayload.contract?.recommendedReason !== "contract_loaded" ||
+  runtimeContractMcpPayload.contract?.counts?.responsibilities !== 7 ||
+  runtimeContractMcpPayload.contract?.contract?.product !== "codex-bees" ||
+  runtimeContractMcpPayload.contract?.contract?.transport?.cli !== "stdio"
+) {
+  console.error("[smoke:runtime-contract-mcp] expected MCP runtime contract view");
+  console.error(runtimeContractMcp.stderr || runtimeContractMcp.stdout);
   process.exit(1);
 }
 

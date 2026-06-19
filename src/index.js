@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
-import { stdout, stderr, exit, argv, env, cwd } from "node:process";
+import { stdout, stderr, exit, argv, env } from "node:process";
 import { statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
-import { getRuntimeCatalog, getRuntimeCatalogView } from "./catalog.js";
+import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
+import { getRuntimeContractView } from "./runtime-contract.js";
 import {
   activateSwarm,
   addTask,
@@ -225,45 +226,20 @@ function printHelp() {
   write(`  codex-bees --version       Show version\n`);
 }
 
-function runtimeContract() {
-  return {
-    product: "codex-bees",
-    mode: "codex-only",
-    workingDirectory: cwd(),
-    node: process.version,
-    transport: {
-      cli: "stdio",
-      mcp: "stdio-jsonrpc"
-    },
-    responsibilities: [
-      "bootstrap codex-first runtime commands",
-      "expose MCP tool catalog for local coordination",
-      "provide a stable diagnostics surface for later orchestration layers",
-      "persist local work-item state for bounded multi-agent execution",
-      "store and recall local memory across execution lanes",
-      "track local swarm contracts with bounded lane-to-task handoff",
-      "validate owner and verifier roles against shipped local agent prompts"
-    ],
-    exclusions: [
-      "third-party marketplace distribution",
-      "multi-host runtime support",
-      "hosted backend control plane"
-    ]
-  };
-}
-
 function printDoctor() {
   const selfPath = fileURLToPath(import.meta.url);
   const exists = statSync(selfPath).isFile();
   write(
     JSON.stringify(
       {
+        kind: "runtime_doctor_view",
+        recommendedReason: exists ? "doctor_ready" : "doctor_entry_missing",
         status: "ok",
         executable: exists,
         entry: selfPath,
         stateFile: stateFilePath(),
-        catalog: getRuntimeCatalog(),
-        contract: runtimeContract()
+        catalog: getRuntimeCatalogView(),
+        contract: getRuntimeContractView()
       },
       null,
       2
@@ -1406,7 +1382,7 @@ async function runCommand(command) {
         JSON.stringify(
           {
             status: "ready",
-            contract: runtimeContract(),
+            contract: getRuntimeContractView(),
             next: [
               "use `codex-bees doctor` to inspect runtime boundaries",
               "use `codex-bees tools` to inspect current MCP tool catalog",

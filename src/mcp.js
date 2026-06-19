@@ -1,7 +1,8 @@
 import { stdin, stdout, stderr } from "node:process";
-import { getRuntimeCatalog, getRuntimeCatalogView } from "./catalog.js";
+import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
+import { getRuntimeContractView } from "./runtime-contract.js";
 import {
   activateSwarm,
   addTask,
@@ -1271,24 +1272,6 @@ const workerGuidelines = {
   validation: ["targeted verification", "fresh evidence", "handoff discipline"]
 };
 
-function runtimeContractPayload() {
-  return {
-    product: "codex-bees",
-    mode: "codex-only",
-    architecture: ["cli", "mcp", "skills", "agents", "docs"],
-    responsibilities: [
-      "local bounded multi-agent coordination",
-      "repo-native role and skill discovery",
-      "owner and verifier role validation"
-    ],
-    exclusions: [
-      "third-party marketplace distribution",
-      "multi-host support",
-      "hosted control plane"
-    ]
-  };
-}
-
 function toolByName(name) {
   return toolCatalog.find((tool) => tool.name === name);
 }
@@ -1353,7 +1336,7 @@ function handleRequest(message) {
     }
 
     if (name === "runtime_contract") {
-      return createSuccess(id, createTextPayload(runtimeContractPayload()));
+      return createSuccess(id, createTextPayload({ contract: getRuntimeContractView() }));
     }
 
     if (name === "runtime_catalog") {
