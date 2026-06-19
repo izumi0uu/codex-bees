@@ -39,6 +39,7 @@ import {
   runtimeLeaderPack,
   runtimeRecovery,
   runtimeSummaryPack,
+  runtimeWorkerPack,
   runtimeReview,
   runtimeRoles,
   swarmOverview,
@@ -167,6 +168,19 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_worker_pack",
+    description: "Build the worker-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" }
+      }
     }
   },
   {
@@ -1043,6 +1057,25 @@ function handleRequest(message) {
 
     if (name === "runtime_summary_pack") {
       return createSuccess(id, createTextPayload({ summaryPack: runtimeSummaryPack() }));
+    }
+
+    if (name === "runtime_worker_pack") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "runtime_worker_pack requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "runtime_worker_pack requires arguments.workerId");
+      }
+      return createSuccess(
+        id,
+        createTextPayload({
+          workerPack: runtimeWorkerPack({
+            role: params.arguments.role,
+            workerId: params.arguments.workerId,
+            mode: params.arguments.mode
+          })
+        })
+      );
     }
 
     if (name === "runtime_dashboard") {

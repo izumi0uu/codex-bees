@@ -44,6 +44,7 @@ import {
   runtimeLeaderPack,
   runtimeRecovery,
   runtimeSummaryPack,
+  runtimeWorkerPack,
   runtimeReview,
   runtimeRoles,
   swarmOverview,
@@ -102,6 +103,7 @@ function printHelp() {
   write(`  codex-bees runtime:leader-pack Build the leader-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
   write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
+  write(`  codex-bees runtime:worker-pack Build the worker-oriented runtime package\n`);
   write(`  codex-bees runtime:review  Build the verifier-grouped review workspace\n`);
   write(`  codex-bees runtime:roles   Build the role-level orchestration queue view\n`);
   write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
@@ -235,6 +237,22 @@ function printRuntimeSummaryPack() {
 
 function printRuntimeLeaderPack() {
   write(JSON.stringify({ leaderPack: runtimeLeaderPack() }, null, 2) + "\n");
+}
+
+function printRuntimeWorkerPack() {
+  const role = readOption("--role");
+  const workerId = readOption("--worker");
+  if (!role || !workerId) {
+    writeErr("runtime:worker-pack requires --role and --worker\n");
+    exit(1);
+  }
+  write(JSON.stringify({
+    workerPack: runtimeWorkerPack({
+      role,
+      workerId,
+      mode: readOption("--mode")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeDashboard() {
@@ -1083,6 +1101,9 @@ async function runCommand(command) {
       return;
     case "runtime:leader-pack":
       printRuntimeLeaderPack();
+      return;
+    case "runtime:worker-pack":
+      printRuntimeWorkerPack();
       return;
     case "runtime:recovery":
       printRuntimeRecovery();
