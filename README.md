@@ -54,6 +54,7 @@ node ./src/index.js runtime:alerts
 node ./src/index.js runtime:dashboard
 node ./src/index.js runtime:dispatch
 node ./src/index.js runtime:focus
+node ./src/index.js runtime:handoffs
 node ./src/index.js runtime:review
 node ./src/index.js runtime:roles
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
@@ -166,6 +167,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:activity` / `runtime_activity` provide the recent event stream: claims, blocks, review handoffs, approvals, and changes-requested events compressed into one top-level chronological feed.
 
 `runtime:focus` / `runtime_focus` provide the single next-action workspace: one chosen current priority across blocked work, review pressure, dispatchable lanes, role pressure, and leader queue context.
+
+`runtime:handoffs` / `runtime_handoffs` provide the next-actor transfer workspace: queued pickups, blocked recoveries, and verifier decisions grouped by who should take the next action.
 
 `runtime:review` / `runtime_review` provide the verifier-grouped decision workspace: which verifier roles currently own pending review decisions, which task is next, and the task brief already attached for approve/reject handoff.
 
