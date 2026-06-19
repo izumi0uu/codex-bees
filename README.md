@@ -280,6 +280,8 @@ Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task
 
 `swarm:queue` / `swarm_queue_tasks` return the explicit queue mutation result: the activated swarm plus the queued lane tasks that were created. They also emit a machine-readable `recommendedReason` so automation can distinguish one-lane queue events, multi-lane queue events, and passive queue visibility without inferring from created-array length alone.
 
+`swarm:dispatch` / `swarm_dispatch` return the explicit dispatch mutation result: the claimed lane, the claimed task snapshot, and the updated swarm state. They also emit a machine-readable `recommendedReason` so automation can distinguish first-time dispatch claims from released-lane reclaims without reparsing prior queue status by hand.
+
 Memory records can carry reusable execution context:
 
 - `--namespace runtime`

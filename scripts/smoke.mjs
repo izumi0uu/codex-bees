@@ -1441,7 +1441,12 @@ const dispatchedLane = JSON.parse(
     "explore"
   ]).stdout
 ).dispatched;
-if (dispatchedLane.task.claimedBy !== "worker-alpha" || dispatchedLane.lane.lane !== "lane-alpha") {
+if (
+  dispatchedLane.kind !== "swarm_dispatch" ||
+  dispatchedLane.recommendedReason !== "dispatch_lane_claimed" ||
+  dispatchedLane.task.claimedBy !== "worker-alpha" ||
+  dispatchedLane.lane.lane !== "lane-alpha"
+) {
   console.error("[smoke:swarm-dispatch] expected first lane claimed by worker-alpha");
   process.exit(1);
 }

@@ -3125,7 +3125,14 @@ export function dispatchSwarmLane(input) {
 
   saveState(state);
 
+  const recommendedReason = deriveSwarmDispatchReason({
+    lane: candidateLane,
+    previousTask: currentTask,
+    task: nextTask
+  });
   return {
+    kind: "swarm_dispatch",
+    recommendedReason,
     swarm: syncedSwarm,
     lane: normalizeSwarmLane(candidateLane),
     task: nextTask
@@ -4823,6 +4830,19 @@ function deriveSwarmQueueReason({ swarm, created }) {
     return "active_swarm_queue_visible";
   }
   return "swarm_queue_visible";
+}
+
+function deriveSwarmDispatchReason({ lane, previousTask, task }) {
+  if (!lane?.lane || !task?.id) {
+    return "swarm_dispatch_visible";
+  }
+  if (previousTask?.queueStatus === "released") {
+    return "released_lane_reclaimed";
+  }
+  if (task.queueStatus === "claimed") {
+    return "dispatch_lane_claimed";
+  }
+  return "swarm_dispatch_visible";
 }
 
 function deriveSwarmBriefReason(recommended) {
