@@ -409,6 +409,30 @@ export function swarmBlockers(id) {
   };
 }
 
+export function swarmDispatchBundle(id) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const brief = swarmBrief(id);
+  const dispatchLane = (brief?.lanes ?? []).find(
+    (lane) => lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released"
+  ) ?? null;
+
+  return {
+    kind: "swarm_dispatch_bundle",
+    swarm: overview.swarm,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    dispatchableCount: overview.dispatchableCount,
+    nextLane: dispatchLane,
+    taskBrief: dispatchLane?.taskId ? taskBrief(dispatchLane.taskId) : null,
+    command: dispatchLane?.recommendedCommands?.[0] ?? null,
+    summary: buildSwarmDispatchBundleSummary(overview, dispatchLane)
+  };
+}
+
 export function leaderWorkspace(input = {}) {
   const filters = {
     status: input.status,
@@ -1661,6 +1685,14 @@ function buildSwarmBlockersSummary(overview, blockedLanes) {
   }
 
   return `Swarm ${overview.swarm.id} has ${blockedLanes.length} blocked lanes that need unblock ownership.`;
+}
+
+function buildSwarmDispatchBundleSummary(overview, dispatchLane) {
+  if (!dispatchLane) {
+    return `Swarm ${overview.swarm.id} has no dispatchable lane right now.`;
+  }
+
+  return `Swarm ${overview.swarm.id} can dispatch lane ${dispatchLane.lane} next for owner ${dispatchLane.owner.id ?? dispatchLane.owner.name ?? "unknown"}.`;
 }
 
 function buildLeaderWorkspaceSwarmEntry(overview) {
