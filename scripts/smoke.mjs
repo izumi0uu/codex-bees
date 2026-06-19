@@ -2788,6 +2788,7 @@ const runtimeSignalPackCli = JSON.parse(
 ).signalPack;
 if (
   runtimeSignalPackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeSignalPackCli.recommendedReason !== "blocked_focus_priority" ||
   runtimeSignalPackCli.next?.focus?.taskId !== "task-1" ||
   runtimeSignalPackCli.next?.alert?.taskId !== "task-1" ||
   runtimeSignalPackCli.next?.activity?.taskId !== "task-4" ||
@@ -3454,6 +3455,7 @@ const runtimeSignalPackMcpPayload = JSON.parse(JSON.parse(runtimeSignalPackMcpLi
 if (
   runtimeSignalPackMcp.status !== 0 ||
   runtimeSignalPackMcpPayload.signalPack?.recommendedSurface !== "runtime:focus" ||
+  runtimeSignalPackMcpPayload.signalPack?.recommendedReason !== "blocked_focus_priority" ||
   runtimeSignalPackMcpPayload.signalPack?.next?.focus?.taskId !== "task-1" ||
   runtimeSignalPackMcpPayload.signalPack?.next?.role?.role?.id !== "tester"
 ) {
