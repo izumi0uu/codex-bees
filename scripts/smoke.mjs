@@ -165,6 +165,16 @@ if (
   console.error("[smoke:runtime-dispatch] expected top-level runtime dispatch");
   process.exit(1);
 }
+const runtimeFocusInitial = JSON.parse(
+  run("runtime-focus-initial", ["./src/index.js", "runtime:focus"]).stdout
+).focus;
+if (
+  runtimeFocusInitial.kind !== "runtime_focus" ||
+  !runtimeFocusInitial.focus
+) {
+  console.error("[smoke:runtime-focus] expected top-level runtime focus");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1339,6 +1349,19 @@ if (
   console.error("[smoke:runtime-dispatch] expected CLI owner-grouped dispatch workspace");
   process.exit(1);
 }
+const runtimeFocusCli = JSON.parse(
+  run("runtime-focus-cli", ["./src/index.js", "runtime:focus"]).stdout
+).focus;
+if (
+  runtimeFocusCli.focus?.type !== "blocked_task" ||
+  runtimeFocusCli.focus?.taskId !== "task-1" ||
+  runtimeFocusCli.focus?.recommendedNextAction !== "resolve_blocker_and_requeue" ||
+  runtimeFocusCli.sources?.review?.totalPendingReview !== 1 ||
+  runtimeFocusCli.sources?.dispatch?.totalAssignments !== 1
+) {
+  console.error("[smoke:runtime-focus] expected CLI runtime focus to prioritize blocked work");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1440,6 +1463,37 @@ if (
 ) {
   console.error("[smoke:runtime-dispatch-mcp] expected MCP runtime dispatch");
   console.error(runtimeDispatchMcp.stderr || runtimeDispatchMcp.stdout);
+  process.exit(1);
+}
+const runtimeFocusMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_focus",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeFocusMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeFocusMcpInput,
+  encoding: "utf8"
+});
+const runtimeFocusMcpLines = runtimeFocusMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeFocusMcpPayload = JSON.parse(JSON.parse(runtimeFocusMcpLines[1]).result.content[0].text);
+if (
+  runtimeFocusMcp.status !== 0 ||
+  runtimeFocusMcpPayload.focus?.focus?.type !== "blocked_task" ||
+  runtimeFocusMcpPayload.focus?.focus?.taskId !== "task-1" ||
+  runtimeFocusMcpPayload.focus?.sources?.dispatch?.totalAssignments !== 1
+) {
+  console.error("[smoke:runtime-focus-mcp] expected MCP runtime focus");
+  console.error(runtimeFocusMcp.stderr || runtimeFocusMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
