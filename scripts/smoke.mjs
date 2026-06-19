@@ -380,6 +380,17 @@ if (ownerPickup.outcome !== "continue" || ownerPickup.task?.id !== "task-1" || o
   console.error("[smoke:task-pickup] expected claimed task to resume with review follow-up");
   process.exit(1);
 }
+const ownerSession = JSON.parse(
+  run("worker-session-owner", ["./src/index.js", "worker:session", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
+).session;
+if (
+  ownerSession.counts.activeOwned !== 1 ||
+  ownerSession.focus?.kind !== "active_task" ||
+  ownerSession.activeOwned?.[0]?.summary?.id !== "task-1"
+) {
+  console.error("[smoke:worker-session] expected active owner session focus");
+  process.exit(1);
+}
 const reviewTaskHistory = JSON.parse(
   run("task-history-review-loop", ["./src/index.js", "task:history", "--id", "task-1"]).stdout
 ).history;
@@ -1164,6 +1175,17 @@ if (cliNext.candidate?.id !== "task-2" || cliNext.brief?.recommendedNextAction !
   console.error("[smoke:task-next] expected verifier next task to include execution brief");
   process.exit(1);
 }
+const verifierSession = JSON.parse(
+  run("worker-session-verifier", ["./src/index.js", "worker:session", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).session;
+if (
+  verifierSession.counts.reviewQueue !== 1 ||
+  verifierSession.focus?.kind !== "review_task" ||
+  verifierSession.reviewQueue?.[0]?.summary?.id !== "task-2"
+) {
+  console.error("[smoke:worker-session] expected verifier session review focus");
+  process.exit(1);
+}
 const ownerPickupClaim = JSON.parse(
   run("task-pickup-claim", ["./src/index.js", "task:pickup", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
 ).pickup;
@@ -1246,6 +1268,36 @@ if (
 ) {
   console.error("[smoke:task-pickup-mcp] expected review pickup payload");
   console.error(pickupMcp.stderr || pickupMcp.stdout);
+  process.exit(1);
+}
+const workerSessionMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "worker_session",
+      arguments: { role: "tester", workerId: "tester-worker", mode: "verifier" }
+    }
+  })
+].join("\n") + "\n";
+const workerSessionMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: workerSessionMcpInput,
+  encoding: "utf8"
+});
+const workerSessionMcpLines = workerSessionMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const workerSessionMcpPayload = JSON.parse(JSON.parse(workerSessionMcpLines[1]).result.content[0].text);
+if (
+  workerSessionMcp.status !== 0 ||
+  workerSessionMcpPayload.session?.focus?.kind !== "review_task" ||
+  workerSessionMcpPayload.session?.reviewQueue?.[0]?.summary?.id !== "task-2"
+) {
+  console.error("[smoke:worker-session-mcp] expected review-focused worker session");
+  console.error(workerSessionMcp.stderr || workerSessionMcp.stdout);
   process.exit(1);
 }
 const inboxHistory = JSON.parse(
