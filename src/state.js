@@ -1042,9 +1042,11 @@ export function runtimeActivity(input = {}) {
     .sort(compareRuntimeActivityEntries)
     .slice(0, limit);
   const next = entries[0] ?? null;
+  const recommendedReason = deriveRuntimeActivityReason({ entries, next });
 
   return {
     kind: "runtime_activity",
+    recommendedReason,
     counts: {
       totalEntries: entries.length,
       blockedEvents: entries.filter((entry) => entry.type === "blocked").length,
@@ -4514,6 +4516,25 @@ function deriveRuntimeDispatchReason({ groups, totalAssignments, next }) {
     return "owner_group_visible";
   }
   return "no_dispatch_ready";
+}
+
+function deriveRuntimeActivityReason({ entries, next }) {
+  if (next?.type === "blocked") {
+    return "blocked_event_latest";
+  }
+  if (["ready_for_review", "approved", "changes_requested"].includes(next?.type)) {
+    return "review_event_latest";
+  }
+  if (next?.type === "claimed") {
+    return "claimed_event_latest";
+  }
+  if (next?.type === "created") {
+    return "created_event_latest";
+  }
+  if ((entries?.length ?? 0) > 0) {
+    return "recent_activity_visible";
+  }
+  return "no_recent_activity";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

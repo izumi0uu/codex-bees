@@ -160,7 +160,10 @@ const runtimeActivityInitial = JSON.parse(
   run("runtime-activity-initial", ["./src/index.js", "runtime:activity"]).stdout
 ).activity;
 if (
+  runtimeActivityInitial.recommendedReason !== "review_event_latest" ||
   runtimeActivityInitial.kind !== "runtime_activity" ||
+  runtimeActivityInitial.next?.type !== "approved" ||
+  runtimeActivityInitial.next?.taskId !== "task-3" ||
   !Array.isArray(runtimeActivityInitial.entries)
 ) {
   console.error("[smoke:runtime-activity] expected top-level runtime activity");
@@ -2589,12 +2592,13 @@ const runtimeActivityCli = JSON.parse(
   run("runtime-activity-cli", ["./src/index.js", "runtime:activity"]).stdout
 ).activity;
 if (
+  runtimeActivityCli.recommendedReason !== "created_event_latest" ||
   runtimeActivityCli.counts?.totalEntries < 6 ||
   runtimeActivityCli.next?.type !== "created" ||
   runtimeActivityCli.next?.taskId !== "task-4" ||
   runtimeActivityCli.entries?.some((entry) => entry.type === "blocked" && entry.taskId === "task-1") !== true ||
   runtimeActivityCli.entries?.some((entry) => entry.type === "ready_for_review" && entry.taskId === "task-2") !== true ||
-  runtimeActivityCli.entries?.some((entry) => entry.type === "claimed" && entry.taskId === "task-3") !== true
+  runtimeActivityCli.entries?.some((entry) => entry.type === "claimed" && entry.taskId === "task-1") !== true
 ) {
   console.error("[smoke:runtime-activity] expected CLI runtime activity stream");
   process.exit(1);
@@ -3019,7 +3023,10 @@ const runtimeActivityMcpLines = runtimeActivityMcp.stdout
 const runtimeActivityMcpPayload = JSON.parse(JSON.parse(runtimeActivityMcpLines[1]).result.content[0].text);
 if (
   runtimeActivityMcp.status !== 0 ||
+  runtimeActivityMcpPayload.activity?.recommendedReason !== "created_event_latest" ||
   runtimeActivityMcpPayload.activity?.counts?.totalEntries < 6 ||
+  runtimeActivityMcpPayload.activity?.next?.type !== "created" ||
+  runtimeActivityMcpPayload.activity?.next?.taskId !== "task-4" ||
   runtimeActivityMcpPayload.activity?.entries?.some((entry) => entry.type === "blocked" && entry.taskId === "task-1") !== true
 ) {
   console.error("[smoke:runtime-activity-mcp] expected MCP runtime activity");
