@@ -53,12 +53,16 @@ node ./src/index.js runtime:activity
 node ./src/index.js runtime:assignment-pack --role executor --worker worker-1 --mode owner
 node ./src/index.js runtime:closeout
 node ./src/index.js runtime:closeout-pack
+node ./src/index.js runtime:closeout-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js runtime:control-pack
+node ./src/index.js runtime:control-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js runtime:alerts
 node ./src/index.js runtime:dashboard
 node ./src/index.js runtime:dispatch
 node ./src/index.js runtime:dispatch-pack
+node ./src/index.js runtime:dispatch-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js runtime:execution-pack
+node ./src/index.js runtime:execution-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js runtime:focus
 node ./src/index.js runtime:handoff-pack
 node ./src/index.js runtime:handoffs
@@ -67,6 +71,7 @@ node ./src/index.js runtime:operator-pack
 node ./src/index.js runtime:owner-pack --role executor --worker worker-1
 node ./src/index.js runtime:pickup-pack --role executor --worker worker-1 --mode owner
 node ./src/index.js runtime:queue-pack
+node ./src/index.js runtime:queue-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js runtime:recovery
 node ./src/index.js runtime:recovery-pack
 node ./src/index.js runtime:review-pack --role tester --worker tester-1
@@ -74,9 +79,11 @@ node ./src/index.js runtime:role-pack --role tester --worker tester-1 --mode ver
 node ./src/index.js runtime:session-pack --role tester --worker tester-1 --mode verifier
 node ./src/index.js runtime:signal-pack
 node ./src/index.js runtime:summary-pack
+node ./src/index.js runtime:summary-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js runtime:triage-pack
 node ./src/index.js runtime:verifier-pack --role tester --worker tester-1
 node ./src/index.js runtime:workspace-pack
+node ./src/index.js runtime:workspace-pack --workers '{"executor":"worker-executor","explore":"worker-explore"}'
 node ./src/index.js runtime:worker-pack --role executor --worker worker-1
 node ./src/index.js runtime:review
 node ./src/index.js runtime:roles
@@ -207,17 +214,17 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:dispatch` / `runtime_dispatch` provide the owner-grouped dispatch workspace: which owner roles have ready work, the next dispatch candidate for each role, and the task brief already attached for handoff.
 
-`runtime:dispatch-pack` / `runtime_dispatch_pack` provide the dispatch-oriented package: dispatch groups, leader startup plans when multiple owner groups are ready, role pressure, and next-actor handoffs combined into one leader/automation payload with a recommended next surface.
+`runtime:dispatch-pack` / `runtime_dispatch_pack` provide the dispatch-oriented package: dispatch groups, leader startup plans when multiple owner groups are ready, role pressure, and next-actor handoffs combined into one leader/automation payload with a recommended next surface. Pass `--workers` on CLI or `workerIds` over MCP to replace placeholder worker ids with real worker-targeted launch commands inside the nested dispatch and launch-plan surfaces.
 
-`runtime:execution-pack` / `runtime_execution_pack` provide the execution-oriented package: focus, dispatch, leader startup plans when parallel startup is ready, role pressure, and queue control combined into one start-work entrypoint with a recommended next surface.
+`runtime:execution-pack` / `runtime_execution_pack` provide the execution-oriented package: focus, dispatch, leader startup plans when parallel startup is ready, role pressure, and queue control combined into one start-work entrypoint with a recommended next surface. Pass `--workers` on CLI or `workerIds` over MCP when this entrypoint should emit concrete worker launch commands instead of placeholder worker ids.
 
 `runtime:activity` / `runtime_activity` provide the recent event stream: claims, blocks, review handoffs, approvals, and changes-requested events compressed into one top-level chronological feed.
 
 `runtime:closeout` / `runtime_closeout` provide the final closure workspace: approved done tasks and ready-to-complete swarms gathered into one operator view for explicit archive or finish actions.
 
-`runtime:closeout-pack` / `runtime_closeout_pack` provide the closeout-oriented package: closeout readiness plus summary-pack and leader-pack closeout context combined into one finalization-ready payload with a recommended next surface.
+`runtime:closeout-pack` / `runtime_closeout_pack` provide the closeout-oriented package: closeout readiness plus summary-pack and leader-pack closeout context combined into one finalization-ready payload with a recommended next surface. Pass `--workers` on CLI or `workerIds` over MCP to preserve real worker mappings in the nested leader-pack launch-plan surfaces.
 
-`runtime:control-pack` / `runtime_control_pack` provide the automation/control package: summary-pack, workspace-pack, operator-pack, and leader-pack combined into one highest-level control entrypoint with a recommended next surface, while preserving leader launch bundle context inside the nested orchestration surfaces.
+`runtime:control-pack` / `runtime_control_pack` provide the automation/control package: summary-pack, workspace-pack, operator-pack, and leader-pack combined into one highest-level control entrypoint with a recommended next surface, while preserving leader launch bundle context inside the nested orchestration surfaces. Pass `--workers` on CLI or `workerIds` over MCP when the nested workspace-pack and leader-pack should carry real worker-targeted launch plans.
 
 `runtime:focus` / `runtime_focus` provide the single next-action workspace: one chosen current priority across blocked work, review pressure, dispatchable lanes, role pressure, and leader queue context.
 
@@ -249,13 +256,13 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:signal-pack` / `runtime_signal_pack` provide the signal-oriented package: focus, alerts, activity, and role pressure combined into one monitoring entrypoint with a recommended next surface.
 
-`runtime:summary-pack` / `runtime_summary_pack` provide the automation-first rollup: current focus plus dashboard, alert, handoff, recovery, and closeout counts in one single payload with a recommended next surface.
+`runtime:summary-pack` / `runtime_summary_pack` provide the automation-first rollup: current focus plus dashboard, alert, handoff, recovery, and closeout counts in one single payload with a recommended next surface. It also accepts `--workers` on CLI or `workerIds` over MCP so nested closeout and leader surfaces can retain concrete worker mappings when downstream automation drills into them.
 
 `runtime:triage-pack` / `runtime_triage_pack` provide the triage-oriented package: focus, alerts, review, and recovery combined into one issue-first operator entrypoint with a recommended next surface.
 
 `runtime:verifier-pack` / `runtime_verifier_pack` provide the verifier-oriented package: review pressure, current verifier decision bundle, closeout-ready approval payload, and next review candidate combined into one role-scoped payload with a recommended next surface.
 
-`runtime:workspace-pack` / `runtime_workspace_pack` provide the orchestration workspace package: dashboard, dispatch, leader startup plans when parallel startup is ready, review, and recovery combined into one broad control surface with a recommended next surface.
+`runtime:workspace-pack` / `runtime_workspace_pack` provide the orchestration workspace package: dashboard, dispatch, leader startup plans when parallel startup is ready, review, and recovery combined into one broad control surface with a recommended next surface. Pass `--workers` on CLI or `workerIds` over MCP to turn nested assignment launch plans into concrete worker-targeted startup steps.
 
 `runtime:worker-pack` / `runtime_worker_pack` provide the worker-oriented package: worker session, handoff, closeout, and next candidate combined into one role-scoped payload with a recommended next surface.
 
