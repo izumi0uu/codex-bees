@@ -369,15 +369,22 @@ run("swarm-task-2-done", ["./src/index.js", "task:done", "--id", "task-2", "--by
 const swarmOverviewReadyToComplete = JSON.parse(
   run("swarm-overview-ready-to-complete", ["./src/index.js", "swarm:overview", "--id", "swarm-1"]).stdout
 ).overview;
-if (!swarmOverviewReadyToComplete.readyToComplete || swarmOverviewReadyToComplete.derivedStatus !== "completed") {
-  console.error("[smoke:swarm-overview] expected completion readiness and derived completed status");
+if (!swarmOverviewReadyToComplete.readyToComplete || swarmOverviewReadyToComplete.derivedStatus !== "completed" || swarmOverviewReadyToComplete.statusAligned !== true) {
+  console.error("[smoke:swarm-overview] expected completion readiness and aligned completed status");
   process.exit(1);
 }
 const syncedSwarm = JSON.parse(
   run("swarm-sync", ["./src/index.js", "swarm:sync", "--id", "swarm-1"]).stdout
 ).synced;
-if (syncedSwarm.swarm.status !== "completed") {
-  console.error("[smoke:swarm-sync] expected synced completed swarm status");
+if (syncedSwarm.swarm.status !== "completed" || syncedSwarm.changed !== false) {
+  console.error("[smoke:swarm-sync] expected idempotent completed swarm sync");
+  process.exit(1);
+}
+const syncedSwarmGet = JSON.parse(
+  run("swarm-get-after-sync", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
+).swarm;
+if (syncedSwarmGet.status !== "completed") {
+  console.error("[smoke:swarm-sync] expected stored completed swarm status");
   process.exit(1);
 }
 run("swarm-dispatch-none", ["./src/index.js", "swarm:dispatch", "--id", "swarm-1", "--by", "worker-gamma"], 1);
