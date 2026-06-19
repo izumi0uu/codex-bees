@@ -117,13 +117,17 @@ export function taskHistory(id) {
   if (!task) {
     return null;
   }
+  const history = task.history ?? [];
+  const next = history.at(-1) ?? null;
+  const recommendedReason = deriveTaskHistoryReason({ history, next });
 
   return {
     kind: "task_history",
+    recommendedReason,
     taskId: task.id,
     title: task.title,
     queueStatus: task.queueStatus,
-    history: task.history ?? []
+    history
   };
 }
 
@@ -4714,6 +4718,34 @@ function deriveSwarmBundleReason({ overview, laneBundles }) {
     return "dispatch_lane_ready";
   }
   return "swarm_state_visible";
+}
+
+function deriveTaskHistoryReason({ history, next }) {
+  if (next?.type === "approved") {
+    return "approved_event_latest";
+  }
+  if (next?.type === "changes_requested") {
+    return "changes_requested_event_latest";
+  }
+  if (next?.type === "ready_for_review") {
+    return "review_event_latest";
+  }
+  if (next?.type === "blocked") {
+    return "blocked_event_latest";
+  }
+  if (next?.type === "claimed") {
+    return "claimed_event_latest";
+  }
+  if (next?.type === "released") {
+    return "released_event_latest";
+  }
+  if (next?.type === "created") {
+    return "created_event_latest";
+  }
+  if ((history?.length ?? 0) > 0) {
+    return "history_events_visible";
+  }
+  return "no_history_events";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

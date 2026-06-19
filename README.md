@@ -164,7 +164,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `task:brief` / `task_brief` and `swarm:brief` / `swarm_brief` turn stored coordination state into execution-ready handoff payloads. Task briefs resolve shipped role prompt paths, summarize queue/review state, identify the next actor, suggest the next CLI action, and emit a machine-readable `recommendedReason` so automation can distinguish between claimable, claimed, verifier-pending, blocked, released, and completed execution states without inferring from queue status alone. Swarm briefs keep the same execution-handoff role for bounded parallel lanes and emit machine-readable reasons for queueing planned lanes, review-ready lanes, runnable dispatch lanes, active claimed lanes, blocked lanes, and completed swarms.
 
-`task:history` / `task_history` expose structured handoff history for each task—claims, review handoff, changes requested, releases, and approvals—so local coordination stays auditable instead of collapsing into one final status field.
+`task:history` / `task_history` expose structured handoff history for each task—claims, review handoff, changes requested, releases, and approvals—so local coordination stays auditable instead of collapsing into one final status field. They also emit a machine-readable `recommendedReason` for the latest recorded handoff event so automation can distinguish approval tails, changes-requested tails, review handoff tails, blocked tails, release tails, claim tails, and empty history state without reparsing the last history entry by hand.
 
 `task:annotate` / `task_annotate` add lightweight persistent execution notes to a task. Use them for local handoff context, verifier hints, or worker breadcrumbs that should survive beyond a single chat turn.
 

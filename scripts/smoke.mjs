@@ -541,6 +541,7 @@ const taskHistoryComplete = JSON.parse(
   run("task-history-complete", ["./src/index.js", "task:history", "--id", "task-3"]).stdout
 ).history;
 if (
+  taskHistoryComplete.recommendedReason !== "approved_event_latest" ||
   !Array.isArray(taskHistoryComplete.history) ||
   taskHistoryComplete.history.length < 5 ||
   taskHistoryComplete.history.at(-1)?.type !== "approved"
@@ -895,6 +896,7 @@ const reviewTaskHistory = JSON.parse(
   run("task-history-review-loop", ["./src/index.js", "task:history", "--id", "task-1"]).stdout
 ).history;
 if (
+  reviewTaskHistory.recommendedReason !== "changes_requested_event_latest" ||
   reviewTaskHistory.history?.map((entry) => entry.type).join(",") !== "created,claimed,ready_for_review,changes_requested"
 ) {
   console.error("[smoke:task-history] expected review loop handoff history");
@@ -4475,6 +4477,7 @@ if (
   taskBriefPayload?.brief?.recommendedReason !== "claimable_execution_brief" ||
   taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
   taskHistoryMcp.status !== 0 ||
+  taskHistoryMcpPayload.history?.recommendedReason !== "approved_event_latest" ||
   taskHistoryMcpPayload.history?.history?.at(-1)?.type !== "approved" ||
   taskAnnotateMcp.status !== 0 ||
   taskAnnotateMcpBrief.brief?.annotations?.entries?.at(-1)?.content !== "reviewed through MCP flow" ||
@@ -5041,6 +5044,7 @@ const inboxHistory = JSON.parse(
   run("task-history-inbox", ["./src/index.js", "task:history", "--id", "task-2"]).stdout
 ).history;
 if (
+  inboxHistory.recommendedReason !== "review_event_latest" ||
   inboxHistory.history?.map((entry) => entry.type).join(",") !== "created,claimed,ready_for_review"
 ) {
   console.error("[smoke:task-history] expected inbox review task history");
