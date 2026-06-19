@@ -1353,6 +1353,17 @@ if (
   console.error("[smoke:worker-closeout] expected verifier closeout bundle");
   process.exit(1);
 }
+const verifierBundleCli = JSON.parse(
+  run("verifier-bundle-cli", ["./src/index.js", "verifier:bundle", "--role", "tester", "--worker", "tester-worker"]).stdout
+).bundle;
+if (
+  verifierBundleCli.currentTask?.id !== "task-2" ||
+  verifierBundleCli.report?.task?.id !== "task-2" ||
+  verifierBundleCli.commands?.approve !== "node ./src/index.js task:approve --id task-2 --by tester"
+) {
+  console.error("[smoke:verifier-bundle] expected CLI verifier decision bundle");
+  process.exit(1);
+}
 const ownerPickupClaim = JSON.parse(
   run("task-pickup-claim", ["./src/index.js", "task:pickup", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
 ).pickup;
@@ -1525,6 +1536,36 @@ if (
 ) {
   console.error("[smoke:worker-closeout-mcp] expected verifier closeout bundle");
   console.error(workerCloseoutMcp.stderr || workerCloseoutMcp.stdout);
+  process.exit(1);
+}
+const verifierBundleMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "verifier_bundle",
+      arguments: { role: "tester", workerId: "tester-worker" }
+    }
+  })
+].join("\n") + "\n";
+const verifierBundleMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: verifierBundleMcpInput,
+  encoding: "utf8"
+});
+const verifierBundleMcpLines = verifierBundleMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const verifierBundleMcpPayload = JSON.parse(JSON.parse(verifierBundleMcpLines[1]).result.content[0].text);
+if (
+  verifierBundleMcp.status !== 0 ||
+  verifierBundleMcpPayload.bundle?.currentTask?.id !== "task-2" ||
+  verifierBundleMcpPayload.bundle?.commands?.approve !== "node ./src/index.js task:approve --id task-2 --by tester"
+) {
+  console.error("[smoke:verifier-bundle-mcp] expected MCP verifier decision bundle");
+  console.error(verifierBundleMcp.stderr || verifierBundleMcp.stdout);
   process.exit(1);
 }
 const inboxHistory = JSON.parse(
