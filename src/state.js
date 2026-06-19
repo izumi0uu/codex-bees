@@ -112,6 +112,21 @@ export function getTask(id) {
   return task ? normalizeTask(task) : null;
 }
 
+export function taskHistory(id) {
+  const task = getTask(id);
+  if (!task) {
+    return null;
+  }
+
+  return {
+    kind: "task_history",
+    taskId: task.id,
+    title: task.title,
+    queueStatus: task.queueStatus,
+    history: task.history ?? []
+  };
+}
+
 export function getSwarm(id) {
   const swarm = loadState().swarms.find((item) => item.id === id);
   return swarm ? normalizeSwarm(swarm) : null;
@@ -154,6 +169,10 @@ export function taskBrief(id) {
       outcome: task.reviewOutcome,
       notes: task.reviewNotes,
       evidence: task.reviewEvidence ?? []
+    },
+    history: {
+      count: task.history?.length ?? 0,
+      entries: task.history ?? []
     },
     validation,
     recommendedNextActor: recommended.actor,
@@ -828,7 +847,22 @@ function normalizeTask(task) {
     reviewedAt: task.reviewedAt ?? null,
     reviewOutcome: task.reviewOutcome ?? null,
     reviewNotes: task.reviewNotes ?? null,
-    reviewEvidence: Array.isArray(task.reviewEvidence) ? task.reviewEvidence : null
+    reviewEvidence: Array.isArray(task.reviewEvidence) ? task.reviewEvidence : null,
+    history: Array.isArray(task.history) ? task.history.map(normalizeTaskHistoryEntry) : []
+  };
+}
+
+function normalizeTaskHistoryEntry(entry, index = 0) {
+  return {
+    id: entry.id ?? `event-${index + 1}`,
+    at: entry.at ?? null,
+    type: entry.type ?? "updated",
+    fromQueueStatus: entry.fromQueueStatus ?? null,
+    toQueueStatus: entry.toQueueStatus ?? null,
+    actor: entry.actor ?? null,
+    notes: entry.notes ?? null,
+    evidence: Array.isArray(entry.evidence) ? entry.evidence : [],
+    outcome: entry.outcome ?? null
   };
 }
 
@@ -930,6 +964,20 @@ function normalizeState(state) {
     swarms,
     updatedAt: state.updatedAt ?? null
   };
+}
+
+function appendTaskHistoryEntry(task, entry) {
+  const history = Array.isArray(task.history) ? task.history : [];
+  return [
+    ...history,
+    normalizeTaskHistoryEntry(
+      {
+        id: `event-${history.length + 1}`,
+        ...entry
+      },
+      history.length
+    )
+  ];
 }
 
 function describeRole(roleId, catalog = getRuntimeCatalog()) {
@@ -1569,6 +1617,7 @@ function transitionTask(input) {
           reviewEvidence: input.reviewEvidence ?? null
         }
       : {}),
+    history: appendTaskHistoryEntry(current, buildTaskHistoryEntry(current, nextQueueStatus, input)),
     updatedAt: new Date().toISOString()
   });
 
@@ -1634,9 +1683,59 @@ function buildTask(input, nextId) {
     reviewOutcome: input.reviewOutcome ?? null,
     reviewNotes: input.reviewNotes ?? null,
     reviewEvidence: input.reviewEvidence ?? null,
+    history: [
+      {
+        id: "event-1",
+        at: new Date().toISOString(),
+        type: "created",
+        fromQueueStatus: null,
+        toQueueStatus: input.queueStatus ?? "queued",
+        actor: input.claimedBy ?? null,
+        notes: input.notes ?? null,
+        evidence: [],
+        outcome: null
+      }
+    ],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   });
+}
+
+function buildTaskHistoryEntry(current, nextQueueStatus, input) {
+  const actor = input.reviewedBy ?? input.claimedBy ?? current.claimedBy ?? null;
+  const isVerifierApproval = nextQueueStatus === "done";
+  const isVerifierReturn =
+    current.queueStatus === "ready_for_review" &&
+    ["claimed", "blocked", "released"].includes(nextQueueStatus);
+
+  let type = "updated";
+  let outcome = null;
+  if (nextQueueStatus === "claimed" && current.queueStatus !== "ready_for_review") {
+    type = "claimed";
+  } else if (nextQueueStatus === "blocked") {
+    type = "blocked";
+  } else if (nextQueueStatus === "ready_for_review") {
+    type = "ready_for_review";
+  } else if (nextQueueStatus === "released") {
+    type = "released";
+  } else if (isVerifierApproval) {
+    type = "approved";
+    outcome = "approved";
+  } else if (isVerifierReturn) {
+    type = "changes_requested";
+    outcome = "changes_requested";
+  }
+
+  return {
+    at: new Date().toISOString(),
+    type,
+    fromQueueStatus: current.queueStatus,
+    toQueueStatus: nextQueueStatus,
+    actor,
+    notes: input.notes ?? null,
+    evidence: input.reviewEvidence ?? [],
+    outcome
+  };
 }
 
 function buildMemory(input, nextMemoryId) {
