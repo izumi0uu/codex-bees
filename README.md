@@ -180,7 +180,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `leader:assignment-dispatch` / `leader_assignment_dispatch` provide the explicit leader-to-worker handoff package for one assignment: the chosen lane assignment plus the exact preview and pickup commands the target worker should run next.
 
-`leader:assignment-dispatch-bundle` / `leader_assignment_dispatch_bundle` provide the parallel startup bundle for the leader lane: a flattened launch queue across owner groups with real worker-targeted preview and pickup commands when `--workers` / `workerIds` are supplied.
+`leader:assignment-dispatch-bundle` / `leader_assignment_dispatch_bundle` provide the parallel startup bundle for the leader lane: a flattened launch queue across owner groups with real worker-targeted preview, pickup, worker-session, and runtime-assignment-pack commands when `--workers` / `workerIds` are supplied.
 
 `leader:assignment-dispatch-pack` / `leader_assignment_dispatch_pack` provide the batch leader handoff package: one worker-targeted dispatch package per owner group so multiple workers can be started in parallel without re-deriving commands by hand. Pass `--workers` on CLI or `workerIds` over MCP to inject real role-to-worker mappings into the generated preview and pickup commands.
 
