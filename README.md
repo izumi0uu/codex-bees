@@ -53,6 +53,8 @@ node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm"
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js
 node ./src/index.js swarm:init --objective "Ship a bounded runtime slice" --owner leader --max-workers 2 --lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer"}]'
 node ./src/index.js swarm:queue --id swarm-1
+node ./src/index.js swarm:overview --id swarm-1
+node ./src/index.js swarm:dispatch --id swarm-1 --by worker-1 --owner explore
 node ./src/index.js memory:store --content "Remember the MCP contract" --namespace runtime --tags mcp,contract
 node ./src/index.js memory:search --query "MCP contract" --namespace runtime
 node ./src/index.js task:claim --id task-1 --by explore
@@ -80,7 +82,7 @@ Swarm contracts can carry bounded parallel execution detail:
 - `--lane-source manual`
 - `--lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer","scope":["src/index.js"]}]'`
 
-Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing.
+Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. `swarm:overview` summarizes lane progress, and `swarm:dispatch` claims the next runnable lane task for a worker.
 
 Memory records can carry reusable execution context:
 

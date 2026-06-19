@@ -110,14 +110,20 @@ Use manual swarm authoring only when the planner output is missing lane detail o
 ## Leader workflow
 
 1. Load the objective, acceptance criteria, and known constraints.
-2. Keep the critical path local; delegate only bounded side lanes.
-3. Break work into concrete lanes with explicit ownership.
-4. Queue lanes before parallel work starts.
-5. Allow workers to claim only ready lanes.
-6. Review returned evidence before marking a lane done.
-7. Integrate completed lanes only after scope and verification checks pass.
+2. Use swarm overview to confirm current lane status before delegating or re-slicing.
+3. Keep the critical path local; delegate only bounded side lanes.
+4. Break work into concrete lanes with explicit ownership.
+5. Queue lanes before parallel work starts.
+6. Allow workers to claim only ready lanes.
+7. Review returned evidence before marking a lane done.
+8. Integrate completed lanes only after scope and verification checks pass.
 
 ## Worker workflow
+
+Use runtime helpers when available:
+
+- `swarm:overview` / `swarm_overview` to inspect lane progress and the next runnable lane
+- `swarm:dispatch` / `swarm_dispatch` to claim the next runnable lane task for one worker
 
 1. Claim one ready lane.
 2. Restate the lane boundary before editing.
