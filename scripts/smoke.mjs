@@ -171,10 +171,15 @@ if (
 
 const runtimeCatalog = JSON.parse(run("catalog-verify", ["./src/index.js", "catalog"]).stdout).catalog;
 if (
-  !Array.isArray(runtimeCatalog.agents) ||
-  !runtimeCatalog.agents.some((agent) => agent.id === "executor") ||
-  !Array.isArray(runtimeCatalog.skills) ||
-  !runtimeCatalog.skills.some((skill) => skill.id === "project-development")
+  runtimeCatalog.kind !== "runtime_catalog_view" ||
+  runtimeCatalog.recommendedReason !== "catalog_entries_loaded" ||
+  runtimeCatalog.counts?.agents !== 4 ||
+  runtimeCatalog.counts?.skills !== 2 ||
+  runtimeCatalog.counts?.totalEntries !== 6 ||
+  !Array.isArray(runtimeCatalog.catalog?.agents) ||
+  !runtimeCatalog.catalog.agents.some((agent) => agent.id === "executor") ||
+  !Array.isArray(runtimeCatalog.catalog?.skills) ||
+  !runtimeCatalog.catalog.skills.some((skill) => skill.id === "project-development")
 ) {
   console.error("[smoke:catalog] expected shipped agent and skill catalog");
   process.exit(1);
@@ -5256,7 +5261,10 @@ const taskReportMcpLines = taskReportMcp.stdout
 const taskReportMcpPayload = JSON.parse(JSON.parse(taskReportMcpLines[1]).result.content[0].text);
 if (
   taskAddMcp.status !== 0 ||
-  !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
+  taskCatalogPayload?.catalog?.kind !== "runtime_catalog_view" ||
+  taskCatalogPayload?.catalog?.recommendedReason !== "catalog_entries_loaded" ||
+  taskCatalogPayload?.catalog?.counts?.agents !== 4 ||
+  !taskCatalogPayload?.catalog?.catalog?.agents?.some((agent) => agent.id === "tester") ||
   taskStatusPayload?.status?.counts?.agents !== 4 ||
   taskAddPayload?.created?.kind !== "task_mutation" ||
   taskAddPayload?.created?.recommendedReason !== "task_created" ||

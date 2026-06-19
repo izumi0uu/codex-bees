@@ -4,7 +4,7 @@ import { stdout, stderr, exit, argv, env, cwd } from "node:process";
 import { statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
-import { getRuntimeCatalog } from "./catalog.js";
+import { getRuntimeCatalog, getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getRuntimeStatus } from "./runtime-status.js";
 import {
@@ -272,7 +272,7 @@ function printDoctor() {
 }
 
 function printCatalog() {
-  write(JSON.stringify({ catalog: getRuntimeCatalog() }, null, 2) + "\n");
+  write(JSON.stringify({ catalog: getRuntimeCatalogView() }, null, 2) + "\n");
 }
 
 function printStatus() {

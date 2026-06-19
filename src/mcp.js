@@ -1,5 +1,5 @@
 import { stdin, stdout, stderr } from "node:process";
-import { getRuntimeCatalog } from "./catalog.js";
+import { getRuntimeCatalog, getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getRuntimeStatus } from "./runtime-status.js";
 import {
@@ -1357,7 +1357,7 @@ function handleRequest(message) {
     }
 
     if (name === "runtime_catalog") {
-      return createSuccess(id, createTextPayload({ catalog: getRuntimeCatalog() }));
+      return createSuccess(id, createTextPayload({ catalog: getRuntimeCatalogView() }));
     }
 
     if (name === "runtime_status") {

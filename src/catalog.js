@@ -100,3 +100,18 @@ export function getRuntimeCatalog() {
     skills: listSkillCatalog()
   };
 }
+
+export function getRuntimeCatalogView() {
+  const catalog = getRuntimeCatalog();
+  const totalEntries = catalog.agents.length + catalog.skills.length;
+  return {
+    kind: "runtime_catalog_view",
+    recommendedReason: totalEntries > 0 ? "catalog_entries_loaded" : "catalog_empty",
+    counts: {
+      agents: catalog.agents.length,
+      skills: catalog.skills.length,
+      totalEntries
+    },
+    catalog
+  };
+}
