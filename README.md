@@ -83,7 +83,7 @@ Swarm contracts can carry bounded parallel execution detail:
 - `--lane-source manual`
 - `--lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer","scope":["src/index.js"]}]'`
 
-Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. `swarm:overview` summarizes lane progress, `swarm:dispatch` claims the next runnable lane task for a worker, and `swarm:sync` aligns swarm status with current lane-task reality.
+Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. Swarm-linked task lifecycle changes automatically keep swarm status close to task reality, `swarm:overview` summarizes lane progress, `swarm:dispatch` claims the next runnable lane task for a worker, and `swarm:sync` provides an idempotent reconciliation step when leaders want an explicit status check.
 
 Memory records can carry reusable execution context:
 

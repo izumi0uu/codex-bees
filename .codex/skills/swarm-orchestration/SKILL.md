@@ -117,7 +117,7 @@ Use manual swarm authoring only when the planner output is missing lane detail o
 6. Allow workers to claim only ready lanes.
 7. Review returned evidence before marking a lane done.
 8. Integrate completed lanes only after scope and verification checks pass.
-9. Sync swarm status when task reality has moved farther than the stored swarm status.
+9. Use sync as an explicit reconciliation step when you want to confirm stored swarm status against task reality.
 
 ## Worker workflow
 
@@ -125,7 +125,7 @@ Use runtime helpers when available:
 
 - `swarm:overview` / `swarm_overview` to inspect lane progress, derived status, and the next runnable lane
 - `swarm:dispatch` / `swarm_dispatch` to claim the next runnable lane task for one worker
-- `swarm:sync` / `swarm_sync` to align swarm status with task reality after lane progress changes
+- `swarm:sync` / `swarm_sync` to reconcile or verify swarm status after lane progress changes; normal task lifecycle updates already keep swarm status close to task reality
 
 1. Claim one ready lane.
 2. Restate the lane boundary before editing.
