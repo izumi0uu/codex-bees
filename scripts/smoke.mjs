@@ -388,6 +388,18 @@ if (
   console.error("[smoke:runtime-execution-pack] expected top-level runtime execution pack");
   process.exit(1);
 }
+const runtimePickupPackInitial = JSON.parse(
+  run("runtime-pickup-pack-initial", ["./src/index.js", "runtime:pickup-pack", "--role", "executor", "--worker", "review-worker"]).stdout
+).pickupPack;
+if (
+  runtimePickupPackInitial.kind !== "runtime_pickup_pack" ||
+  !runtimePickupPackInitial.recommendedSurface ||
+  !runtimePickupPackInitial.overview ||
+  !runtimePickupPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-pickup-pack] expected top-level runtime pickup pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -2627,6 +2639,41 @@ if (
   console.error(runtimeExecutionPackMcp.stderr || runtimeExecutionPackMcp.stdout);
   process.exit(1);
 }
+const runtimePickupPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_pickup_pack",
+      arguments: {
+        role: "tester",
+        workerId: "tester-worker",
+        mode: "verifier"
+      }
+    }
+  })
+].join("\n") + "\n";
+const runtimePickupPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimePickupPackMcpInput,
+  encoding: "utf8"
+});
+const runtimePickupPackMcpLines = runtimePickupPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimePickupPackMcpPayload = JSON.parse(JSON.parse(runtimePickupPackMcpLines[1]).result.content[0].text);
+if (
+  runtimePickupPackMcp.status !== 0 ||
+  runtimePickupPackMcpPayload.pickupPack?.recommendedSurface !== "worker:closeout" ||
+  runtimePickupPackMcpPayload.pickupPack?.next?.pickup?.candidate?.id !== "task-2" ||
+  runtimePickupPackMcpPayload.pickupPack?.next?.pickup?.command !== "node ./src/index.js task:approve --id task-2 --by tester"
+) {
+  console.error("[smoke:runtime-pickup-pack-mcp] expected MCP runtime pickup pack");
+  console.error(runtimePickupPackMcp.stderr || runtimePickupPackMcp.stdout);
+  process.exit(1);
+}
 const runtimeReviewMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -3406,6 +3453,58 @@ if (
   console.error("[smoke:verifier-bundle] expected CLI verifier decision bundle");
   process.exit(1);
 }
+const pickupPreviewVerifier = JSON.parse(
+  run("task-pickup-preview-verifier", ["./src/index.js", "task:pickup-preview", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).pickupPreview;
+if (
+  pickupPreviewVerifier.outcome !== "review" ||
+  pickupPreviewVerifier.candidate?.id !== "task-2" ||
+  pickupPreviewVerifier.command !== "node ./src/index.js task:approve --id task-2 --by tester"
+) {
+  console.error("[smoke:task-pickup-preview] expected verifier pickup preview");
+  process.exit(1);
+}
+const pickupPreviewVerifierState = JSON.parse(
+  run("task-get-preview-state", ["./src/index.js", "task:get", "--id", "task-2"]).stdout
+).task;
+if (pickupPreviewVerifierState.queueStatus !== "ready_for_review") {
+  console.error("[smoke:task-pickup-preview] expected preview to preserve task state");
+  process.exit(1);
+}
+const runtimePickupPackVerifier = JSON.parse(
+  run("runtime-pickup-pack-verifier", ["./src/index.js", "runtime:pickup-pack", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).pickupPack;
+if (
+  runtimePickupPackVerifier.recommendedSurface !== "worker:closeout" ||
+  runtimePickupPackVerifier.next?.pickup?.candidate?.id !== "task-2" ||
+  runtimePickupPackVerifier.next?.pickup?.command !== "node ./src/index.js task:approve --id task-2 --by tester" ||
+  runtimePickupPackVerifier.surfaces?.rolePack?.recommendedSurface !== "worker:closeout"
+) {
+  console.error("[smoke:runtime-pickup-pack] expected verifier pickup pack");
+  process.exit(1);
+}
+const pickupPreviewOwner = JSON.parse(
+  run("task-pickup-preview-owner", ["./src/index.js", "task:pickup-preview", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
+).pickupPreview;
+if (
+  pickupPreviewOwner.outcome !== "claimable" ||
+  pickupPreviewOwner.candidate?.id !== "task-1" ||
+  pickupPreviewOwner.command !== "node ./src/index.js task:pickup --role executor --worker worker-owner --mode owner"
+) {
+  console.error("[smoke:task-pickup-preview] expected owner claimable preview");
+  process.exit(1);
+}
+const runtimePickupPackOwner = JSON.parse(
+  run("runtime-pickup-pack-owner", ["./src/index.js", "runtime:pickup-pack", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
+).pickupPack;
+if (
+  runtimePickupPackOwner.recommendedSurface !== "task:pickup --role executor --worker worker-owner --mode owner" ||
+  runtimePickupPackOwner.next?.pickup?.outcome !== "claimable" ||
+  runtimePickupPackOwner.next?.pickup?.candidate?.id !== "task-1"
+) {
+  console.error("[smoke:runtime-pickup-pack] expected owner pickup pack to recommend task pickup");
+  process.exit(1);
+}
 const ownerPickupClaim = JSON.parse(
   run("task-pickup-claim", ["./src/index.js", "task:pickup", "--role", "executor", "--worker", "worker-owner", "--mode", "owner"]).stdout
 ).pickup;
@@ -3488,6 +3587,37 @@ if (
 ) {
   console.error("[smoke:task-pickup-mcp] expected review pickup payload");
   console.error(pickupMcp.stderr || pickupMcp.stdout);
+  process.exit(1);
+}
+const pickupPreviewMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_pickup_preview",
+      arguments: { role: "tester", workerId: "tester-worker", mode: "verifier" }
+    }
+  })
+].join("\n") + "\n";
+const pickupPreviewMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: pickupPreviewMcpInput,
+  encoding: "utf8"
+});
+const pickupPreviewMcpLines = pickupPreviewMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const pickupPreviewMcpPayload = JSON.parse(JSON.parse(pickupPreviewMcpLines[1]).result.content[0].text);
+if (
+  pickupPreviewMcp.status !== 0 ||
+  pickupPreviewMcpPayload.pickupPreview?.outcome !== "review" ||
+  pickupPreviewMcpPayload.pickupPreview?.candidate?.id !== "task-2" ||
+  pickupPreviewMcpPayload.pickupPreview?.command !== "node ./src/index.js task:approve --id task-2 --by tester"
+) {
+  console.error("[smoke:task-pickup-preview-mcp] expected review pickup preview payload");
+  console.error(pickupPreviewMcp.stderr || pickupPreviewMcp.stdout);
   process.exit(1);
 }
 const workerSessionMcpInput = [
