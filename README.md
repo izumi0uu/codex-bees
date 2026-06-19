@@ -200,7 +200,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:dispatch` / `runtime_dispatch` provide the owner-grouped dispatch workspace: which owner roles have ready work, the next dispatch candidate for each role, and the task brief already attached for handoff.
 
-`runtime:dispatch-pack` / `runtime_dispatch_pack` provide the dispatch-oriented package: dispatch groups, role pressure, and next-actor handoffs combined into one leader/automation payload with a recommended next surface.
+`runtime:dispatch-pack` / `runtime_dispatch_pack` provide the dispatch-oriented package: dispatch groups, batch leader assignment dispatch when multiple owner groups are ready, role pressure, and next-actor handoffs combined into one leader/automation payload with a recommended next surface.
 
 `runtime:execution-pack` / `runtime_execution_pack` provide the execution-oriented package: focus, dispatch, role pressure, and queue control combined into one start-work entrypoint with a recommended next surface.
 
@@ -218,7 +218,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:handoffs` / `runtime_handoffs` provide the next-actor transfer workspace: queued pickups, blocked recoveries, and verifier decisions grouped by who should take the next action.
 
-`runtime:leader-pack` / `runtime_leader_pack` provide the leader-oriented package: leader workspace, leader queue, dispatch pressure, and closeout readiness combined into one role-shaped payload with a recommended next surface.
+`runtime:leader-pack` / `runtime_leader_pack` provide the leader-oriented package: leader workspace, leader queue, dispatch pressure, batch leader assignment dispatch when parallel startup is ready, and closeout readiness combined into one role-shaped payload with a recommended next surface.
 
 `runtime:operator-pack` / `runtime_operator_pack` provide the operator-oriented package: current focus plus dashboard, alerts, handoffs, and closeout readiness combined into one top-level operator payload with a recommended next surface.
 
