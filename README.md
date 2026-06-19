@@ -64,6 +64,7 @@ node ./src/index.js runtime:handoffs
 node ./src/index.js runtime:leader-pack
 node ./src/index.js runtime:operator-pack
 node ./src/index.js runtime:owner-pack --role executor --worker worker-1
+node ./src/index.js runtime:pickup-pack --role executor --worker worker-1 --mode owner
 node ./src/index.js runtime:queue-pack
 node ./src/index.js runtime:recovery
 node ./src/index.js runtime:recovery-pack
@@ -84,6 +85,7 @@ node ./src/index.js plan:swarm --task "Parallelize a runtime change"
 node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm"
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js
 node ./src/index.js task:get --id task-1
+node ./src/index.js task:pickup-preview --role executor --worker worker-1 --mode owner
 node ./src/index.js task:history --id task-1
 node ./src/index.js task:annotate --id task-1 --by worker-1 --kind context --content "needs follow-up"
 node ./src/index.js task:report --id task-1
@@ -209,6 +211,8 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:owner-pack` / `runtime_owner_pack` provide the owner-oriented package: owner-mode worker session, handoff, closeout, and next pickup candidate combined into one role-scoped payload with a recommended next surface.
 
+`runtime:pickup-pack` / `runtime_pickup_pack` provide the start-work pickup package: one worker's current session, next candidate, read-only pickup preview, and role context combined into one immediate start-work payload with a recommended next surface.
+
 `runtime:queue-pack` / `runtime_queue_pack` provide the queue-oriented package: leader queue, dashboard queue context, and current focus combined into one queue-control payload with a recommended next surface.
 
 `runtime:recovery` / `runtime_recovery` provide the recovery workspace: blocked tasks, released tasks, and changes-requested returns grouped by the kind of recovery path they need next.
@@ -234,6 +238,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:worker-pack` / `runtime_worker_pack` provide the worker-oriented package: worker session, handoff, closeout, and next candidate combined into one role-scoped payload with a recommended next surface.
 
 `runtime:review` / `runtime_review` provide the verifier-grouped decision workspace: which verifier roles currently own pending review decisions, which task is next, and the task brief already attached for approve/reject handoff.
+
+`task:pickup-preview` / `task_pickup_preview` provide a read-only next-pickup preview: which task a worker would pick or review next, the execution brief already attached, and the exact next command without mutating queue ownership.
 
 `runtime:alerts` / `runtime_alerts` provide the compressed top-level alert stream: blocked tasks first, then pending review and swarm-ready-to-complete signals.
 
