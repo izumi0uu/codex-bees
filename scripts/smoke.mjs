@@ -1521,6 +1521,7 @@ const leaderQueueCli = JSON.parse(
 ).queue;
 if (
   leaderQueueCli.kind !== "leader_queue" ||
+  leaderQueueCli.recommendedReason !== "next_queue_item_ready" ||
   leaderQueueCli.counts?.total !== 2 ||
   leaderQueueCli.next?.swarmId !== "swarm-2" ||
   leaderQueueCli.next?.recommendedNextAction !== "queue_swarm_lanes"
@@ -1816,6 +1817,7 @@ const leaderQueueMcpLines = leaderQueueMcp.stdout
 const leaderQueueMcpPayload = JSON.parse(JSON.parse(leaderQueueMcpLines[1]).result.content[0].text);
 if (
   leaderQueueMcp.status !== 0 ||
+  leaderQueueMcpPayload.queue?.recommendedReason !== "next_queue_item_ready" ||
   leaderQueueMcpPayload.queue?.next?.swarmId !== "swarm-2" ||
   leaderQueueMcpPayload.queue?.next?.recommendedNextAction !== "queue_swarm_lanes"
 ) {

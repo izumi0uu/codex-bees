@@ -196,7 +196,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `leader:workspace` / `leader_workspace` provide the symmetric orchestration artifact for the leader lane: multi-swarm counts, prioritized swarm focus, the next recommended action, and an embedded deep `swarm:bundle` for the current focus swarm.
 
-`leader:queue` / `leader_queue` provide the leaner decision surface for the leader lane: a prioritized multi-swarm action queue with the current next item already selected.
+`leader:queue` / `leader_queue` provide the leaner decision surface for the leader lane: a prioritized multi-swarm action queue with the current next item already selected. It also emits a machine-readable `recommendedReason` so automation can distinguish between multi-item queue pressure, a single ready next queue item, passive queue visibility, and an empty leader queue without reopening heavier leader workspaces.
 
 `leader:assignments` / `leader_assignments` provide the owner-grouped dispatch surface for the leader lane: runnable lane work grouped by who should receive it next. It also emits a machine-readable `recommendedReason` so automation can distinguish between parallel owner-group pressure, multiple visible assignments, single next-assignment readiness, and empty dispatch state without re-deriving those branches from nested arrays.
 

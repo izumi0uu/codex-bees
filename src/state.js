@@ -455,16 +455,20 @@ export function leaderQueue(input = {}) {
     recommendedCommands: swarm.recommendedCommands,
     summary: swarm.summary
   }));
+  const next = items[0] ?? null;
+  const actionable = items.filter((item) => !["completed", "cancelled"].includes(item.status)).length;
+  const recommendedReason = deriveLeaderQueueReason({ items, actionable, next });
 
   return {
     kind: "leader_queue",
+    recommendedReason,
     filters: workspace.filters,
     counts: {
       total: items.length,
-      actionable: items.filter((item) => !["completed", "cancelled"].includes(item.status)).length
+      actionable
     },
     items,
-    next: items[0] ?? null,
+    next,
     summary: buildLeaderQueueSummary(items)
   };
 }
@@ -4429,6 +4433,19 @@ function deriveLeaderAssignmentsReason({ assignments, groups, next }) {
     return "owner_group_visible";
   }
   return "no_dispatch_assignments";
+}
+
+function deriveLeaderQueueReason({ items, actionable, next }) {
+  if ((actionable ?? 0) > 1) {
+    return "multiple_queue_items_visible";
+  }
+  if (next?.swarmId) {
+    return "next_queue_item_ready";
+  }
+  if ((items?.length ?? 0) > 0) {
+    return "queue_items_visible";
+  }
+  return "no_queue_items";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
