@@ -1948,6 +1948,7 @@ export function runtimeOwnerPack(input = {}) {
     mode: "owner"
   });
   const recommendedSurface = deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role: input.role, workerId: input.workerId });
+  const recommendedReason = deriveRuntimeOwnerPackReason({ session, handoff, closeout, next });
 
   return {
     kind: "runtime_owner_pack",
@@ -1955,6 +1956,7 @@ export function runtimeOwnerPack(input = {}) {
     workerId: input.workerId,
     mode: "owner",
     recommendedSurface,
+    recommendedReason,
     overview: {
       session: session?.counts ?? null,
       inbox: session?.inbox?.counts ?? null
@@ -5021,6 +5023,28 @@ function deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role,
     return "worker:closeout";
   }
   return "worker:session";
+}
+
+function deriveRuntimeOwnerPackReason({ session, handoff, closeout, next }) {
+  if (session?.focus?.kind === "active_task") {
+    return "active_task_priority";
+  }
+  if (session?.focus?.kind === "blocked_task") {
+    return "blocked_task_priority";
+  }
+  if (session?.focus?.kind === "awaiting_review") {
+    return "awaiting_review_priority";
+  }
+  if (handoff?.currentTask?.id) {
+    return "handoff_closeout_priority";
+  }
+  if (next?.candidate?.id) {
+    return "pickup_next_priority";
+  }
+  if (closeout?.report?.task?.id) {
+    return "closeout_report_ready";
+  }
+  return "default_owner_priority";
 }
 
 function buildRuntimeOwnerPackSummary(recommendedSurface, session) {

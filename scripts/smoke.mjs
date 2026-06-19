@@ -818,6 +818,7 @@ const ownerPackCli = JSON.parse(
 if (
   ownerPackCli.kind !== "runtime_owner_pack" ||
   ownerPackCli.recommendedSurface !== "worker:session" ||
+  ownerPackCli.recommendedReason !== "active_task_priority" ||
   ownerPackCli.next?.focus?.kind !== "active_task" ||
   ownerPackCli.surfaces?.handoff?.currentTask?.id !== "task-1" ||
   ownerPackCli.mode !== "owner"
@@ -852,6 +853,7 @@ const ownerPackMcpPayload = JSON.parse(JSON.parse(ownerPackMcpLines[1]).result.c
 if (
   ownerPackMcp.status !== 0 ||
   ownerPackMcpPayload.ownerPack?.recommendedSurface !== "worker:session" ||
+  ownerPackMcpPayload.ownerPack?.recommendedReason !== "active_task_priority" ||
   ownerPackMcpPayload.ownerPack?.next?.focus?.taskId !== "task-1" ||
   ownerPackMcpPayload.ownerPack?.surfaces?.handoff?.currentTask?.id !== "task-1"
 ) {
