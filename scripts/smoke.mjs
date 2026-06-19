@@ -155,6 +155,16 @@ if (
   console.error("[smoke:runtime-dashboard] expected top-level runtime dashboard");
   process.exit(1);
 }
+const runtimeAlertsInitial = JSON.parse(
+  run("runtime-alerts-initial", ["./src/index.js", "runtime:alerts"]).stdout
+).alerts;
+if (
+  runtimeAlertsInitial.kind !== "runtime_alerts" ||
+  !Array.isArray(runtimeAlertsInitial.alerts)
+) {
+  console.error("[smoke:runtime-alerts] expected top-level runtime alerts");
+  process.exit(1);
+}
 
 const listedMemories = JSON.parse(
   run("memory-list-verify", ["./src/index.js", "memory:list", "--namespace", "smoke"]).stdout
@@ -1284,6 +1294,17 @@ if (
   console.error("[smoke:runtime-dashboard] expected CLI dashboard counts and leader queue");
   process.exit(1);
 }
+const runtimeAlertsCli = JSON.parse(
+  run("runtime-alerts-cli", ["./src/index.js", "runtime:alerts"]).stdout
+).alerts;
+if (
+  runtimeAlertsCli.counts?.high !== 1 ||
+  runtimeAlertsCli.counts?.medium < 1 ||
+  runtimeAlertsCli.alerts?.[0]?.kind !== "blocked_task"
+) {
+  console.error("[smoke:runtime-alerts] expected CLI alert stream with blocked task first");
+  process.exit(1);
+}
 const runtimeDashboardMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -1314,6 +1335,36 @@ if (
 ) {
   console.error("[smoke:runtime-dashboard-mcp] expected MCP runtime dashboard");
   console.error(runtimeDashboardMcp.stderr || runtimeDashboardMcp.stdout);
+  process.exit(1);
+}
+const runtimeAlertsMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_alerts",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeAlertsMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeAlertsMcpInput,
+  encoding: "utf8"
+});
+const runtimeAlertsMcpLines = runtimeAlertsMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeAlertsMcpPayload = JSON.parse(JSON.parse(runtimeAlertsMcpLines[1]).result.content[0].text);
+if (
+  runtimeAlertsMcp.status !== 0 ||
+  runtimeAlertsMcpPayload.alerts?.counts?.high !== 1 ||
+  runtimeAlertsMcpPayload.alerts?.alerts?.[0]?.kind !== "blocked_task"
+) {
+  console.error("[smoke:runtime-alerts-mcp] expected MCP runtime alerts");
+  console.error(runtimeAlertsMcp.stderr || runtimeAlertsMcp.stdout);
   process.exit(1);
 }
 
