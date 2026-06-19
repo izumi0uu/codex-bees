@@ -167,6 +167,18 @@ if (
   console.error("[smoke:runtime-closeout] expected top-level runtime closeout");
   process.exit(1);
 }
+const runtimeCloseoutPackInitial = JSON.parse(
+  run("runtime-closeout-pack-initial", ["./src/index.js", "runtime:closeout-pack"]).stdout
+).closeoutPack;
+if (
+  runtimeCloseoutPackInitial.kind !== "runtime_closeout_pack" ||
+  !runtimeCloseoutPackInitial.recommendedSurface ||
+  !runtimeCloseoutPackInitial.overview ||
+  !runtimeCloseoutPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-closeout-pack] expected top-level runtime closeout pack");
+  process.exit(1);
+}
 const runtimeDashboardInitial = JSON.parse(
   run("runtime-dashboard-initial", ["./src/index.js", "runtime:dashboard"]).stdout
 ).dashboard;
@@ -1527,6 +1539,18 @@ if (
   console.error("[smoke:runtime-closeout] expected CLI runtime closeout workspace");
   process.exit(1);
 }
+const runtimeCloseoutPackCli = JSON.parse(
+  run("runtime-closeout-pack-cli", ["./src/index.js", "runtime:closeout-pack"]).stdout
+).closeoutPack;
+if (
+  runtimeCloseoutPackCli.recommendedSurface !== "runtime:closeout" ||
+  runtimeCloseoutPackCli.next?.closeout !== null ||
+  runtimeCloseoutPackCli.overview?.closeout?.totalReady !== 0 ||
+  runtimeCloseoutPackCli.surfaces?.summaryPack?.overview?.closeout?.totalReady !== 0
+) {
+  console.error("[smoke:runtime-closeout-pack] expected CLI closeout pack to reflect empty closeout state");
+  process.exit(1);
+}
 const runtimeDashboardCli = JSON.parse(
   run("runtime-dashboard-cli", ["./src/index.js", "runtime:dashboard"]).stdout
 ).dashboard;
@@ -1756,6 +1780,37 @@ if (
 ) {
   console.error("[smoke:runtime-closeout-mcp] expected MCP runtime closeout");
   console.error(runtimeCloseoutMcp.stderr || runtimeCloseoutMcp.stdout);
+  process.exit(1);
+}
+const runtimeCloseoutPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_closeout_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeCloseoutPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeCloseoutPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeCloseoutPackMcpLines = runtimeCloseoutPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeCloseoutPackMcpPayload = JSON.parse(JSON.parse(runtimeCloseoutPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeCloseoutPackMcp.status !== 0 ||
+  runtimeCloseoutPackMcpPayload.closeoutPack?.recommendedSurface !== "runtime:closeout" ||
+  runtimeCloseoutPackMcpPayload.closeoutPack?.overview?.closeout?.totalReady !== 0 ||
+  runtimeCloseoutPackMcpPayload.closeoutPack?.next?.closeout !== null
+) {
+  console.error("[smoke:runtime-closeout-pack-mcp] expected MCP runtime closeout pack");
+  console.error(runtimeCloseoutPackMcp.stderr || runtimeCloseoutPackMcp.stdout);
   process.exit(1);
 }
 const runtimeDashboardMcpInput = [
