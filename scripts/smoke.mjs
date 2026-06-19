@@ -1571,7 +1571,12 @@ if (!swarmOverviewReadyToComplete.readyToComplete || swarmOverviewReadyToComplet
 const syncedSwarm = JSON.parse(
   run("swarm-sync", ["./src/index.js", "swarm:sync", "--id", "swarm-1"]).stdout
 ).synced;
-if (syncedSwarm.swarm.status !== "completed" || syncedSwarm.changed !== false) {
+if (
+  syncedSwarm.kind !== "swarm_sync" ||
+  syncedSwarm.recommendedReason !== "completed_swarm_unchanged" ||
+  syncedSwarm.swarm.status !== "completed" ||
+  syncedSwarm.changed !== false
+) {
   console.error("[smoke:swarm-sync] expected idempotent completed swarm sync");
   process.exit(1);
 }
@@ -4148,32 +4153,41 @@ const swarmMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
   input: swarmMcpInput,
   encoding: "utf8"
 });
-const swarmMcpLines = swarmMcp.stdout
+const swarmMcpResponses = swarmMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const swarmBriefResult = swarmMcpLines.length >= 3 ? JSON.parse(swarmMcpLines[2]) : null;
+const swarmMcpById = new Map(
+  swarmMcpResponses.map((line) => {
+    const parsed = JSON.parse(line);
+    return [parsed.id, parsed];
+  })
+);
+const swarmBriefResult = swarmMcpById.get(3) ?? null;
 const swarmBriefText = swarmBriefResult?.result?.content?.[0]?.text;
 const swarmBriefPayload = swarmBriefText ? JSON.parse(swarmBriefText) : null;
-const swarmCheckResult = swarmMcpLines.length >= 4 ? JSON.parse(swarmMcpLines[3]) : null;
+const swarmCheckResult = swarmMcpById.get(4) ?? null;
 const swarmCheckText = swarmCheckResult?.result?.content?.[0]?.text;
 const swarmCheckPayload = swarmCheckText ? JSON.parse(swarmCheckText) : null;
-const swarmOverviewResult = swarmMcpLines.length >= 10 ? JSON.parse(swarmMcpLines[9]) : null;
+const swarmSyncResult = swarmMcpById.get(9) ?? null;
+const swarmSyncText = swarmSyncResult?.result?.content?.[0]?.text;
+const swarmSyncPayload = swarmSyncText ? JSON.parse(swarmSyncText) : null;
+const swarmOverviewResult = swarmMcpById.get(10) ?? null;
 const swarmOverviewText = swarmOverviewResult?.result?.content?.[0]?.text;
 const swarmOverviewPayload = swarmOverviewText ? JSON.parse(swarmOverviewText) : null;
-const swarmBundleResult = swarmMcpLines.length >= 11 ? JSON.parse(swarmMcpLines[10]) : null;
+const swarmBundleResult = swarmMcpById.get(11) ?? null;
 const swarmBundleText = swarmBundleResult?.result?.content?.[0]?.text;
 const swarmBundlePayload = swarmBundleText ? JSON.parse(swarmBundleText) : null;
-const swarmCloseoutResult = swarmMcpLines.length >= 12 ? JSON.parse(swarmMcpLines[11]) : null;
+const swarmCloseoutResult = swarmMcpById.get(12) ?? null;
 const swarmCloseoutText = swarmCloseoutResult?.result?.content?.[0]?.text;
 const swarmCloseoutPayload = swarmCloseoutText ? JSON.parse(swarmCloseoutText) : null;
-const swarmTaskListResult = swarmMcpLines.length >= 13 ? JSON.parse(swarmMcpLines[12]) : null;
+const swarmTaskListResult = swarmMcpById.get(13) ?? null;
 const swarmTaskListText = swarmTaskListResult?.result?.content?.[0]?.text;
 const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) : null;
-const swarmListDetailedResult = swarmMcpLines.length >= 14 ? JSON.parse(swarmMcpLines[13]) : null;
+const swarmListDetailedResult = swarmMcpById.get(14) ?? null;
 const swarmListDetailedText = swarmListDetailedResult?.result?.content?.[0]?.text;
 const swarmListDetailedPayload = swarmListDetailedText ? JSON.parse(swarmListDetailedText) : null;
-const leaderWorkspaceResult = swarmMcpLines.length >= 15 ? JSON.parse(swarmMcpLines[14]) : null;
+const leaderWorkspaceResult = swarmMcpById.get(15) ?? null;
 const leaderWorkspaceText = leaderWorkspaceResult?.result?.content?.[0]?.text;
 const leaderWorkspacePayload = leaderWorkspaceText ? JSON.parse(leaderWorkspaceText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
@@ -4185,6 +4199,8 @@ if (
   !mcpSwarmTask ||
   mcpSwarmTask.reviewedBy !== "tester" ||
   mcpSwarmTask.reviewOutcome !== "approved" ||
+  swarmSyncPayload?.synced?.kind !== "swarm_sync" ||
+  swarmSyncPayload?.synced?.recommendedReason !== "completed_swarm_unchanged" ||
   swarmBundlePayload?.bundle?.recommendedReason !== "swarm_ready_to_complete" ||
   swarmBundlePayload?.bundle?.lanes?.[0]?.report?.task?.id !== "task-1" ||
   swarmCloseoutPayload?.closeout?.recommendedReason !== "swarm_closeout_ready" ||

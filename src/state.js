@@ -2748,7 +2748,13 @@ export function syncSwarmStatus(id) {
 
   const current = normalizeSwarm(state.swarms[index]);
   if (current.status === "cancelled") {
-    return { swarm: current, derivedStatus: "cancelled", changed: false };
+    return {
+      kind: "swarm_sync",
+      recommendedReason: "cancelled_swarm_unchanged",
+      swarm: current,
+      derivedStatus: "cancelled",
+      changed: false
+    };
   }
 
   const swarmTasks = state.tasks
@@ -2763,7 +2769,18 @@ export function syncSwarmStatus(id) {
 
   state.swarms[index] = next;
   saveState(state);
-  return { swarm: next, derivedStatus, changed: next.status !== current.status };
+  const changed = next.status !== current.status;
+  return {
+    kind: "swarm_sync",
+    recommendedReason: deriveSwarmSyncReason({
+      previousStatus: current.status,
+      derivedStatus,
+      changed
+    }),
+    swarm: next,
+    derivedStatus,
+    changed
+  };
 }
 
 export function swarmOverview(id) {
@@ -4706,6 +4723,39 @@ function deriveSwarmOverviewReason({ counts, nextLane, readyToComplete }) {
     return "planned_lanes_unqueued";
   }
   return "swarm_state_visible";
+}
+
+function deriveSwarmSyncReason({ previousStatus, derivedStatus, changed }) {
+  if (derivedStatus === "cancelled") {
+    return changed ? "swarm_sync_cancelled" : "cancelled_swarm_unchanged";
+  }
+  if (changed && previousStatus !== derivedStatus) {
+    if (derivedStatus === "completed") {
+      return "swarm_sync_completed";
+    }
+    if (derivedStatus === "blocked") {
+      return "swarm_sync_blocked";
+    }
+    if (derivedStatus === "active") {
+      return "swarm_sync_activated";
+    }
+    if (derivedStatus === "planned") {
+      return "swarm_sync_planned";
+    }
+  }
+  if (derivedStatus === "completed") {
+    return "completed_swarm_unchanged";
+  }
+  if (derivedStatus === "blocked") {
+    return "blocked_swarm_unchanged";
+  }
+  if (derivedStatus === "active") {
+    return "active_swarm_unchanged";
+  }
+  if (derivedStatus === "planned") {
+    return "planned_swarm_unchanged";
+  }
+  return "swarm_sync_visible";
 }
 
 function deriveSwarmBriefReason(recommended) {
