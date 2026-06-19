@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { cwd } from "node:process";
-import { listAgentRoleIds } from "./catalog.js";
+import { getRuntimeCatalog, listAgentRoleIds } from "./catalog.js";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
@@ -107,9 +107,113 @@ export function listSwarmOverviews(filters = {}) {
     .filter(Boolean);
 }
 
+export function getTask(id) {
+  const task = loadState().tasks.find((item) => item.id === id);
+  return task ? normalizeTask(task) : null;
+}
+
 export function getSwarm(id) {
   const swarm = loadState().swarms.find((item) => item.id === id);
   return swarm ? normalizeSwarm(swarm) : null;
+}
+
+export function taskBrief(id) {
+  const task = getTask(id);
+  if (!task) {
+    return null;
+  }
+
+  const validation = validateTaskValue(task);
+  const catalog = getRuntimeCatalog();
+  const recommended = recommendTaskAction(task);
+
+  return {
+    kind: "task_execution_brief",
+    task,
+    objective: task.objective ?? task.title,
+    roles: {
+      owner: describeRole(task.owner, catalog),
+      verifier: describeRole(task.verifier, catalog)
+    },
+    coordination: {
+      swarmId: task.swarmId,
+      lane: task.lane,
+      queueStatus: task.queueStatus,
+      claimedBy: task.claimedBy,
+      notes: task.notes
+    },
+    execution: {
+      scope: task.scope ?? [],
+      acceptance: task.acceptance ?? [],
+      verification: task.verification ?? []
+    },
+    review: {
+      state: deriveReviewState(task),
+      reviewedBy: task.reviewedBy,
+      reviewedAt: task.reviewedAt,
+      outcome: task.reviewOutcome,
+      notes: task.reviewNotes,
+      evidence: task.reviewEvidence ?? []
+    },
+    validation,
+    recommendedNextActor: recommended.actor,
+    recommendedNextAction: recommended.action,
+    recommendedCommands: recommended.commands
+  };
+}
+
+export function swarmBrief(id) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const catalog = getRuntimeCatalog();
+  const validation = validateSwarmValue(overview.swarm);
+  const lanes = overview.lanes.map((laneSummary) => {
+    const task = laneSummary.taskId
+      ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
+      : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
+    const recommended = recommendLaneAction(laneSummary, task);
+
+    return {
+      lane: laneSummary.lane,
+      summary: laneSummary.summary,
+      owner: describeRole(laneSummary.owner, catalog),
+      verifier: describeRole(laneSummary.verifier, catalog),
+      taskId: laneSummary.taskId,
+      taskQueueStatus: task?.queueStatus ?? null,
+      claimedBy: task?.claimedBy ?? null,
+      scope: laneSummary.scope ?? [],
+      acceptance: task?.acceptance ?? [],
+      verification: task?.verification ?? [],
+      ready: laneSummary.ready,
+      done: laneSummary.done,
+      recommendedNextActor: recommended.actor,
+      recommendedNextAction: recommended.action,
+      recommendedCommands: recommended.commands
+    };
+  });
+
+  const recommended = recommendSwarmAction(overview, lanes);
+
+  return {
+    kind: "swarm_execution_brief",
+    swarm: overview.swarm,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    counts: overview.counts,
+    readyToComplete: overview.readyToComplete,
+    dispatchableCount: overview.dispatchableCount,
+    owner: describeRole(overview.swarm.owner, catalog),
+    lanes,
+    nextLane: lanes.find((lane) => lane.lane === overview.nextLane?.lane) ?? null,
+    validation,
+    leaderHandoff: buildSwarmHandoff(overview, recommended),
+    recommendedNextActor: recommended.actor,
+    recommendedNextAction: recommended.action,
+    recommendedCommands: recommended.commands
+  };
 }
 
 export function validateTask(id) {
@@ -688,6 +792,205 @@ function normalizeState(state) {
     swarms,
     updatedAt: state.updatedAt ?? null
   };
+}
+
+function describeRole(roleId, catalog = getRuntimeCatalog()) {
+  if (!roleId) {
+    return {
+      id: null,
+      exists: false,
+      name: null,
+      description: null,
+      promptPath: null
+    };
+  }
+
+  const agent = catalog.agents.find((item) => item.id === roleId) ?? null;
+  return {
+    id: roleId,
+    exists: Boolean(agent),
+    name: agent?.name ?? roleId,
+    description: agent?.description ?? null,
+    promptPath: agent?.path ?? null
+  };
+}
+
+function deriveReviewState(task) {
+  if (task.queueStatus === "ready_for_review") {
+    return "pending_verifier";
+  }
+  if (task.reviewOutcome === "approved") {
+    return "approved";
+  }
+  if (task.reviewOutcome === "changes_requested") {
+    return "changes_requested";
+  }
+  return "not_started";
+}
+
+function recommendTaskAction(task) {
+  if (task.queueStatus === "done") {
+    return {
+      actor: null,
+      action: "complete",
+      commands: []
+    };
+  }
+
+  if (task.queueStatus === "ready_for_review") {
+    return {
+      actor: {
+        type: "verifier_role",
+        id: task.verifier,
+        claimedBy: null
+      },
+      action: "review_and_decide",
+      commands: [
+        `node ./src/index.js task:approve --id ${task.id} --by ${task.verifier ?? "<verifier-role>"}`,
+        `node ./src/index.js task:reject --id ${task.id} --by ${task.verifier ?? "<verifier-role>"} --status claimed --notes "<changes requested>"`
+      ]
+    };
+  }
+
+  if (task.queueStatus === "queued" || task.queueStatus === "released") {
+    return {
+      actor: {
+        type: "owner_role",
+        id: task.owner,
+        claimedBy: null
+      },
+      action: "claim_and_execute",
+      commands: [
+        `node ./src/index.js task:claim --id ${task.id} --by <worker-id>`,
+        `node ./src/index.js task:review --id ${task.id} --by <worker-id>`
+      ]
+    };
+  }
+
+  if (task.queueStatus === "claimed") {
+    return {
+      actor: {
+        type: "claimed_worker",
+        id: task.owner,
+        claimedBy: task.claimedBy ?? null
+      },
+      action: "continue_execution_and_handoff",
+      commands: [
+        `node ./src/index.js task:review --id ${task.id} --by ${task.claimedBy ?? "<worker-id>"}`,
+        `node ./src/index.js task:block --id ${task.id} --by ${task.claimedBy ?? "<worker-id>"} --notes "<blocker>"`
+      ]
+    };
+  }
+
+  return {
+    actor: {
+      type: "owner_role",
+      id: task.owner,
+      claimedBy: task.claimedBy ?? null
+    },
+    action: "resolve_blocker_and_requeue",
+    commands: [
+      `node ./src/index.js task:claim --id ${task.id} --by <worker-id>`,
+      `node ./src/index.js task:release --id ${task.id} --by ${task.claimedBy ?? "<worker-id>"}`
+    ]
+  };
+}
+
+function recommendLaneAction(laneSummary, task) {
+  if (!task) {
+    return {
+      actor: {
+        type: "swarm_owner",
+        id: laneSummary.owner
+      },
+      action: "queue_lane_task",
+      commands: []
+    };
+  }
+
+  return recommendTaskAction(task);
+}
+
+function recommendSwarmAction(overview, lanes) {
+  const pendingReviewLane = lanes.find((lane) => lane.taskQueueStatus === "ready_for_review");
+  if (pendingReviewLane) {
+    return {
+      actor: pendingReviewLane.recommendedNextActor,
+      action: `review_lane:${pendingReviewLane.lane}`,
+      commands: pendingReviewLane.recommendedCommands
+    };
+  }
+
+  const runnableLane = lanes.find((lane) =>
+    lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released"
+  );
+  if (runnableLane) {
+    return {
+      actor: runnableLane.recommendedNextActor,
+      action: `dispatch_lane:${runnableLane.lane}`,
+      commands: [
+        `node ./src/index.js swarm:dispatch --id ${overview.swarm.id} --by <worker-id> --owner ${runnableLane.owner.id ?? "<owner-role>"}`
+      ]
+    };
+  }
+
+  const claimedLane = lanes.find((lane) => lane.taskQueueStatus === "claimed");
+  if (claimedLane) {
+    return {
+      actor: claimedLane.recommendedNextActor,
+      action: `continue_lane:${claimedLane.lane}`,
+      commands: claimedLane.recommendedCommands
+    };
+  }
+
+  const blockedLane = lanes.find((lane) => lane.taskQueueStatus === "blocked");
+  if (blockedLane) {
+    return {
+      actor: blockedLane.recommendedNextActor,
+      action: `unblock_lane:${blockedLane.lane}`,
+      commands: blockedLane.recommendedCommands
+    };
+  }
+
+  if (overview.counts.unqueued > 0) {
+    return {
+      actor: {
+        type: "swarm_owner",
+        id: overview.swarm.owner,
+        claimedBy: null
+      },
+      action: "queue_swarm_lanes",
+      commands: [`node ./src/index.js swarm:queue --id ${overview.swarm.id}`]
+    };
+  }
+
+  return {
+    actor: null,
+    action: "complete",
+    commands: []
+  };
+}
+
+function buildSwarmHandoff(overview, recommended) {
+  if (recommended.action === "complete") {
+    return `Swarm ${overview.swarm.id} is complete; all ${overview.counts.totalLanes} lanes are done.`;
+  }
+  if (recommended.action.startsWith("dispatch_lane:")) {
+    return `Swarm ${overview.swarm.id} has a runnable lane; dispatch the next owner-scoped task.`;
+  }
+  if (recommended.action.startsWith("review_lane:")) {
+    return `Swarm ${overview.swarm.id} is waiting on verifier review before the lane can close.`;
+  }
+  if (recommended.action.startsWith("continue_lane:")) {
+    return `Swarm ${overview.swarm.id} already has an active worker; continue execution inside the claimed lane scope.`;
+  }
+  if (recommended.action.startsWith("unblock_lane:")) {
+    return `Swarm ${overview.swarm.id} is blocked in at least one lane and needs unblock ownership.`;
+  }
+  if (recommended.action === "queue_swarm_lanes") {
+    return `Swarm ${overview.swarm.id} has planned lanes but no queued tasks yet.`;
+  }
+  return `Swarm ${overview.swarm.id} is active with bounded local coordination state.`;
 }
 
 
