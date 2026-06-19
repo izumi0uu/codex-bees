@@ -1,17 +1,26 @@
 import { stdin, stdout, stderr } from "node:process";
 import { planTask, queueTasksFromPlan } from "./planner.js";
 import {
+  activateSwarm,
   addTask,
   addTasks,
+  blockSwarm,
   blockTask,
+  cancelSwarm,
   claimTask,
+  completeSwarm,
   completeTask,
+  getSwarm,
+  initSwarm,
   listMemories,
+  listSwarms,
   listTasks,
   markTaskReadyForReview,
+  queueSwarmTasks,
   releaseTask,
   searchMemories,
   storeMemory,
+  updateSwarm,
   updateTask
 } from "./state.js";
 
@@ -61,6 +70,7 @@ export const toolCatalog = [
         verifier: { type: "string" },
         objective: { type: "string" },
         lane: { type: "string" },
+        swarmId: { type: "string" },
         scope: { type: "array", items: { type: "string" } },
         acceptance: { type: "array", items: { type: "string" } },
         verification: { type: "array", items: { type: "string" } },
@@ -82,6 +92,7 @@ export const toolCatalog = [
         verifier: { type: "string" },
         objective: { type: "string" },
         lane: { type: "string" },
+        swarmId: { type: "string" },
         scope: { type: "array", items: { type: "string" } },
         acceptance: { type: "array", items: { type: "string" } },
         verification: { type: "array", items: { type: "string" } },
@@ -149,6 +160,155 @@ export const toolCatalog = [
       properties: {
         id: { type: "string" },
         claimedBy: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_list",
+    description: "List local swarm contracts from the persistent state store.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string" },
+        topology: { type: "string" },
+        owner: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_init",
+    description: "Create a bounded local swarm contract with optional lanes.",
+    inputSchema: {
+      type: "object",
+      required: ["objective"],
+      properties: {
+        objective: { type: "string" },
+        topology: { type: "string" },
+        maxWorkers: { type: "number" },
+        owner: { type: "string" },
+        laneSource: { type: "string" },
+        notes: { type: "string" },
+        lanes: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              lane: { type: "string" },
+              summary: { type: "string" },
+              owner: { type: "string" },
+              verifier: { type: "string" },
+              scope: { type: "array", items: { type: "string" } },
+              acceptance: { type: "array", items: { type: "string" } },
+              verification: { type: "array", items: { type: "string" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    name: "swarm_get",
+    description: "Get one local swarm contract by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_update",
+    description: "Update mutable fields on a local swarm contract.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        objective: { type: "string" },
+        topology: { type: "string" },
+        maxWorkers: { type: "number" },
+        owner: { type: "string" },
+        laneSource: { type: "string" },
+        notes: { type: "string" },
+        lanes: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              lane: { type: "string" },
+              summary: { type: "string" },
+              owner: { type: "string" },
+              verifier: { type: "string" },
+              scope: { type: "array", items: { type: "string" } },
+              acceptance: { type: "array", items: { type: "string" } },
+              verification: { type: "array", items: { type: "string" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    name: "swarm_activate",
+    description: "Mark a local swarm contract active.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        owner: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_block",
+    description: "Mark a local swarm contract blocked.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        owner: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_done",
+    description: "Mark a local swarm contract completed.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        owner: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_cancel",
+    description: "Cancel a local swarm contract.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        owner: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_queue_tasks",
+    description: "Queue a swarm's lanes into bounded local tasks.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
       }
     }
   },
@@ -257,6 +417,12 @@ function createError(id, code, message) {
   }) + "\n";
 }
 
+function createTextPayload(value) {
+  return {
+    content: [{ type: "text", text: JSON.stringify(value, null, 2) }]
+  };
+}
+
 function handleRequest(message) {
   const { id = null, method, params = {} } = message;
 
@@ -284,42 +450,26 @@ function handleRequest(message) {
     }
 
     if (name === "coordination_overview") {
-      return createSuccess(id, {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(
-              {
-                executionModel: "local bounded multi-agent coordination",
-                deliveryBoundary: "codex-only runtime",
-                changeModel: "small reversible steps"
-              },
-              null,
-              2
-            )
-          }
-        ]
-      });
+      return createSuccess(
+        id,
+        createTextPayload({
+          executionModel: "local bounded multi-agent coordination",
+          deliveryBoundary: "codex-only runtime",
+          changeModel: "small reversible steps"
+        })
+      );
     }
 
     if (name === "worker_guidelines") {
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify(workerGuidelines, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload(workerGuidelines));
     }
 
     if (name === "runtime_contract") {
-      return createSuccess(id, {
-        content: [
-          { type: "text", text: JSON.stringify(runtimeContractPayload(), null, 2) }
-        ]
-      });
+      return createSuccess(id, createTextPayload(runtimeContractPayload()));
     }
 
     if (name === "task_list") {
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ tasks: listTasks() }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ tasks: listTasks() }));
     }
 
     if (name === "task_add") {
@@ -334,15 +484,14 @@ function handleRequest(message) {
         verifier: params.arguments.verifier,
         objective: params.arguments.objective,
         lane: params.arguments.lane,
+        swarmId: params.arguments.swarmId,
         scope: params.arguments.scope,
         acceptance: params.arguments.acceptance,
         verification: params.arguments.verification,
         notes: params.arguments.notes
       });
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ created: task }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ created: task }));
     }
 
     if (name === "task_update") {
@@ -358,6 +507,7 @@ function handleRequest(message) {
         verifier: params.arguments.verifier,
         objective: params.arguments.objective,
         lane: params.arguments.lane,
+        swarmId: params.arguments.swarmId,
         scope: params.arguments.scope,
         acceptance: params.arguments.acceptance,
         verification: params.arguments.verification,
@@ -371,9 +521,7 @@ function handleRequest(message) {
         return createError(id, -32602, task.error);
       }
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ updated: task }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ updated: task }));
     }
 
     if (name === "task_claim") {
@@ -396,9 +544,7 @@ function handleRequest(message) {
         return createError(id, -32602, task.error);
       }
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ claimed: task }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ claimed: task }));
     }
 
     if (name === "task_block") {
@@ -419,9 +565,7 @@ function handleRequest(message) {
         return createError(id, -32602, task.error);
       }
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ blocked: task }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ blocked: task }));
     }
 
     if (name === "task_ready_for_review") {
@@ -442,9 +586,7 @@ function handleRequest(message) {
         return createError(id, -32602, task.error);
       }
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ readyForReview: task }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ readyForReview: task }));
     }
 
     if (name === "task_done") {
@@ -465,9 +607,7 @@ function handleRequest(message) {
         return createError(id, -32602, task.error);
       }
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ completed: task }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ completed: task }));
     }
 
     if (name === "task_release") {
@@ -487,9 +627,174 @@ function handleRequest(message) {
         return createError(id, -32602, task.error);
       }
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ released: task }, null, 2) }]
+      return createSuccess(id, createTextPayload({ released: task }));
+    }
+
+    if (name === "swarm_list") {
+      const swarms = listSwarms({
+        status: params.arguments?.status,
+        topology: params.arguments?.topology,
+        owner: params.arguments?.owner
       });
+
+      return createSuccess(id, createTextPayload({ swarms }));
+    }
+
+    if (name === "swarm_init") {
+      if (!params.arguments?.objective) {
+        return createError(id, -32602, "swarm_init requires arguments.objective");
+      }
+
+      const swarm = initSwarm({
+        objective: params.arguments.objective,
+        topology: params.arguments.topology,
+        maxWorkers: params.arguments.maxWorkers,
+        owner: params.arguments.owner,
+        laneSource: params.arguments.laneSource,
+        notes: params.arguments.notes,
+        lanes: params.arguments.lanes
+      });
+
+      return createSuccess(id, createTextPayload({ created: swarm }));
+    }
+
+    if (name === "swarm_get") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_get requires arguments.id");
+      }
+
+      const swarm = getSwarm(params.arguments.id);
+      if (!swarm) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ swarm }));
+    }
+
+    if (name === "swarm_update") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_update requires arguments.id");
+      }
+
+      const swarm = updateSwarm({
+        id: params.arguments.id,
+        objective: params.arguments.objective,
+        topology: params.arguments.topology,
+        maxWorkers: params.arguments.maxWorkers,
+        owner: params.arguments.owner,
+        laneSource: params.arguments.laneSource,
+        notes: params.arguments.notes,
+        lanes: params.arguments.lanes
+      });
+
+      if (!swarm) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+      if (swarm.error) {
+        return createError(id, -32602, swarm.error);
+      }
+
+      return createSuccess(id, createTextPayload({ updated: swarm }));
+    }
+
+    if (name === "swarm_activate") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_activate requires arguments.id");
+      }
+
+      const swarm = activateSwarm({
+        id: params.arguments.id,
+        owner: params.arguments.owner,
+        notes: params.arguments.notes
+      });
+
+      if (!swarm) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+      if (swarm.error) {
+        return createError(id, -32602, swarm.error);
+      }
+
+      return createSuccess(id, createTextPayload({ activated: swarm }));
+    }
+
+    if (name === "swarm_block") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_block requires arguments.id");
+      }
+
+      const swarm = blockSwarm({
+        id: params.arguments.id,
+        owner: params.arguments.owner,
+        notes: params.arguments.notes
+      });
+
+      if (!swarm) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+      if (swarm.error) {
+        return createError(id, -32602, swarm.error);
+      }
+
+      return createSuccess(id, createTextPayload({ blocked: swarm }));
+    }
+
+    if (name === "swarm_done") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_done requires arguments.id");
+      }
+
+      const swarm = completeSwarm({
+        id: params.arguments.id,
+        owner: params.arguments.owner,
+        notes: params.arguments.notes
+      });
+
+      if (!swarm) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+      if (swarm.error) {
+        return createError(id, -32602, swarm.error);
+      }
+
+      return createSuccess(id, createTextPayload({ completed: swarm }));
+    }
+
+    if (name === "swarm_cancel") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_cancel requires arguments.id");
+      }
+
+      const swarm = cancelSwarm({
+        id: params.arguments.id,
+        owner: params.arguments.owner,
+        notes: params.arguments.notes
+      });
+
+      if (!swarm) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+      if (swarm.error) {
+        return createError(id, -32602, swarm.error);
+      }
+
+      return createSuccess(id, createTextPayload({ cancelled: swarm }));
+    }
+
+    if (name === "swarm_queue_tasks") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_queue_tasks requires arguments.id");
+      }
+
+      const result = queueSwarmTasks({ id: params.arguments.id });
+      if (!result) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+      if (result.error) {
+        return createError(id, -32602, result.error);
+      }
+
+      return createSuccess(id, createTextPayload(result));
     }
 
     if (name === "plan_task") {
@@ -497,9 +802,7 @@ function handleRequest(message) {
         return createError(id, -32602, "plan_task requires arguments.task");
       }
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify(planTask(params.arguments.task), null, 2) }]
-      });
+      return createSuccess(id, createTextPayload(planTask(params.arguments.task)));
     }
 
     if (name === "queue_plan") {
@@ -507,14 +810,10 @@ function handleRequest(message) {
         return createError(id, -32602, "queue_plan requires arguments.task");
       }
 
-      return createSuccess(id, {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(queueTasksFromPlan(params.arguments.task, addTasks), null, 2)
-          }
-        ]
-      });
+      return createSuccess(
+        id,
+        createTextPayload(queueTasksFromPlan(params.arguments.task, addTasks))
+      );
     }
 
     if (name === "memory_store") {
@@ -532,9 +831,7 @@ function handleRequest(message) {
         notes: params.arguments.notes
       });
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ stored: memory }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ stored: memory }));
     }
 
     if (name === "memory_list") {
@@ -545,9 +842,7 @@ function handleRequest(message) {
         tags: params.arguments?.tags
       });
 
-      return createSuccess(id, {
-        content: [{ type: "text", text: JSON.stringify({ memories }, null, 2) }]
-      });
+      return createSuccess(id, createTextPayload({ memories }));
     }
 
     if (name === "memory_search") {
@@ -566,14 +861,10 @@ function handleRequest(message) {
         tags: params.arguments.tags
       }).slice(0, limit);
 
-      return createSuccess(id, {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({ query: params.arguments.query, results }, null, 2)
-          }
-        ]
-      });
+      return createSuccess(
+        id,
+        createTextPayload({ query: params.arguments.query, results })
+      );
     }
   }
 
@@ -600,9 +891,7 @@ export async function startMcpServer() {
           const message = JSON.parse(line);
           stdout.write(handleRequest(message));
         } catch (error) {
-          stdout.write(
-            createError(null, -32700, `Invalid JSON input: ${error.message}`)
-          );
+          stdout.write(createError(null, -32700, `Invalid JSON input: ${error.message}`));
         }
       }
 
