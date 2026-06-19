@@ -36,6 +36,7 @@ import {
   taskPickup,
   taskReport,
   taskNext,
+  workerCloseout,
   workerHandoff,
   workerSession,
   updateSwarm,
@@ -259,6 +260,20 @@ export const toolCatalog = [
   {
     name: "worker_handoff",
     description: "Build a return-ready handoff package for one worker.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" },
+        limit: { type: "number" }
+      }
+    }
+  },
+  {
+    name: "worker_closeout",
+    description: "Build a closure-oriented bundle for one worker.",
     inputSchema: {
       type: "object",
       required: ["role", "workerId"],
@@ -961,6 +976,24 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ handoff }));
+    }
+
+    if (name === "worker_closeout") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "worker_closeout requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "worker_closeout requires arguments.workerId");
+      }
+
+      const closeout = workerCloseout({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode,
+        limit: params.arguments.limit
+      });
+
+      return createSuccess(id, createTextPayload({ closeout }));
     }
 
     if (name === "task_update") {

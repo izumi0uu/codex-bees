@@ -42,6 +42,7 @@ import {
   taskPickup,
   taskReport,
   taskNext,
+  workerCloseout,
   workerHandoff,
   workerSession,
   updateSwarm,
@@ -86,6 +87,7 @@ function printHelp() {
   write(`  codex-bees task:pickup     Claim or resume the next task for one worker\n`);
   write(`  codex-bees worker:session  Show the current execution workspace for one worker\n`);
   write(`  codex-bees worker:handoff  Build a return-ready handoff package for one worker\n`);
+  write(`  codex-bees worker:closeout Build a closure-oriented bundle for one worker\n`);
   write(`  codex-bees task:claim      Claim a local coordination task\n`);
   write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
   write(`  codex-bees task:review     Mark a task as ready for review\n`);
@@ -434,6 +436,18 @@ function handleWorkerHandoff() {
     limit: readPositiveIntegerOption("--limit")
   });
   write(JSON.stringify({ handoff }, null, 2) + "\n");
+}
+
+function handleWorkerCloseout() {
+  const role = requireOption("--role");
+  const workerId = requireOption("--worker");
+  const closeout = workerCloseout({
+    role,
+    workerId,
+    mode: readOption("--mode"),
+    limit: readPositiveIntegerOption("--limit")
+  });
+  write(JSON.stringify({ closeout }, null, 2) + "\n");
 }
 
 function handleTaskCheck() {
@@ -939,6 +953,9 @@ async function runCommand(command) {
       return;
     case "worker:handoff":
       handleWorkerHandoff();
+      return;
+    case "worker:closeout":
+      handleWorkerCloseout();
       return;
     case "task:claim":
       handleTaskClaim();
