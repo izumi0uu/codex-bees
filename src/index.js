@@ -4,7 +4,7 @@ import { stdout, stderr, exit, argv, env, cwd } from "node:process";
 import { statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { startMcpServer, toolCatalog } from "./mcp.js";
-import { planTask, queueTasksFromPlan } from "./planner.js";
+import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import {
   activateSwarm,
   addTask,
@@ -49,6 +49,7 @@ function printHelp() {
   write(`  codex-bees doctor          Print runtime contract diagnostics\n`);
   write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
   write(`  codex-bees plan:queue      Generate a plan and queue its lanes as local tasks\n`);
+  write(`  codex-bees plan:swarm      Generate a bounded swarm contract from a task brief\n`);
   write(`  codex-bees task:list       List local coordination tasks\n`);
   write(`  codex-bees task:add        Add a local coordination task\n`);
   write(`  codex-bees task:claim      Claim a local coordination task\n`);
@@ -354,6 +355,39 @@ function handlePlanQueue() {
   write(JSON.stringify(queueTasksFromPlan(task, addTasks), null, 2) + "\n");
 }
 
+function handlePlanSwarm() {
+  const task = requireOption("--task");
+  write(JSON.stringify(planSwarm(task), null, 2) + "\n");
+}
+
+function handlePlanSwarmQueue() {
+  const task = requireOption("--task");
+  const planned = planSwarm(task);
+  const created = initSwarm(planned.swarm);
+  const queued = queueSwarmTasks({ id: created.id });
+  if (!queued) {
+    writeErr(`Unable to queue planned swarm: ${created.id}\n`);
+    exit(1);
+  }
+  if (queued.error) {
+    writeErr(`${queued.error}\n`);
+    exit(1);
+  }
+  write(
+    JSON.stringify(
+      {
+        kind: "queued_plan_swarm",
+        objective: task,
+        evidence: planned.evidence,
+        swarm: queued.swarm,
+        created: queued.created
+      },
+      null,
+      2
+    ) + "\n"
+  );
+}
+
 function handleSwarmInit() {
   const objective = requireOption("--objective");
   const swarm = initSwarm({
@@ -578,6 +612,12 @@ async function runCommand(command) {
       return;
     case "plan:queue":
       handlePlanQueue();
+      return;
+    case "plan:swarm":
+      handlePlanSwarm();
+      return;
+    case "plan:swarm:queue":
+      handlePlanSwarmQueue();
       return;
     case "task:list":
       printTasks();
