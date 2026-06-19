@@ -54,6 +54,7 @@ node ./src/index.js runtime:closeout
 node ./src/index.js runtime:alerts
 node ./src/index.js runtime:dashboard
 node ./src/index.js runtime:dispatch
+node ./src/index.js runtime:dispatch-pack
 node ./src/index.js runtime:focus
 node ./src/index.js runtime:handoffs
 node ./src/index.js runtime:leader-pack
@@ -171,6 +172,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload.
 
 `runtime:dispatch` / `runtime_dispatch` provide the owner-grouped dispatch workspace: which owner roles have ready work, the next dispatch candidate for each role, and the task brief already attached for handoff.
+
+`runtime:dispatch-pack` / `runtime_dispatch_pack` provide the dispatch-oriented package: dispatch groups, role pressure, and next-actor handoffs combined into one leader/automation payload with a recommended next surface.
 
 `runtime:activity` / `runtime_activity` provide the recent event stream: claims, blocks, review handoffs, approvals, and changes-requested events compressed into one top-level chronological feed.
 
