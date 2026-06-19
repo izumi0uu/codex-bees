@@ -42,6 +42,7 @@ import {
   runtimeFocus,
   runtimeHandoffs,
   runtimeRecovery,
+  runtimeSummaryPack,
   runtimeReview,
   runtimeRoles,
   swarmOverview,
@@ -98,6 +99,7 @@ function printHelp() {
   write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
   write(`  codex-bees runtime:handoffs Build the next-actor handoff workspace\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
+  write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
   write(`  codex-bees runtime:review  Build the verifier-grouped review workspace\n`);
   write(`  codex-bees runtime:roles   Build the role-level orchestration queue view\n`);
   write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
@@ -223,6 +225,10 @@ function printRuntimeHandoffs() {
 
 function printRuntimeRecovery() {
   write(JSON.stringify({ recovery: runtimeRecovery() }, null, 2) + "\n");
+}
+
+function printRuntimeSummaryPack() {
+  write(JSON.stringify({ summaryPack: runtimeSummaryPack() }, null, 2) + "\n");
 }
 
 function printRuntimeDashboard() {
@@ -1071,6 +1077,9 @@ async function runCommand(command) {
       return;
     case "runtime:recovery":
       printRuntimeRecovery();
+      return;
+    case "runtime:summary-pack":
+      printRuntimeSummaryPack();
       return;
     case "runtime:dashboard":
       printRuntimeDashboard();

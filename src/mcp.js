@@ -37,6 +37,7 @@ import {
   runtimeFocus,
   runtimeHandoffs,
   runtimeRecovery,
+  runtimeSummaryPack,
   runtimeReview,
   runtimeRoles,
   swarmOverview,
@@ -142,6 +143,14 @@ export const toolCatalog = [
   {
     name: "runtime_recovery",
     description: "Build the recovery-oriented task workspace for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_summary_pack",
+    description: "Build the automation-first runtime summary package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1004,6 +1013,10 @@ function handleRequest(message) {
 
     if (name === "runtime_recovery") {
       return createSuccess(id, createTextPayload({ recovery: runtimeRecovery() }));
+    }
+
+    if (name === "runtime_summary_pack") {
+      return createSuccess(id, createTextPayload({ summaryPack: runtimeSummaryPack() }));
     }
 
     if (name === "runtime_dashboard") {
