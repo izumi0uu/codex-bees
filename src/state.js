@@ -1591,7 +1591,7 @@ export function runtimeAssignmentPack(input = {}) {
     workerId: input.workerId,
     mode
   });
-  const pickup = previewTaskPickup({
+  const pickup = previewTaskAssignment({
     role: input.role,
     workerId: input.workerId,
     mode
@@ -2081,6 +2081,66 @@ export function taskAssignmentPickup(input = {}) {
     workerId: input.workerId,
     mode: normalizeNextMode(input.mode),
     outcome: assignmentPickupOutcome(candidate.relation),
+    assignment,
+    candidate,
+    task,
+    brief,
+    command: assignmentFollowupCommand(candidate, input.workerId)
+  };
+}
+
+export function previewTaskAssignment(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const assignments = leaderAssignments();
+  const roleAssignments = (assignments?.groups ?? []).find((group) => group.owner?.id === input.role) ?? null;
+  const assignment = input.taskId
+    ? (roleAssignments?.assignments ?? []).find((item) => item.taskId === input.taskId) ?? null
+    : roleAssignments?.assignments?.[0] ?? null;
+
+  if (!assignment?.taskId) {
+    return {
+      kind: "task_assignment_preview",
+      role: describeRole(input.role),
+      workerId: input.workerId,
+      mode: normalizeNextMode(input.mode),
+      outcome: "none",
+      assignment: null,
+      candidate: null,
+      task: null,
+      brief: null,
+      command: null
+    };
+  }
+
+  const task = getTask(assignment.taskId);
+  if (!task) {
+    return {
+      kind: "task_assignment_preview",
+      role: describeRole(input.role),
+      workerId: input.workerId,
+      mode: normalizeNextMode(input.mode),
+      outcome: "error",
+      assignment,
+      candidate: null,
+      task: null,
+      brief: null,
+      command: null,
+      error: `Missing task for assignment ${assignment.taskId}`
+    };
+  }
+
+  const candidate = summarizeInboxTask(task, input.role, input.workerId);
+  const brief = taskBrief(task.id);
+
+  return {
+    kind: "task_assignment_preview",
+    role: describeRole(input.role),
+    workerId: input.workerId,
+    mode: normalizeNextMode(input.mode),
+    outcome: candidate.relation === "owner_claimable" ? "claimable" : assignmentPickupOutcome(candidate.relation),
     assignment,
     candidate,
     task,
