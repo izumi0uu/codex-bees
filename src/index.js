@@ -25,6 +25,7 @@ import {
   initSwarm,
   leaderAssignmentDispatch,
   leaderAssignmentDispatchBundle,
+  leaderAssignmentLaunchPlan,
   leaderAssignmentDispatchPack,
   leaderAssignments,
   leaderQueue,
@@ -170,6 +171,7 @@ function printHelp() {
   write(`  codex-bees verifier:bundle Build a decision-ready bundle for one verifier\n`);
   write(`  codex-bees leader:assignment-dispatch Build a worker-targeted dispatch package for one leader assignment\n`);
   write(`  codex-bees leader:assignment-dispatch-bundle Build a multi-worker launch bundle across owner groups\n`);
+  write(`  codex-bees leader:assignment-launch-plan Build a step-by-step startup plan across worker launches\n`);
   write(`  codex-bees leader:assignment-dispatch-pack Build worker-targeted dispatch packages across owner groups\n`);
   write(`  codex-bees leader:assignments Build owner-grouped dispatch assignments across swarms\n`);
   write(`  codex-bees leader:queue    Build a prioritized leader decision queue across swarms\n`);
@@ -874,6 +876,19 @@ function handleLeaderAssignmentDispatchBundle() {
   write(JSON.stringify({ assignmentDispatchBundle: dispatchBundle }, null, 2) + "\n");
 }
 
+function handleLeaderAssignmentLaunchPlan() {
+  const launchPlan = leaderAssignmentLaunchPlan({
+    role: readOption("--role") ?? readOption("--owner"),
+    workerId: readOption("--worker"),
+    workerIds: readJsonOption("--workers"),
+    taskId: readOption("--task"),
+    status: readOption("--status"),
+    topology: readOption("--topology"),
+    owner: readOption("--owner")
+  });
+  write(JSON.stringify({ assignmentLaunchPlan: launchPlan }, null, 2) + "\n");
+}
+
 function handleTaskCheck() {
   const id = requireOption("--id");
   const validation = validateTask(id);
@@ -1540,6 +1555,9 @@ async function runCommand(command) {
       return;
     case "leader:assignment-dispatch-bundle":
       handleLeaderAssignmentDispatchBundle();
+      return;
+    case "leader:assignment-launch-plan":
+      handleLeaderAssignmentLaunchPlan();
       return;
     case "leader:assignment-dispatch-pack":
       handleLeaderAssignmentDispatchPack();

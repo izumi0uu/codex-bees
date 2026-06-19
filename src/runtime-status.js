@@ -41,8 +41,8 @@ const CAPABILITY_CATALOG = [
     id: "leader_orchestration",
     category: "coordination",
     description: "Leader-facing orchestration views across swarms, lane bundles, and next actions.",
-    cliCommands: ["leader:assignment-dispatch", "leader:assignment-dispatch-bundle", "leader:assignment-dispatch-pack", "leader:assignments", "leader:queue", "leader:workspace", "swarm:brief", "swarm:bundle", "swarm:blockers", "swarm:closeout", "swarm:dispatch-bundle", "swarm:overview"],
-    mcpTools: ["leader_assignment_dispatch", "leader_assignment_dispatch_bundle", "leader_assignment_dispatch_pack", "leader_assignments", "leader_queue", "leader_workspace", "swarm_brief", "swarm_bundle", "swarm_blockers", "swarm_closeout", "swarm_dispatch_bundle", "swarm_overview"]
+    cliCommands: ["leader:assignment-dispatch", "leader:assignment-dispatch-bundle", "leader:assignment-launch-plan", "leader:assignment-dispatch-pack", "leader:assignments", "leader:queue", "leader:workspace", "swarm:brief", "swarm:bundle", "swarm:blockers", "swarm:closeout", "swarm:dispatch-bundle", "swarm:overview"],
+    mcpTools: ["leader_assignment_dispatch", "leader_assignment_dispatch_bundle", "leader_assignment_launch_plan", "leader_assignment_dispatch_pack", "leader_assignments", "leader_queue", "leader_workspace", "swarm_brief", "swarm_bundle", "swarm_blockers", "swarm_closeout", "swarm_dispatch_bundle", "swarm_overview"]
   },
   {
     id: "swarm_coordination",

@@ -20,6 +20,7 @@ import {
   initSwarm,
   leaderAssignmentDispatch,
   leaderAssignmentDispatchBundle,
+  leaderAssignmentLaunchPlan,
   leaderAssignmentDispatchPack,
   leaderAssignments,
   leaderQueue,
@@ -735,6 +736,22 @@ export const toolCatalog = [
   {
     name: "leader_assignment_dispatch_bundle",
     description: "Build a multi-worker launch bundle across owner groups.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        role: { type: "string" },
+        owner: { type: "string" },
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } },
+        taskId: { type: "string" },
+        status: { type: "string" },
+        topology: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "leader_assignment_launch_plan",
+    description: "Build a step-by-step startup plan across worker launches.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1900,6 +1917,20 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ assignmentDispatchBundle }));
+    }
+
+    if (name === "leader_assignment_launch_plan") {
+      const assignmentLaunchPlan = leaderAssignmentLaunchPlan({
+        role: params.arguments?.role,
+        owner: params.arguments?.owner,
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
+        taskId: params.arguments?.taskId,
+        status: params.arguments?.status,
+        topology: params.arguments?.topology
+      });
+
+      return createSuccess(id, createTextPayload({ assignmentLaunchPlan }));
     }
 
     if (name === "task_update") {
