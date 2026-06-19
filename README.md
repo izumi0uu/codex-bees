@@ -150,6 +150,8 @@ Task metadata can carry lane-ready execution detail:
 
 `task:check` validates that a task is actually claimable before a worker takes it. A ready task needs a title, owner, verifier, scope, acceptance, and verification metadata; claiming an incomplete task is rejected. Owner and verifier must also match shipped local agent roles from `.codex/agents`, and the surface emits a machine-readable `recommendedReason` so automation can distinguish claim-ready tasks, role mismatches, claimed-task metadata gaps, and general validation failures without reparsing issue arrays by hand.
 
+`task:add` / `task_add` return the explicit mutation result for creating a local coordination task. They emit a machine-readable `recommendedReason` so automation can branch on task creation without inferring intent only from the nested task snapshot.
+
 `task:claim` / `task_claim` return the explicit lifecycle mutation result for taking ownership of a task. They emit a machine-readable `recommendedReason` so automation can treat claim as its own protocol step instead of inferring it only from the nested task queue status.
 
 `task:block` / `task_block` return the explicit lifecycle mutation result for marking a claimed task blocked. They emit a machine-readable `recommendedReason` so automation can distinguish an intentional owner-side block from later recovery or handoff surfaces without reparsing only the nested task queue status.

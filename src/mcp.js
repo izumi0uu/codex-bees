@@ -5,6 +5,7 @@ import { getCapabilityCatalog, getRuntimeStatus } from "./runtime-status.js";
 import {
   activateSwarm,
   addTask,
+  addTaskLifecycle,
   addTasks,
   annotateTask,
   approveTask,
@@ -1641,7 +1642,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_add requires arguments.title");
       }
 
-      const task = addTask({
+      const task = addTaskLifecycle({
         title: params.arguments.title,
         status: params.arguments.status,
         owner: params.arguments.owner,

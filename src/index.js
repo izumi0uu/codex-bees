@@ -10,6 +10,7 @@ import { getCapabilityCatalog, getRuntimeStatus } from "./runtime-status.js";
 import {
   activateSwarm,
   addTask,
+  addTaskLifecycle,
   addTasks,
   annotateTask,
   approveTask,
@@ -631,7 +632,7 @@ function handleTaskAdd() {
   const acceptance = readListOption("--acceptance", "|");
   const verification = readListOption("--verification", "|");
   const notes = readOption("--notes");
-  const task = addTask({
+  const task = addTaskLifecycle({
     title,
     status,
     owner,

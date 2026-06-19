@@ -632,8 +632,6 @@ if (
   process.exit(1);
 }
 
-rmSync(".codex-bees", { recursive: true, force: true });
-
 run("task-claim-lifecycle-add", [
   "./src/index.js",
   "task:add",
@@ -822,7 +820,7 @@ const firstAdd = run("durability-add-1", [
   "durability one"
 ]);
 const createdOne = JSON.parse(firstAdd.stdout).created;
-if (createdOne.id !== "task-1") {
+if (createdOne.task?.id !== "task-1") {
   console.error("[smoke:durability-add-1] expected task-1");
   process.exit(1);
 }
@@ -850,7 +848,7 @@ const secondAdd = run("durability-add-2", [
   "durability two"
 ]);
 const createdTwo = JSON.parse(secondAdd.stdout).created;
-if (createdTwo.id !== "task-1") {
+if (createdTwo.task?.id !== "task-1") {
   console.error("[smoke:durability-add-2] expected clean recovery to restart at task-1");
   process.exit(1);
 }
@@ -866,6 +864,36 @@ if (
   process.exit(1);
 }
 run("task-claim-incomplete", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "blocked-worker"], 1);
+
+rmSync(".codex-bees", { recursive: true, force: true });
+
+const addedLifecycleCli = JSON.parse(
+  run("task-add-lifecycle-cli", [
+    "./src/index.js",
+    "task:add",
+    "--title",
+    "task lifecycle add",
+    "--owner",
+    "executor",
+    "--verifier",
+    "tester",
+    "--scope",
+    "src/index.js",
+    "--acceptance",
+    "add emits lifecycle envelope",
+    "--verification",
+    "task:add returns machine-readable reason"
+  ]).stdout
+).created;
+if (
+  addedLifecycleCli.kind !== "task_mutation" ||
+  addedLifecycleCli.recommendedReason !== "task_created" ||
+  addedLifecycleCli.task?.title !== "task lifecycle add" ||
+  addedLifecycleCli.task?.queueStatus !== "queued"
+) {
+  console.error("[smoke:task-add] expected CLI task add lifecycle payload");
+  process.exit(1);
+}
 
 rmSync(".codex-bees", { recursive: true, force: true });
 run("task-add-invalid-role", [
@@ -4712,6 +4740,9 @@ const taskCatalogPayload = taskCatalogText ? JSON.parse(taskCatalogText) : null;
 const taskStatusResult = taskAddMcpLines.length >= 3 ? JSON.parse(taskAddMcpLines[2]) : null;
 const taskStatusText = taskStatusResult?.result?.content?.[0]?.text;
 const taskStatusPayload = taskStatusText ? JSON.parse(taskStatusText) : null;
+const taskAddResult = taskAddMcpLines.length >= 4 ? JSON.parse(taskAddMcpLines[3]) : null;
+const taskAddText = taskAddResult?.result?.content?.[0]?.text;
+const taskAddPayload = taskAddText ? JSON.parse(taskAddText) : null;
 const taskGetResult = taskAddMcpLines.length >= 5 ? JSON.parse(taskAddMcpLines[4]) : null;
 const taskGetText = taskGetResult?.result?.content?.[0]?.text;
 const taskGetPayload = taskGetText ? JSON.parse(taskGetText) : null;
@@ -4824,6 +4855,9 @@ if (
   taskAddMcp.status !== 0 ||
   !taskCatalogPayload?.catalog?.agents?.some((agent) => agent.id === "tester") ||
   taskStatusPayload?.status?.counts?.agents !== 4 ||
+  taskAddPayload?.created?.kind !== "task_mutation" ||
+  taskAddPayload?.created?.recommendedReason !== "task_created" ||
+  taskAddPayload?.created?.task?.id !== "task-1" ||
   taskGetPayload?.task?.id !== "task-1" ||
   taskBriefPayload?.brief?.recommendedReason !== "claimable_execution_brief" ||
   taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||

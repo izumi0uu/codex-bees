@@ -2870,6 +2870,18 @@ export function addTask(input) {
   return task;
 }
 
+export function addTaskLifecycle(input) {
+  const result = addTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_mutation",
+    recommendedReason: "task_created",
+    task: result
+  };
+}
+
 export function addTasks(inputs) {
   const state = loadState();
   const created = [];
