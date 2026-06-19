@@ -30,6 +30,8 @@ import {
   searchMemories,
   storeMemory,
   swarmBrief,
+  taskInbox,
+  taskNext,
   updateSwarm,
   updateTask,
   taskBrief,
@@ -156,6 +158,32 @@ export const toolCatalog = [
       required: ["id"],
       properties: {
         id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_inbox",
+    description: "List role-relevant tasks in priority order for owner or verifier workflows.",
+    inputSchema: {
+      type: "object",
+      required: ["role"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        limit: { type: "number" }
+      }
+    }
+  },
+  {
+    name: "task_next",
+    description: "Resolve the next task a role should claim or review.",
+    inputSchema: {
+      type: "object",
+      required: ["role"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" }
       }
     }
   },
@@ -719,6 +747,34 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ brief }));
+    }
+
+    if (name === "task_inbox") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "task_inbox requires arguments.role");
+      }
+
+      const inbox = taskInbox({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        limit: params.arguments.limit
+      });
+
+      return createSuccess(id, createTextPayload({ inbox }));
+    }
+
+    if (name === "task_next") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "task_next requires arguments.role");
+      }
+
+      const next = taskNext({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode
+      });
+
+      return createSuccess(id, createTextPayload({ next }));
     }
 
     if (name === "task_update") {

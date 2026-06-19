@@ -36,6 +36,8 @@ import {
   stateFilePath,
   storeMemory,
   swarmBrief,
+  taskInbox,
+  taskNext,
   updateSwarm,
   updateTask,
   taskBrief,
@@ -70,6 +72,8 @@ function printHelp() {
   write(`  codex-bees task:add        Add a local coordination task\n`);
   write(`  codex-bees task:get        Show one local coordination task\n`);
   write(`  codex-bees task:brief      Render an execution brief for one task\n`);
+  write(`  codex-bees task:inbox      List role-relevant tasks in execution priority order\n`);
+  write(`  codex-bees task:next       Resolve the next task a role should pick up\n`);
   write(`  codex-bees task:claim      Claim a local coordination task\n`);
   write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
   write(`  codex-bees task:review     Mark a task as ready for review\n`);
@@ -324,6 +328,26 @@ function handleTaskBrief() {
     exit(1);
   }
   write(JSON.stringify({ brief }, null, 2) + "\n");
+}
+
+function handleTaskInbox() {
+  const role = requireOption("--role");
+  const inbox = taskInbox({
+    role,
+    workerId: readOption("--worker"),
+    limit: readPositiveIntegerOption("--limit")
+  });
+  write(JSON.stringify({ inbox }, null, 2) + "\n");
+}
+
+function handleTaskNext() {
+  const role = requireOption("--role");
+  const next = taskNext({
+    role,
+    workerId: readOption("--worker"),
+    mode: readOption("--mode")
+  });
+  write(JSON.stringify({ next }, null, 2) + "\n");
 }
 
 function handleTaskCheck() {
@@ -805,6 +829,12 @@ async function runCommand(command) {
       return;
     case "task:brief":
       handleTaskBrief();
+      return;
+    case "task:inbox":
+      handleTaskInbox();
+      return;
+    case "task:next":
+      handleTaskNext();
       return;
     case "task:claim":
       handleTaskClaim();
