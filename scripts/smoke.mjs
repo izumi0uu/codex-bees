@@ -607,6 +607,7 @@ const runtimeWorkspacePackInitial = JSON.parse(
 if (
   runtimeWorkspacePackInitial.kind !== "runtime_workspace_pack" ||
   !runtimeWorkspacePackInitial.recommendedSurface ||
+  typeof runtimeWorkspacePackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeWorkspacePackInitial.overview ||
   !runtimeWorkspacePackInitial.surfaces
 ) {
@@ -3890,6 +3891,11 @@ const runtimeWorkspacePackCli = JSON.parse(
 if (
   runtimeWorkspacePackCli.recommendedSurface !== "runtime:recovery" ||
   runtimeWorkspacePackCli.recommendedReason !== "blocked_tasks_priority" ||
+  runtimeWorkspacePackCli.metadata?.hasDashboard !== true ||
+  runtimeWorkspacePackCli.metadata?.hasDispatch !== true ||
+  runtimeWorkspacePackCli.metadata?.hasReview !== true ||
+  runtimeWorkspacePackCli.metadata?.hasRecovery !== true ||
+  runtimeWorkspacePackCli.counts?.surfacedNextEntries !== Object.values(runtimeWorkspacePackCli.next ?? {}).filter(Boolean).length ||
   runtimeWorkspacePackCli.next?.dashboard?.swarmId !== "swarm-1" ||
   runtimeWorkspacePackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeWorkspacePackCli.next?.review?.taskId !== "task-2" ||

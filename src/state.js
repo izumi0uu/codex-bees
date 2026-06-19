@@ -1654,11 +1654,30 @@ export function runtimeWorkspacePack(input = {}) {
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
   const recommendedReason = deriveRuntimeWorkspacePackReason({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
+  const nextEntries = {
+    dashboard: dashboard?.leader?.queue?.next ?? null,
+    dispatch: dispatch?.next ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
+    review: review?.next ?? null,
+    recovery: recovery?.next ?? null
+  };
 
   return {
     kind: "runtime_workspace_pack",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasDashboard: Boolean(dashboard?.leader?.queue?.next),
+      hasDispatch: Boolean(dispatch?.next),
+      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
+      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next),
+      hasReview: Boolean(review?.next),
+      hasRecovery: Boolean(recovery?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       dashboard: dashboard?.counts ?? null,
       dispatch: dispatch?.counts ?? null,
@@ -1667,14 +1686,7 @@ export function runtimeWorkspacePack(input = {}) {
       review: review?.counts ?? null,
       recovery: recovery?.counts ?? null
     },
-    next: {
-      dashboard: dashboard?.leader?.queue?.next ?? null,
-      dispatch: dispatch?.next ?? null,
-      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-      assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
-      review: review?.next ?? null,
-      recovery: recovery?.next ?? null
-    },
+    next: nextEntries,
     surfaces: {
       dashboard,
       dispatch,
