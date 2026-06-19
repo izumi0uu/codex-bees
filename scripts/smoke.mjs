@@ -336,6 +336,18 @@ if (
   console.error("[smoke:runtime-alerts] expected top-level runtime alerts");
   process.exit(1);
 }
+const runtimeWorkspacePackInitial = JSON.parse(
+  run("runtime-workspace-pack-initial", ["./src/index.js", "runtime:workspace-pack"]).stdout
+).workspacePack;
+if (
+  runtimeWorkspacePackInitial.kind !== "runtime_workspace_pack" ||
+  !runtimeWorkspacePackInitial.recommendedSurface ||
+  !runtimeWorkspacePackInitial.overview ||
+  !runtimeWorkspacePackInitial.surfaces
+) {
+  console.error("[smoke:runtime-workspace-pack] expected top-level runtime workspace pack");
+  process.exit(1);
+}
 const runtimeRolesInitial = JSON.parse(
   run("runtime-roles-initial", ["./src/index.js", "runtime:roles"]).stdout
 ).roles;
@@ -1772,6 +1784,20 @@ if (
   console.error("[smoke:runtime-roles] expected CLI runtime role pressure ordering");
   process.exit(1);
 }
+const runtimeWorkspacePackCli = JSON.parse(
+  run("runtime-workspace-pack-cli", ["./src/index.js", "runtime:workspace-pack"]).stdout
+).workspacePack;
+if (
+  runtimeWorkspacePackCli.recommendedSurface !== "runtime:recovery" ||
+  runtimeWorkspacePackCli.next?.dashboard?.swarmId !== "swarm-1" ||
+  runtimeWorkspacePackCli.next?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeWorkspacePackCli.next?.review?.taskId !== "task-2" ||
+  runtimeWorkspacePackCli.next?.recovery?.taskId !== "task-1" ||
+  runtimeWorkspacePackCli.overview?.dashboard?.blockedTasks !== 1
+) {
+  console.error("[smoke:runtime-workspace-pack] expected CLI workspace pack to recommend recovery");
+  process.exit(1);
+}
 const runtimeActivityMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -2328,6 +2354,38 @@ if (
 ) {
   console.error("[smoke:runtime-roles-mcp] expected MCP runtime role queue");
   console.error(runtimeRolesMcp.stderr || runtimeRolesMcp.stdout);
+  process.exit(1);
+}
+const runtimeWorkspacePackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_workspace_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeWorkspacePackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeWorkspacePackMcpInput,
+  encoding: "utf8"
+});
+const runtimeWorkspacePackMcpLines = runtimeWorkspacePackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeWorkspacePackMcpPayload = JSON.parse(JSON.parse(runtimeWorkspacePackMcpLines[1]).result.content[0].text);
+if (
+  runtimeWorkspacePackMcp.status !== 0 ||
+  runtimeWorkspacePackMcpPayload.workspacePack?.recommendedSurface !== "runtime:recovery" ||
+  runtimeWorkspacePackMcpPayload.workspacePack?.next?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeWorkspacePackMcpPayload.workspacePack?.next?.review?.taskId !== "task-2" ||
+  runtimeWorkspacePackMcpPayload.workspacePack?.next?.recovery?.taskId !== "task-1"
+) {
+  console.error("[smoke:runtime-workspace-pack-mcp] expected MCP runtime workspace pack");
+  console.error(runtimeWorkspacePackMcp.stderr || runtimeWorkspacePackMcp.stdout);
   process.exit(1);
 }
 
