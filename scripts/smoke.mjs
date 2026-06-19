@@ -184,6 +184,20 @@ if (
   console.error("[smoke:task-brief] expected execution brief with owner/verifier prompt paths");
   process.exit(1);
 }
+const testerInbox = JSON.parse(
+  run("task-inbox-tester", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
+).inbox;
+if (testerInbox.counts.pendingReview !== 0 || testerInbox.tasks?.[0]?.relation !== "verifier_observe") {
+  console.error("[smoke:task-inbox] expected tester inbox summary for completed task");
+  process.exit(1);
+}
+const testerNext = JSON.parse(
+  run("task-next-tester", ["./src/index.js", "task:next", "--role", "tester", "--worker", "tester-worker"]).stdout
+).next;
+if (testerNext.candidate !== null || testerNext.brief !== null) {
+  console.error("[smoke:task-next] expected no next tester candidate after completion");
+  process.exit(1);
+}
 
 const listedTasks = JSON.parse(run("task-list-verify", ["./src/index.js", "task:list"]).stdout).tasks;
 const smokeTask = listedTasks.find((task) => task.id === "task-3");
@@ -332,6 +346,20 @@ if (
   rejectedTask.reviewedBy !== "tester"
 ) {
   console.error("[smoke:task-reject] expected claimed return-to-worker review outcome");
+  process.exit(1);
+}
+const reviewInbox = JSON.parse(
+  run("task-inbox-reviewer", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
+).inbox;
+if (reviewInbox.counts.pendingReview !== 0 || reviewInbox.tasks?.[0]?.relation !== "verifier_observe") {
+  console.error("[smoke:task-inbox] expected verifier inbox to reflect post-rejection observe state");
+  process.exit(1);
+}
+const ownerNext = JSON.parse(
+  run("task-next-owner", ["./src/index.js", "task:next", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
+).next;
+if (ownerNext.candidate?.id !== "task-1" || ownerNext.candidate?.relation !== "owner_claimed_by_worker") {
+  console.error("[smoke:task-next] expected owner next candidate to continue claimed task");
   process.exit(1);
 }
 
@@ -1034,6 +1062,97 @@ if (
 ) {
   console.error("[smoke:task-add-mcp] expected persisted MCP metadata");
   console.error(taskAddMcp.stderr || taskAddMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("inbox-task-add-1", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "claimable task",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/index.js",
+  "--acceptance",
+  "claim later",
+  "--verification",
+  "inbox ranks claimable"
+]);
+run("inbox-task-add-2", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "review task",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/mcp.js",
+  "--acceptance",
+  "review later",
+  "--verification",
+  "inbox ranks review"
+]);
+run("inbox-task-claim-2", ["./src/index.js", "task:claim", "--id", "task-2", "--by", "worker-review"]);
+run("inbox-task-ready-2", ["./src/index.js", "task:review", "--id", "task-2", "--by", "worker-review"]);
+const cliInbox = JSON.parse(
+  run("task-inbox-cli", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
+).inbox;
+if (cliInbox.tasks?.[0]?.id !== "task-2" || cliInbox.tasks?.[0]?.relation !== "verifier_review") {
+  console.error("[smoke:task-inbox] expected verifier review task to rank first");
+  process.exit(1);
+}
+const cliNext = JSON.parse(
+  run("task-next-cli", ["./src/index.js", "task:next", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
+).next;
+if (cliNext.candidate?.id !== "task-2" || cliNext.brief?.recommendedNextAction !== "review_and_decide") {
+  console.error("[smoke:task-next] expected verifier next task to include execution brief");
+  process.exit(1);
+}
+const inboxMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_inbox",
+      arguments: { role: "tester", workerId: "tester-worker" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "task_next",
+      arguments: { role: "tester", workerId: "tester-worker", mode: "verifier" }
+    }
+  })
+].join("\n") + "\n";
+const inboxMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: inboxMcpInput,
+  encoding: "utf8"
+});
+const inboxMcpLines = inboxMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const inboxMcpPayload = JSON.parse(JSON.parse(inboxMcpLines[1]).result.content[0].text);
+const nextMcpPayload = JSON.parse(JSON.parse(inboxMcpLines[2]).result.content[0].text);
+if (
+  inboxMcp.status !== 0 ||
+  inboxMcpPayload.inbox?.tasks?.[0]?.id !== "task-2" ||
+  nextMcpPayload.next?.candidate?.id !== "task-2" ||
+  nextMcpPayload.next?.brief?.roles?.verifier?.promptPath !== ".codex/agents/tester.md"
+) {
+  console.error("[smoke:task-inbox-mcp] expected inbox and next-task MCP surfaces");
+  console.error(inboxMcp.stderr || inboxMcp.stdout);
   process.exit(1);
 }
 
