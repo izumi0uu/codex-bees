@@ -105,6 +105,59 @@ export function getSwarm(id) {
   return swarm ? normalizeSwarm(swarm) : null;
 }
 
+export function swarmOverview(id) {
+  const state = loadState();
+  const swarm = state.swarms.find((item) => item.id === id);
+  if (!swarm) {
+    return null;
+  }
+
+  const normalizedSwarm = normalizeSwarm(swarm);
+  const swarmTasks = state.tasks
+    .map(normalizeTask)
+    .filter((task) => task.swarmId === normalizedSwarm.id);
+
+  const laneSummaries = normalizedSwarm.lanes.map((lane) => {
+    const task = lane.taskId
+      ? swarmTasks.find((item) => item.id === lane.taskId) ?? null
+      : swarmTasks.find((item) => item.lane === lane.lane) ?? null;
+
+    return {
+      lane: lane.lane,
+      summary: lane.summary,
+      owner: lane.owner,
+      verifier: lane.verifier,
+      taskId: lane.taskId,
+      queueStatus: task?.queueStatus ?? null,
+      claimedBy: task?.claimedBy ?? null,
+      status: task?.status ?? null,
+      scope: lane.scope,
+      ready: task?.queueStatus === "queued" || task?.queueStatus === "released",
+      done: task?.queueStatus === "done"
+    };
+  });
+
+  const counts = {
+    totalLanes: laneSummaries.length,
+    queued: laneSummaries.filter((lane) => lane.queueStatus === "queued").length,
+    claimed: laneSummaries.filter((lane) => lane.queueStatus === "claimed").length,
+    blocked: laneSummaries.filter((lane) => lane.queueStatus === "blocked").length,
+    readyForReview: laneSummaries.filter((lane) => lane.queueStatus === "ready_for_review").length,
+    released: laneSummaries.filter((lane) => lane.queueStatus === "released").length,
+    done: laneSummaries.filter((lane) => lane.queueStatus === "done").length,
+    unqueued: laneSummaries.filter((lane) => !lane.taskId).length
+  };
+
+  return {
+    swarm: normalizedSwarm,
+    counts,
+    lanes: laneSummaries,
+    tasks: swarmTasks,
+    nextLane:
+      laneSummaries.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null
+  };
+}
+
 export function addTask(input) {
   const state = loadState();
   const task = buildTask(input, state.nextId);
@@ -290,6 +343,73 @@ export function queueSwarmTasks(input) {
   return {
     swarm: updated,
     created
+  };
+}
+
+export function dispatchSwarmLane(input) {
+  const state = loadState();
+  const swarmIndex = state.swarms.findIndex((swarm) => swarm.id === input.id);
+  if (swarmIndex < 0) {
+    return null;
+  }
+
+  const swarm = normalizeSwarm(state.swarms[swarmIndex]);
+  if (!input.claimedBy) {
+    return { error: "claimedBy is required for swarm dispatch" };
+  }
+  if (swarm.status === "cancelled" || swarm.status === "completed") {
+    return { error: `Cannot dispatch lanes from swarm in status ${swarm.status}` };
+  }
+  if (!Array.isArray(swarm.lanes) || swarm.lanes.length === 0) {
+    return { error: `Swarm ${swarm.id} has no lanes to dispatch` };
+  }
+
+  const candidateLane = swarm.lanes.find((lane) => {
+    if (!lane.taskId) {
+      return false;
+    }
+    const task = state.tasks.map(normalizeTask).find((item) => item.id === lane.taskId);
+    if (!task) {
+      return false;
+    }
+    if (input.owner && lane.owner && lane.owner !== input.owner) {
+      return false;
+    }
+    return task.queueStatus === "queued" || task.queueStatus === "released";
+  });
+
+  if (!candidateLane) {
+    return { error: `No dispatchable lane available for swarm ${swarm.id}` };
+  }
+
+  const taskIndex = state.tasks.findIndex((task) => task.id === candidateLane.taskId);
+  if (taskIndex < 0) {
+    return { error: `Missing task for lane ${candidateLane.lane}` };
+  }
+
+  const currentTask = normalizeTask(state.tasks[taskIndex]);
+  const nextTask = normalizeTask({
+    ...currentTask,
+    queueStatus: "claimed",
+    claimedBy: input.claimedBy,
+    updatedAt: new Date().toISOString()
+  });
+  state.tasks[taskIndex] = nextTask;
+
+  const nextSwarm = normalizeSwarm({
+    ...swarm,
+    status: swarm.status === "planned" ? "active" : swarm.status,
+    ...(input.owner !== undefined ? { owner: input.owner } : {}),
+    updatedAt: new Date().toISOString()
+  });
+  state.swarms[swarmIndex] = nextSwarm;
+
+  saveState(state);
+
+  return {
+    swarm: nextSwarm,
+    lane: normalizeSwarmLane(candidateLane),
+    task: nextTask
   };
 }
 
@@ -502,7 +622,10 @@ function transitionTask(input) {
     return { error: `Invalid queue status: ${nextQueueStatus}` };
   }
 
-  if (current.queueStatus !== nextQueueStatus && !canTransition(current.queueStatus, nextQueueStatus)) {
+  if (
+    current.queueStatus !== nextQueueStatus &&
+    !canTransition(current.queueStatus, nextQueueStatus)
+  ) {
     return {
       error: `Cannot transition task from ${current.queueStatus} to ${nextQueueStatus}`
     };
