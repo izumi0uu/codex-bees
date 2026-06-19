@@ -4478,6 +4478,7 @@ const verifierPackCli = JSON.parse(
 if (
   verifierPackCli.kind !== "runtime_verifier_pack" ||
   verifierPackCli.recommendedSurface !== "worker:closeout" ||
+  verifierPackCli.recommendedReason !== "decision_bundle_ready" ||
   verifierPackCli.next?.decision?.id !== "task-2" ||
   verifierPackCli.surfaces?.review?.counts?.totalPendingReview !== 1 ||
   verifierPackCli.surfaces?.closeout?.report?.task?.id !== "task-2"
@@ -4871,6 +4872,7 @@ const verifierPackMcpPayload = JSON.parse(JSON.parse(verifierPackMcpLines[1]).re
 if (
   verifierPackMcp.status !== 0 ||
   verifierPackMcpPayload.verifierPack?.recommendedSurface !== "worker:closeout" ||
+  verifierPackMcpPayload.verifierPack?.recommendedReason !== "decision_bundle_ready" ||
   verifierPackMcpPayload.verifierPack?.next?.decision?.id !== "task-2" ||
   verifierPackMcpPayload.verifierPack?.surfaces?.closeout?.report?.task?.id !== "task-2"
 ) {

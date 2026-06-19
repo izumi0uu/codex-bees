@@ -2038,6 +2038,7 @@ export function runtimeVerifierPack(input = {}) {
     mode: "verifier"
   });
   const recommendedSurface = deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role: input.role });
+  const recommendedReason = deriveRuntimeVerifierPackReason({ review, bundle, closeout, next });
 
   return {
     kind: "runtime_verifier_pack",
@@ -2045,6 +2046,7 @@ export function runtimeVerifierPack(input = {}) {
     workerId: input.workerId,
     mode: "verifier",
     recommendedSurface,
+    recommendedReason,
     overview: {
       review: review?.counts ?? null,
       bundle: bundle?.currentTask ? { currentTask: bundle.currentTask.id } : { currentTask: null }
@@ -5111,6 +5113,22 @@ function deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role
     return `task:next --role ${role} --mode verifier`;
   }
   return "runtime:review";
+}
+
+function deriveRuntimeVerifierPackReason({ review, bundle, closeout, next }) {
+  if (bundle?.currentTask?.id) {
+    return "decision_bundle_ready";
+  }
+  if (closeout?.report?.task?.id) {
+    return "closeout_report_ready";
+  }
+  if (review?.next?.taskId) {
+    return "review_queue_waiting";
+  }
+  if (next?.candidate?.id) {
+    return "verifier_next_candidate";
+  }
+  return "default_review_priority";
 }
 
 function buildRuntimeVerifierPackSummary(recommendedSurface, bundle, review) {
