@@ -232,6 +232,18 @@ if (
   console.error("[smoke:runtime-summary-pack] expected top-level runtime summary pack");
   process.exit(1);
 }
+const runtimeLeaderPackInitial = JSON.parse(
+  run("runtime-leader-pack-initial", ["./src/index.js", "runtime:leader-pack"]).stdout
+).leaderPack;
+if (
+  runtimeLeaderPackInitial.kind !== "runtime_leader_pack" ||
+  !runtimeLeaderPackInitial.recommendedSurface ||
+  !runtimeLeaderPackInitial.overview ||
+  !runtimeLeaderPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-leader-pack] expected top-level runtime leader pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1501,6 +1513,18 @@ if (
   console.error("[smoke:runtime-summary-pack] expected CLI summary pack to recommend focus");
   process.exit(1);
 }
+const runtimeLeaderPackCli = JSON.parse(
+  run("runtime-leader-pack-cli", ["./src/index.js", "runtime:leader-pack"]).stdout
+).leaderPack;
+if (
+  runtimeLeaderPackCli.recommendedSurface !== "runtime:dispatch" ||
+  runtimeLeaderPackCli.next?.workspace?.swarmId !== "swarm-1" ||
+  runtimeLeaderPackCli.overview?.dispatch?.totalAssignments !== 1 ||
+  runtimeLeaderPackCli.surfaces?.queue?.next?.swarmId !== "swarm-1"
+) {
+  console.error("[smoke:runtime-leader-pack] expected CLI leader pack to recommend dispatch");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1784,6 +1808,36 @@ if (
 ) {
   console.error("[smoke:runtime-summary-pack-mcp] expected MCP runtime summary pack");
   console.error(runtimeSummaryPackMcp.stderr || runtimeSummaryPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeLeaderPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_leader_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeLeaderPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeLeaderPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeLeaderPackMcpLines = runtimeLeaderPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeLeaderPackMcpPayload = JSON.parse(JSON.parse(runtimeLeaderPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeLeaderPackMcp.status !== 0 ||
+  runtimeLeaderPackMcpPayload.leaderPack?.recommendedSurface !== "runtime:dispatch" ||
+  runtimeLeaderPackMcpPayload.leaderPack?.surfaces?.queue?.next?.swarmId !== "swarm-1"
+) {
+  console.error("[smoke:runtime-leader-pack-mcp] expected MCP runtime leader pack");
+  console.error(runtimeLeaderPackMcp.stderr || runtimeLeaderPackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
