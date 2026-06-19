@@ -8,6 +8,7 @@ import {
   addTasks,
   annotateTask,
   approveTask,
+  approveTaskLifecycle,
   blockSwarm,
   blockTask,
   blockTaskLifecycle,
@@ -2123,7 +2124,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_approve requires arguments.reviewedBy");
       }
 
-      const task = approveTask({
+      const task = approveTaskLifecycle({
         id: params.arguments.id,
         reviewedBy: params.arguments.reviewedBy,
         notes: params.arguments.notes,

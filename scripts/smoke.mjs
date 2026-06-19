@@ -745,6 +745,41 @@ if (
 
 rmSync(".codex-bees", { recursive: true, force: true });
 
+run("task-approve-lifecycle-add", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "approve lifecycle task",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/index.js",
+  "--acceptance",
+  "approve emits lifecycle envelope",
+  "--verification",
+  "task:approve returns machine-readable reason"
+]);
+run("task-approve-lifecycle-claim", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "approve-worker"]);
+run("task-approve-lifecycle-review", ["./src/index.js", "task:review", "--id", "task-1", "--by", "approve-worker"]);
+const approveLifecycleCli = JSON.parse(
+  run("task-approve-lifecycle-cli", ["./src/index.js", "task:approve", "--id", "task-1", "--by", "tester", "--evidence", "approve smoke"]).stdout
+).approved;
+if (
+  approveLifecycleCli.kind !== "task_lifecycle" ||
+  approveLifecycleCli.recommendedReason !== "task_approved" ||
+  approveLifecycleCli.task?.id !== "task-1" ||
+  approveLifecycleCli.task?.queueStatus !== "done" ||
+  approveLifecycleCli.task?.reviewOutcome !== "approved" ||
+  approveLifecycleCli.task?.reviewedBy !== "tester"
+) {
+  console.error("[smoke:task-approve] expected CLI task approve lifecycle payload");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+
 const firstAdd = run("durability-add-1", [
   "./src/index.js",
   "task:add",
@@ -4767,7 +4802,10 @@ if (
   taskReclaimPayload?.claimed?.task?.claimedBy !== "mcp-worker" ||
   taskReadyForReviewAgainPayload?.readyForReview?.kind !== "task_lifecycle" ||
   taskReadyForReviewAgainPayload?.readyForReview?.recommendedReason !== "task_ready_for_review" ||
-  taskApprovePayload?.approved?.queueStatus !== "done" ||
+  taskApprovePayload?.approved?.kind !== "task_lifecycle" ||
+  taskApprovePayload?.approved?.recommendedReason !== "task_approved" ||
+  taskApprovePayload?.approved?.task?.queueStatus !== "done" ||
+  taskApprovePayload?.approved?.task?.reviewedBy !== "tester" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||

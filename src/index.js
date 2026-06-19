@@ -13,6 +13,7 @@ import {
   addTasks,
   annotateTask,
   approveTask,
+  approveTaskLifecycle,
   blockSwarm,
   blockTask,
   blockTaskLifecycle,
@@ -1017,7 +1018,7 @@ function handleTaskApprove() {
   const reviewedBy = requireOption("--by");
   const notes = readOption("--notes");
   const reviewEvidence = readListOption("--evidence", "|");
-  const task = approveTask({ id, reviewedBy, notes, reviewEvidence });
+  const task = approveTaskLifecycle({ id, reviewedBy, notes, reviewEvidence });
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);

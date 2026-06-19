@@ -3215,6 +3215,18 @@ export function approveTask(input) {
   });
 }
 
+export function approveTaskLifecycle(input) {
+  const result = approveTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_lifecycle",
+    recommendedReason: "task_approved",
+    task: result
+  };
+}
+
 export function rejectTask(input) {
   return transitionTask({
     ...input,
