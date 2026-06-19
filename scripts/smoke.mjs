@@ -272,6 +272,7 @@ const runtimeRecoveryInitial = JSON.parse(
 ).recovery;
 if (
   runtimeRecoveryInitial.kind !== "runtime_recovery" ||
+  runtimeRecoveryInitial.recommendedReason !== "no_recovery_needed" ||
   !Array.isArray(runtimeRecoveryInitial.groups) ||
   runtimeRecoveryInitial.counts?.totalEntries !== 0 ||
   runtimeRecoveryInitial.next !== null
@@ -924,6 +925,7 @@ const reviewRuntimeRecovery = JSON.parse(
   run("runtime-recovery-review-loop", ["./src/index.js", "runtime:recovery"]).stdout
 ).recovery;
 if (
+  reviewRuntimeRecovery.recommendedReason !== "changes_requested_priority" ||
   reviewRuntimeRecovery.counts?.changesRequested !== 1 ||
   reviewRuntimeRecovery.next?.taskId !== "task-1" ||
   reviewRuntimeRecovery.next?.recoveryType !== "changes_requested" ||
@@ -2728,6 +2730,7 @@ const runtimeRecoveryCli = JSON.parse(
   run("runtime-recovery-cli", ["./src/index.js", "runtime:recovery"]).stdout
 ).recovery;
 if (
+  runtimeRecoveryCli.recommendedReason !== "blocked_recovery_priority" ||
   runtimeRecoveryCli.counts?.recoveryGroups < 1 ||
   runtimeRecoveryCli.counts?.blocked !== 1 ||
   runtimeRecoveryCli.next?.taskId !== "task-1" ||
@@ -3328,6 +3331,7 @@ const runtimeRecoveryMcpLines = runtimeRecoveryMcp.stdout
 const runtimeRecoveryMcpPayload = JSON.parse(JSON.parse(runtimeRecoveryMcpLines[1]).result.content[0].text);
 if (
   runtimeRecoveryMcp.status !== 0 ||
+  runtimeRecoveryMcpPayload.recovery?.recommendedReason !== "blocked_recovery_priority" ||
   runtimeRecoveryMcpPayload.recovery?.counts?.blocked !== 1 ||
   runtimeRecoveryMcpPayload.recovery?.next?.taskId !== "task-1"
 ) {

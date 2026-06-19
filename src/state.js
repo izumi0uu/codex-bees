@@ -1157,9 +1157,11 @@ export function runtimeRecovery() {
 
   const groups = [...groupsByType.values()].sort(compareRuntimeRecoveryGroups);
   const next = groups[0]?.entries?.[0] ?? null;
+  const recommendedReason = deriveRuntimeRecoveryReason({ groups, next });
 
   return {
     kind: "runtime_recovery",
+    recommendedReason,
     counts: {
       recoveryGroups: groups.length,
       totalEntries: entries.length,
@@ -4574,6 +4576,22 @@ function deriveRuntimeRolesReason({ roles, next }) {
     return "tracked_roles_visible";
   }
   return "no_roles_tracked";
+}
+
+function deriveRuntimeRecoveryReason({ groups, next }) {
+  if (next?.recoveryType === "blocked_recovery") {
+    return "blocked_recovery_priority";
+  }
+  if (next?.recoveryType === "changes_requested") {
+    return "changes_requested_priority";
+  }
+  if (next?.recoveryType === "released_repickup") {
+    return "released_repickup_priority";
+  }
+  if ((groups?.length ?? 0) > 0) {
+    return "recovery_groups_visible";
+  }
+  return "no_recovery_needed";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
