@@ -328,6 +328,18 @@ if (
   console.error("[smoke:runtime-signal-pack] expected top-level runtime signal pack");
   process.exit(1);
 }
+const runtimeHandoffPackInitial = JSON.parse(
+  run("runtime-handoff-pack-initial", ["./src/index.js", "runtime:handoff-pack"]).stdout
+).handoffPack;
+if (
+  runtimeHandoffPackInitial.kind !== "runtime_handoff_pack" ||
+  !runtimeHandoffPackInitial.recommendedSurface ||
+  !runtimeHandoffPackInitial.overview ||
+  !runtimeHandoffPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-handoff-pack] expected top-level runtime handoff pack");
+  process.exit(1);
+}
 const runtimeReviewInitial = JSON.parse(
   run("runtime-review-initial", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -1782,6 +1794,19 @@ if (
   console.error("[smoke:runtime-signal-pack] expected CLI signal pack to recommend focus");
   process.exit(1);
 }
+const runtimeHandoffPackCli = JSON.parse(
+  run("runtime-handoff-pack-cli", ["./src/index.js", "runtime:handoff-pack"]).stdout
+).handoffPack;
+if (
+  runtimeHandoffPackCli.recommendedSurface !== "runtime:handoffs" ||
+  runtimeHandoffPackCli.next?.handoff?.taskId !== "task-2" ||
+  runtimeHandoffPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeHandoffPackCli.next?.review?.taskId !== "task-2" ||
+  runtimeHandoffPackCli.next?.recovery?.taskId !== "task-1"
+) {
+  console.error("[smoke:runtime-handoff-pack] expected CLI handoff pack to recommend handoffs");
+  process.exit(1);
+}
 const runtimeReviewCli = JSON.parse(
   run("runtime-review-cli", ["./src/index.js", "runtime:review"]).stdout
 ).review;
@@ -2339,6 +2364,37 @@ if (
 ) {
   console.error("[smoke:runtime-signal-pack-mcp] expected MCP runtime signal pack");
   console.error(runtimeSignalPackMcp.stderr || runtimeSignalPackMcp.stdout);
+  process.exit(1);
+}
+const runtimeHandoffPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_handoff_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeHandoffPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeHandoffPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeHandoffPackMcpLines = runtimeHandoffPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeHandoffPackMcpPayload = JSON.parse(JSON.parse(runtimeHandoffPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeHandoffPackMcp.status !== 0 ||
+  runtimeHandoffPackMcpPayload.handoffPack?.recommendedSurface !== "runtime:handoffs" ||
+  runtimeHandoffPackMcpPayload.handoffPack?.next?.handoff?.taskId !== "task-2" ||
+  runtimeHandoffPackMcpPayload.handoffPack?.next?.recovery?.taskId !== "task-1"
+) {
+  console.error("[smoke:runtime-handoff-pack-mcp] expected MCP runtime handoff pack");
+  console.error(runtimeHandoffPackMcp.stderr || runtimeHandoffPackMcp.stdout);
   process.exit(1);
 }
 const runtimeReviewMcpInput = [
