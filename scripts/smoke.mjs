@@ -1093,6 +1093,24 @@ if (
   console.error("[smoke:leader-assignment-dispatch-pack] expected CLI batch leader dispatch package");
   process.exit(1);
 }
+const leaderAssignmentDispatchPackMappedCli = JSON.parse(
+  run("leader-assignment-dispatch-pack-mapped-cli", [
+    "./src/index.js",
+    "leader:assignment-dispatch-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).assignmentDispatchPack;
+const leaderAssignmentDispatchPackMappedCliByOwner = new Map(
+  (leaderAssignmentDispatchPackMappedCli.groups ?? []).map((group) => [group.owner?.id, group])
+);
+if (
+  leaderAssignmentDispatchPackMappedCliByOwner.get("executor")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2" ||
+  leaderAssignmentDispatchPackMappedCliByOwner.get("explore")?.previewCommand !== "node ./src/index.js task:assignment-preview --role explore --worker worker-explore --task task-1"
+) {
+  console.error("[smoke:leader-assignment-dispatch-pack] expected CLI batch dispatch pack to honor per-role worker mapping");
+  process.exit(1);
+}
 const runtimeDispatchPackMultiOwnerCli = JSON.parse(
   run("runtime-dispatch-pack-multi-owner-cli", ["./src/index.js", "runtime:dispatch-pack"]).stdout
 ).dispatchPack;
@@ -1115,6 +1133,36 @@ if (
   runtimeLeaderPackMultiOwnerCli.surfaces?.assignmentDispatchPack?.groups?.length !== 2
 ) {
   console.error("[smoke:runtime-leader-pack] expected CLI leader pack to prioritize batch leader dispatch when multiple owner groups are ready");
+  process.exit(1);
+}
+const runtimeDispatchPackMappedCli = JSON.parse(
+  run("runtime-dispatch-pack-mapped-cli", [
+    "./src/index.js",
+    "runtime:dispatch-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).dispatchPack;
+if (
+  runtimeDispatchPackMappedCli.surfaces?.assignmentDispatchPack?.groups?.find((group) => group.owner?.id === "executor")?.workerId !== "worker-executor" ||
+  runtimeDispatchPackMappedCli.surfaces?.assignmentDispatchPack?.groups?.find((group) => group.owner?.id === "explore")?.workerId !== "worker-explore"
+) {
+  console.error("[smoke:runtime-dispatch-pack] expected CLI dispatch pack to carry mapped worker ids into batch dispatch surface");
+  process.exit(1);
+}
+const runtimeLeaderPackMappedCli = JSON.parse(
+  run("runtime-leader-pack-mapped-cli", [
+    "./src/index.js",
+    "runtime:leader-pack",
+    "--workers",
+    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+  ]).stdout
+).leaderPack;
+if (
+  runtimeLeaderPackMappedCli.surfaces?.assignmentDispatchPack?.groups?.find((group) => group.owner?.id === "executor")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2" ||
+  runtimeLeaderPackMappedCli.surfaces?.assignmentDispatchPack?.groups?.find((group) => group.owner?.id === "explore")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role explore --worker worker-explore --task task-1"
+) {
+  console.error("[smoke:runtime-leader-pack] expected CLI leader pack to propagate mapped worker commands into batch dispatch surface");
   process.exit(1);
 }
 const assignmentPackExecutorCli = JSON.parse(
@@ -1738,6 +1786,39 @@ if (
   console.error(leaderAssignmentDispatchPackMcp.stderr || leaderAssignmentDispatchPackMcp.stdout);
   process.exit(1);
 }
+const leaderAssignmentDispatchPackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "leader_assignment_dispatch_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const leaderAssignmentDispatchPackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: leaderAssignmentDispatchPackMappedMcpInput,
+  encoding: "utf8"
+});
+const leaderAssignmentDispatchPackMappedMcpLines = leaderAssignmentDispatchPackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const leaderAssignmentDispatchPackMappedMcpPayload = JSON.parse(JSON.parse(leaderAssignmentDispatchPackMappedMcpLines[1]).result.content[0].text);
+const leaderAssignmentDispatchPackMappedMcpByOwner = new Map(
+  (leaderAssignmentDispatchPackMappedMcpPayload.assignmentDispatchPack?.groups ?? []).map((group) => [group.owner?.id, group])
+);
+if (
+  leaderAssignmentDispatchPackMappedMcp.status !== 0 ||
+  leaderAssignmentDispatchPackMappedMcpByOwner.get("executor")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2" ||
+  leaderAssignmentDispatchPackMappedMcpByOwner.get("explore")?.previewCommand !== "node ./src/index.js task:assignment-preview --role explore --worker worker-explore --task task-1"
+) {
+  console.error("[smoke:leader-assignment-dispatch-pack-mcp] expected MCP batch dispatch pack to honor per-role worker mapping");
+  console.error(leaderAssignmentDispatchPackMappedMcp.stderr || leaderAssignmentDispatchPackMappedMcp.stdout);
+  process.exit(1);
+}
 const runtimeDispatchPackMultiOwnerMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -1798,6 +1879,66 @@ if (
 ) {
   console.error("[smoke:runtime-leader-pack-mcp] expected MCP leader pack to prioritize batch leader dispatch when multiple owner groups are ready");
   console.error(runtimeLeaderPackMultiOwnerMcp.stderr || runtimeLeaderPackMultiOwnerMcp.stdout);
+  process.exit(1);
+}
+const runtimeDispatchPackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_dispatch_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const runtimeDispatchPackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeDispatchPackMappedMcpInput,
+  encoding: "utf8"
+});
+const runtimeDispatchPackMappedMcpLines = runtimeDispatchPackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeDispatchPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeDispatchPackMappedMcpLines[1]).result.content[0].text);
+if (
+  runtimeDispatchPackMappedMcp.status !== 0 ||
+  runtimeDispatchPackMappedMcpPayload.dispatchPack?.surfaces?.assignmentDispatchPack?.groups?.find((group) => group.owner?.id === "executor")?.workerId !== "worker-executor" ||
+  runtimeDispatchPackMappedMcpPayload.dispatchPack?.surfaces?.assignmentDispatchPack?.groups?.find((group) => group.owner?.id === "explore")?.workerId !== "worker-explore"
+) {
+  console.error("[smoke:runtime-dispatch-pack-mcp] expected MCP dispatch pack to carry mapped worker ids into batch dispatch surface");
+  console.error(runtimeDispatchPackMappedMcp.stderr || runtimeDispatchPackMappedMcp.stdout);
+  process.exit(1);
+}
+const runtimeLeaderPackMappedMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_leader_pack",
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+    }
+  })
+].join("\n") + "\n";
+const runtimeLeaderPackMappedMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeLeaderPackMappedMcpInput,
+  encoding: "utf8"
+});
+const runtimeLeaderPackMappedMcpLines = runtimeLeaderPackMappedMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeLeaderPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeLeaderPackMappedMcpLines[1]).result.content[0].text);
+if (
+  runtimeLeaderPackMappedMcp.status !== 0 ||
+  runtimeLeaderPackMappedMcpPayload.leaderPack?.surfaces?.assignmentDispatchPack?.groups?.find((group) => group.owner?.id === "executor")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2" ||
+  runtimeLeaderPackMappedMcpPayload.leaderPack?.surfaces?.assignmentDispatchPack?.groups?.find((group) => group.owner?.id === "explore")?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role explore --worker worker-explore --task task-1"
+) {
+  console.error("[smoke:runtime-leader-pack-mcp] expected MCP leader pack to propagate mapped worker commands into batch dispatch surface");
+  console.error(runtimeLeaderPackMappedMcp.stderr || runtimeLeaderPackMappedMcp.stdout);
   process.exit(1);
 }
 const assignmentPackExecutorMcpInput = [
