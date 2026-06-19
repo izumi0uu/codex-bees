@@ -1729,6 +1729,17 @@ run("swarm-dispatch-blocked", [
   "--owner",
   "executor"
 ]);
+const blockedSwarm = JSON.parse(
+  run("swarm-block-lifecycle", ["./src/index.js", "swarm:block", "--id", "swarm-1", "--owner", "leader"]).stdout
+).blocked;
+if (
+  blockedSwarm.kind !== "swarm_lifecycle" ||
+  blockedSwarm.recommendedReason !== "swarm_blocked" ||
+  blockedSwarm.swarm?.status !== "blocked"
+) {
+  console.error("[smoke:swarm-block] expected blocked swarm lifecycle payload");
+  process.exit(1);
+}
 run("swarm-task-block", [
   "./src/index.js",
   "task:block",

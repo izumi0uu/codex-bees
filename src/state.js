@@ -3209,10 +3209,18 @@ export function activateSwarm(input) {
 }
 
 export function blockSwarm(input) {
-  return transitionSwarm({
+  const result = transitionSwarm({
     ...input,
     nextStatus: "blocked"
   });
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "swarm_lifecycle",
+    recommendedReason: "swarm_blocked",
+    swarm: result
+  };
 }
 
 export function completeSwarm(input) {
