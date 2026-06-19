@@ -700,6 +700,39 @@ if (
 
 rmSync(".codex-bees", { recursive: true, force: true });
 
+run("task-review-lifecycle-add", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "review lifecycle task",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/state.js",
+  "--acceptance",
+  "review emits lifecycle envelope",
+  "--verification",
+  "task:review returns machine-readable reason"
+]);
+run("task-review-lifecycle-claim", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "review-worker"]);
+const reviewLifecycleCli = JSON.parse(
+  run("task-review-lifecycle-cli", ["./src/index.js", "task:review", "--id", "task-1", "--by", "review-worker"]).stdout
+).readyForReview;
+if (
+  reviewLifecycleCli.kind !== "task_lifecycle" ||
+  reviewLifecycleCli.recommendedReason !== "task_ready_for_review" ||
+  reviewLifecycleCli.task?.id !== "task-1" ||
+  reviewLifecycleCli.task?.queueStatus !== "ready_for_review" ||
+  reviewLifecycleCli.task?.claimedBy !== "review-worker"
+) {
+  console.error("[smoke:task-review] expected CLI task review lifecycle payload");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+
 const firstAdd = run("durability-add-1", [
   "./src/index.js",
   "task:add",
@@ -4611,6 +4644,9 @@ const taskCheckPayload = taskCheckText ? JSON.parse(taskCheckText) : null;
 const taskClaimResult = taskAddMcpLines.length >= 8 ? JSON.parse(taskAddMcpLines[7]) : null;
 const taskClaimText = taskClaimResult?.result?.content?.[0]?.text;
 const taskClaimPayload = taskClaimText ? JSON.parse(taskClaimText) : null;
+const taskReadyForReviewResult = taskAddMcpLines.length >= 9 ? JSON.parse(taskAddMcpLines[8]) : null;
+const taskReadyForReviewText = taskReadyForReviewResult?.result?.content?.[0]?.text;
+const taskReadyForReviewPayload = taskReadyForReviewText ? JSON.parse(taskReadyForReviewText) : null;
 const taskRejectResult = taskAddMcpLines.length >= 10 ? JSON.parse(taskAddMcpLines[9]) : null;
 const taskRejectText = taskRejectResult?.result?.content?.[0]?.text;
 const taskRejectPayload = taskRejectText ? JSON.parse(taskRejectText) : null;
@@ -4701,6 +4737,9 @@ if (
   taskClaimPayload?.claimed?.kind !== "task_lifecycle" ||
   taskClaimPayload?.claimed?.recommendedReason !== "task_claimed" ||
   taskClaimPayload?.claimed?.task?.claimedBy !== "mcp-worker" ||
+  taskReadyForReviewPayload?.readyForReview?.kind !== "task_lifecycle" ||
+  taskReadyForReviewPayload?.readyForReview?.recommendedReason !== "task_ready_for_review" ||
+  taskReadyForReviewPayload?.readyForReview?.task?.queueStatus !== "ready_for_review" ||
   !mcpTask ||
   mcpTask.verifier !== "tester" ||
   taskCheckPayload?.validation?.ready !== true ||

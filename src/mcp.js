@@ -32,6 +32,7 @@ import {
   listSwarms,
   listTasks,
   markTaskReadyForReview,
+  markTaskReadyForReviewLifecycle,
   queueSwarmTasks,
   rejectTask,
   releaseTask,
@@ -2075,7 +2076,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_ready_for_review requires arguments.id");
       }
 
-      const task = markTaskReadyForReview({
+      const task = markTaskReadyForReviewLifecycle({
         id: params.arguments.id,
         claimedBy: params.arguments.claimedBy,
         notes: params.arguments.notes

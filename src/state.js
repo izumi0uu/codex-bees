@@ -3189,6 +3189,18 @@ export function markTaskReadyForReview(input) {
   });
 }
 
+export function markTaskReadyForReviewLifecycle(input) {
+  const result = markTaskReadyForReview(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_lifecycle",
+    recommendedReason: "task_ready_for_review",
+    task: result
+  };
+}
+
 export function completeTask(input) {
   return transitionTask({
     ...input,

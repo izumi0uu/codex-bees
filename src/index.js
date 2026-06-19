@@ -37,6 +37,7 @@ import {
   listSwarms,
   listTasks,
   markTaskReadyForReview,
+  markTaskReadyForReviewLifecycle,
   queueSwarmTasks,
   rejectTask,
   releaseTask,
@@ -981,7 +982,7 @@ function handleTaskReview() {
   const id = requireOption("--id");
   const claimedBy = readOption("--by");
   const notes = readOption("--notes");
-  const task = markTaskReadyForReview({ id, claimedBy, notes });
+  const task = markTaskReadyForReviewLifecycle({ id, claimedBy, notes });
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);
