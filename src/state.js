@@ -100,6 +100,12 @@ export function listSwarms(filters = {}) {
   return filterSwarms(loadState().swarms, filters);
 }
 
+export function listSwarmOverviews(filters = {}) {
+  return filterSwarms(loadState().swarms, filters)
+    .map((swarm) => swarmOverview(swarm.id))
+    .filter(Boolean);
+}
+
 export function getSwarm(id) {
   const swarm = loadState().swarms.find((item) => item.id === id);
   return swarm ? normalizeSwarm(swarm) : null;
