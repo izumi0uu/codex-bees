@@ -51,6 +51,7 @@ import {
   runtimeQueuePack,
   runtimeRecoveryPack,
   runtimeRecovery,
+  runtimeRolePack,
   runtimeReviewPack,
   runtimeSessionPack,
   runtimeSignalPack,
@@ -124,6 +125,7 @@ function printHelp() {
   write(`  codex-bees runtime:queue-pack Build the queue-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery-pack Build the recovery-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
+  write(`  codex-bees runtime:role-pack Build the role-oriented runtime package\n`);
   write(`  codex-bees runtime:review-pack Build the review-oriented runtime package\n`);
   write(`  codex-bees runtime:session-pack Build the per-worker runtime session package\n`);
   write(`  codex-bees runtime:signal-pack Build the signal-oriented runtime package\n`);
@@ -339,6 +341,21 @@ function printRuntimeOwnerPack() {
     ownerPack: runtimeOwnerPack({
       role,
       workerId
+    })
+  }, null, 2) + "\n");
+}
+
+function printRuntimeRolePack() {
+  const role = readOption("--role");
+  if (!role) {
+    writeErr("runtime:role-pack requires --role\n");
+    exit(1);
+  }
+  write(JSON.stringify({
+    rolePack: runtimeRolePack({
+      role,
+      workerId: readOption("--worker"),
+      mode: readOption("--mode")
     })
   }, null, 2) + "\n");
 }
@@ -1260,6 +1277,9 @@ async function runCommand(command) {
       return;
     case "runtime:owner-pack":
       printRuntimeOwnerPack();
+      return;
+    case "runtime:role-pack":
+      printRuntimeRolePack();
       return;
     case "runtime:verifier-pack":
       printRuntimeVerifierPack();

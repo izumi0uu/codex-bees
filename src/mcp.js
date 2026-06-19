@@ -46,6 +46,7 @@ import {
   runtimeQueuePack,
   runtimeRecoveryPack,
   runtimeRecovery,
+  runtimeRolePack,
   runtimeReviewPack,
   runtimeSessionPack,
   runtimeSignalPack,
@@ -282,6 +283,18 @@ export const toolCatalog = [
       properties: {
         role: { type: "string" },
         workerId: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "runtime_role_pack",
+    description: "Build the role-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" }
       }
     }
   },
@@ -1275,6 +1288,19 @@ function handleRequest(message) {
           })
         })
       );
+    }
+
+    if (name === "runtime_role_pack") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "runtime_role_pack requires arguments.role");
+      }
+      return createSuccess(id, createTextPayload({
+        rolePack: runtimeRolePack({
+          role: params.arguments.role,
+          workerId: params.arguments.workerId,
+          mode: params.arguments.mode
+        })
+      }));
     }
 
     if (name === "runtime_summary_pack") {
