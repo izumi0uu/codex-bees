@@ -308,6 +308,8 @@ Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task
 
 `swarm:dispatch` / `swarm_dispatch` return the explicit dispatch mutation result: the claimed lane, the claimed task snapshot, and the updated swarm state. They also emit a machine-readable `recommendedReason` so automation can distinguish first-time dispatch claims from released-lane reclaims without reparsing prior queue status by hand.
 
+`swarm:get` / `swarm_get` return the explicit swarm detail view. They emit `kind: "swarm_detail"` with `recommendedReason: "swarm_detail_loaded"` so automation can distinguish one-swarm retrieval from list, brief, bundle, blocker, closeout, and overview surfaces without inferring that only from nesting shape.
+
 `swarm:init` / `swarm_init` return the explicit swarm creation mutation result. They emit `kind: "swarm_mutation"` with `recommendedReason: "swarm_created"` so automation can distinguish durable swarm creation from later activation, queueing, and dispatch steps without inferring from the nested swarm snapshot alone.
 
 `swarm:update` / `swarm_update` return the explicit swarm metadata mutation result. They emit `kind: "swarm_mutation"` with `recommendedReason: "swarm_updated"` so automation can distinguish contract edits from lifecycle moves like activation, blocking, completion, or cancellation without reparsing the nested swarm state alone.

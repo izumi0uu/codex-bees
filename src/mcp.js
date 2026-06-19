@@ -23,6 +23,7 @@ import {
   getTask,
   getTaskView,
   getSwarm,
+  getSwarmView,
   initSwarm,
   initSwarmMutation,
   leaderAssignmentDispatch,
@@ -2234,7 +2235,7 @@ function handleRequest(message) {
         return createError(id, -32602, "swarm_get requires arguments.id");
       }
 
-      const swarm = getSwarm(params.arguments.id);
+      const swarm = getSwarmView(params.arguments.id);
       if (!swarm) {
         return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
       }

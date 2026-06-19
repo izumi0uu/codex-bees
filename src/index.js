@@ -27,6 +27,7 @@ import {
   dispatchSwarmLane,
   getTask,
   getSwarm,
+  getSwarmView,
   initSwarm,
   initSwarmMutation,
   leaderAssignmentDispatch,
@@ -1119,7 +1120,7 @@ function handleSwarmInit() {
 
 function handleSwarmGet() {
   const id = requireOption("--id");
-  const swarm = getSwarm(id);
+  const swarm = getSwarmView(id);
   if (!swarm) {
     writeErr(`Unknown swarm id: ${id}\n`);
     exit(1);

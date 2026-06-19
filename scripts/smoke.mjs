@@ -1430,6 +1430,14 @@ if (
 const swarmGet = JSON.parse(
   run("swarm-get", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
 ).swarm;
+if (
+  swarmGet.kind !== "swarm_detail" ||
+  swarmGet.recommendedReason !== "swarm_detail_loaded" ||
+  !swarmGet.swarm
+) {
+  console.error("[smoke:swarm-get] expected CLI swarm detail payload");
+  process.exit(1);
+}
 const swarmBriefPlanned = JSON.parse(
   run("swarm-brief-planned", ["./src/index.js", "swarm:brief", "--id", "swarm-1"]).stdout
 ).brief;
@@ -1442,7 +1450,7 @@ if (
   console.error("[smoke:swarm-brief] expected pre-queue swarm brief");
   process.exit(1);
 }
-if (!Array.isArray(swarmGet.lanes) || swarmGet.lanes.length !== 2 || swarmGet.maxWorkers !== 2) {
+if (!Array.isArray(swarmGet.swarm.lanes) || swarmGet.swarm.lanes.length !== 2 || swarmGet.swarm.maxWorkers !== 2) {
   console.error("[smoke:swarm-get] expected persisted lanes and maxWorkers");
   process.exit(1);
 }
@@ -1967,7 +1975,11 @@ if (
 const syncedSwarmGet = JSON.parse(
   run("swarm-get-after-sync", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
 ).swarm;
-if (syncedSwarmGet.status !== "completed") {
+if (
+  syncedSwarmGet.kind !== "swarm_detail" ||
+  syncedSwarmGet.recommendedReason !== "swarm_detail_loaded" ||
+  syncedSwarmGet.swarm?.status !== "completed"
+) {
   console.error("[smoke:swarm-sync] expected stored completed swarm status");
   process.exit(1);
 }
@@ -2108,10 +2120,12 @@ const updatedSwarmGet = JSON.parse(
   run("swarm-update-get", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
 ).swarm;
 if (
-  updatedSwarmGet.objective !== "Updated swarm smoke" ||
-  updatedSwarmGet.maxWorkers !== 3 ||
-  updatedSwarmGet.laneSource !== "smoke-refresh" ||
-  updatedSwarmGet.notes !== "update path verified"
+  updatedSwarmGet.kind !== "swarm_detail" ||
+  updatedSwarmGet.recommendedReason !== "swarm_detail_loaded" ||
+  updatedSwarmGet.swarm?.objective !== "Updated swarm smoke" ||
+  updatedSwarmGet.swarm?.maxWorkers !== 3 ||
+  updatedSwarmGet.swarm?.laneSource !== "smoke-refresh" ||
+  updatedSwarmGet.swarm?.notes !== "update path verified"
 ) {
   console.error("[smoke:swarm-update] expected persisted updated swarm metadata");
   process.exit(1);
@@ -2381,10 +2395,12 @@ if (
   swarmUpdatePayload?.updated?.swarm?.maxWorkers !== 4 ||
   swarmUpdatePayload?.updated?.swarm?.laneSource !== "mcp-refresh" ||
   swarmUpdatePayload?.updated?.swarm?.notes !== "mcp update verified" ||
-  swarmUpdateGetPayload?.swarm?.objective !== "MCP swarm update refreshed" ||
-  swarmUpdateGetPayload?.swarm?.maxWorkers !== 4 ||
-  swarmUpdateGetPayload?.swarm?.laneSource !== "mcp-refresh" ||
-  swarmUpdateGetPayload?.swarm?.notes !== "mcp update verified"
+  swarmUpdateGetPayload?.swarm?.kind !== "swarm_detail" ||
+  swarmUpdateGetPayload?.swarm?.recommendedReason !== "swarm_detail_loaded" ||
+  swarmUpdateGetPayload?.swarm?.swarm?.objective !== "MCP swarm update refreshed" ||
+  swarmUpdateGetPayload?.swarm?.swarm?.maxWorkers !== 4 ||
+  swarmUpdateGetPayload?.swarm?.swarm?.laneSource !== "mcp-refresh" ||
+  swarmUpdateGetPayload?.swarm?.swarm?.notes !== "mcp update verified"
 ) {
   console.error("[smoke:swarm-update-mcp] expected MCP swarm update mutation payload");
   console.error(swarmUpdateMcp.stderr || swarmUpdateMcp.stdout);

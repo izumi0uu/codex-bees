@@ -258,6 +258,18 @@ export function getSwarm(id) {
   return swarm ? normalizeSwarm(swarm) : null;
 }
 
+export function getSwarmView(id) {
+  const swarm = getSwarm(id);
+  if (!swarm) {
+    return null;
+  }
+  return {
+    kind: "swarm_detail",
+    recommendedReason: "swarm_detail_loaded",
+    swarm
+  };
+}
+
 export function taskBrief(id) {
   const task = getTask(id);
   if (!task) {
