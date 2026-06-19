@@ -605,6 +605,7 @@ export function leaderAssignmentDispatchPack(input = {}) {
 export function leaderAssignmentDispatchBundle(input = {}) {
   const dispatchPack = leaderAssignmentDispatchPack(input);
   const launches = (dispatchPack?.groups ?? []).map((group, index) => ({
+    roleId: group.owner?.id ?? group.owner?.name ?? "unknown",
     position: index + 1,
     role: group.owner,
     workerId: group.workerId,
@@ -613,6 +614,9 @@ export function leaderAssignmentDispatchBundle(input = {}) {
     objective: group.next?.objective ?? null,
     lane: group.next?.lane ?? null,
     assignment: group.next ?? null,
+    sessionCommand: `node ./src/index.js worker:session --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
+    assignmentPackCommand: `node ./src/index.js runtime:assignment-pack --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
+    launchCommand: `node ./src/index.js runtime:assignment-pack --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
     previewCommand: group.previewCommand,
     pickupCommand: group.pickupCommand,
     command: group.command,
