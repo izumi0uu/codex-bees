@@ -11,6 +11,7 @@ import {
   activateSwarm,
   addTask,
   addTasks,
+  annotateTask,
   approveTask,
   blockSwarm,
   blockTask,
@@ -75,6 +76,7 @@ function printHelp() {
   write(`  codex-bees task:add        Add a local coordination task\n`);
   write(`  codex-bees task:get        Show one local coordination task\n`);
   write(`  codex-bees task:history    Show structured handoff history for one task\n`);
+  write(`  codex-bees task:annotate   Add a persistent handoff note to one task\n`);
   write(`  codex-bees task:brief      Render an execution brief for one task\n`);
   write(`  codex-bees task:inbox      List role-relevant tasks in execution priority order\n`);
   write(`  codex-bees task:next       Resolve the next task a role should pick up\n`);
@@ -334,6 +336,25 @@ function handleTaskHistory() {
     exit(1);
   }
   write(JSON.stringify({ history }, null, 2) + "\n");
+}
+
+function handleTaskAnnotate() {
+  const id = requireOption("--id");
+  const annotated = annotateTask({
+    id,
+    actor: readOption("--by"),
+    kind: readOption("--kind"),
+    content: requireOption("--content")
+  });
+  if (!annotated) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (annotated.error) {
+    writeErr(`${annotated.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ annotated }, null, 2) + "\n");
 }
 
 function handleTaskBrief() {
@@ -868,6 +889,9 @@ async function runCommand(command) {
       return;
     case "task:history":
       handleTaskHistory();
+      return;
+    case "task:annotate":
+      handleTaskAnnotate();
       return;
     case "task:brief":
       handleTaskBrief();

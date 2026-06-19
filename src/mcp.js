@@ -6,6 +6,7 @@ import {
   activateSwarm,
   addTask,
   addTasks,
+  annotateTask,
   approveTask,
   blockSwarm,
   blockTask,
@@ -161,6 +162,20 @@ export const toolCatalog = [
       required: ["id"],
       properties: {
         id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_annotate",
+    description: "Add a persistent handoff note to one local coordination task.",
+    inputSchema: {
+      type: "object",
+      required: ["id", "content"],
+      properties: {
+        id: { type: "string" },
+        actor: { type: "string" },
+        kind: { type: "string" },
+        content: { type: "string" }
       }
     }
   },
@@ -788,6 +803,30 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ history }));
+    }
+
+    if (name === "task_annotate") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_annotate requires arguments.id");
+      }
+      if (!params.arguments?.content) {
+        return createError(id, -32602, "task_annotate requires arguments.content");
+      }
+
+      const annotated = annotateTask({
+        id: params.arguments.id,
+        actor: params.arguments.actor,
+        kind: params.arguments.kind,
+        content: params.arguments.content
+      });
+      if (!annotated) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+      if (annotated.error) {
+        return createError(id, -32602, annotated.error);
+      }
+
+      return createSuccess(id, createTextPayload({ annotated }));
     }
 
     if (name === "task_brief") {
