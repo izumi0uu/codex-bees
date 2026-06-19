@@ -50,6 +50,7 @@ node ./src/index.js doctor
 node ./src/index.js status
 node ./src/index.js capabilities
 node ./src/index.js runtime:activity
+node ./src/index.js runtime:assignment-pack --role executor --worker worker-1 --mode owner
 node ./src/index.js runtime:closeout
 node ./src/index.js runtime:closeout-pack
 node ./src/index.js runtime:control-pack
@@ -210,6 +211,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:operator-pack` / `runtime_operator_pack` provide the operator-oriented package: current focus plus dashboard, alerts, handoffs, and closeout readiness combined into one top-level operator payload with a recommended next surface.
 
 `runtime:owner-pack` / `runtime_owner_pack` provide the owner-oriented package: owner-mode worker session, handoff, closeout, and next pickup candidate combined into one role-scoped payload with a recommended next surface.
+
+`runtime:assignment-pack` / `runtime_assignment_pack` provide the leader-to-worker assignment package: current leader assignment context plus one worker's live session, next candidate, and pickup preview combined into one dispatch-ready payload with a recommended next surface.
 
 `runtime:pickup-pack` / `runtime_pickup_pack` provide the start-work pickup package: one worker's current session, next candidate, read-only pickup preview, and role context combined into one immediate start-work payload with a recommended next surface.
 
