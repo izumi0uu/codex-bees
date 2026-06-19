@@ -115,6 +115,33 @@ for (const [label, args, expectedStatus = 0] of checks) {
   run(label, args, expectedStatus);
 }
 
+const storedMemoryCli = JSON.parse(
+  run("memory-store-cli", [
+    "./src/index.js",
+    "memory:store",
+    "--content",
+    "Remember that smoke tests validate lane metadata",
+    "--namespace",
+    "smoke",
+    "--kind",
+    "note",
+    "--agent",
+    "tester",
+    "--tags",
+    "smoke,metadata"
+  ]).stdout
+).stored;
+if (
+  storedMemoryCli.kind !== "memory_mutation" ||
+  storedMemoryCli.recommendedReason !== "memory_stored" ||
+  storedMemoryCli.memory?.id !== "memory-2" ||
+  storedMemoryCli.memory?.namespace !== "smoke" ||
+  storedMemoryCli.memory?.content !== "Remember that smoke tests validate lane metadata"
+) {
+  console.error("[smoke:memory-store] expected CLI memory store mutation payload");
+  process.exit(1);
+}
+
 const updatedLifecycleCli = JSON.parse(
   run("task-update-lifecycle-cli", [
     "./src/index.js",
@@ -5709,11 +5736,18 @@ const memoryMcpLines = memoryMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
+const memoryStoreResult = memoryMcpLines.length >= 2 ? JSON.parse(memoryMcpLines[1]) : null;
+const memoryStoreText = memoryStoreResult?.result?.content?.[0]?.text;
+const memoryStorePayload = memoryStoreText ? JSON.parse(memoryStoreText) : null;
 const memorySearchResult = memoryMcpLines.length >= 3 ? JSON.parse(memoryMcpLines[2]) : null;
 const memorySearchText = memorySearchResult?.result?.content?.[0]?.text;
 const memorySearchPayload = memorySearchText ? JSON.parse(memorySearchText) : null;
 if (
   memoryMcp.status !== 0 ||
+  memoryStorePayload?.stored?.kind !== "memory_mutation" ||
+  memoryStorePayload?.stored?.recommendedReason !== "memory_stored" ||
+  memoryStorePayload?.stored?.memory?.namespace !== "mcp-smoke" ||
+  memoryStorePayload?.stored?.memory?.content !== "Remember MCP memory smoke coverage" ||
   !Array.isArray(memorySearchPayload?.results) ||
   memorySearchPayload.results.length === 0
 ) {

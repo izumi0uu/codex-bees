@@ -77,6 +77,7 @@ import {
   syncSwarmStatus,
   searchMemories,
   storeMemory,
+  storeMemoryMutation,
   swarmBlockers,
   swarmBundle,
   swarmCloseout,
@@ -2549,7 +2550,7 @@ function handleRequest(message) {
         return createError(id, -32602, "memory_store requires arguments.content");
       }
 
-      const memory = storeMemory({
+      const memory = storeMemoryMutation({
         content: params.arguments.content,
         namespace: params.arguments.namespace,
         kind: params.arguments.kind,

@@ -351,6 +351,8 @@ The foundation layer is in place:
 - MCP tools with discoverable input schemas
 - smoke checks for the current command surface
 
+`memory:store` / `memory_store` return the explicit memory mutation result. They emit `kind: "memory_mutation"` with `recommendedReason: "memory_stored"` so automation can distinguish durable memory writes from later search/list retrieval surfaces without inferring from the nested memory payload alone.
+
 ## Why this project exists
 
 Most multi-agent coding setups either hide too much logic in prompts or spread too much behavior across external systems.

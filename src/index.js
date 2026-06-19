@@ -83,6 +83,7 @@ import {
   searchMemories,
   stateFilePath,
   storeMemory,
+  storeMemoryMutation,
   swarmBlockers,
   swarmBundle,
   swarmCloseout,
@@ -1344,7 +1345,7 @@ function handleSwarmQueue() {
 
 function handleMemoryStore() {
   const content = requireOption("--content");
-  const memory = storeMemory({
+  const memory = storeMemoryMutation({
     namespace: readOption("--namespace"),
     kind: readOption("--kind"),
     title: readOption("--title"),

@@ -2918,6 +2918,18 @@ export function storeMemory(input) {
   return memory;
 }
 
+export function storeMemoryMutation(input) {
+  const result = storeMemory(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "memory_mutation",
+    recommendedReason: "memory_stored",
+    memory: result
+  };
+}
+
 export function initSwarm(input) {
   const state = loadState();
   const swarm = buildSwarm(input, state.nextSwarmId);
