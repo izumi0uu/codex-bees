@@ -1205,6 +1205,7 @@ const runtimeExecutionPackMultiOwnerCli = JSON.parse(
 ).executionPack;
 if (
   runtimeExecutionPackMultiOwnerCli.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeExecutionPackMultiOwnerCli.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeExecutionPackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeExecutionPackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
   runtimeExecutionPackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
@@ -2068,6 +2069,7 @@ const runtimeExecutionPackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeEx
 if (
   runtimeExecutionPackMultiOwnerMcp.status !== 0 ||
   runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
   runtimeExecutionPackMultiOwnerMcpPayload.executionPack?.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
@@ -2848,6 +2850,7 @@ const runtimeExecutionPackCli = JSON.parse(
 ).executionPack;
 if (
   runtimeExecutionPackCli.recommendedSurface !== "runtime:focus" ||
+  runtimeExecutionPackCli.recommendedReason !== "blocked_focus_priority" ||
   runtimeExecutionPackCli.next?.focus?.taskId !== "task-1" ||
   runtimeExecutionPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeExecutionPackCli.next?.role?.role?.id !== "tester" ||
@@ -3610,6 +3613,7 @@ const runtimeExecutionPackMcpPayload = JSON.parse(JSON.parse(runtimeExecutionPac
 if (
   runtimeExecutionPackMcp.status !== 0 ||
   runtimeExecutionPackMcpPayload.executionPack?.recommendedSurface !== "runtime:focus" ||
+  runtimeExecutionPackMcpPayload.executionPack?.recommendedReason !== "blocked_focus_priority" ||
   runtimeExecutionPackMcpPayload.executionPack?.next?.focus?.taskId !== "task-1" ||
   runtimeExecutionPackMcpPayload.executionPack?.next?.dispatch?.lane !== "lane-dashboard"
 ) {
