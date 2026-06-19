@@ -103,6 +103,7 @@ When a planner already mapped disjoint lane ownership, the leader may generate a
 
 - preserve planner lane identifiers unless re-slicing is necessary
 - keep `laneSource` as `planner` so later audits can distinguish planned vs manual swarms
+- run `swarm:check` / `swarm_check` before queueing so overlap or missing lane metadata is rejected early
 - queue swarm lanes into tasks only after reviewing that the generated scopes are still valid
 
 Use manual swarm authoring only when the planner output is missing lane detail or needs structural changes before execution.
@@ -123,9 +124,11 @@ Use manual swarm authoring only when the planner output is missing lane detail o
 
 Use runtime helpers when available:
 
+- `swarm:check` / `swarm_check` to validate lane readiness and scope overlap before queueing or dispatch
 - `swarm:overview` / `swarm_overview` to inspect lane progress, derived status, and the next runnable lane
 - `swarm:dispatch` / `swarm_dispatch` to claim the next runnable lane task for one worker
 - `swarm:sync` / `swarm_sync` to reconcile or verify swarm status after lane progress changes; normal task lifecycle updates already keep swarm status close to task reality
+- `task:check` / `task_check` to confirm a queued lane task is still claimable before a worker takes it
 
 1. Claim one ready lane.
 2. Restate the lane boundary before editing.
@@ -140,6 +143,8 @@ Every lane needs fresh evidence.
 
 - Run the smallest check that proves the claimed outcome.
 - Prefer targeted validation before broader smoke checks.
+- Run `swarm:check` before queueing new lanes and when re-slicing planner output.
+- Run `task:check` before claiming a queued lane if metadata may have changed.
 - Verify the specific surface the lane was meant to change.
 - Do not mark a lane complete with intent alone, partial output, or stale results.
 - The leader accepts a lane only after reviewing both scope and evidence.

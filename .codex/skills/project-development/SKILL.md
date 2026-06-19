@@ -91,10 +91,12 @@ Implement only inside the claimed scope.
 Execution checklist:
 
 1. Claim the lane or task before edits begin.
-2. Reconfirm the allowed files.
-3. Make the smallest change that satisfies acceptance.
-4. Preserve unrelated edits.
-5. If new scope appears, stop and return a follow-up instead of absorbing it silently.
+2. Run `task:check` / `task_check` first when the runtime task already exists, so incomplete ownership or verification metadata gets fixed before claim.
+3. Run `swarm:check` / `swarm_check` before queueing or dispatching swarm lanes, especially for planner-generated swarms.
+4. Reconfirm the allowed files.
+5. Make the smallest change that satisfies acceptance.
+6. Preserve unrelated edits.
+7. If new scope appears, stop and return a follow-up instead of absorbing it silently.
 
 ### Queue and ownership rules
 
@@ -120,10 +122,11 @@ Require fresh evidence.
 Preferred order:
 
 1. targeted command or inspection for the changed surface
-2. CLI or MCP contract check if the change affects runtime behavior
-3. smoke validation when the changed surface participates in the public command surface
-4. swarm/task parity check when planner output is meant to become executable lanes
-5. README/help parity check when commands or behavior changed
+2. `task:check` / `swarm:check` when the change affects execution readiness, claimability, or queue safety
+3. CLI or MCP contract check if the change affects runtime behavior
+4. smoke validation when the changed surface participates in the public command surface
+5. swarm/task parity check when planner output is meant to become executable lanes
+6. README/help parity check when commands or behavior changed
 
 Do not mark work complete from intent alone.
 

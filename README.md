@@ -51,7 +51,9 @@ node ./src/index.js plan:queue --task "Queue a runtime change"
 node ./src/index.js plan:swarm --task "Parallelize a runtime change"
 node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm"
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js
+node ./src/index.js task:check --id task-1
 node ./src/index.js swarm:init --objective "Ship a bounded runtime slice" --owner leader --max-workers 2 --lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer"}]'
+node ./src/index.js swarm:check --id swarm-1
 node ./src/index.js swarm:queue --id swarm-1
 node ./src/index.js swarm:list --detailed
 node ./src/index.js swarm:overview --id swarm-1
@@ -75,6 +77,7 @@ Task metadata can carry lane-ready execution detail:
 - `--acceptance "first check|second check"`
 - `--verification "targeted command|smoke check"`
 
+`task:check` validates that a task is actually claimable before a worker takes it. A ready task needs a title, owner, verifier, scope, acceptance, and verification metadata; claiming an incomplete task is rejected.
 
 Swarm contracts can carry bounded parallel execution detail:
 
@@ -83,6 +86,8 @@ Swarm contracts can carry bounded parallel execution detail:
 - `--max-workers 2`
 - `--lane-source manual`
 - `--lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer","scope":["src/index.js"]}]'`
+
+`swarm:check` validates that each lane has owner, verifier, scope, acceptance, and verification metadata before queueing. It also rejects overlapping lane scopes, so planner-generated and manually-authored swarms stay parallel-safe before execution begins.
 
 Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. Swarm-linked task lifecycle changes automatically keep swarm status close to task reality, `swarm:list --detailed` gives leaders a multi-swarm dashboard, `swarm:overview` summarizes one swarm, `swarm:dispatch` claims the next runnable lane task for a worker, and `swarm:sync` provides an idempotent reconciliation step when leaders want an explicit status check.
 
@@ -114,6 +119,7 @@ The foundation layer is in place:
 - a real CLI entrypoint
 - a minimal MCP stdio runtime
 - a planner that maps task briefs to bounded lanes, can emit swarm contracts, and can queue those lanes as local tasks
+- readiness checks that reject incomplete tasks, incomplete swarm lanes, and overlapping swarm scopes before claim, queue, or dispatch
 - a bounded local swarm surface that can register lanes and queue them into executable local tasks
 - a persistent local memory surface with namespace/tag filters and text search
 - a local task queue with explicit claim, block, review, release, and completion states plus persisted lane metadata
