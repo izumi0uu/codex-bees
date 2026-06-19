@@ -477,6 +477,40 @@ export function workerSession(input = {}) {
   };
 }
 
+export function workerHandoff(input = {}) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const session = workerSession(input);
+  if (!session) {
+    return null;
+  }
+
+  const focusTaskSnapshot =
+    session.activeOwned[0] ??
+    session.reviewQueue[0] ??
+    session.blockedOwned[0] ??
+    session.handoffsAwaitingReview[0] ??
+    null;
+  const focusBrief = focusTaskSnapshot?.brief ?? session.next?.brief ?? null;
+
+  return {
+    kind: "worker_handoff",
+    role: session.role,
+    workerId: session.workerId,
+    mode: session.mode,
+    focus: session.focus,
+    currentTask: focusTaskSnapshot?.summary ?? null,
+    brief: focusBrief,
+    recentHistory: focusTaskSnapshot?.recentHistory ?? [],
+    recentAnnotations: focusTaskSnapshot?.recentAnnotations ?? [],
+    nextCandidate: session.next?.candidate ?? null,
+    nextCommand: session.focus?.command ?? null,
+    summary: buildWorkerHandoffSummary(session, focusTaskSnapshot)
+  };
+}
+
 export function validateTask(id) {
   const task = loadState().tasks.map(normalizeTask).find((item) => item.id === id);
   if (!task) {
@@ -1373,6 +1407,25 @@ function recommendWorkerSessionFocus(input) {
     command: null,
     reason: "no current or queued work for this worker session"
   };
+}
+
+function buildWorkerHandoffSummary(session, focusTaskSnapshot) {
+  if (session.focus?.kind === "active_task" && focusTaskSnapshot) {
+    return `Worker ${session.workerId} owns ${focusTaskSnapshot.summary.id} and should continue execution before handoff to verifier ${focusTaskSnapshot.summary.verifier}.`;
+  }
+  if (session.focus?.kind === "review_task" && focusTaskSnapshot) {
+    return `Worker ${session.workerId} is acting as verifier for ${focusTaskSnapshot.summary.id} and should decide approval or requested changes.`;
+  }
+  if (session.focus?.kind === "blocked_task" && focusTaskSnapshot) {
+    return `Worker ${session.workerId} is blocked on ${focusTaskSnapshot.summary.id} and should release or annotate the blocker context.`;
+  }
+  if (session.focus?.kind === "awaiting_review" && focusTaskSnapshot) {
+    return `Worker ${session.workerId} already handed ${focusTaskSnapshot.summary.id} to its verifier and is waiting on review.`;
+  }
+  if (session.focus?.kind === "pickup_next" && session.next?.candidate) {
+    return `Worker ${session.workerId} has no active task and can pick up ${session.next.candidate.id} next.`;
+  }
+  return `Worker ${session.workerId} is idle with no current handoff target.`;
 }
 
 function pickupOutcome(relation) {
