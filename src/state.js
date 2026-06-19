@@ -437,11 +437,12 @@ export function dispatchSwarmLane(input) {
     updatedAt: new Date().toISOString()
   });
   state.swarms[swarmIndex] = nextSwarm;
+  const syncedSwarm = syncSwarmInLoadedState(state, swarm.id) ?? nextSwarm;
 
   saveState(state);
 
   return {
-    swarm: nextSwarm,
+    swarm: syncedSwarm,
     lane: normalizeSwarmLane(candidateLane),
     task: nextTask
   };
@@ -665,6 +666,32 @@ function deriveSwarmStatus(swarm, tasks) {
   return swarm.status === "completed" ? "completed" : "active";
 }
 
+
+function syncSwarmInLoadedState(state, swarmId) {
+  const swarmIndex = state.swarms.findIndex((item) => item.id === swarmId);
+  if (swarmIndex < 0) {
+    return null;
+  }
+
+  const current = normalizeSwarm(state.swarms[swarmIndex]);
+  if (current.status === "cancelled") {
+    state.swarms[swarmIndex] = current;
+    return current;
+  }
+
+  const swarmTasks = state.tasks
+    .map(normalizeTask)
+    .filter((task) => task.swarmId === current.id);
+  const derivedStatus = deriveSwarmStatus(current, swarmTasks);
+  const next = normalizeSwarm({
+    ...current,
+    status: derivedStatus,
+    updatedAt: new Date().toISOString()
+  });
+  state.swarms[swarmIndex] = next;
+  return next;
+}
+
 function canTransition(from, to) {
   const allowed = ALLOWED_QUEUE_TRANSITIONS[from];
   return allowed ? allowed.has(to) : false;
@@ -727,6 +754,9 @@ function transitionTask(input) {
   });
 
   state.tasks[index] = next;
+  if (next.swarmId) {
+    syncSwarmInLoadedState(state, next.swarmId);
+  }
   saveState(state);
   return next;
 }
