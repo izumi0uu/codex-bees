@@ -576,18 +576,29 @@ if (
   console.error("[smoke:task-history] expected completed task history with approval tail");
   process.exit(1);
 }
-run("task-annotate-complete", [
-  "./src/index.js",
-  "task:annotate",
-  "--id",
-  "task-3",
-  "--by",
-  "tester",
-  "--kind",
-  "handoff",
-  "--content",
-  "verified with smoke coverage"
-]);
+const annotatedLifecycleCli = JSON.parse(
+  run("task-annotate-complete", [
+    "./src/index.js",
+    "task:annotate",
+    "--id",
+    "task-3",
+    "--by",
+    "tester",
+    "--kind",
+    "handoff",
+    "--content",
+    "verified with smoke coverage"
+  ]).stdout
+).annotated;
+if (
+  annotatedLifecycleCli.kind !== "task_mutation" ||
+  annotatedLifecycleCli.recommendedReason !== "task_annotated" ||
+  annotatedLifecycleCli.task?.id !== "task-3" ||
+  annotatedLifecycleCli.task?.annotations?.at(-1)?.content !== "verified with smoke coverage"
+) {
+  console.error("[smoke:task-annotate] expected CLI task annotate mutation payload");
+  process.exit(1);
+}
 const taskBriefAnnotated = JSON.parse(
   run("task-brief-annotated", ["./src/index.js", "task:brief", "--id", "task-3"]).stdout
 ).brief;
@@ -4856,6 +4867,7 @@ const taskAnnotateMcpLines = taskAnnotateMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
+const taskAnnotateMcpPayload = JSON.parse(JSON.parse(taskAnnotateMcpLines[1]).result.content[0].text);
 const taskAnnotateMcpBrief = JSON.parse(JSON.parse(taskAnnotateMcpLines[2]).result.content[0].text);
 const taskReportMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
@@ -4892,6 +4904,9 @@ if (
   taskHistoryMcpPayload.history?.recommendedReason !== "approved_event_latest" ||
   taskHistoryMcpPayload.history?.history?.at(-1)?.type !== "approved" ||
   taskAnnotateMcp.status !== 0 ||
+  taskAnnotateMcpPayload?.annotated?.kind !== "task_mutation" ||
+  taskAnnotateMcpPayload?.annotated?.recommendedReason !== "task_annotated" ||
+  taskAnnotateMcpPayload?.annotated?.task?.annotations?.at(-1)?.content !== "reviewed through MCP flow" ||
   taskAnnotateMcpBrief.brief?.annotations?.entries?.at(-1)?.content !== "reviewed through MCP flow" ||
   taskReportMcp.status !== 0 ||
   taskReportMcpPayload.report?.recommendedReason !== "approved_closure_ready" ||

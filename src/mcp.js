@@ -7,7 +7,7 @@ import {
   addTask,
   addTaskLifecycle,
   addTasks,
-  annotateTask,
+  annotateTaskMutation,
   approveTask,
   approveTaskLifecycle,
   blockSwarm,
@@ -1694,7 +1694,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_annotate requires arguments.content");
       }
 
-      const annotated = annotateTask({
+      const annotated = annotateTaskMutation({
         id: params.arguments.id,
         actor: params.arguments.actor,
         kind: params.arguments.kind,

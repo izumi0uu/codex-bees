@@ -209,6 +209,18 @@ export function annotateTask(input = {}) {
   return next;
 }
 
+export function annotateTaskMutation(input) {
+  const result = annotateTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_mutation",
+    recommendedReason: "task_annotated",
+    task: result
+  };
+}
+
 export function getSwarm(id) {
   const swarm = loadState().swarms.find((item) => item.id === id);
   return swarm ? normalizeSwarm(swarm) : null;

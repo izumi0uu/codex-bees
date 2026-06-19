@@ -12,7 +12,7 @@ import {
   addTask,
   addTaskLifecycle,
   addTasks,
-  annotateTask,
+  annotateTaskMutation,
   approveTask,
   approveTaskLifecycle,
   blockSwarm,
@@ -700,7 +700,7 @@ function handleTaskHistory() {
 
 function handleTaskAnnotate() {
   const id = requireOption("--id");
-  const annotated = annotateTask({
+  const annotated = annotateTaskMutation({
     id,
     actor: readOption("--by"),
     kind: readOption("--kind"),

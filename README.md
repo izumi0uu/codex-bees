@@ -184,7 +184,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `task:history` / `task_history` expose structured handoff history for each task—claims, review handoff, changes requested, releases, and approvals—so local coordination stays auditable instead of collapsing into one final status field. They also emit a machine-readable `recommendedReason` for the latest recorded handoff event so automation can distinguish approval tails, changes-requested tails, review handoff tails, blocked tails, release tails, claim tails, and empty history state without reparsing the last history entry by hand.
 
-`task:annotate` / `task_annotate` add lightweight persistent execution notes to a task. Use them for local handoff context, verifier hints, or worker breadcrumbs that should survive beyond a single chat turn.
+`task:annotate` / `task_annotate` add lightweight persistent execution notes to a task. Use them for local handoff context, verifier hints, or worker breadcrumbs that should survive beyond a single chat turn. They now return the explicit `task_mutation` envelope with `recommendedReason: "task_annotated"` so automation can detect note persistence without diffing the nested task by hand.
 
 `task:report` / `task_report` build a delivery-ready package for one task: closure state, acceptance checklist, verification steps, review evidence, history, annotations, and the current next gate. They also emit a machine-readable `recommendedReason` so automation can distinguish between pending verifier decisions, approved closure readiness, changes-requested rework, blocked recovery, and plain execution-report states without inferring from queue status alone. It is the compact artifact for review-ready or done work.
 
