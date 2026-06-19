@@ -11,7 +11,7 @@ import { cwd } from "node:process";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
-const STATE_VERSION = 2;
+const STATE_VERSION = 3;
 const VALID_QUEUE_STATUSES = new Set([
   "queued",
   "claimed",
@@ -19,6 +19,13 @@ const VALID_QUEUE_STATUSES = new Set([
   "ready_for_review",
   "released",
   "done"
+]);
+const VALID_SWARM_STATUSES = new Set([
+  "planned",
+  "active",
+  "blocked",
+  "completed",
+  "cancelled"
 ]);
 
 const ALLOWED_QUEUE_TRANSITIONS = {
@@ -30,13 +37,23 @@ const ALLOWED_QUEUE_TRANSITIONS = {
   done: new Set()
 };
 
+const ALLOWED_SWARM_TRANSITIONS = {
+  planned: new Set(["active", "blocked", "completed", "cancelled"]),
+  active: new Set(["blocked", "completed", "cancelled"]),
+  blocked: new Set(["active", "completed", "cancelled"]),
+  completed: new Set(),
+  cancelled: new Set()
+};
+
 function defaultState() {
   return {
     version: STATE_VERSION,
     nextId: 1,
     nextMemoryId: 1,
+    nextSwarmId: 1,
     tasks: [],
     memories: [],
+    swarms: [],
     updatedAt: null
   };
 }
@@ -79,6 +96,15 @@ export function listMemories(filters = {}) {
   return filterMemories(loadState().memories, filters);
 }
 
+export function listSwarms(filters = {}) {
+  return filterSwarms(loadState().swarms, filters);
+}
+
+export function getSwarm(id) {
+  const swarm = loadState().swarms.find((item) => item.id === id);
+  return swarm ? normalizeSwarm(swarm) : null;
+}
+
 export function addTask(input) {
   const state = loadState();
   const task = buildTask(input, state.nextId);
@@ -110,6 +136,15 @@ export function storeMemory(input) {
   state.nextMemoryId += 1;
   saveState(state);
   return memory;
+}
+
+export function initSwarm(input) {
+  const state = loadState();
+  const swarm = buildSwarm(input, state.nextSwarmId);
+  state.swarms.push(swarm);
+  state.nextSwarmId += 1;
+  saveState(state);
+  return swarm;
 }
 
 export function searchMemories(query, filters = {}) {
@@ -154,6 +189,7 @@ export function updateTask(input) {
     ...(input.verifier !== undefined ? { verifier: input.verifier } : {}),
     ...(input.objective !== undefined ? { objective: input.objective } : {}),
     ...(input.lane !== undefined ? { lane: input.lane } : {}),
+    ...(input.swarmId !== undefined ? { swarmId: input.swarmId } : {}),
     ...(input.scope !== undefined ? { scope: input.scope } : {}),
     ...(input.acceptance !== undefined ? { acceptance: input.acceptance } : {}),
     ...(input.verification !== undefined ? { verification: input.verification } : {}),
@@ -163,6 +199,98 @@ export function updateTask(input) {
   state.tasks[index] = next;
   saveState(state);
   return next;
+}
+
+export function updateSwarm(input) {
+  const state = loadState();
+  const index = state.swarms.findIndex((swarm) => swarm.id === input.id);
+  if (index < 0) {
+    return null;
+  }
+  if (input.status !== undefined) {
+    return { error: "status must be changed through lifecycle commands" };
+  }
+
+  const current = normalizeSwarm(state.swarms[index]);
+  const next = normalizeSwarm({
+    ...current,
+    ...(input.objective !== undefined ? { objective: input.objective } : {}),
+    ...(input.topology !== undefined ? { topology: input.topology } : {}),
+    ...(input.maxWorkers !== undefined ? { maxWorkers: input.maxWorkers } : {}),
+    ...(input.owner !== undefined ? { owner: input.owner } : {}),
+    ...(input.laneSource !== undefined ? { laneSource: input.laneSource } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    ...(input.lanes !== undefined ? { lanes: input.lanes } : {}),
+    updatedAt: new Date().toISOString()
+  });
+
+  state.swarms[index] = next;
+  saveState(state);
+  return next;
+}
+
+export function queueSwarmTasks(input) {
+  const state = loadState();
+  const index = state.swarms.findIndex((swarm) => swarm.id === input.id);
+  if (index < 0) {
+    return null;
+  }
+
+  const current = normalizeSwarm(state.swarms[index]);
+  if (!Array.isArray(current.lanes) || current.lanes.length === 0) {
+    return { error: `Swarm ${current.id} has no lanes to queue` };
+  }
+  if (current.lanes.some((lane) => lane.taskId)) {
+    return { error: `Swarm ${current.id} already has queued lane tasks` };
+  }
+
+  const created = [];
+  const nextLanes = [];
+  for (const lane of current.lanes) {
+    const task = buildTask(
+      {
+        title: lane.summary,
+        status: "todo",
+        queueStatus: "queued",
+        owner: lane.owner,
+        verifier: lane.verifier,
+        objective: current.objective,
+        lane: lane.lane,
+        swarmId: current.id,
+        scope: lane.scope,
+        acceptance: lane.acceptance,
+        verification: lane.verification,
+        notes: `Queued from swarm ${current.id}${current.notes ? `: ${current.notes}` : ""}`
+      },
+      state.nextId
+    );
+    state.tasks.push(task);
+    state.nextId += 1;
+    created.push(task);
+    nextLanes.push(
+      normalizeSwarmLane({
+        ...lane,
+        taskId: task.id
+      })
+    );
+  }
+
+  const nextStatus = current.status === "planned" ? "active" : current.status;
+  const queuedAt = new Date().toISOString();
+  const updated = normalizeSwarm({
+    ...current,
+    status: nextStatus,
+    lanes: nextLanes,
+    queuedAt,
+    updatedAt: queuedAt
+  });
+
+  state.swarms[index] = updated;
+  saveState(state);
+  return {
+    swarm: updated,
+    created
+  };
 }
 
 export function stateFilePath() {
@@ -205,6 +333,34 @@ export function releaseTask(input) {
   });
 }
 
+export function activateSwarm(input) {
+  return transitionSwarm({
+    ...input,
+    nextStatus: "active"
+  });
+}
+
+export function blockSwarm(input) {
+  return transitionSwarm({
+    ...input,
+    nextStatus: "blocked"
+  });
+}
+
+export function completeSwarm(input) {
+  return transitionSwarm({
+    ...input,
+    nextStatus: "completed"
+  });
+}
+
+export function cancelSwarm(input) {
+  return transitionSwarm({
+    ...input,
+    nextStatus: "cancelled"
+  });
+}
+
 function normalizeTask(task) {
   return {
     ...task,
@@ -214,6 +370,7 @@ function normalizeTask(task) {
     verifier: task.verifier ?? null,
     objective: task.objective ?? null,
     lane: task.lane ?? null,
+    swarmId: task.swarmId ?? null,
     scope: Array.isArray(task.scope) ? task.scope : null,
     acceptance: Array.isArray(task.acceptance) ? task.acceptance : null,
     verification: Array.isArray(task.verification) ? task.verification : null,
@@ -234,6 +391,38 @@ function normalizeMemory(memory) {
   };
 }
 
+function normalizeSwarmLane(lane, index = 0) {
+  return {
+    lane: lane.lane ?? `lane-${index + 1}`,
+    summary: lane.summary ?? `Lane ${index + 1}`,
+    owner: lane.owner ?? null,
+    verifier: lane.verifier ?? null,
+    scope: Array.isArray(lane.scope) ? lane.scope : null,
+    acceptance: Array.isArray(lane.acceptance) ? lane.acceptance : null,
+    verification: Array.isArray(lane.verification) ? lane.verification : null,
+    taskId: lane.taskId ?? null
+  };
+}
+
+function normalizeSwarm(swarm) {
+  return {
+    ...swarm,
+    status: VALID_SWARM_STATUSES.has(swarm.status) ? swarm.status : "planned",
+    topology: swarm.topology ?? "bounded-local",
+    maxWorkers:
+      Number.isInteger(Number(swarm.maxWorkers)) && Number(swarm.maxWorkers) > 0
+        ? Number(swarm.maxWorkers)
+        : 1,
+    owner: swarm.owner ?? null,
+    laneSource: swarm.laneSource ?? "manual",
+    lanes: Array.isArray(swarm.lanes)
+      ? swarm.lanes.map((lane, index) => normalizeSwarmLane(lane, index))
+      : [],
+    queuedAt: swarm.queuedAt ?? null,
+    notes: swarm.notes ?? null
+  };
+}
+
 function normalizeState(state) {
   if (!state || !Array.isArray(state.tasks)) {
     return defaultState();
@@ -241,6 +430,7 @@ function normalizeState(state) {
 
   const tasks = state.tasks.map(normalizeTask);
   const memories = Array.isArray(state.memories) ? state.memories.map(normalizeMemory) : [];
+  const swarms = Array.isArray(state.swarms) ? state.swarms.map(normalizeSwarm) : [];
   const maxTaskNumber = tasks.reduce((max, task) => {
     const match = /^task-(\d+)$/.exec(task.id ?? "");
     if (!match) {
@@ -255,6 +445,13 @@ function normalizeState(state) {
     }
     return Math.max(max, Number(match[1]));
   }, 0);
+  const maxSwarmNumber = swarms.reduce((max, swarm) => {
+    const match = /^swarm-(\d+)$/.exec(swarm.id ?? "");
+    if (!match) {
+      return max;
+    }
+    return Math.max(max, Number(match[1]));
+  }, 0);
 
   const nextId =
     Number.isInteger(state.nextId) && state.nextId > maxTaskNumber
@@ -264,19 +461,30 @@ function normalizeState(state) {
     Number.isInteger(state.nextMemoryId) && state.nextMemoryId > maxMemoryNumber
       ? state.nextMemoryId
       : maxMemoryNumber + 1;
+  const nextSwarmId =
+    Number.isInteger(state.nextSwarmId) && state.nextSwarmId > maxSwarmNumber
+      ? state.nextSwarmId
+      : maxSwarmNumber + 1;
 
   return {
     version: STATE_VERSION,
     nextId,
     nextMemoryId,
+    nextSwarmId,
     tasks,
     memories,
+    swarms,
     updatedAt: state.updatedAt ?? null
   };
 }
 
 function canTransition(from, to) {
   const allowed = ALLOWED_QUEUE_TRANSITIONS[from];
+  return allowed ? allowed.has(to) : false;
+}
+
+function canTransitionSwarm(from, to) {
+  const allowed = ALLOWED_SWARM_TRANSITIONS[from];
   return allowed ? allowed.has(to) : false;
 }
 
@@ -333,6 +541,39 @@ function transitionTask(input) {
   return next;
 }
 
+function transitionSwarm(input) {
+  const state = loadState();
+  const index = state.swarms.findIndex((swarm) => swarm.id === input.id);
+  if (index < 0) {
+    return null;
+  }
+
+  const current = normalizeSwarm(state.swarms[index]);
+  const nextStatus = input.nextStatus;
+
+  if (!VALID_SWARM_STATUSES.has(nextStatus)) {
+    return { error: `Invalid swarm status: ${nextStatus}` };
+  }
+
+  if (current.status !== nextStatus && !canTransitionSwarm(current.status, nextStatus)) {
+    return {
+      error: `Cannot transition swarm from ${current.status} to ${nextStatus}`
+    };
+  }
+
+  const next = normalizeSwarm({
+    ...current,
+    status: nextStatus,
+    ...(input.owner !== undefined ? { owner: input.owner } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    updatedAt: new Date().toISOString()
+  });
+
+  state.swarms[index] = next;
+  saveState(state);
+  return next;
+}
+
 function buildTask(input, nextId) {
   return normalizeTask({
     id: `task-${nextId}`,
@@ -343,6 +584,7 @@ function buildTask(input, nextId) {
     verifier: input.verifier ?? null,
     objective: input.objective ?? null,
     lane: input.lane ?? null,
+    swarmId: input.swarmId ?? null,
     scope: input.scope ?? null,
     acceptance: input.acceptance ?? null,
     verification: input.verification ?? null,
@@ -368,6 +610,23 @@ function buildMemory(input, nextMemoryId) {
   });
 }
 
+function buildSwarm(input, nextSwarmId) {
+  return normalizeSwarm({
+    id: `swarm-${nextSwarmId}`,
+    objective: input.objective,
+    status: input.status ?? "planned",
+    topology: input.topology ?? "bounded-local",
+    maxWorkers: input.maxWorkers ?? 1,
+    owner: input.owner ?? null,
+    laneSource: input.laneSource ?? "manual",
+    lanes: input.lanes ?? [],
+    queuedAt: input.queuedAt ?? null,
+    notes: input.notes ?? null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
+}
+
 function filterMemories(memories, filters = {}) {
   return memories.filter((memory) => {
     if (filters.namespace && memory.namespace !== filters.namespace) {
@@ -386,6 +645,21 @@ function filterMemories(memories, filters = {}) {
           return false;
         }
       }
+    }
+    return true;
+  });
+}
+
+function filterSwarms(swarms, filters = {}) {
+  return swarms.filter((swarm) => {
+    if (filters.status && swarm.status !== filters.status) {
+      return false;
+    }
+    if (filters.topology && swarm.topology !== filters.topology) {
+      return false;
+    }
+    if (filters.owner && swarm.owner !== filters.owner) {
+      return false;
     }
     return true;
   });
