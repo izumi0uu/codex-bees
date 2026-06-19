@@ -54,9 +54,12 @@ node ./src/index.js plan:queue --task "Queue a runtime change"
 node ./src/index.js plan:swarm --task "Parallelize a runtime change"
 node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm"
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js
+node ./src/index.js task:get --id task-1
+node ./src/index.js task:brief --id task-1
 node ./src/index.js task:check --id task-1
 node ./src/index.js swarm:init --objective "Ship a bounded runtime slice" --owner leader --max-workers 2 --lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer"}]'
 node ./src/index.js swarm:check --id swarm-1
+node ./src/index.js swarm:brief --id swarm-1
 node ./src/index.js swarm:queue --id swarm-1
 node ./src/index.js swarm:list --detailed
 node ./src/index.js swarm:overview --id swarm-1
@@ -95,6 +98,8 @@ Swarm contracts can carry bounded parallel execution detail:
 - `--lanes '[{"lane":"lane-1","summary":"Map scope","owner":"explore","verifier":"reviewer","scope":["src/index.js"]}]'`
 
 `swarm:check` validates that each lane has owner, verifier, scope, acceptance, and verification metadata before queueing. It also rejects overlapping lane scopes and unknown lane roles, so planner-generated and manually-authored swarms stay parallel-safe before execution begins.
+
+`task:get` / `task_brief` and `swarm:get` / `swarm_brief` turn stored coordination state into execution-ready handoff payloads. Briefs resolve shipped role prompt paths, summarize queue/review state, identify the next actor, and suggest the next CLI action so a Codex worker can pick up work without re-discovering scope.
 
 `catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
 
