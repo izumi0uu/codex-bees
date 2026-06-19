@@ -56,6 +56,7 @@ node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm"
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js
 node ./src/index.js task:get --id task-1
 node ./src/index.js task:history --id task-1
+node ./src/index.js task:annotate --id task-1 --by worker-1 --kind context --content "needs follow-up"
 node ./src/index.js task:brief --id task-1
 node ./src/index.js task:inbox --role executor --worker worker-1
 node ./src/index.js task:next --role tester --worker tester-1 --mode verifier
@@ -107,6 +108,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `task:get` / `task_brief` and `swarm:get` / `swarm_brief` turn stored coordination state into execution-ready handoff payloads. Briefs resolve shipped role prompt paths, summarize queue/review state, identify the next actor, and suggest the next CLI action so a Codex worker can pick up work without re-discovering scope.
 
 `task:history` / `task_history` expose structured handoff history for each task—claims, review handoff, changes requested, releases, and approvals—so local coordination stays auditable instead of collapsing into one final status field.
+
+`task:annotate` / `task_annotate` add lightweight persistent execution notes to a task. Use them for local handoff context, verifier hints, or worker breadcrumbs that should survive beyond a single chat turn.
 
 `task:inbox` / `task_inbox` give each shipped role a prioritized local work queue, and `task:next` / `task_next` resolve the single best next claim-or-review candidate with its full execution brief attached. This is the bridge from persisted coordination state to an actual Codex worker pickup loop.
 
