@@ -1167,6 +1167,7 @@ const runtimeDispatchPackMultiOwnerCli = JSON.parse(
 ).dispatchPack;
 if (
   runtimeDispatchPackMultiOwnerCli.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeDispatchPackMultiOwnerCli.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeDispatchPackMultiOwnerCli.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeDispatchPackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeDispatchPackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
@@ -2107,6 +2108,7 @@ const runtimeDispatchPackMultiOwnerMcpPayload = JSON.parse(JSON.parse(runtimeDis
 if (
   runtimeDispatchPackMultiOwnerMcp.status !== 0 ||
   runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.recommendedSurface !== "leader:assignment-launch-plan" ||
+  runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.recommendedReason !== "parallel_launch_plan_ready" ||
   runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeDispatchPackMultiOwnerMcpPayload.dispatchPack?.overview?.assignmentLaunchPlan?.steps !== 2 ||
@@ -2606,6 +2608,7 @@ const runtimeDispatchPackCli = JSON.parse(
 ).dispatchPack;
 if (
   runtimeDispatchPackCli.recommendedSurface !== "runtime:dispatch" ||
+  runtimeDispatchPackCli.recommendedReason !== "dispatch_priority" ||
   runtimeDispatchPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeDispatchPackCli.next?.handoff?.taskId !== "task-2" ||
   runtimeDispatchPackCli.overview?.dispatch?.totalAssignments !== 1 ||
@@ -3120,6 +3123,7 @@ const runtimeDispatchPackMcpPayload = JSON.parse(JSON.parse(runtimeDispatchPackM
 if (
   runtimeDispatchPackMcp.status !== 0 ||
   runtimeDispatchPackMcpPayload.dispatchPack?.recommendedSurface !== "runtime:dispatch" ||
+  runtimeDispatchPackMcpPayload.dispatchPack?.recommendedReason !== "dispatch_priority" ||
   runtimeDispatchPackMcpPayload.dispatchPack?.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeDispatchPackMcpPayload.dispatchPack?.next?.handoff?.taskId !== "task-2"
 ) {

@@ -1226,10 +1226,12 @@ export function runtimeDispatchPack(input = {}) {
   const roles = runtimeRoles();
   const handoffs = runtimeHandoffs();
   const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs });
+  const recommendedReason = deriveRuntimeDispatchPackReason({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs });
 
   return {
     kind: "runtime_dispatch_pack",
     recommendedSurface,
+    recommendedReason,
     overview: {
       dispatch: dispatch?.counts ?? null,
       assignmentDispatchPack: assignmentDispatchPack?.counts ?? null,
@@ -4321,6 +4323,32 @@ function deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, as
     return "runtime:roles";
   }
   return "runtime:dispatch";
+}
+
+function deriveRuntimeDispatchPackReason({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs }) {
+  if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
+    return "parallel_launch_plan_ready";
+  }
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "parallel_dispatch_bundle_ready";
+  }
+  if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
+    return "parallel_dispatch_pack_ready";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "dispatch_priority";
+  }
+  if ((handoffs?.counts?.totalHandoffs ?? 0) > 0) {
+    return "handoff_pressure_priority";
+  }
+  if (
+    (roles?.counts?.withPendingReview ?? 0) > 0 ||
+    (roles?.counts?.withBlockedOwnerWork ?? 0) > 0 ||
+    (roles?.counts?.withClaimableOwnerWork ?? 0) > 0
+  ) {
+    return "role_pressure_priority";
+  }
+  return "default_dispatch_priority";
 }
 
 function buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, handoffs, roles) {
