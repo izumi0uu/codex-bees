@@ -2560,12 +2560,14 @@ export function workerHandoff(input = {}) {
     session.handoffsAwaitingReview[0] ??
     null;
   const focusBrief = focusTaskSnapshot?.brief ?? session.next?.brief ?? null;
+  const recommendedReason = deriveWorkerHandoffReason(session, focusTaskSnapshot);
 
   return {
     kind: "worker_handoff",
     role: session.role,
     workerId: session.workerId,
     mode: session.mode,
+    recommendedReason,
     focus: session.focus,
     currentTask: focusTaskSnapshot?.summary ?? null,
     brief: focusBrief,
@@ -4438,6 +4440,25 @@ function deriveWorkerCloseoutReason(handoff, report) {
     return "current_task_closeout_visible";
   }
   return "no_closeout_target";
+}
+
+function deriveWorkerHandoffReason(session, focusTaskSnapshot) {
+  if (session?.focus?.kind === "active_task" && focusTaskSnapshot) {
+    return "active_task_handoff";
+  }
+  if (session?.focus?.kind === "review_task" && focusTaskSnapshot) {
+    return "review_task_handoff";
+  }
+  if (session?.focus?.kind === "blocked_task" && focusTaskSnapshot) {
+    return "blocked_task_handoff";
+  }
+  if (session?.focus?.kind === "awaiting_review" && focusTaskSnapshot) {
+    return "awaiting_review_handoff";
+  }
+  if (session?.focus?.kind === "pickup_next" && session?.next?.candidate?.id) {
+    return "pickup_next_handoff";
+  }
+  return "idle_handoff";
 }
 
 function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {

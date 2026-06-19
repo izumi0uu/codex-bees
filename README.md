@@ -180,7 +180,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `worker:session` / `worker_session` aggregate the real local workspace for one worker: active claimed tasks, review queue, recent handoff history, next candidate, and the current focus command. They also emit a machine-readable `recommendedReason` so automation can distinguish between active, review, blocked, awaiting-review, pickup-next, and idle worker focus states without reparsing the summary sentence. This is the closest surface yet to a repo-native agent console.
 
-`worker:handoff` / `worker_handoff` package that workspace into a return-ready payload: current focus, task brief, recent history, recent annotations, next candidate, and one summary sentence that another worker or leader can pick up immediately.
+`worker:handoff` / `worker_handoff` package that workspace into a return-ready payload: current focus, task brief, recent history, recent annotations, next candidate, and one summary sentence that another worker or leader can pick up immediately. They also emit a machine-readable `recommendedReason` so automation can distinguish between active, review, blocked, awaiting-review, pickup-next, and idle handoff states without reparsing the summary sentence.
 
 `worker:closeout` / `worker_closeout` add the closure layer on top: current handoff, task report, and the concrete closeout command. They also emit a machine-readable `recommendedReason` so automation can distinguish between review handoff, verifier decision, blocked release, closure-ready fallback, and empty closeout states without reparsing the summary prose. This is the bundle a worker can emit when returning work for review, approval, or final archive.
 

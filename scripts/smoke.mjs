@@ -787,6 +787,7 @@ const ownerHandoff = JSON.parse(
   run("worker-handoff-owner", ["./src/index.js", "worker:handoff", "--role", "executor", "--worker", "review-worker", "--mode", "owner"]).stdout
 ).handoff;
 if (
+  ownerHandoff.recommendedReason !== "active_task_handoff" ||
   ownerHandoff.focus?.kind !== "active_task" ||
   ownerHandoff.currentTask?.id !== "task-1" ||
   ownerHandoff.recentAnnotations?.at(-1)?.content !== "worker needs another pass before review"
@@ -4467,6 +4468,7 @@ const verifierHandoff = JSON.parse(
   run("worker-handoff-verifier", ["./src/index.js", "worker:handoff", "--role", "tester", "--worker", "tester-worker", "--mode", "verifier"]).stdout
 ).handoff;
 if (
+  verifierHandoff.recommendedReason !== "review_task_handoff" ||
   verifierHandoff.focus?.kind !== "review_task" ||
   verifierHandoff.currentTask?.id !== "task-2" ||
   verifierHandoff.summary?.includes("verifier") !== true
@@ -4777,6 +4779,7 @@ const workerHandoffMcpLines = workerHandoffMcp.stdout
 const workerHandoffMcpPayload = JSON.parse(JSON.parse(workerHandoffMcpLines[1]).result.content[0].text);
 if (
   workerHandoffMcp.status !== 0 ||
+  workerHandoffMcpPayload.handoff?.recommendedReason !== "review_task_handoff" ||
   workerHandoffMcpPayload.handoff?.focus?.kind !== "review_task" ||
   workerHandoffMcpPayload.handoff?.currentTask?.id !== "task-2"
 ) {
