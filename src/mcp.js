@@ -31,6 +31,7 @@ import {
   syncSwarmStatus,
   searchMemories,
   storeMemory,
+  swarmBlockers,
   swarmBundle,
   swarmCloseout,
   swarmBrief,
@@ -488,6 +489,17 @@ export const toolCatalog = [
   {
     name: "swarm_bundle",
     description: "Build a leader-ready orchestration bundle for one swarm.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_blockers",
+    description: "Build a blocker-oriented bundle for one swarm.",
     inputSchema: {
       type: "object",
       required: ["id"],
@@ -1330,6 +1342,19 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ bundle }));
+    }
+
+    if (name === "swarm_blockers") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_blockers requires arguments.id");
+      }
+
+      const blockers = swarmBlockers(params.arguments.id);
+      if (!blockers) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ blockers }));
     }
 
     if (name === "swarm_closeout") {
