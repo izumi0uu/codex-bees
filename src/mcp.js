@@ -36,6 +36,7 @@ import {
   runtimeDispatch,
   runtimeFocus,
   runtimeHandoffs,
+  runtimeLeaderPack,
   runtimeRecovery,
   runtimeSummaryPack,
   runtimeReview,
@@ -146,6 +147,18 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_leader_pack",
+    description: "Build the leader-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string" },
+        topology: { type: "string" },
+        owner: { type: "string" }
+      }
     }
   },
   {
@@ -1013,6 +1026,19 @@ function handleRequest(message) {
 
     if (name === "runtime_recovery") {
       return createSuccess(id, createTextPayload({ recovery: runtimeRecovery() }));
+    }
+
+    if (name === "runtime_leader_pack") {
+      return createSuccess(
+        id,
+        createTextPayload({
+          leaderPack: runtimeLeaderPack({
+            status: params.arguments?.status,
+            topology: params.arguments?.topology,
+            owner: params.arguments?.owner
+          })
+        })
+      );
     }
 
     if (name === "runtime_summary_pack") {

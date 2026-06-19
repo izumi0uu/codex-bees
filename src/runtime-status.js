@@ -90,8 +90,8 @@ const CAPABILITY_CATALOG = [
     id: "runtime_catalog",
     category: "introspection",
     description: "Repo-native discovery of shipped agents and skills with role-aware validation.",
-    cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:activity", "runtime:closeout", "runtime:dashboard", "runtime:dispatch", "runtime:focus", "runtime:handoffs", "runtime:recovery", "runtime:summary-pack", "runtime:review", "runtime:alerts", "runtime:roles"],
-    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_activity", "runtime_closeout", "runtime_dashboard", "runtime_dispatch", "runtime_focus", "runtime_handoffs", "runtime_recovery", "runtime_summary_pack", "runtime_review", "runtime_alerts", "runtime_roles"]
+    cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:activity", "runtime:closeout", "runtime:dashboard", "runtime:dispatch", "runtime:focus", "runtime:handoffs", "runtime:leader-pack", "runtime:recovery", "runtime:summary-pack", "runtime:review", "runtime:alerts", "runtime:roles"],
+    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_activity", "runtime_closeout", "runtime_dashboard", "runtime_dispatch", "runtime_focus", "runtime_handoffs", "runtime_leader_pack", "runtime_recovery", "runtime_summary_pack", "runtime_review", "runtime_alerts", "runtime_roles"]
   }
 ];
 

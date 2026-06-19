@@ -41,6 +41,7 @@ import {
   runtimeDispatch,
   runtimeFocus,
   runtimeHandoffs,
+  runtimeLeaderPack,
   runtimeRecovery,
   runtimeSummaryPack,
   runtimeReview,
@@ -98,6 +99,7 @@ function printHelp() {
   write(`  codex-bees runtime:dispatch Build the owner-grouped dispatch workspace\n`);
   write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
   write(`  codex-bees runtime:handoffs Build the next-actor handoff workspace\n`);
+  write(`  codex-bees runtime:leader-pack Build the leader-oriented runtime package\n`);
   write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
   write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
   write(`  codex-bees runtime:review  Build the verifier-grouped review workspace\n`);
@@ -229,6 +231,10 @@ function printRuntimeRecovery() {
 
 function printRuntimeSummaryPack() {
   write(JSON.stringify({ summaryPack: runtimeSummaryPack() }, null, 2) + "\n");
+}
+
+function printRuntimeLeaderPack() {
+  write(JSON.stringify({ leaderPack: runtimeLeaderPack() }, null, 2) + "\n");
 }
 
 function printRuntimeDashboard() {
@@ -1074,6 +1080,9 @@ async function runCommand(command) {
       return;
     case "runtime:handoffs":
       printRuntimeHandoffs();
+      return;
+    case "runtime:leader-pack":
+      printRuntimeLeaderPack();
       return;
     case "runtime:recovery":
       printRuntimeRecovery();
