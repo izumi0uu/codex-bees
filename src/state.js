@@ -299,9 +299,11 @@ export function swarmBrief(id) {
   });
 
   const recommended = recommendSwarmAction(overview, lanes);
+  const recommendedReason = deriveSwarmBriefReason(recommended);
 
   return {
     kind: "swarm_execution_brief",
+    recommendedReason,
     swarm: overview.swarm,
     derivedStatus: overview.derivedStatus,
     statusAligned: overview.statusAligned,
@@ -4668,6 +4670,29 @@ function deriveSwarmCloseoutReason({ overview, command }) {
     return "followup_before_closeout";
   }
   return "no_closeout_action";
+}
+
+function deriveSwarmBriefReason(recommended) {
+  const action = recommended?.action ?? null;
+  if (action === "complete") {
+    return "swarm_complete";
+  }
+  if (action === "queue_swarm_lanes") {
+    return "queue_swarm_lanes";
+  }
+  if (typeof action === "string" && action.startsWith("review_lane:")) {
+    return "review_lane_ready";
+  }
+  if (typeof action === "string" && action.startsWith("dispatch_lane:")) {
+    return "dispatch_lane_ready";
+  }
+  if (typeof action === "string" && action.startsWith("continue_lane:")) {
+    return "continue_lane_active";
+  }
+  if (typeof action === "string" && action.startsWith("unblock_lane:")) {
+    return "blocked_lane_ready";
+  }
+  return "swarm_state_visible";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

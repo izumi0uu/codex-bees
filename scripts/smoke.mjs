@@ -1073,6 +1073,7 @@ const swarmBriefPlanned = JSON.parse(
 ).brief;
 if (
   swarmBriefPlanned.kind !== "swarm_execution_brief" ||
+  swarmBriefPlanned.recommendedReason !== "queue_swarm_lanes" ||
   swarmBriefPlanned.recommendedNextAction !== "queue_swarm_lanes" ||
   swarmBriefPlanned.owner?.id !== "leader"
 ) {
@@ -1466,6 +1467,7 @@ const swarmExecutionBrief = JSON.parse(
 ).brief;
 if (
   swarmExecutionBrief.kind !== "swarm_execution_brief" ||
+  swarmExecutionBrief.recommendedReason !== "swarm_complete" ||
   swarmExecutionBrief.recommendedNextAction !== "complete" ||
   swarmExecutionBrief.nextLane !== null ||
   swarmExecutionBrief.lanes?.[0]?.owner?.promptPath !== ".codex/agents/explore.md"
@@ -4163,6 +4165,7 @@ const leaderWorkspacePayload = leaderWorkspaceText ? JSON.parse(leaderWorkspaceT
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
+  swarmBriefPayload?.brief?.recommendedReason !== "queue_swarm_lanes" ||
   swarmBriefPayload?.brief?.recommendedNextAction !== "queue_swarm_lanes" ||
   swarmCheckPayload?.validation?.ready !== true ||
   !mcpSwarmTask ||
