@@ -646,6 +646,18 @@ if (swarmOverviewBeforeDispatch.counts.queued !== 2 || swarmOverviewBeforeDispat
   console.error("[smoke:swarm-overview] expected queued lanes and next lane before dispatch");
   process.exit(1);
 }
+const swarmDispatchBundleCli = JSON.parse(
+  run("swarm-dispatch-bundle-cli", ["./src/index.js", "swarm:dispatch-bundle", "--id", "swarm-1"]).stdout
+).dispatchBundle;
+if (
+  swarmDispatchBundleCli.kind !== "swarm_dispatch_bundle" ||
+  swarmDispatchBundleCli.dispatchableCount !== 2 ||
+  swarmDispatchBundleCli.nextLane?.lane !== "lane-alpha" ||
+  swarmDispatchBundleCli.taskBrief?.task?.id !== "task-1"
+) {
+  console.error("[smoke:swarm-dispatch-bundle] expected CLI dispatch bundle with next lane task brief");
+  process.exit(1);
+}
 const dispatchedLane = JSON.parse(
   run("swarm-dispatch", [
     "./src/index.js",
@@ -951,6 +963,59 @@ if (
 ) {
   console.error("[smoke:swarm-blockers-mcp] expected MCP blocker bundle");
   console.error(swarmBlockersMcp.stderr || swarmBlockersMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("swarm-init-dispatchable", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Dispatch bundle smoke",
+  "--owner",
+  "leader",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-dispatch",
+      summary: "Dispatch lane",
+      owner: "explore",
+      verifier: "reviewer",
+      scope: ["src/index.js"],
+      acceptance: ["dispatch bundle surfaces next lane"],
+      verification: ["dispatch bundle includes task brief"]
+    }
+  ])
+]);
+run("swarm-queue-dispatchable", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]);
+const swarmDispatchBundleMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "swarm_dispatch_bundle",
+      arguments: { id: "swarm-1" }
+    }
+  })
+].join("\n") + "\n";
+const swarmDispatchBundleMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: swarmDispatchBundleMcpInput,
+  encoding: "utf8"
+});
+const swarmDispatchBundleMcpLines = swarmDispatchBundleMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const swarmDispatchBundleMcpPayload = JSON.parse(JSON.parse(swarmDispatchBundleMcpLines[1]).result.content[0].text);
+if (
+  swarmDispatchBundleMcp.status !== 0 ||
+  swarmDispatchBundleMcpPayload.dispatchBundle?.nextLane?.lane !== "lane-dispatch" ||
+  swarmDispatchBundleMcpPayload.dispatchBundle?.taskBrief?.task?.id !== "task-1"
+) {
+  console.error("[smoke:swarm-dispatch-bundle-mcp] expected MCP dispatch bundle");
+  console.error(swarmDispatchBundleMcp.stderr || swarmDispatchBundleMcp.stdout);
   process.exit(1);
 }
 
