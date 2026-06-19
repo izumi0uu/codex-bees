@@ -1018,6 +1018,41 @@ export function runtimeSummaryPack() {
   };
 }
 
+export function runtimeOperatorPack() {
+  const dashboard = runtimeDashboard();
+  const focus = runtimeFocus();
+  const alerts = runtimeAlerts();
+  const handoffs = runtimeHandoffs();
+  const closeout = runtimeCloseout();
+  const recommendedSurface = deriveRuntimeOperatorPackSurface({ focus, handoffs, closeout, dashboard, alerts });
+
+  return {
+    kind: "runtime_operator_pack",
+    recommendedSurface,
+    focus,
+    overview: {
+      dashboard: dashboard?.counts ?? null,
+      alerts: alerts?.counts ?? null,
+      handoffs: handoffs?.counts ?? null,
+      closeout: closeout?.counts ?? null
+    },
+    next: {
+      focus: focus?.focus ?? null,
+      handoff: handoffs?.next ?? null,
+      closeout: closeout?.next ?? null,
+      alert: alerts?.alerts?.[0] ?? null
+    },
+    surfaces: {
+      dashboard,
+      focus,
+      alerts,
+      handoffs,
+      closeout
+    },
+    summary: buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3087,6 +3122,33 @@ function deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, 
 function buildRuntimeSummaryPackSummary(recommendedSurface, focus) {
   const detail = focus?.summary ?? "Runtime summary pack has no current focus detail.";
   return `Runtime summary pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeOperatorPackSurface({ focus, handoffs, closeout, dashboard, alerts }) {
+  if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task") {
+    return "runtime:focus";
+  }
+  if ((handoffs?.counts?.reviewDecisions ?? 0) > 0 || (handoffs?.counts?.blockedRecoveries ?? 0) > 0) {
+    return "runtime:handoffs";
+  }
+  if ((closeout?.counts?.totalReady ?? 0) > 0) {
+    return "runtime:closeout";
+  }
+  if ((alerts?.counts?.high ?? 0) > 0) {
+    return "runtime:alerts";
+  }
+  if ((dashboard?.counts?.tasks ?? 0) > 0 || (dashboard?.counts?.leaderQueueItems ?? 0) > 0) {
+    return "runtime:dashboard";
+  }
+  return "runtime:focus";
+}
+
+function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
+  const detail =
+    focus?.summary ??
+    alerts?.summary ??
+    "Runtime operator pack has no current operator detail.";
+  return `Runtime operator pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
