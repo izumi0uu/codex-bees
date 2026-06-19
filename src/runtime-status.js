@@ -41,6 +41,10 @@ const CAPABILITY_CATALOG = [
     id: "leader_orchestration",
     category: "coordination",
     description: "Leader-facing orchestration views across swarms, lane bundles, and next actions.",
+    highlights: [
+      "assignment-launch-plan provides ordered worker startup steps",
+      "assignment-dispatch-bundle provides multi-worker launch handoff"
+    ],
     cliCommands: ["leader:assignment-dispatch", "leader:assignment-dispatch-bundle", "leader:assignment-launch-plan", "leader:assignment-dispatch-pack", "leader:assignments", "leader:queue", "leader:workspace", "swarm:brief", "swarm:bundle", "swarm:blockers", "swarm:closeout", "swarm:dispatch-bundle", "swarm:overview"],
     mcpTools: ["leader_assignment_dispatch", "leader_assignment_dispatch_bundle", "leader_assignment_launch_plan", "leader_assignment_dispatch_pack", "leader_assignments", "leader_queue", "leader_workspace", "swarm_brief", "swarm_bundle", "swarm_blockers", "swarm_closeout", "swarm_dispatch_bundle", "swarm_overview"]
   },
@@ -90,6 +94,10 @@ const CAPABILITY_CATALOG = [
     id: "runtime_catalog",
     category: "introspection",
     description: "Repo-native discovery of shipped agents and skills with role-aware validation.",
+    highlights: [
+      "runtime:queue-pack recommends launch context before raw leader queue review",
+      "runtime:summary-pack exposes compact assignment launch context for automation"
+    ],
     cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:activity", "runtime:assignment-pack", "runtime:closeout", "runtime:closeout-pack", "runtime:control-pack", "runtime:dashboard", "runtime:dispatch", "runtime:dispatch-pack", "runtime:execution-pack", "runtime:focus", "runtime:handoff-pack", "runtime:handoffs", "runtime:leader-pack", "runtime:operator-pack", "runtime:owner-pack", "runtime:pickup-pack", "runtime:queue-pack", "runtime:recovery", "runtime:recovery-pack", "runtime:review", "runtime:review-pack", "runtime:role-pack", "runtime:session-pack", "runtime:signal-pack", "runtime:summary-pack", "runtime:triage-pack", "runtime:verifier-pack", "runtime:workspace-pack", "runtime:worker-pack", "runtime:alerts", "runtime:roles", "task:assignment-preview", "task:assignment-pickup", "task:pickup-preview"],
     mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_activity", "runtime_assignment_pack", "runtime_closeout", "runtime_closeout_pack", "runtime_control_pack", "runtime_dashboard", "runtime_dispatch", "runtime_dispatch_pack", "runtime_execution_pack", "runtime_focus", "runtime_handoff_pack", "runtime_handoffs", "runtime_leader_pack", "runtime_operator_pack", "runtime_owner_pack", "runtime_pickup_pack", "runtime_queue_pack", "runtime_recovery", "runtime_recovery_pack", "runtime_review", "runtime_review_pack", "runtime_role_pack", "runtime_session_pack", "runtime_signal_pack", "runtime_summary_pack", "runtime_triage_pack", "runtime_verifier_pack", "runtime_workspace_pack", "runtime_worker_pack", "runtime_alerts", "runtime_roles", "task_assignment_preview", "task_assignment_pickup", "task_pickup_preview"]
   }
@@ -106,6 +114,7 @@ function countBy(items, selector) {
 export function getCapabilityCatalog() {
   return CAPABILITY_CATALOG.map((item) => ({
     ...item,
+    highlights: item.highlights ? [...item.highlights] : [],
     cliCommands: [...item.cliCommands],
     mcpTools: [...item.mcpTools]
   }));
@@ -141,7 +150,8 @@ export function getRuntimeStatus({ version, toolCount }) {
       id: capability.id,
       category: capability.category,
       cliCommandCount: capability.cliCommands.length,
-      mcpToolCount: capability.mcpTools.length
+      mcpToolCount: capability.mcpTools.length,
+      highlights: capability.highlights ?? []
     }))
   };
 }

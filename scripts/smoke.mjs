@@ -139,7 +139,9 @@ const runtimeCapabilities = JSON.parse(run("capabilities-verify", ["./src/index.
 if (
   !Array.isArray(runtimeCapabilities) ||
   !runtimeCapabilities.some((capability) => capability.id === "swarm_coordination") ||
-  !runtimeCapabilities.some((capability) => capability.id === "runtime_catalog")
+  !runtimeCapabilities.some((capability) => capability.id === "runtime_catalog") ||
+  !runtimeCapabilities.find((capability) => capability.id === "runtime_catalog")?.highlights?.includes("runtime:queue-pack recommends launch context before raw leader queue review") ||
+  !runtimeCapabilities.find((capability) => capability.id === "leader_orchestration")?.highlights?.includes("assignment-launch-plan provides ordered worker startup steps")
 ) {
   console.error("[smoke:capabilities] expected runtime capability inventory");
   process.exit(1);

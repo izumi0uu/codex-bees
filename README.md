@@ -208,7 +208,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
 
-`status` and the MCP `runtime_status` tool summarize the current local runtime: shipped tool/agent/skill counts, persisted task/swarm/memory counts, and queue status distribution. `capabilities` and `runtime_capabilities` provide a product-facing inventory of what this Codex-only runtime actually supports today.
+`status` and the MCP `runtime_status` tool summarize the current local runtime: shipped tool/agent/skill counts, persisted task/swarm/memory counts, queue status distribution, and capability highlights. `capabilities` and `runtime_capabilities` provide a product-facing inventory of what this Codex-only runtime actually supports today, including semantic highlights such as launch-first queue orchestration and compact launch context in summary surfaces.
 
 `runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload.
 
