@@ -41,6 +41,7 @@ import {
   runtimeLeaderPack,
   runtimeOperatorPack,
   runtimeOwnerPack,
+  runtimeQueuePack,
   runtimeRecoveryPack,
   runtimeRecovery,
   runtimeReviewPack,
@@ -182,6 +183,14 @@ export const toolCatalog = [
         role: { type: "string" },
         workerId: { type: "string" }
       }
+    }
+  },
+  {
+    name: "runtime_queue_pack",
+    description: "Build the queue-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
     }
   },
   {
@@ -1131,6 +1140,10 @@ function handleRequest(message) {
           workerId: params.arguments?.workerId
         })
       }));
+    }
+
+    if (name === "runtime_queue_pack") {
+      return createSuccess(id, createTextPayload({ queuePack: runtimeQueuePack() }));
     }
 
     if (name === "runtime_leader_pack") {
