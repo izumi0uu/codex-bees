@@ -31,6 +31,7 @@ import {
   storeMemory,
   swarmBrief,
   taskInbox,
+  taskPickup,
   taskNext,
   updateSwarm,
   updateTask,
@@ -180,6 +181,19 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       required: ["role"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_pickup",
+    description: "Claim or resume the next task for one worker and return the follow-up brief.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
       properties: {
         role: { type: "string" },
         workerId: { type: "string" },
@@ -775,6 +789,23 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ next }));
+    }
+
+    if (name === "task_pickup") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "task_pickup requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "task_pickup requires arguments.workerId");
+      }
+
+      const pickup = taskPickup({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode
+      });
+
+      return createSuccess(id, createTextPayload({ pickup }));
     }
 
     if (name === "task_update") {

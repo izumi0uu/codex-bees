@@ -37,6 +37,7 @@ import {
   storeMemory,
   swarmBrief,
   taskInbox,
+  taskPickup,
   taskNext,
   updateSwarm,
   updateTask,
@@ -74,6 +75,7 @@ function printHelp() {
   write(`  codex-bees task:brief      Render an execution brief for one task\n`);
   write(`  codex-bees task:inbox      List role-relevant tasks in execution priority order\n`);
   write(`  codex-bees task:next       Resolve the next task a role should pick up\n`);
+  write(`  codex-bees task:pickup     Claim or resume the next task for one worker\n`);
   write(`  codex-bees task:claim      Claim a local coordination task\n`);
   write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
   write(`  codex-bees task:review     Mark a task as ready for review\n`);
@@ -348,6 +350,17 @@ function handleTaskNext() {
     mode: readOption("--mode")
   });
   write(JSON.stringify({ next }, null, 2) + "\n");
+}
+
+function handleTaskPickup() {
+  const role = requireOption("--role");
+  const workerId = requireOption("--worker");
+  const pickup = taskPickup({
+    role,
+    workerId,
+    mode: readOption("--mode")
+  });
+  write(JSON.stringify({ pickup }, null, 2) + "\n");
 }
 
 function handleTaskCheck() {
@@ -835,6 +848,9 @@ async function runCommand(command) {
       return;
     case "task:next":
       handleTaskNext();
+      return;
+    case "task:pickup":
+      handleTaskPickup();
       return;
     case "task:claim":
       handleTaskClaim();
