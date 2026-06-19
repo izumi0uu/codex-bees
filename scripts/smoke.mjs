@@ -188,6 +188,18 @@ if (
   console.error("[smoke:runtime-dispatch] expected top-level runtime dispatch");
   process.exit(1);
 }
+const runtimeDispatchPackInitial = JSON.parse(
+  run("runtime-dispatch-pack-initial", ["./src/index.js", "runtime:dispatch-pack"]).stdout
+).dispatchPack;
+if (
+  runtimeDispatchPackInitial.kind !== "runtime_dispatch_pack" ||
+  !runtimeDispatchPackInitial.recommendedSurface ||
+  !runtimeDispatchPackInitial.overview ||
+  !runtimeDispatchPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-dispatch-pack] expected top-level runtime dispatch pack");
+  process.exit(1);
+}
 const runtimeFocusInitial = JSON.parse(
   run("runtime-focus-initial", ["./src/index.js", "runtime:focus"]).stdout
 ).focus;
@@ -1528,6 +1540,19 @@ if (
   console.error("[smoke:runtime-dispatch] expected CLI owner-grouped dispatch workspace");
   process.exit(1);
 }
+const runtimeDispatchPackCli = JSON.parse(
+  run("runtime-dispatch-pack-cli", ["./src/index.js", "runtime:dispatch-pack"]).stdout
+).dispatchPack;
+if (
+  runtimeDispatchPackCli.recommendedSurface !== "runtime:dispatch" ||
+  runtimeDispatchPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeDispatchPackCli.next?.handoff?.taskId !== "task-2" ||
+  runtimeDispatchPackCli.overview?.dispatch?.totalAssignments !== 1 ||
+  runtimeDispatchPackCli.surfaces?.roles?.next?.role?.id !== "tester"
+) {
+  console.error("[smoke:runtime-dispatch-pack] expected CLI dispatch pack to recommend dispatch");
+  process.exit(1);
+}
 const runtimeFocusCli = JSON.parse(
   run("runtime-focus-cli", ["./src/index.js", "runtime:focus"]).stdout
 ).focus;
@@ -1770,6 +1795,37 @@ if (
 ) {
   console.error("[smoke:runtime-dispatch-mcp] expected MCP runtime dispatch");
   console.error(runtimeDispatchMcp.stderr || runtimeDispatchMcp.stdout);
+  process.exit(1);
+}
+const runtimeDispatchPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_dispatch_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeDispatchPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeDispatchPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeDispatchPackMcpLines = runtimeDispatchPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeDispatchPackMcpPayload = JSON.parse(JSON.parse(runtimeDispatchPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeDispatchPackMcp.status !== 0 ||
+  runtimeDispatchPackMcpPayload.dispatchPack?.recommendedSurface !== "runtime:dispatch" ||
+  runtimeDispatchPackMcpPayload.dispatchPack?.next?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeDispatchPackMcpPayload.dispatchPack?.next?.handoff?.taskId !== "task-2"
+) {
+  console.error("[smoke:runtime-dispatch-pack-mcp] expected MCP runtime dispatch pack");
+  console.error(runtimeDispatchPackMcp.stderr || runtimeDispatchPackMcp.stdout);
   process.exit(1);
 }
 const runtimeFocusMcpInput = [
