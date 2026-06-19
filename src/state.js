@@ -1227,6 +1227,38 @@ export function runtimeWorkspacePack() {
   };
 }
 
+export function runtimeControlPack() {
+  const summaryPack = runtimeSummaryPack();
+  const workspacePack = runtimeWorkspacePack();
+  const operatorPack = runtimeOperatorPack();
+  const leaderPack = runtimeLeaderPack();
+  const recommendedSurface = deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack });
+
+  return {
+    kind: "runtime_control_pack",
+    recommendedSurface,
+    overview: {
+      summary: summaryPack?.overview ?? null,
+      workspace: workspacePack?.overview ?? null,
+      operator: operatorPack?.overview ?? null,
+      leader: leaderPack?.overview ?? null
+    },
+    next: {
+      summary: summaryPack?.focus?.focus ?? null,
+      workspace: workspacePack?.next ?? null,
+      operator: operatorPack?.next ?? null,
+      leader: leaderPack?.next ?? null
+    },
+    surfaces: {
+      summaryPack,
+      workspacePack,
+      operatorPack,
+      leaderPack
+    },
+    summary: buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3509,6 +3541,32 @@ function buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatc
     recovery?.summary ??
     "Runtime workspace pack has no current orchestration detail.";
   return `Runtime workspace pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack }) {
+  if (summaryPack?.recommendedSurface) {
+    return "runtime:summary-pack";
+  }
+  if (workspacePack?.recommendedSurface) {
+    return "runtime:workspace-pack";
+  }
+  if (operatorPack?.recommendedSurface) {
+    return "runtime:operator-pack";
+  }
+  if (leaderPack?.recommendedSurface) {
+    return "runtime:leader-pack";
+  }
+  return "runtime:summary-pack";
+}
+
+function buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack) {
+  const detail =
+    summaryPack?.summary ??
+    workspacePack?.summary ??
+    operatorPack?.summary ??
+    leaderPack?.summary ??
+    "Runtime control pack has no current control detail.";
+  return `Runtime control pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
