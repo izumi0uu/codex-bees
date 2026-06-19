@@ -17,6 +17,7 @@ import {
   claimTaskLifecycle,
   completeSwarm,
   completeTask,
+  completeTaskLifecycle,
   dispatchSwarmLane,
   getTask,
   getSwarm,
@@ -2099,7 +2100,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_done requires arguments.id");
       }
 
-      const task = completeTask({
+      const task = completeTaskLifecycle({
         id: params.arguments.id,
         reviewedBy: params.arguments.reviewedBy ?? params.arguments.claimedBy,
         notes: params.arguments.notes,

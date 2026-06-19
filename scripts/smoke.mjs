@@ -780,6 +780,41 @@ if (
 
 rmSync(".codex-bees", { recursive: true, force: true });
 
+run("task-done-lifecycle-add", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "done lifecycle task",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/mcp.js",
+  "--acceptance",
+  "done emits lifecycle envelope",
+  "--verification",
+  "task:done returns machine-readable reason"
+]);
+run("task-done-lifecycle-claim", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "done-worker"]);
+run("task-done-lifecycle-review", ["./src/index.js", "task:review", "--id", "task-1", "--by", "done-worker"]);
+const doneLifecycleCli = JSON.parse(
+  run("task-done-lifecycle-cli", ["./src/index.js", "task:done", "--id", "task-1", "--by", "tester", "--evidence", "done smoke"]).stdout
+).completed;
+if (
+  doneLifecycleCli.kind !== "task_lifecycle" ||
+  doneLifecycleCli.recommendedReason !== "task_completed" ||
+  doneLifecycleCli.task?.id !== "task-1" ||
+  doneLifecycleCli.task?.queueStatus !== "done" ||
+  doneLifecycleCli.task?.reviewOutcome !== "approved" ||
+  doneLifecycleCli.task?.reviewedBy !== "tester"
+) {
+  console.error("[smoke:task-done] expected CLI task done lifecycle payload");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+
 const firstAdd = run("durability-add-1", [
   "./src/index.js",
   "task:add",

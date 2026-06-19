@@ -22,6 +22,7 @@ import {
   claimTaskLifecycle,
   completeSwarm,
   completeTask,
+  completeTaskLifecycle,
   dispatchSwarmLane,
   getTask,
   getSwarm,
@@ -1001,7 +1002,7 @@ function handleTaskDone() {
   const reviewedBy = requireOption("--by");
   const notes = readOption("--notes");
   const reviewEvidence = readListOption("--evidence", "|");
-  const task = completeTask({ id, reviewedBy, notes, reviewEvidence });
+  const task = completeTaskLifecycle({ id, reviewedBy, notes, reviewEvidence });
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);

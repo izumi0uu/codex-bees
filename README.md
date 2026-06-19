@@ -160,6 +160,8 @@ Task metadata can carry lane-ready execution detail:
 
 `task:approve` / `task_approve` return the explicit lifecycle mutation result for verifier approval. They emit a machine-readable `recommendedReason` so automation can branch on explicit approval instead of inferring final acceptance only from the nested task queue status.
 
+`task:done` / `task_done` return the explicit lifecycle mutation result for verifier completion through the done alias. They emit a machine-readable `recommendedReason` so automation can branch on explicit completion even when callers choose the done surface instead of the approve surface.
+
 `task:review` hands work from the owner to the named verifier. After that point, only the verifier can close the task with `task:approve` / `task:done`, or send it back with `task:reject`. Review outcomes persist reviewer identity and optional `--evidence` so completion carries fresh verification context instead of skipping straight from worker claim to done.
 
 Swarm contracts can carry bounded parallel execution detail:

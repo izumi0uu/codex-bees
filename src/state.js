@@ -3208,6 +3208,18 @@ export function completeTask(input) {
   });
 }
 
+export function completeTaskLifecycle(input) {
+  const result = completeTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_lifecycle",
+    recommendedReason: "task_completed",
+    task: result
+  };
+}
+
 export function approveTask(input) {
   return transitionTask({
     ...input,
