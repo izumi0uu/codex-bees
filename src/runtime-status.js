@@ -126,6 +126,7 @@ export function getRuntimeStatus({ version, toolCount }) {
   const swarms = listSwarms();
   const memories = listMemories();
   const capabilities = getCapabilityCatalog();
+  const highlights = capabilities.flatMap((capability) => capability.highlights ?? []).slice(0, 6);
 
   return {
     product: "codex-bees",
@@ -145,6 +146,7 @@ export function getRuntimeStatus({ version, toolCount }) {
       swarmStatuses: countBy(swarms, (swarm) => swarm.status),
       memoryNamespaces: countBy(memories, (memory) => memory.namespace)
     },
+    highlights,
     catalog,
     capabilities: capabilities.map((capability) => ({
       id: capability.id,

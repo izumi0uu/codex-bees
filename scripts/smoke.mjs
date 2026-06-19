@@ -130,9 +130,11 @@ if (
   runtimeStatus.product !== "codex-bees" ||
   runtimeStatus.counts?.agents !== 4 ||
   runtimeStatus.counts?.skills !== 2 ||
-  runtimeStatus.counts?.capabilities < 6
+  runtimeStatus.counts?.capabilities < 6 ||
+  !Array.isArray(runtimeStatus.highlights) ||
+  !runtimeStatus.highlights.includes("runtime:queue-pack recommends launch context before raw leader queue review")
 ) {
-  console.error("[smoke:status] expected runtime summary counts");
+  console.error("[smoke:status] expected runtime summary counts and highlights");
   process.exit(1);
 }
 const runtimeCapabilities = JSON.parse(run("capabilities-verify", ["./src/index.js", "capabilities"]).stdout).capabilities;
