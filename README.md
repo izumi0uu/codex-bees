@@ -49,6 +49,7 @@ node ./src/index.js catalog
 node ./src/index.js doctor
 node ./src/index.js status
 node ./src/index.js capabilities
+node ./src/index.js runtime:alerts
 node ./src/index.js runtime:dashboard
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
 node ./src/index.js plan:queue --task "Queue a runtime change"
@@ -154,6 +155,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `status` and the MCP `runtime_status` tool summarize the current local runtime: shipped tool/agent/skill counts, persisted task/swarm/memory counts, and queue status distribution. `capabilities` and `runtime_capabilities` provide a product-facing inventory of what this Codex-only runtime actually supports today.
 
 `runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload.
+
+`runtime:alerts` / `runtime_alerts` provide the compressed top-level alert stream: blocked tasks first, then pending review and swarm-ready-to-complete signals.
 
 Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. Swarm-linked task lifecycle changes automatically keep swarm status close to task reality, `swarm:list --detailed` gives leaders a multi-swarm dashboard, `leader:assignments` / `leader_assignments` expose runnable work grouped by owner role, `leader:queue` / `leader_queue` expose the prioritized cross-swarm action list, `leader:workspace` / `leader_workspace` choose the current orchestration focus across those swarms, `swarm:overview` summarizes one swarm, `swarm:brief` provides the next execution handoff, `swarm:bundle` / `swarm_bundle` package the leader-ready orchestration view with lane reports and a summary sentence, `swarm:blockers` / `swarm_blockers` isolate blocked lanes for unblock work, `swarm:closeout` / `swarm_closeout` provide explicit swarm closure packaging, `swarm:dispatch-bundle` / `swarm_dispatch_bundle` package the next runnable dispatch target, `swarm:dispatch` claims the next runnable lane task for a worker, and `swarm:sync` provides an idempotent reconciliation step when leaders want an explicit status check.
 
