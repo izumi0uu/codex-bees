@@ -1259,6 +1259,38 @@ export function runtimeControlPack() {
   };
 }
 
+export function runtimeSignalPack(input = {}) {
+  const focus = runtimeFocus();
+  const alerts = runtimeAlerts();
+  const activity = runtimeActivity(input);
+  const roles = runtimeRoles(input);
+  const recommendedSurface = deriveRuntimeSignalPackSurface({ focus, alerts, activity, roles });
+
+  return {
+    kind: "runtime_signal_pack",
+    recommendedSurface,
+    overview: {
+      focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
+      alerts: alerts?.counts ?? null,
+      activity: activity?.counts ?? null,
+      roles: roles?.counts ?? null
+    },
+    next: {
+      focus: focus?.focus ?? null,
+      alert: alerts?.alerts?.[0] ?? null,
+      activity: activity?.next ?? null,
+      role: roles?.next ?? null
+    },
+    surfaces: {
+      focus,
+      alerts,
+      activity,
+      roles
+    },
+    summary: buildRuntimeSignalPackSummary(recommendedSurface, focus, alerts, activity, roles)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3567,6 +3599,32 @@ function buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspa
     leaderPack?.summary ??
     "Runtime control pack has no current control detail.";
   return `Runtime control pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeSignalPackSurface({ focus, alerts, activity, roles }) {
+  if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task") {
+    return "runtime:focus";
+  }
+  if ((alerts?.counts?.high ?? 0) > 0 || (alerts?.counts?.medium ?? 0) > 0) {
+    return "runtime:alerts";
+  }
+  if ((roles?.counts?.withPendingReview ?? 0) > 0 || (roles?.counts?.withBlockedOwnerWork ?? 0) > 0) {
+    return "runtime:roles";
+  }
+  if ((activity?.counts?.totalEntries ?? 0) > 0) {
+    return "runtime:activity";
+  }
+  return "runtime:focus";
+}
+
+function buildRuntimeSignalPackSummary(recommendedSurface, focus, alerts, activity, roles) {
+  const detail =
+    focus?.summary ??
+    alerts?.summary ??
+    roles?.summary ??
+    activity?.summary ??
+    "Runtime signal pack has no current signal detail.";
+  return `Runtime signal pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
