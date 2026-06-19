@@ -338,7 +338,15 @@ function printRuntimeSummaryPack() {
 }
 
 function printRuntimeLeaderPack() {
-  write(JSON.stringify({ leaderPack: runtimeLeaderPack() }, null, 2) + "\n");
+  write(JSON.stringify({
+    leaderPack: runtimeLeaderPack({
+      status: readOption("--status"),
+      topology: readOption("--topology"),
+      owner: readOption("--owner"),
+      workerId: readOption("--worker"),
+      workerIds: readJsonOption("--workers")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeOperatorPack() {
@@ -452,7 +460,12 @@ function printRuntimeDispatch() {
 }
 
 function printRuntimeDispatchPack() {
-  write(JSON.stringify({ dispatchPack: runtimeDispatchPack() }, null, 2) + "\n");
+  write(JSON.stringify({
+    dispatchPack: runtimeDispatchPack({
+      workerId: readOption("--worker"),
+      workerIds: readJsonOption("--workers")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeFocus() {
@@ -837,6 +850,7 @@ function handleLeaderAssignmentDispatchPack() {
   const dispatchPack = leaderAssignmentDispatchPack({
     role: readOption("--role") ?? readOption("--owner"),
     workerId: readOption("--worker"),
+    workerIds: readJsonOption("--workers"),
     taskId: readOption("--task"),
     status: readOption("--status"),
     topology: readOption("--topology"),

@@ -283,7 +283,9 @@ export const toolCatalog = [
       properties: {
         status: { type: "string" },
         topology: { type: "string" },
-        owner: { type: "string" }
+        owner: { type: "string" },
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } }
       }
     }
   },
@@ -386,7 +388,10 @@ export const toolCatalog = [
     description: "Build the dispatch-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
-      properties: {}
+      properties: {
+        workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } }
+      }
     }
   },
   {
@@ -735,6 +740,7 @@ export const toolCatalog = [
         role: { type: "string" },
         owner: { type: "string" },
         workerId: { type: "string" },
+        workerIds: { type: "object", additionalProperties: { type: "string" } },
         taskId: { type: "string" },
         status: { type: "string" },
         topology: { type: "string" }
@@ -1394,7 +1400,9 @@ function handleRequest(message) {
           leaderPack: runtimeLeaderPack({
             status: params.arguments?.status,
             topology: params.arguments?.topology,
-            owner: params.arguments?.owner
+            owner: params.arguments?.owner,
+            workerId: params.arguments?.workerId,
+            workerIds: params.arguments?.workerIds
           })
         })
       );
@@ -1504,7 +1512,15 @@ function handleRequest(message) {
     }
 
     if (name === "runtime_dispatch_pack") {
-      return createSuccess(id, createTextPayload({ dispatchPack: runtimeDispatchPack() }));
+      return createSuccess(
+        id,
+        createTextPayload({
+          dispatchPack: runtimeDispatchPack({
+            workerId: params.arguments?.workerId,
+            workerIds: params.arguments?.workerIds
+          })
+        })
+      );
     }
 
     if (name === "runtime_execution_pack") {
@@ -1846,6 +1862,7 @@ function handleRequest(message) {
         role: params.arguments?.role,
         owner: params.arguments?.owner,
         workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
         taskId: params.arguments?.taskId,
         status: params.arguments?.status,
         topology: params.arguments?.topology
