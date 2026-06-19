@@ -232,6 +232,18 @@ if (
   console.error("[smoke:runtime-recovery] expected top-level runtime recovery");
   process.exit(1);
 }
+const runtimeRecoveryPackInitial = JSON.parse(
+  run("runtime-recovery-pack-initial", ["./src/index.js", "runtime:recovery-pack"]).stdout
+).recoveryPack;
+if (
+  runtimeRecoveryPackInitial.kind !== "runtime_recovery_pack" ||
+  !runtimeRecoveryPackInitial.recommendedSurface ||
+  !runtimeRecoveryPackInitial.overview ||
+  !runtimeRecoveryPackInitial.surfaces
+) {
+  console.error("[smoke:runtime-recovery-pack] expected top-level runtime recovery pack");
+  process.exit(1);
+}
 const runtimeSummaryPackInitial = JSON.parse(
   run("runtime-summary-pack-initial", ["./src/index.js", "runtime:summary-pack"]).stdout
 ).summaryPack;
@@ -1597,6 +1609,19 @@ if (
   console.error("[smoke:runtime-recovery] expected CLI recovery workspace");
   process.exit(1);
 }
+const runtimeRecoveryPackCli = JSON.parse(
+  run("runtime-recovery-pack-cli", ["./src/index.js", "runtime:recovery-pack"]).stdout
+).recoveryPack;
+if (
+  runtimeRecoveryPackCli.recommendedSurface !== "runtime:recovery" ||
+  runtimeRecoveryPackCli.next?.recovery?.taskId !== "task-1" ||
+  runtimeRecoveryPackCli.next?.handoff?.taskId !== "task-2" ||
+  runtimeRecoveryPackCli.overview?.recovery?.blocked !== 1 ||
+  runtimeRecoveryPackCli.surfaces?.focus?.focus?.taskId !== "task-1"
+) {
+  console.error("[smoke:runtime-recovery-pack] expected CLI recovery pack to recommend recovery");
+  process.exit(1);
+}
 const runtimeSummaryPackCli = JSON.parse(
   run("runtime-summary-pack-cli", ["./src/index.js", "runtime:summary-pack"]).stdout
 ).summaryPack;
@@ -1918,6 +1943,37 @@ if (
 ) {
   console.error("[smoke:runtime-recovery-mcp] expected MCP runtime recovery");
   console.error(runtimeRecoveryMcp.stderr || runtimeRecoveryMcp.stdout);
+  process.exit(1);
+}
+const runtimeRecoveryPackMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_recovery_pack",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeRecoveryPackMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeRecoveryPackMcpInput,
+  encoding: "utf8"
+});
+const runtimeRecoveryPackMcpLines = runtimeRecoveryPackMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeRecoveryPackMcpPayload = JSON.parse(JSON.parse(runtimeRecoveryPackMcpLines[1]).result.content[0].text);
+if (
+  runtimeRecoveryPackMcp.status !== 0 ||
+  runtimeRecoveryPackMcpPayload.recoveryPack?.recommendedSurface !== "runtime:recovery" ||
+  runtimeRecoveryPackMcpPayload.recoveryPack?.next?.recovery?.taskId !== "task-1" ||
+  runtimeRecoveryPackMcpPayload.recoveryPack?.next?.handoff?.taskId !== "task-2"
+) {
+  console.error("[smoke:runtime-recovery-pack-mcp] expected MCP runtime recovery pack");
+  console.error(runtimeRecoveryPackMcp.stderr || runtimeRecoveryPackMcp.stdout);
   process.exit(1);
 }
 const runtimeSummaryPackMcpInput = [
