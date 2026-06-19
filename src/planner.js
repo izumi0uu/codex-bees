@@ -178,9 +178,11 @@ function laneCountToWorkers(lanes) {
 
 export function planTask(task) {
   const lanes = buildPlanLanes(task);
+  const recommendedReason = lanes.length > 1 ? "multi_lane_plan_ready" : "single_lane_plan_ready";
 
   return {
     kind: "task_plan",
+    recommendedReason,
     objective: task,
     evidence: plannerEvidence(task),
     lanes

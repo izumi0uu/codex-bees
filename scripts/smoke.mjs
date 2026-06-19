@@ -1270,6 +1270,54 @@ if (
 }
 
 rmSync(".codex-bees", { recursive: true, force: true });
+const plannedTaskCli = JSON.parse(
+  run("plan-cli", ["./src/index.js", "plan", "--task", "Plan a runtime change"]).stdout
+);
+if (
+  plannedTaskCli.kind !== "task_plan" ||
+  plannedTaskCli.recommendedReason !== "multi_lane_plan_ready" ||
+  !Array.isArray(plannedTaskCli.lanes) ||
+  plannedTaskCli.lanes.length !== 2
+) {
+  console.error("[smoke:plan-cli] expected planner task payload with machine-readable reason");
+  process.exit(1);
+}
+const planMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "plan_task",
+      arguments: { task: "Plan an MCP runtime change" }
+    }
+  })
+].join("\n") + "\n";
+const planMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: planMcpInput,
+  encoding: "utf8"
+});
+const planMcpLines = planMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const planMcpResult = planMcpLines.length >= 2 ? JSON.parse(planMcpLines[1]) : null;
+const planMcpText = planMcpResult?.result?.content?.[0]?.text;
+const planMcpPayload = planMcpText ? JSON.parse(planMcpText) : null;
+if (
+  planMcp.status !== 0 ||
+  planMcpPayload?.kind !== "task_plan" ||
+  planMcpPayload?.recommendedReason !== "multi_lane_plan_ready" ||
+  !Array.isArray(planMcpPayload?.lanes) ||
+  planMcpPayload.lanes.length !== 2
+) {
+  console.error("[smoke:plan-mcp] expected planner task payload with machine-readable reason");
+  console.error(planMcp.stderr || planMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
 const queuedPlan = run("queue-plan-cli", [
   "./src/index.js",
   "plan:queue",
