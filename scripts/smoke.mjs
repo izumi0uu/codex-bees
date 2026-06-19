@@ -3669,6 +3669,7 @@ const runtimePickupPackMcpPayload = JSON.parse(JSON.parse(runtimePickupPackMcpLi
 if (
   runtimePickupPackMcp.status !== 0 ||
   runtimePickupPackMcpPayload.pickupPack?.recommendedSurface !== "worker:closeout" ||
+  runtimePickupPackMcpPayload.pickupPack?.recommendedReason !== "review_task_priority" ||
   runtimePickupPackMcpPayload.pickupPack?.next?.pickup?.candidate?.id !== "task-2" ||
   runtimePickupPackMcpPayload.pickupPack?.next?.pickup?.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
@@ -4520,6 +4521,7 @@ const runtimePickupPackVerifier = JSON.parse(
 ).pickupPack;
 if (
   runtimePickupPackVerifier.recommendedSurface !== "worker:closeout" ||
+  runtimePickupPackVerifier.recommendedReason !== "review_task_priority" ||
   runtimePickupPackVerifier.next?.pickup?.candidate?.id !== "task-2" ||
   runtimePickupPackVerifier.next?.pickup?.command !== "node ./src/index.js task:approve --id task-2 --by tester" ||
   runtimePickupPackVerifier.surfaces?.rolePack?.recommendedSurface !== "worker:closeout"
@@ -4556,6 +4558,7 @@ const runtimePickupPackOwner = JSON.parse(
 ).pickupPack;
 if (
   runtimePickupPackOwner.recommendedSurface !== "task:pickup --role executor --worker worker-owner --mode owner" ||
+  runtimePickupPackOwner.recommendedReason !== "claimable_pickup_ready" ||
   runtimePickupPackOwner.next?.pickup?.outcome !== "claimable" ||
   runtimePickupPackOwner.next?.pickup?.candidate?.id !== "task-1"
 ) {

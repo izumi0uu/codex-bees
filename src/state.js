@@ -1764,6 +1764,7 @@ export function runtimePickupPack(input = {}) {
     workerId: input.workerId,
     mode
   });
+  const recommendedReason = deriveRuntimePickupPackReason({ session, pickup, next, rolePack });
 
   return {
     kind: "runtime_pickup_pack",
@@ -1771,6 +1772,7 @@ export function runtimePickupPack(input = {}) {
     workerId: input.workerId,
     mode,
     recommendedSurface,
+    recommendedReason,
     overview: {
       session: session?.counts ?? null,
       inbox: session?.inbox?.counts ?? null,
@@ -4890,6 +4892,34 @@ function deriveRuntimePickupPackSurface({ session, pickup, next, rolePack, role,
     return "task:next";
   }
   return rolePack?.recommendedSurface ?? "worker:session";
+}
+
+function deriveRuntimePickupPackReason({ session, pickup, next, rolePack }) {
+  if (pickup?.outcome === "claimable") {
+    return "claimable_pickup_ready";
+  }
+  if (session?.focus?.kind === "active_task") {
+    return "active_task_priority";
+  }
+  if (session?.focus?.kind === "blocked_task") {
+    return "blocked_task_priority";
+  }
+  if (session?.focus?.kind === "review_task") {
+    return "review_task_priority";
+  }
+  if (session?.focus?.kind === "awaiting_review") {
+    return "awaiting_review_priority";
+  }
+  if (pickup?.command) {
+    return "pickup_command_ready";
+  }
+  if (next?.candidate?.id) {
+    return "next_candidate_visible";
+  }
+  if (rolePack?.recommendedSurface) {
+    return "role_fallback_priority";
+  }
+  return "default_pickup_priority";
 }
 
 function buildRuntimePickupPackSummary(recommendedSurface, session, pickup, next) {
