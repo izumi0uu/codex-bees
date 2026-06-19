@@ -1195,6 +1195,38 @@ export function runtimeQueuePack() {
   };
 }
 
+export function runtimeWorkspacePack() {
+  const dashboard = runtimeDashboard();
+  const dispatch = runtimeDispatch();
+  const review = runtimeReview();
+  const recovery = runtimeRecovery();
+  const recommendedSurface = deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, review, recovery });
+
+  return {
+    kind: "runtime_workspace_pack",
+    recommendedSurface,
+    overview: {
+      dashboard: dashboard?.counts ?? null,
+      dispatch: dispatch?.counts ?? null,
+      review: review?.counts ?? null,
+      recovery: recovery?.counts ?? null
+    },
+    next: {
+      dashboard: dashboard?.leader?.queue?.next ?? null,
+      dispatch: dispatch?.next ?? null,
+      review: review?.next ?? null,
+      recovery: recovery?.next ?? null
+    },
+    surfaces: {
+      dashboard,
+      dispatch,
+      review,
+      recovery
+    },
+    summary: buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, review, recovery)
+  };
+}
+
 export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
@@ -3448,6 +3480,35 @@ function buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboar
     dashboard?.summary ??
     "Runtime queue pack has no current queue detail.";
   return `Runtime queue pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+function deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, review, recovery }) {
+  if ((dashboard?.counts?.blockedTasks ?? 0) > 0) {
+    return "runtime:recovery";
+  }
+  if ((review?.counts?.totalPendingReview ?? 0) > 0) {
+    return "runtime:review";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "runtime:dispatch";
+  }
+  if ((dashboard?.counts?.leaderQueueItems ?? 0) > 0) {
+    return "runtime:dashboard";
+  }
+  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
+    return "runtime:recovery";
+  }
+  return "runtime:dashboard";
+}
+
+function buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, review, recovery) {
+  const detail =
+    dashboard?.summary ??
+    dispatch?.summary ??
+    review?.summary ??
+    recovery?.summary ??
+    "Runtime workspace pack has no current orchestration detail.";
+  return `Runtime workspace pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
