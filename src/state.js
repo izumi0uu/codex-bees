@@ -113,6 +113,9 @@ export function listMemoriesView(filters = {}) {
   return {
     kind: "memory_view",
     recommendedReason,
+    counts: {
+      totalMemories: memories.length
+    },
     memories
   };
 }

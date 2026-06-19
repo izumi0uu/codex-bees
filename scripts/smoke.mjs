@@ -625,6 +625,7 @@ const listedMemories = JSON.parse(
 if (
   listedMemories.kind !== "memory_view" ||
   listedMemories.recommendedReason !== "memory_list_has_results" ||
+  listedMemories.counts?.totalMemories !== listedMemories.memories.length ||
   !Array.isArray(listedMemories.memories)
 ) {
   console.error("[smoke:memory-list] expected CLI memory list view payload");
@@ -6091,6 +6092,7 @@ if (
   memoryStorePayload?.stored?.memory?.content !== "Remember MCP memory smoke coverage" ||
   memoryListPayload?.memories?.kind !== "memory_view" ||
   memoryListPayload?.memories?.recommendedReason !== "memory_list_has_results" ||
+  memoryListPayload?.memories?.counts?.totalMemories !== memoryListPayload.memories.memories.length ||
   !memoryListPayload?.memories?.memories?.some((memory) => memory.namespace === "mcp-smoke") ||
   memorySearchPayload?.kind !== "memory_search_view" ||
   memorySearchPayload?.recommendedReason !== "memory_search_has_results" ||
