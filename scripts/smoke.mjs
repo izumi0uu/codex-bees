@@ -387,6 +387,13 @@ if (syncedSwarmGet.status !== "completed") {
   console.error("[smoke:swarm-sync] expected stored completed swarm status");
   process.exit(1);
 }
+const detailedSwarmList = JSON.parse(
+  run("swarm-list-detailed", ["./src/index.js", "swarm:list", "--detailed"]).stdout
+).swarms;
+if (!Array.isArray(detailedSwarmList) || detailedSwarmList[0]?.derivedStatus !== "completed") {
+  console.error("[smoke:swarm-list] expected detailed swarm list with derived status");
+  process.exit(1);
+}
 run("swarm-dispatch-none", ["./src/index.js", "swarm:dispatch", "--id", "swarm-1", "--by", "worker-gamma"], 1);
 run("swarm-queue-invalid", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
 
@@ -470,6 +477,15 @@ const swarmMcpInput = [
       name: "task_list",
       arguments: {}
     }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 9,
+    method: "tools/call",
+    params: {
+      name: "swarm_list",
+      arguments: { detailed: true }
+    }
   })
 ].join("\n") + "\n";
 
@@ -487,12 +503,16 @@ const swarmOverviewPayload = swarmOverviewText ? JSON.parse(swarmOverviewText) :
 const swarmTaskListResult = swarmMcpLines.length >= 8 ? JSON.parse(swarmMcpLines[7]) : null;
 const swarmTaskListText = swarmTaskListResult?.result?.content?.[0]?.text;
 const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) : null;
+const swarmListDetailedResult = swarmMcpLines.length >= 9 ? JSON.parse(swarmMcpLines[8]) : null;
+const swarmListDetailedText = swarmListDetailedResult?.result?.content?.[0]?.text;
+const swarmListDetailedPayload = swarmListDetailedText ? JSON.parse(swarmListDetailedText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
   !mcpSwarmTask ||
   swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||
-  swarmOverviewPayload?.overview?.readyToComplete !== true
+  swarmOverviewPayload?.overview?.readyToComplete !== true ||
+  swarmListDetailedPayload?.swarms?.[0]?.derivedStatus !== "completed"
 ) {
   console.error("[smoke:swarm-mcp] expected synced completion-aware MCP swarm overview");
   console.error(swarmMcp.stderr || swarmMcp.stdout);
