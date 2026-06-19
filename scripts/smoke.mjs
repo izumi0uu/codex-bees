@@ -5404,6 +5404,52 @@ if (
   console.error(runtimeContractMcp.stderr || runtimeContractMcp.stdout);
   process.exit(1);
 }
+const runtimeGuidanceMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "coordination_overview",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "worker_guidelines",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeGuidanceMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeGuidanceMcpInput,
+  encoding: "utf8"
+});
+const runtimeGuidanceMcpLines = runtimeGuidanceMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const coordinationOverviewMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[1]).result.content[0].text);
+const workerGuidelinesMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[2]).result.content[0].text);
+if (
+  runtimeGuidanceMcp.status !== 0 ||
+  coordinationOverviewMcpPayload.overview?.kind !== "coordination_overview_view" ||
+  coordinationOverviewMcpPayload.overview?.recommendedReason !== "coordination_model_loaded" ||
+  coordinationOverviewMcpPayload.overview?.counts?.facets !== 3 ||
+  coordinationOverviewMcpPayload.overview?.overview?.deliveryBoundary !== "codex-only runtime" ||
+  workerGuidelinesMcpPayload.guidelines?.kind !== "worker_guidelines_view" ||
+  workerGuidelinesMcpPayload.guidelines?.recommendedReason !== "worker_guidelines_loaded" ||
+  workerGuidelinesMcpPayload.guidelines?.counts?.validationSteps !== 3 ||
+  workerGuidelinesMcpPayload.guidelines?.guidelines?.fileOwnership !== "one active writer per file"
+) {
+  console.error("[smoke:runtime-guidance-mcp] expected MCP coordination and worker guidance views");
+  console.error(runtimeGuidanceMcp.stderr || runtimeGuidanceMcp.stdout);
+  process.exit(1);
+}
 
 rmSync(".codex-bees", { recursive: true, force: true });
 run("inbox-task-add-1", [

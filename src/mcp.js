@@ -3,6 +3,7 @@ import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
+import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
 import {
   activateSwarm,
   addTask,
@@ -1292,12 +1293,6 @@ export function getToolCatalogView() {
   };
 }
 
-const workerGuidelines = {
-  fileOwnership: "one active writer per file",
-  parallelism: "parallelize only with disjoint ownership",
-  validation: ["targeted verification", "fresh evidence", "handoff discipline"]
-};
-
 function toolByName(name) {
   return toolCatalog.find((tool) => tool.name === name);
 }
@@ -1347,18 +1342,11 @@ function handleRequest(message) {
     }
 
     if (name === "coordination_overview") {
-      return createSuccess(
-        id,
-        createTextPayload({
-          executionModel: "local bounded multi-agent coordination",
-          deliveryBoundary: "codex-only runtime",
-          changeModel: "small reversible steps"
-        })
-      );
+      return createSuccess(id, createTextPayload({ overview: getCoordinationOverviewView() }));
     }
 
     if (name === "worker_guidelines") {
-      return createSuccess(id, createTextPayload(workerGuidelines));
+      return createSuccess(id, createTextPayload({ guidelines: getWorkerGuidelinesView() }));
     }
 
     if (name === "runtime_contract") {
