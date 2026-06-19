@@ -40,6 +40,7 @@ import {
   swarmBlockers,
   swarmBundle,
   swarmCloseout,
+  swarmDispatchBundle,
   swarmBrief,
   taskInbox,
   taskHistory,
@@ -111,6 +112,7 @@ function printHelp() {
   write(`  codex-bees swarm:bundle    Build a leader-ready orchestration bundle for one swarm\n`);
   write(`  codex-bees swarm:blockers Build a blocker-oriented bundle for one swarm\n`);
   write(`  codex-bees swarm:closeout  Build a closure-oriented bundle for one swarm\n`);
+  write(`  codex-bees swarm:dispatch-bundle Build a dispatch-oriented bundle for one swarm\n`);
   write(`  codex-bees swarm:update    Update a local swarm contract\n`);
   write(`  codex-bees swarm:check     Validate one swarm contract for lane readiness\n`);
   write(`  codex-bees swarm:start     Mark a planned swarm active\n`);
@@ -711,6 +713,16 @@ function handleSwarmCloseout() {
   write(JSON.stringify({ closeout }, null, 2) + "\n");
 }
 
+function handleSwarmDispatchBundle() {
+  const id = requireOption("--id");
+  const dispatchBundle = swarmDispatchBundle(id);
+  if (!dispatchBundle) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ dispatchBundle }, null, 2) + "\n");
+}
+
 function handleSwarmUpdate() {
   const id = requireOption("--id");
   const swarm = updateSwarm({
@@ -1070,6 +1082,9 @@ async function runCommand(command) {
       return;
     case "swarm:closeout":
       handleSwarmCloseout();
+      return;
+    case "swarm:dispatch-bundle":
+      handleSwarmDispatchBundle();
       return;
     case "swarm:update":
       handleSwarmUpdate();

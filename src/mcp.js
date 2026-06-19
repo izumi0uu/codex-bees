@@ -34,6 +34,7 @@ import {
   swarmBlockers,
   swarmBundle,
   swarmCloseout,
+  swarmDispatchBundle,
   swarmBrief,
   taskInbox,
   taskHistory,
@@ -511,6 +512,17 @@ export const toolCatalog = [
   {
     name: "swarm_closeout",
     description: "Build a closure-oriented bundle for one swarm.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_dispatch_bundle",
+    description: "Build a dispatch-oriented bundle for one swarm.",
     inputSchema: {
       type: "object",
       required: ["id"],
@@ -1368,6 +1380,19 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ closeout }));
+    }
+
+    if (name === "swarm_dispatch_bundle") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "swarm_dispatch_bundle requires arguments.id");
+      }
+
+      const dispatchBundle = swarmDispatchBundle(params.arguments.id);
+      if (!dispatchBundle) {
+        return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ dispatchBundle }));
     }
 
     if (name === "swarm_brief") {

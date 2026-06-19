@@ -41,8 +41,8 @@ const CAPABILITY_CATALOG = [
     id: "leader_orchestration",
     category: "coordination",
     description: "Leader-facing orchestration views across swarms, lane bundles, and next actions.",
-    cliCommands: ["leader:workspace", "swarm:brief", "swarm:bundle", "swarm:blockers", "swarm:closeout", "swarm:overview"],
-    mcpTools: ["leader_workspace", "swarm_brief", "swarm_bundle", "swarm_blockers", "swarm_closeout", "swarm_overview"]
+    cliCommands: ["leader:workspace", "swarm:brief", "swarm:bundle", "swarm:blockers", "swarm:closeout", "swarm:dispatch-bundle", "swarm:overview"],
+    mcpTools: ["leader_workspace", "swarm_brief", "swarm_bundle", "swarm_blockers", "swarm_closeout", "swarm_dispatch_bundle", "swarm_overview"]
   },
   {
     id: "swarm_coordination",
