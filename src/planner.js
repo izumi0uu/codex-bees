@@ -51,8 +51,14 @@ function choosePrimaryScope(task) {
     return ["README.md"];
   }
 
-  if (lower.includes("planner") || lower.includes("plan ")) {
-    return sourceFilePaths().filter((path) => path.endsWith("planner.js"));
+  if (
+    lower.includes("swarm") ||
+    lower.includes("parallel") ||
+    lower.includes("lane") ||
+    lower.includes("planner") ||
+    lower.includes("plan ")
+  ) {
+    return sourceFilePaths().filter((path) => ["src/planner.js", "src/index.js", "src/mcp.js", "src/state.js"].includes(path));
   }
 
   if (
@@ -110,9 +116,9 @@ function plannerEvidence(task) {
   };
 }
 
-export function planTask(task) {
+function buildPlanLanes(task) {
   const scope = choosePrimaryScope(task);
-  const lanes = [
+  return [
     {
       lane: "lane-1",
       owner: "explore",
@@ -140,12 +146,38 @@ export function planTask(task) {
       verification: ["targeted command check", "smoke check when applicable"]
     }
   ];
+}
+
+function laneCountToWorkers(lanes) {
+  const owners = new Set(lanes.map((lane) => lane.owner).filter(Boolean));
+  return Math.max(owners.size, lanes.length > 0 ? 1 : 0);
+}
+
+export function planTask(task) {
+  const lanes = buildPlanLanes(task);
 
   return {
     kind: "task_plan",
     objective: task,
     evidence: plannerEvidence(task),
     lanes
+  };
+}
+
+export function planSwarm(task) {
+  const plan = planTask(task);
+  return {
+    kind: "planned_swarm",
+    objective: task,
+    evidence: plan.evidence,
+    swarm: {
+      objective: task,
+      topology: "bounded-local",
+      maxWorkers: laneCountToWorkers(plan.lanes),
+      laneSource: "planner",
+      lanes: plan.lanes,
+      notes: `Generated from plan for: ${task}`
+    }
   };
 }
 
