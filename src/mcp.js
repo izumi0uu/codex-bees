@@ -34,6 +34,7 @@ import {
   taskInbox,
   taskHistory,
   taskPickup,
+  taskReport,
   taskNext,
   workerHandoff,
   workerSession,
@@ -177,6 +178,17 @@ export const toolCatalog = [
         actor: { type: "string" },
         kind: { type: "string" },
         content: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_report",
+    description: "Build a delivery-ready report for one local coordination task.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
       }
     }
   },
@@ -842,6 +854,19 @@ function handleRequest(message) {
       }
 
       return createSuccess(id, createTextPayload({ annotated }));
+    }
+
+    if (name === "task_report") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "task_report requires arguments.id");
+      }
+
+      const report = taskReport(params.arguments.id);
+      if (!report) {
+        return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ report }));
     }
 
     if (name === "task_brief") {
