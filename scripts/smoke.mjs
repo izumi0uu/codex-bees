@@ -155,6 +155,16 @@ if (
   console.error("[smoke:runtime-dashboard] expected top-level runtime dashboard");
   process.exit(1);
 }
+const runtimeDispatchInitial = JSON.parse(
+  run("runtime-dispatch-initial", ["./src/index.js", "runtime:dispatch"]).stdout
+).dispatch;
+if (
+  runtimeDispatchInitial.kind !== "runtime_dispatch" ||
+  !Array.isArray(runtimeDispatchInitial.groups)
+) {
+  console.error("[smoke:runtime-dispatch] expected top-level runtime dispatch");
+  process.exit(1);
+}
 const runtimeAlertsInitial = JSON.parse(
   run("runtime-alerts-initial", ["./src/index.js", "runtime:alerts"]).stdout
 ).alerts;
@@ -1306,6 +1316,19 @@ if (
   console.error("[smoke:runtime-dashboard] expected CLI dashboard counts and leader queue");
   process.exit(1);
 }
+const runtimeDispatchCli = JSON.parse(
+  run("runtime-dispatch-cli", ["./src/index.js", "runtime:dispatch"]).stdout
+).dispatch;
+if (
+  runtimeDispatchCli.counts?.ownerGroups !== 1 ||
+  runtimeDispatchCli.counts?.totalAssignments !== 1 ||
+  runtimeDispatchCli.next?.lane !== "lane-dashboard" ||
+  runtimeDispatchCli.groups?.[0]?.owner?.id !== "executor" ||
+  runtimeDispatchCli.groups?.[0]?.assignments?.[0]?.taskBrief?.task?.id !== "task-4"
+) {
+  console.error("[smoke:runtime-dispatch] expected CLI owner-grouped dispatch workspace");
+  process.exit(1);
+}
 const runtimeAlertsCli = JSON.parse(
   run("runtime-alerts-cli", ["./src/index.js", "runtime:alerts"]).stdout
 ).alerts;
@@ -1362,6 +1385,38 @@ if (
 ) {
   console.error("[smoke:runtime-dashboard-mcp] expected MCP runtime dashboard");
   console.error(runtimeDashboardMcp.stderr || runtimeDashboardMcp.stdout);
+  process.exit(1);
+}
+const runtimeDispatchMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_dispatch",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const runtimeDispatchMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeDispatchMcpInput,
+  encoding: "utf8"
+});
+const runtimeDispatchMcpLines = runtimeDispatchMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeDispatchMcpPayload = JSON.parse(JSON.parse(runtimeDispatchMcpLines[1]).result.content[0].text);
+if (
+  runtimeDispatchMcp.status !== 0 ||
+  runtimeDispatchMcpPayload.dispatch?.counts?.ownerGroups !== 1 ||
+  runtimeDispatchMcpPayload.dispatch?.counts?.totalAssignments !== 1 ||
+  runtimeDispatchMcpPayload.dispatch?.next?.lane !== "lane-dashboard" ||
+  runtimeDispatchMcpPayload.dispatch?.groups?.[0]?.owner?.id !== "executor"
+) {
+  console.error("[smoke:runtime-dispatch-mcp] expected MCP runtime dispatch");
+  console.error(runtimeDispatchMcp.stderr || runtimeDispatchMcp.stdout);
   process.exit(1);
 }
 const runtimeAlertsMcpInput = [
