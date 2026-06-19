@@ -1066,6 +1066,28 @@ if (
   console.error("[smoke:leader-assignments] expected CLI leader assignments grouped by owner");
   process.exit(1);
 }
+const assignmentPackExecutorCli = JSON.parse(
+  run("runtime-assignment-pack-executor-cli", ["./src/index.js", "runtime:assignment-pack", "--role", "executor", "--worker", "worker-executor", "--mode", "owner"]).stdout
+).assignmentPack;
+if (
+  assignmentPackExecutorCli.recommendedSurface !== "task:assignment-pickup --role executor --worker worker-executor --mode owner" ||
+  assignmentPackExecutorCli.next?.assignment?.taskId !== "task-2"
+) {
+  console.error("[smoke:runtime-assignment-pack] expected explicit assignment pickup surface for executor");
+  process.exit(1);
+}
+const assignmentPickupExecutorCli = JSON.parse(
+  run("task-assignment-pickup-cli", ["./src/index.js", "task:assignment-pickup", "--role", "executor", "--worker", "worker-executor", "--mode", "owner"]).stdout
+).assignmentPickup;
+if (
+  assignmentPickupExecutorCli.outcome !== "claimed" ||
+  assignmentPickupExecutorCli.assignment?.taskId !== "task-2" ||
+  assignmentPickupExecutorCli.task?.id !== "task-2" ||
+  assignmentPickupExecutorCli.task?.claimedBy !== "worker-executor"
+) {
+  console.error("[smoke:task-assignment-pickup] expected executor assignment pickup to claim assigned task");
+  process.exit(1);
+}
 const dispatchedLane = JSON.parse(
   run("swarm-dispatch", [
     "./src/index.js",
@@ -1085,12 +1107,15 @@ if (dispatchedLane.task.claimedBy !== "worker-alpha" || dispatchedLane.lane.lane
 const swarmOverviewAfterDispatch = JSON.parse(
   run("swarm-overview-after-dispatch", ["./src/index.js", "swarm:overview", "--id", "swarm-1"]).stdout
 ).overview;
-if (swarmOverviewAfterDispatch.counts.claimed !== 1 || swarmOverviewAfterDispatch.counts.queued !== 1) {
-  console.error("[smoke:swarm-overview] expected claimed and queued counts after dispatch");
+if (swarmOverviewAfterDispatch.counts.claimed !== 2 || swarmOverviewAfterDispatch.counts.queued !== 0) {
+  console.error("[smoke:swarm-overview] expected assignment pickup and dispatch to claim both lanes");
   process.exit(1);
 }
 const swarmTasks = JSON.parse(run("swarm-queue-task-list", ["./src/index.js", "task:list"]).stdout).tasks;
-if (!swarmTasks.every((task) => task.swarmId === "swarm-1")) {
+if (
+  !swarmTasks.every((task) => task.swarmId === "swarm-1") ||
+  !swarmTasks.some((task) => task.id === "task-2" && task.claimedBy === "worker-executor")
+) {
   console.error("[smoke:swarm-queue] expected swarm task linkage");
   process.exit(1);
 }
@@ -1105,23 +1130,17 @@ run("swarm-task-1-approve", [
   "--notes",
   "lane alpha approved"
 ]);
-const dispatchedLaneTwo = JSON.parse(
-  run("swarm-dispatch-second", [
-    "./src/index.js",
-    "swarm:dispatch",
-    "--id",
-    "swarm-1",
-    "--by",
-    "worker-beta",
-    "--owner",
-    "executor"
-  ]).stdout
-).dispatched;
-if (dispatchedLaneTwo.task.id !== "task-2") {
-  console.error("[smoke:swarm-dispatch] expected second lane dispatch to task-2");
-  process.exit(1);
-}
-run("swarm-task-2-review", ["./src/index.js", "task:review", "--id", "task-2", "--by", "worker-beta"]);
+run("swarm-dispatch-second", [
+  "./src/index.js",
+  "swarm:dispatch",
+  "--id",
+  "swarm-1",
+  "--by",
+  "worker-beta",
+  "--owner",
+  "executor"
+], 1);
+run("swarm-task-2-review", ["./src/index.js", "task:review", "--id", "task-2", "--by", "worker-executor"]);
 run("swarm-task-2-approve", [
   "./src/index.js",
   "task:approve",
@@ -1578,6 +1597,67 @@ if (
 ) {
   console.error("[smoke:leader-assignments-mcp] expected MCP leader assignments");
   console.error(leaderAssignmentsMcp.stderr || leaderAssignmentsMcp.stdout);
+  process.exit(1);
+}
+const assignmentPackExecutorMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_assignment_pack",
+      arguments: { role: "executor", workerId: "worker-executor", mode: "owner" }
+    }
+  })
+].join("\n") + "\n";
+const assignmentPackExecutorMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: assignmentPackExecutorMcpInput,
+  encoding: "utf8"
+});
+const assignmentPackExecutorMcpLines = assignmentPackExecutorMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const assignmentPackExecutorMcpPayload = JSON.parse(JSON.parse(assignmentPackExecutorMcpLines[1]).result.content[0].text);
+if (
+  assignmentPackExecutorMcp.status !== 0 ||
+  assignmentPackExecutorMcpPayload.assignmentPack?.recommendedSurface !== "task:assignment-pickup --role executor --worker worker-executor --mode owner" ||
+  assignmentPackExecutorMcpPayload.assignmentPack?.next?.assignment?.taskId !== "task-2"
+) {
+  console.error("[smoke:runtime-assignment-pack-mcp] expected explicit executor assignment surface");
+  console.error(assignmentPackExecutorMcp.stderr || assignmentPackExecutorMcp.stdout);
+  process.exit(1);
+}
+const taskAssignmentPickupExecutorMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_assignment_pickup",
+      arguments: { role: "executor", workerId: "worker-executor", mode: "owner" }
+    }
+  })
+].join("\n") + "\n";
+const taskAssignmentPickupExecutorMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: taskAssignmentPickupExecutorMcpInput,
+  encoding: "utf8"
+});
+const taskAssignmentPickupExecutorMcpLines = taskAssignmentPickupExecutorMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const taskAssignmentPickupExecutorMcpPayload = JSON.parse(JSON.parse(taskAssignmentPickupExecutorMcpLines[1]).result.content[0].text);
+if (
+  taskAssignmentPickupExecutorMcp.status !== 0 ||
+  taskAssignmentPickupExecutorMcpPayload.assignmentPickup?.outcome !== "claimed" ||
+  taskAssignmentPickupExecutorMcpPayload.assignmentPickup?.task?.id !== "task-2" ||
+  taskAssignmentPickupExecutorMcpPayload.assignmentPickup?.task?.claimedBy !== "worker-executor"
+) {
+  console.error("[smoke:task-assignment-pickup-mcp] expected explicit executor assignment pickup payload");
+  console.error(taskAssignmentPickupExecutorMcp.stderr || taskAssignmentPickupExecutorMcp.stdout);
   process.exit(1);
 }
 
