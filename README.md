@@ -47,6 +47,8 @@ node ./src/index.js run
 node ./src/index.js tools
 node ./src/index.js catalog
 node ./src/index.js doctor
+node ./src/index.js status
+node ./src/index.js capabilities
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
 node ./src/index.js plan:queue --task "Queue a runtime change"
 node ./src/index.js plan:swarm --task "Parallelize a runtime change"
@@ -95,6 +97,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `swarm:check` validates that each lane has owner, verifier, scope, acceptance, and verification metadata before queueing. It also rejects overlapping lane scopes and unknown lane roles, so planner-generated and manually-authored swarms stay parallel-safe before execution begins.
 
 `catalog` and the MCP `runtime_catalog` tool expose the shipped local agent and skill inventory. `doctor` includes the same catalog so operators can confirm which Codex roles and skills the runtime will accept.
+
+`status` and the MCP `runtime_status` tool summarize the current local runtime: shipped tool/agent/skill counts, persisted task/swarm/memory counts, and queue status distribution. `capabilities` and `runtime_capabilities` provide a product-facing inventory of what this Codex-only runtime actually supports today.
 
 Queued swarm lane tasks automatically persist `swarmId`, lane metadata, and task ownership so CLI/MCP workers can claim them without re-slicing. Swarm-linked task lifecycle changes automatically keep swarm status close to task reality, `swarm:list --detailed` gives leaders a multi-swarm dashboard, `swarm:overview` summarizes one swarm, `swarm:dispatch` claims the next runnable lane task for a worker, and `swarm:sync` provides an idempotent reconciliation step when leaders want an explicit status check.
 
