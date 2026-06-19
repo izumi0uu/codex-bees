@@ -52,6 +52,7 @@ import {
   runtimeReviewPack,
   runtimeSummaryPack,
   runtimeVerifierPack,
+  runtimeWorkspacePack,
   runtimeWorkerPack,
   runtimeReview,
   runtimeRoles,
@@ -119,6 +120,7 @@ function printHelp() {
   write(`  codex-bees runtime:review-pack Build the review-oriented runtime package\n`);
   write(`  codex-bees runtime:summary-pack Build the automation-first runtime summary package\n`);
   write(`  codex-bees runtime:verifier-pack Build the verifier-oriented runtime package\n`);
+  write(`  codex-bees runtime:workspace-pack Build the orchestration workspace package\n`);
   write(`  codex-bees runtime:worker-pack Build the worker-oriented runtime package\n`);
   write(`  codex-bees runtime:review  Build the verifier-grouped review workspace\n`);
   write(`  codex-bees runtime:roles   Build the role-level orchestration queue view\n`);
@@ -278,6 +280,10 @@ function printRuntimeReviewPack() {
 
 function printRuntimeQueuePack() {
   write(JSON.stringify({ queuePack: runtimeQueuePack() }, null, 2) + "\n");
+}
+
+function printRuntimeWorkspacePack() {
+  write(JSON.stringify({ workspacePack: runtimeWorkspacePack() }, null, 2) + "\n");
 }
 
 function printRuntimeOwnerPack() {
@@ -1191,6 +1197,9 @@ async function runCommand(command) {
       return;
     case "runtime:queue-pack":
       printRuntimeQueuePack();
+      return;
+    case "runtime:workspace-pack":
+      printRuntimeWorkspacePack();
       return;
     case "runtime:owner-pack":
       printRuntimeOwnerPack();

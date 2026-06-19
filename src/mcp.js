@@ -47,6 +47,7 @@ import {
   runtimeReviewPack,
   runtimeSummaryPack,
   runtimeVerifierPack,
+  runtimeWorkspacePack,
   runtimeWorkerPack,
   runtimeReview,
   runtimeRoles,
@@ -188,6 +189,14 @@ export const toolCatalog = [
   {
     name: "runtime_queue_pack",
     description: "Build the queue-oriented runtime package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_workspace_pack",
+    description: "Build the orchestration workspace package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1144,6 +1153,10 @@ function handleRequest(message) {
 
     if (name === "runtime_queue_pack") {
       return createSuccess(id, createTextPayload({ queuePack: runtimeQueuePack() }));
+    }
+
+    if (name === "runtime_workspace_pack") {
+      return createSuccess(id, createTextPayload({ workspacePack: runtimeWorkspacePack() }));
     }
 
     if (name === "runtime_leader_pack") {
