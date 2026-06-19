@@ -30,6 +30,7 @@ import {
   rejectTask,
   releaseTask,
   runtimeActivity,
+  runtimeAssignmentPack,
   runtimeAlerts,
   runtimeCloseoutPack,
   runtimeCloseout,
@@ -141,6 +142,19 @@ export const toolCatalog = [
       type: "object",
       properties: {
         limit: { type: "integer", minimum: 1 }
+      }
+    }
+  },
+  {
+    name: "runtime_assignment_pack",
+    description: "Build the leader-to-worker assignment package for local runtime work.",
+    inputSchema: {
+      type: "object",
+      required: ["role", "workerId"],
+      properties: {
+        role: { type: "string" },
+        workerId: { type: "string" },
+        mode: { type: "string" }
       }
     }
   },
@@ -1221,6 +1235,25 @@ function handleRequest(message) {
 
     if (name === "runtime_activity") {
       return createSuccess(id, createTextPayload({ activity: runtimeActivity({ limit: params.arguments?.limit }) }));
+    }
+
+    if (name === "runtime_assignment_pack") {
+      if (!params.arguments?.role) {
+        return createError(id, -32602, "runtime_assignment_pack requires arguments.role");
+      }
+      if (!params.arguments?.workerId) {
+        return createError(id, -32602, "runtime_assignment_pack requires arguments.workerId");
+      }
+      return createSuccess(
+        id,
+        createTextPayload({
+          assignmentPack: runtimeAssignmentPack({
+            role: params.arguments.role,
+            workerId: params.arguments.workerId,
+            mode: params.arguments.mode
+          })
+        })
+      );
     }
 
     if (name === "runtime_closeout") {

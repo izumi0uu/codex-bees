@@ -35,6 +35,7 @@ import {
   rejectTask,
   releaseTask,
   runtimeActivity,
+  runtimeAssignmentPack,
   runtimeAlerts,
   runtimeCloseoutPack,
   runtimeCloseout,
@@ -113,6 +114,7 @@ function printHelp() {
   write(`  codex-bees capabilities    Print the shipped runtime capability inventory\n`);
   write(`  codex-bees runtime:alerts  Build the top-level orchestration alert stream\n`);
   write(`  codex-bees runtime:activity Build the recent runtime activity stream\n`);
+  write(`  codex-bees runtime:assignment-pack Build the leader-to-worker assignment package\n`);
   write(`  codex-bees runtime:dashboard Build the top-level orchestration dashboard\n`);
   write(`  codex-bees runtime:closeout Build the final closeout workspace\n`);
   write(`  codex-bees runtime:closeout-pack Build the closeout-oriented runtime package\n`);
@@ -253,6 +255,22 @@ function printCapabilities() {
 
 function printRuntimeActivity() {
   write(JSON.stringify({ activity: runtimeActivity({ limit: readPositiveIntegerOption("--limit") }) }, null, 2) + "\n");
+}
+
+function printRuntimeAssignmentPack() {
+  const role = readOption("--role");
+  const workerId = readOption("--worker");
+  if (!role || !workerId) {
+    writeErr("runtime:assignment-pack requires --role and --worker\n");
+    exit(1);
+  }
+  write(JSON.stringify({
+    assignmentPack: runtimeAssignmentPack({
+      role,
+      workerId,
+      mode: readOption("--mode")
+    })
+  }, null, 2) + "\n");
 }
 
 function printRuntimeCloseout() {
@@ -1269,6 +1287,9 @@ async function runCommand(command) {
       return;
     case "runtime:activity":
       printRuntimeActivity();
+      return;
+    case "runtime:assignment-pack":
+      printRuntimeAssignmentPack();
       return;
     case "runtime:closeout":
       printRuntimeCloseout();
