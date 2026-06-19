@@ -17,6 +17,7 @@ import {
   blockTask,
   cancelSwarm,
   claimTask,
+  claimTaskLifecycle,
   completeSwarm,
   completeTask,
   dispatchSwarmLane,
@@ -932,7 +933,7 @@ function handleTaskCheck() {
 function handleTaskClaim() {
   const id = requireOption("--id");
   const claimedBy = requireOption("--by");
-  const task = claimTask({ id, claimedBy });
+  const task = claimTaskLifecycle({ id, claimedBy });
   if (!task) {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);

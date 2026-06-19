@@ -3151,6 +3151,18 @@ export function claimTask(input) {
   });
 }
 
+export function claimTaskLifecycle(input) {
+  const result = claimTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_lifecycle",
+    recommendedReason: "task_claimed",
+    task: result
+  };
+}
+
 export function blockTask(input) {
   return transitionTask({
     ...input,

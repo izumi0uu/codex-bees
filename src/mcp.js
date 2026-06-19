@@ -12,6 +12,7 @@ import {
   blockTask,
   cancelSwarm,
   claimTask,
+  claimTaskLifecycle,
   completeSwarm,
   completeTask,
   dispatchSwarmLane,
@@ -2032,7 +2033,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_claim requires arguments.claimedBy");
       }
 
-      const task = claimTask({
+      const task = claimTaskLifecycle({
         id: params.arguments.id,
         claimedBy: params.arguments.claimedBy
       });
