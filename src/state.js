@@ -1133,29 +1133,33 @@ export function runtimeOperatorPack() {
 
 export function runtimeDispatchPack() {
   const dispatch = runtimeDispatch();
+  const assignmentDispatchPack = leaderAssignmentDispatchPack();
   const roles = runtimeRoles();
   const handoffs = runtimeHandoffs();
-  const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, roles, handoffs });
+  const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, roles, handoffs });
 
   return {
     kind: "runtime_dispatch_pack",
     recommendedSurface,
     overview: {
       dispatch: dispatch?.counts ?? null,
+      assignmentDispatchPack: assignmentDispatchPack?.counts ?? null,
       roles: roles?.counts ?? null,
       handoffs: handoffs?.counts ?? null
     },
     next: {
       dispatch: dispatch?.next ?? null,
+      assignmentDispatch: assignmentDispatchPack?.next ?? null,
       role: roles?.next ?? null,
       handoff: handoffs?.next ?? null
     },
     surfaces: {
       dispatch,
+      assignmentDispatchPack,
       roles,
       handoffs
     },
-    summary: buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, handoffs, roles)
+    summary: buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, handoffs, roles)
   };
 }
 
@@ -1733,8 +1737,9 @@ export function runtimeLeaderPack(input = {}) {
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
   const dispatch = runtimeDispatch();
+  const assignmentDispatchPack = leaderAssignmentDispatchPack(input);
   const closeout = runtimeCloseout();
-  const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout });
+  const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, closeout });
 
   return {
     kind: "runtime_leader_pack",
@@ -1748,21 +1753,24 @@ export function runtimeLeaderPack(input = {}) {
       workspace: workspace?.counts ?? null,
       queue: queue?.counts ?? null,
       dispatch: dispatch?.counts ?? null,
+      assignmentDispatchPack: assignmentDispatchPack?.counts ?? null,
       closeout: closeout?.counts ?? null
     },
     next: {
       workspace: workspace?.focus ?? null,
       queue: queue?.next ?? null,
       dispatch: dispatch?.next ?? null,
+      assignmentDispatch: assignmentDispatchPack?.next ?? null,
       closeout: closeout?.next ?? null
     },
     surfaces: {
       workspace,
       queue,
       dispatch,
+      assignmentDispatchPack,
       closeout
     },
-    summary: buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue)
+    summary: buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack)
   };
 }
 
@@ -4079,7 +4087,10 @@ function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
   return `Runtime operator pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
-function deriveRuntimeDispatchPackSurface({ dispatch, roles, handoffs }) {
+function deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, roles, handoffs }) {
+  if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
+    return "leader:assignment-dispatch-pack";
+  }
   if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
     return "runtime:dispatch";
   }
@@ -4096,8 +4107,9 @@ function deriveRuntimeDispatchPackSurface({ dispatch, roles, handoffs }) {
   return "runtime:dispatch";
 }
 
-function buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, handoffs, roles) {
+function buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, handoffs, roles) {
   const detail =
+    assignmentDispatchPack?.summary ??
     dispatch?.summary ??
     handoffs?.summary ??
     roles?.summary ??
@@ -4490,7 +4502,10 @@ function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, sessi
   return `Runtime assignment pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
-function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }) {
+function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, closeout }) {
+  if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
+    return "leader:assignment-dispatch-pack";
+  }
   if ((workspace?.counts?.pendingReview ?? 0) > 0 || (queue?.next?.recommendedNextAction ?? "").startsWith("review_lane:")) {
     return "leader:workspace";
   }
@@ -4506,12 +4521,12 @@ function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, closeout }
   return "leader:workspace";
 }
 
-function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue) {
+function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack) {
   if (!workspace?.focus && !(queue?.counts?.total > 0)) {
     return `Runtime leader pack recommends ${recommendedSurface}; there is no active leader orchestration target right now.`;
   }
 
-  return `Runtime leader pack recommends ${recommendedSurface} next. ${workspace?.summary ?? queue?.summary ?? ""}`.trim();
+  return `Runtime leader pack recommends ${recommendedSurface} next. ${assignmentDispatchPack?.summary ?? workspace?.summary ?? queue?.summary ?? ""}`.trim();
 }
 
 function deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role, workerId }) {
