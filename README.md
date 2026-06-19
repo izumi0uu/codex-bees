@@ -152,6 +152,8 @@ Task metadata can carry lane-ready execution detail:
 
 `task:add` / `task_add` return the explicit mutation result for creating a local coordination task. They emit a machine-readable `recommendedReason` so automation can branch on task creation without inferring intent only from the nested task snapshot.
 
+`task:update` / `task_update` return the explicit mutation result for updating task metadata. They emit a machine-readable `recommendedReason` so automation can distinguish metadata edits from lifecycle moves without reparsing nested task fields alone.
+
 `task:claim` / `task_claim` return the explicit lifecycle mutation result for taking ownership of a task. They emit a machine-readable `recommendedReason` so automation can treat claim as its own protocol step instead of inferring it only from the nested task queue status.
 
 `task:block` / `task_block` return the explicit lifecycle mutation result for marking a claimed task blocked. They emit a machine-readable `recommendedReason` so automation can distinguish an intentional owner-side block from later recovery or handoff surfaces without reparsing only the nested task queue status.

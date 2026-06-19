@@ -101,6 +101,7 @@ import {
   workerSession,
   updateSwarm,
   updateTask,
+  updateTaskMutation,
   taskBrief,
   validateSwarm,
   validateTask
@@ -650,7 +651,7 @@ function handleTaskAdd() {
 
 function handleTaskUpdate() {
   const id = requireOption("--id");
-  const task = updateTask({
+  const task = updateTaskMutation({
     id,
     title: readOption("--title"),
     status: readOption("--status"),

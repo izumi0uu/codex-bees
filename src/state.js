@@ -2969,6 +2969,18 @@ export function updateTask(input) {
   return next;
 }
 
+export function updateTaskMutation(input) {
+  const result = updateTask(input);
+  if (!result || result.error) {
+    return result;
+  }
+  return {
+    kind: "task_mutation",
+    recommendedReason: "task_updated",
+    task: result
+  };
+}
+
 export function updateSwarm(input) {
   const state = loadState();
   const index = state.swarms.findIndex((swarm) => swarm.id === input.id);

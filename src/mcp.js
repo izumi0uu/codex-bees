@@ -95,6 +95,7 @@ import {
   workerSession,
   updateSwarm,
   updateTask,
+  updateTaskMutation,
   taskBrief,
   validateSwarm,
   validateTask
@@ -1994,7 +1995,7 @@ function handleRequest(message) {
         return createError(id, -32602, "task_update requires arguments.id");
       }
 
-      const task = updateTask({
+      const task = updateTaskMutation({
         id: params.arguments.id,
         title: params.arguments.title,
         status: params.arguments.status,

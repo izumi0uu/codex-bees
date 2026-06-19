@@ -115,6 +115,33 @@ for (const [label, args, expectedStatus = 0] of checks) {
   run(label, args, expectedStatus);
 }
 
+const updatedLifecycleCli = JSON.parse(
+  run("task-update-lifecycle-cli", [
+    "./src/index.js",
+    "task:update",
+    "--id",
+    "task-3",
+    "--status",
+    "done",
+    "--notes",
+    "verified by smoke",
+    "--acceptance",
+    "metadata stored|manual task remains bounded|update path works",
+    "--verification",
+    "task:list shows metadata|task:update preserves metadata|smoke command passes"
+  ]).stdout
+).updated;
+if (
+  updatedLifecycleCli.kind !== "task_mutation" ||
+  updatedLifecycleCli.recommendedReason !== "task_updated" ||
+  updatedLifecycleCli.task?.id !== "task-3" ||
+  updatedLifecycleCli.task?.status !== "done" ||
+  updatedLifecycleCli.task?.notes !== "verified by smoke"
+) {
+  console.error("[smoke:task-update] expected CLI task update mutation payload");
+  process.exit(1);
+}
+
 const runtimeCatalog = JSON.parse(run("catalog-verify", ["./src/index.js", "catalog"]).stdout).catalog;
 if (
   !Array.isArray(runtimeCatalog.agents) ||
