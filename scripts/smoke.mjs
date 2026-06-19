@@ -739,6 +739,42 @@ if (
   console.error("[smoke:swarm-bundle] expected CLI swarm bundle with lane reports");
   process.exit(1);
 }
+run("leader-workspace-swarm-init", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Leader workspace smoke",
+  "--owner",
+  "leader",
+  "--max-workers",
+  "1",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-leader",
+      summary: "Queue this swarm next",
+      owner: "explore",
+      verifier: "reviewer",
+      scope: ["src/state.js"],
+      acceptance: ["leader workspace identifies queue-ready swarm"],
+      verification: ["leader workspace summary names swarm-2"]
+    }
+  ])
+]);
+const leaderWorkspaceCli = JSON.parse(
+  run("leader-workspace-cli", ["./src/index.js", "leader:workspace"]).stdout
+).workspace;
+if (
+  leaderWorkspaceCli.kind !== "leader_workspace" ||
+  leaderWorkspaceCli.counts?.totalSwarms !== 2 ||
+  leaderWorkspaceCli.counts?.readyToComplete !== 1 ||
+  leaderWorkspaceCli.focus?.swarmId !== "swarm-2" ||
+  leaderWorkspaceCli.focus?.recommendedNextAction !== "queue_swarm_lanes" ||
+  leaderWorkspaceCli.focus?.bundle?.swarm?.id !== "swarm-2"
+) {
+  console.error("[smoke:leader-workspace] expected CLI leader workspace with prioritized swarm focus");
+  process.exit(1);
+}
 if (!swarmOverviewReadyToComplete.readyToComplete || swarmOverviewReadyToComplete.derivedStatus !== "completed" || swarmOverviewReadyToComplete.statusAligned !== true) {
   console.error("[smoke:swarm-overview] expected completion readiness and aligned completed status");
   process.exit(1);
@@ -946,6 +982,15 @@ const swarmMcpInput = [
       name: "swarm_list",
       arguments: { detailed: true }
     }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 14,
+    method: "tools/call",
+    params: {
+      name: "leader_workspace",
+      arguments: {}
+    }
   })
 ].join("\n") + "\n";
 
@@ -975,6 +1020,9 @@ const swarmTaskListPayload = swarmTaskListText ? JSON.parse(swarmTaskListText) :
 const swarmListDetailedResult = swarmMcpLines.length >= 13 ? JSON.parse(swarmMcpLines[12]) : null;
 const swarmListDetailedText = swarmListDetailedResult?.result?.content?.[0]?.text;
 const swarmListDetailedPayload = swarmListDetailedText ? JSON.parse(swarmListDetailedText) : null;
+const leaderWorkspaceResult = swarmMcpLines.length >= 14 ? JSON.parse(swarmMcpLines[13]) : null;
+const leaderWorkspaceText = leaderWorkspaceResult?.result?.content?.[0]?.text;
+const leaderWorkspacePayload = leaderWorkspaceText ? JSON.parse(leaderWorkspaceText) : null;
 const mcpSwarmTask = swarmTaskListPayload?.tasks?.find((task) => task.swarmId === "swarm-1" && task.claimedBy === "mcp-worker");
 if (
   swarmMcp.status !== 0 ||
@@ -984,6 +1032,8 @@ if (
   mcpSwarmTask.reviewedBy !== "tester" ||
   mcpSwarmTask.reviewOutcome !== "approved" ||
   swarmBundlePayload?.bundle?.lanes?.[0]?.report?.task?.id !== "task-1" ||
+  leaderWorkspacePayload?.workspace?.focus?.swarmId !== "swarm-1" ||
+  leaderWorkspacePayload?.workspace?.focus?.bundle?.swarm?.id !== "swarm-1" ||
   swarmOverviewPayload?.overview?.derivedStatus !== "completed" ||
   swarmOverviewPayload?.overview?.readyToComplete !== true ||
   swarmListDetailedPayload?.swarms?.[0]?.derivedStatus !== "completed"
