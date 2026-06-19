@@ -24,6 +24,7 @@ import {
   getSwarm,
   initSwarm,
   leaderAssignmentDispatch,
+  leaderAssignmentDispatchBundle,
   leaderAssignmentDispatchPack,
   leaderAssignments,
   leaderQueue,
@@ -168,6 +169,7 @@ function printHelp() {
   write(`  codex-bees worker:closeout Build a closure-oriented bundle for one worker\n`);
   write(`  codex-bees verifier:bundle Build a decision-ready bundle for one verifier\n`);
   write(`  codex-bees leader:assignment-dispatch Build a worker-targeted dispatch package for one leader assignment\n`);
+  write(`  codex-bees leader:assignment-dispatch-bundle Build a multi-worker launch bundle across owner groups\n`);
   write(`  codex-bees leader:assignment-dispatch-pack Build worker-targeted dispatch packages across owner groups\n`);
   write(`  codex-bees leader:assignments Build owner-grouped dispatch assignments across swarms\n`);
   write(`  codex-bees leader:queue    Build a prioritized leader decision queue across swarms\n`);
@@ -859,6 +861,19 @@ function handleLeaderAssignmentDispatchPack() {
   write(JSON.stringify({ assignmentDispatchPack: dispatchPack }, null, 2) + "\n");
 }
 
+function handleLeaderAssignmentDispatchBundle() {
+  const dispatchBundle = leaderAssignmentDispatchBundle({
+    role: readOption("--role") ?? readOption("--owner"),
+    workerId: readOption("--worker"),
+    workerIds: readJsonOption("--workers"),
+    taskId: readOption("--task"),
+    status: readOption("--status"),
+    topology: readOption("--topology"),
+    owner: readOption("--owner")
+  });
+  write(JSON.stringify({ assignmentDispatchBundle: dispatchBundle }, null, 2) + "\n");
+}
+
 function handleTaskCheck() {
   const id = requireOption("--id");
   const validation = validateTask(id);
@@ -1522,6 +1537,9 @@ async function runCommand(command) {
       return;
     case "leader:assignment-dispatch":
       handleLeaderAssignmentDispatch();
+      return;
+    case "leader:assignment-dispatch-bundle":
+      handleLeaderAssignmentDispatchBundle();
       return;
     case "leader:assignment-dispatch-pack":
       handleLeaderAssignmentDispatchPack();
