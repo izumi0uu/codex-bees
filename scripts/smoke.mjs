@@ -174,6 +174,7 @@ const runtimeCloseoutInitial = JSON.parse(
 ).closeout;
 if (
   runtimeCloseoutInitial.kind !== "runtime_closeout" ||
+  runtimeCloseoutInitial.recommendedReason !== "approved_task_ready" ||
   !Array.isArray(runtimeCloseoutInitial.tasks) ||
   !Array.isArray(runtimeCloseoutInitial.swarms) ||
   runtimeCloseoutInitial.counts?.tasksReady < 1 ||
@@ -2615,6 +2616,7 @@ const runtimeCloseoutCli = JSON.parse(
   run("runtime-closeout-cli", ["./src/index.js", "runtime:closeout"]).stdout
 ).closeout;
 if (
+  runtimeCloseoutCli.recommendedReason !== "no_closeout_ready" ||
   runtimeCloseoutCli.counts?.tasksReady !== 0 ||
   runtimeCloseoutCli.counts?.swarmsReady !== 0 ||
   runtimeCloseoutCli.counts?.totalReady !== 0 ||
@@ -3067,6 +3069,7 @@ const runtimeCloseoutMcpLines = runtimeCloseoutMcp.stdout
 const runtimeCloseoutMcpPayload = JSON.parse(JSON.parse(runtimeCloseoutMcpLines[1]).result.content[0].text);
 if (
   runtimeCloseoutMcp.status !== 0 ||
+  runtimeCloseoutMcpPayload.closeout?.recommendedReason !== "no_closeout_ready" ||
   runtimeCloseoutMcpPayload.closeout?.counts?.tasksReady !== 0 ||
   runtimeCloseoutMcpPayload.closeout?.next !== null
 ) {

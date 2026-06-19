@@ -1116,9 +1116,11 @@ export function runtimeCloseout() {
   const nextTask = tasks[0] ?? null;
   const nextSwarm = swarms[0] ?? null;
   const next = chooseRuntimeCloseoutNext(nextTask, nextSwarm);
+  const recommendedReason = deriveRuntimeCloseoutReason({ tasks, swarms, next });
 
   return {
     kind: "runtime_closeout",
+    recommendedReason,
     counts: {
       tasksReady: tasks.length,
       swarmsReady: swarms.length,
@@ -4592,6 +4594,22 @@ function deriveRuntimeRecoveryReason({ groups, next }) {
     return "recovery_groups_visible";
   }
   return "no_recovery_needed";
+}
+
+function deriveRuntimeCloseoutReason({ tasks, swarms, next }) {
+  if (next?.kind === "task" && next?.reviewOutcome === "approved") {
+    return "approved_task_ready";
+  }
+  if (next?.kind === "task") {
+    return "task_closeout_ready";
+  }
+  if (next?.kind === "swarm") {
+    return "swarm_closeout_ready";
+  }
+  if (((tasks?.length ?? 0) + (swarms?.length ?? 0)) > 0) {
+    return "closeout_items_visible";
+  }
+  return "no_closeout_ready";
 }
 
 function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {

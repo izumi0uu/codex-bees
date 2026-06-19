@@ -220,7 +220,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime:activity` / `runtime_activity` provide the recent event stream: claims, blocks, review handoffs, approvals, and changes-requested events compressed into one top-level chronological feed. It also emits a machine-readable `recommendedReason` so automation can distinguish whether the newest event signals blocked recovery, review-state change, fresh claim activity, newly created work, or merely generic recent activity before drilling into the stream.
 
-`runtime:closeout` / `runtime_closeout` provide the final closure workspace: approved done tasks and ready-to-complete swarms gathered into one operator view for explicit archive or finish actions.
+`runtime:closeout` / `runtime_closeout` provide the final closure workspace: approved done tasks and ready-to-complete swarms gathered into one operator view for explicit archive or finish actions. It also emits a machine-readable `recommendedReason` so automation can distinguish approved task closeout, generic task closeout, swarm closeout, plain closeout visibility, and empty closeout state without reparsing next-item structure.
 
 `runtime:closeout-pack` / `runtime_closeout_pack` provide the closeout-oriented package: closeout readiness plus summary-pack and leader-pack closeout context combined into one finalization-ready payload with a recommended next surface. It also emits a machine-readable `recommendedReason` so automation can distinguish between task-ready closeout, swarm-ready closeout, inherited summary/leader closeout context, and empty-closeout fallback without parsing the pack summary. Pass `--workers` on CLI or `workerIds` over MCP to preserve real worker mappings in the nested leader-pack launch-plan surfaces.
 
