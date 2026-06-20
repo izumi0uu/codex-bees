@@ -765,6 +765,36 @@ if (installedDirectCliVersion.stdout.trim() !== "0.1.0") {
   console.error("[smoke:installed-direct-cli-version] expected direct packaged CLI version output");
   process.exit(1);
 }
+const installedRun = JSON.parse(
+  runInstalled("installed-run", "npx", ["codex-bees", "run"]).stdout
+);
+if (
+  installedRun.kind !== "runtime_ready_view" ||
+  installedRun.recommendedReason !== "runtime_entry_ready" ||
+  installedRun.status !== "ready" ||
+  installedRun.counts?.nextSteps < 1 ||
+  installedRun.contract?.kind !== "runtime_contract_view" ||
+  !Array.isArray(installedRun.next) ||
+  installedRun.next[0] !== "use `codex-bees doctor` to inspect runtime boundaries"
+) {
+  console.error("[smoke:installed-run] expected installed npx codex-bees run readiness surface");
+  process.exit(1);
+}
+const installedDirectCliRun = JSON.parse(
+  runInstalled("installed-direct-cli-run", "node", ["./node_modules/codex-bees/dist/index.js", "run"]).stdout
+);
+if (
+  installedDirectCliRun.kind !== "runtime_ready_view" ||
+  installedDirectCliRun.recommendedReason !== "runtime_entry_ready" ||
+  installedDirectCliRun.status !== "ready" ||
+  installedDirectCliRun.counts?.nextSteps < 1 ||
+  installedDirectCliRun.contract?.kind !== "runtime_contract_view" ||
+  !Array.isArray(installedDirectCliRun.next) ||
+  installedDirectCliRun.next[0] !== "use `codex-bees doctor` to inspect runtime boundaries"
+) {
+  console.error("[smoke:installed-direct-cli-run] expected direct packaged CLI run readiness surface");
+  process.exit(1);
+}
 const installedTypecheck = spawnSync("npx", ["-y", "-p", "typescript", "tsc", "--noEmit", "/Users/idah/Projects-combined/codex-bees/types-smoke.ts"], {
   cwd: packedInstallAppDir,
   encoding: "utf8"
