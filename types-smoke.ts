@@ -100,6 +100,7 @@ getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().leng
 getToolCatalogView().tools[0]?.name;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
 const rootToolSchemaType: string | undefined = getToolCatalogView().tools[0]?.inputSchema.type as string | undefined;
+const plannedSwarmReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready" = planSwarm("typed root swarm").recommendedReason;
 const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWorkers;
 const rootSwarmPlanTopology: "bounded-local" = planSwarm("typed root swarm").swarm.topology;
 const rootSwarmPlanLaneSource: "planner" = planSwarm("typed root swarm").swarm.laneSource;
