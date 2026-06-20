@@ -101,10 +101,10 @@ const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
 const rootStartMcpServer: () => Promise<void> = startMcpServer;
 planTask("typed smoke").lanes[0]?.owner;
 
-handleMcpRequestSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
-callMcpToolSubpath("runtime_contract");
-handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
-callMcpTool("runtime_contract");
+const subpathMcpResult: unknown = handleMcpRequestSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
+const subpathMcpToolResult: unknown = callMcpToolSubpath("runtime_contract");
+const rootMcpResult: unknown = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
+const rootMcpToolResult: unknown = callMcpTool("runtime_contract");
 
 const task = addTask({
   title: "typed task",

@@ -304,7 +304,7 @@ export interface McpMessage {
 export interface McpResponse {
   jsonrpc: "2.0";
   id: string | number | null;
-  result?: any;
+  result?: unknown;
   error?: {
     code: number;
     message: string;
@@ -643,7 +643,7 @@ export declare function queueTasksFromPlan(task: string, addTasksFn?: (...args: 
 export declare function listMcpTools(): ToolCatalogEntry[];
 export declare function getToolCatalogView(): ToolCatalogView;
 export declare function handleMcpRequest(message: McpMessage): McpResponse;
-export declare function callMcpTool(name: string, args?: Record<string, unknown>): any;
+export declare function callMcpTool(name: string, args?: Record<string, unknown>): unknown;
 export declare function serializeMcpMessage(message: Record<string, unknown>): string;
 export declare function runMcpCli(args?: string[]): Promise<void>;
 export declare function startMcpServer(): Promise<void>;
