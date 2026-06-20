@@ -100,6 +100,24 @@ Official subpath exports are also available for narrower integrations:
 
 The `codex-bees/state` subpath is the smallest official programmatic bridge into persisted local coordination state. It exposes helpers such as `addTask`, `getTaskView`, `listTasksView`, `initSwarm`, `listSwarmsView`, `storeMemory`, `listMemoriesView`, `validateTask`, `validateSwarm`, and `stateFilePath`.
 
+Example:
+
+```js
+import { addTask, listTasksView, stateFilePath } from "codex-bees/state";
+
+const task = addTask({
+  title: "Ship a smoke-hardened release surface",
+  owner: "executor",
+  verifier: "tester",
+  scope: ["src/index.js"],
+  acceptance: ["documented package contract stays stable"],
+  verification: ["npm run smoke"]
+});
+
+const queue = listTasksView();
+const storage = stateFilePath();
+```
+
 The `codex-bees/mcp` subpath is also usable as a small programmatic adapter layer when you want the same local MCP behavior without spawning the stdio server first. It exposes:
 
 - `listMcpTools()` for the raw tool inventory

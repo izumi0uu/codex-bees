@@ -462,7 +462,7 @@ const documentedRootImportExports = documentedRootImportClauseMatch[1]
   .map((line) => line.trim().replace(/,$/, ""))
   .filter(Boolean)
   .sort();
-const documentedMcpImportExampleMatch = README_TEXT.match(/Example:\n\n```js\nimport\s*{\s*([^}]+?)\s*}\sfrom\s"codex-bees\/mcp";/);
+const documentedMcpImportExampleMatch = README_TEXT.match(/The `codex-bees\/mcp` subpath[\s\S]*?Example:\n\n```js\nimport\s*{\s*([^}]+?)\s*}\sfrom\s"codex-bees\/mcp";/);
 if (!documentedMcpImportExampleMatch) {
   console.error("[smoke:readme-mcp-import] expected README to document the mcp subpath import example");
   process.exit(1);
@@ -472,7 +472,13 @@ const documentedMcpImportExports = documentedMcpImportExampleMatch[1]
   .map((name) => name.trim())
   .filter(Boolean)
   .sort();
-const documentedMcpExampleBlockMatch = README_TEXT.match(/Example:\n\n```js\n([\s\S]*?)\n```/);
+const documentedStateExampleBlockMatch = README_TEXT.match(/The `codex-bees\/state` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedStateExampleBlockMatch) {
+  console.error("[smoke:readme-state-example] expected README to document a runnable state subpath example block");
+  process.exit(1);
+}
+const documentedStateExampleScript = documentedStateExampleBlockMatch[1];
+const documentedMcpExampleBlockMatch = README_TEXT.match(/The `codex-bees\/mcp` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedMcpExampleBlockMatch) {
   console.error("[smoke:readme-mcp-example] expected README to document a runnable mcp example block");
   process.exit(1);
@@ -564,6 +570,26 @@ if (
   console.error("[smoke:readme-root-example-contract] expected README root example to execute successfully against the installed package");
   console.error(installedRootExample.stderr || installedRootExample.stdout);
   process.exit(installedRootExample.status ?? 1);
+}
+const installedStateExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedStateExampleScript}\nconsole.log(JSON.stringify({ ok: task.id === "task-1" && queue.counts.totalTasks === 1 && queue.tasks[0]?.id === task.id && typeof storage === "string" && storage.length > 0 }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedStateExample.status !== 0 ||
+  JSON.parse(installedStateExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-state-example-contract] expected README state example to execute successfully against the installed package");
+  console.error(installedStateExample.stderr || installedStateExample.stdout);
+  process.exit(installedStateExample.status ?? 1);
 }
 const installedMcpImport = spawnSync(
   "node",
