@@ -7,7 +7,7 @@ export interface PackageMetadata {
   bugsUrl: string | null;
   repositoryUrl: string | null;
   keywords: string[];
-  mode: string;
+  mode: "codex-only";
 }
 
 export interface PackageMetadataView {
@@ -287,7 +287,7 @@ export interface RuntimeStatus {
 
 export interface PlannedSwarmShape {
   objective: string;
-  topology: string;
+  topology: "bounded-local";
   maxWorkers: number;
   laneSource: string;
   lanes: TaskPlanLane[];
