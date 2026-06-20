@@ -3,6 +3,8 @@ import {
   PRODUCT_NAME,
   getCommandCatalog,
   getCommandCatalogView,
+  getCoordinationOverview,
+  getCoordinationOverviewView,
   getMcpCommandCatalog,
   getMcpCommandCatalogView,
   getPackageMetadata,
@@ -67,6 +69,8 @@ getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 const rootHelpText: string = renderRootHelpText();
+const rootExecutionModel: string = getCoordinationOverview().executionModel;
+const rootCoordinationViewKind: "coordination_overview_view" = getCoordinationOverviewView().kind;
 renderHelpText();
 getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
