@@ -121,6 +121,8 @@ task.id;
 const fetchedTaskId: string | undefined = getTask(task.id)?.id;
 const taskOwner: string | null | undefined = task.owner;
 const taskScopePath: string | undefined = task.scope?.[0];
+const taskCreatedAt: string | null | undefined = task.createdAt;
+const taskUpdatedAt: string | null | undefined = task.updatedAt;
 const taskHistoryType: string | undefined = task.history?.[0]?.type;
 const taskAnnotationKind: string | undefined = task.annotations?.[0]?.kind;
 getTaskView(task.id)?.task.id;
