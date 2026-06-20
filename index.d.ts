@@ -160,7 +160,7 @@ export interface RuntimeCapabilitiesView {
     totalCapabilities: number;
     categories: Record<string, number>;
   };
-  capabilities: Array<Record<string, unknown>>;
+  capabilities: RuntimeCapabilitySummary[];
 }
 
 export interface TaskPlanLane {
@@ -209,6 +209,20 @@ export interface RuntimeCapabilitySummary {
   category: string;
   cliCommandCount: number;
   mcpToolCount: number;
+  highlights: string[];
+  preferredEntryPoints: {
+    cli: string[];
+    mcp: string[];
+  };
+  useCases: string[];
+}
+
+export interface RuntimeCapability {
+  id: string;
+  category: string;
+  description: string;
+  cliCommands: string[];
+  mcpTools: string[];
   highlights: string[];
   preferredEntryPoints: {
     cli: string[];
@@ -393,9 +407,9 @@ export declare function getCoordinationOverviewView(): CoordinationOverviewView;
 export declare function getWorkerGuidelines(): WorkerGuidelines;
 export declare function getWorkerGuidelinesView(): WorkerGuidelinesView;
 
-export declare function getCapabilityCatalog(): Array<Record<string, unknown>>;
+export declare function getCapabilityCatalog(): RuntimeCapability[];
 export declare function getCapabilityCatalogView(): RuntimeCapabilitiesView;
-export declare function getRuntimeStatus(input?: { version?: string; toolCount?: number }): Record<string, unknown>;
+export declare function getRuntimeStatus(input?: { version?: string; toolCount?: number }): RuntimeStatus;
 export declare function getRuntimeStatusView(input?: { version?: string; toolCount?: number }): RuntimeStatusView;
 
 export declare function planTask(task: string): TaskPlan;

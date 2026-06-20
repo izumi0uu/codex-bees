@@ -3,6 +3,7 @@ import {
   getMcpCommandCatalog,
   getMcpCommandCatalogView,
   getPackageMetadata,
+  getCapabilityCatalog,
   getRuntimeCatalogView,
   getRuntimeDoctorView,
   getRuntimeReadyView,
@@ -106,7 +107,9 @@ const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
 const apiToolName: string | undefined = getApiToolCatalogView().tools[0]?.name;
 const catalogSource: string = getCatalogSubpathView().catalog.source;
 const contractMode: string = getContractSubpathView().contract.mode;
+const capabilityCategory: string = getCapabilityCatalog()[0]?.category ?? "runtime";
 const statusProduct: string = getStatusSubpathView().status.product;
 const statusCliEntry: string | undefined = getStatusSubpathView().status.recommendedEntryPoints.cli[0];
 const plannerLane: string | undefined = planTaskSubpath("typed downstream planner").lanes[0]?.lane;
 const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm").swarm.lanes[0]?.lane;
+const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.maxWorkers;
