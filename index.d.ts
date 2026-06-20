@@ -484,7 +484,7 @@ export interface MemoryRecord {
 
 export interface TaskListView {
   kind: "task_view";
-  recommendedReason: string;
+  recommendedReason: "task_list_has_results" | "task_list_empty";
   counts: {
     totalTasks: number;
   };
