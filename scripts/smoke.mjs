@@ -1,5 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 function run(label, args, expectedStatus = 0) {
   const result = spawnSync("node", args, { encoding: "utf8" });
@@ -11,6 +13,17 @@ function run(label, args, expectedStatus = 0) {
   return result;
 }
 
+function runInCwd(label, args, cwd, expectedStatus = 0) {
+  const result = spawnSync("node", args, { cwd, encoding: "utf8" });
+  if (result.status !== expectedStatus) {
+    console.error(`[smoke:${label}] failed`);
+    console.error(result.stderr || result.stdout);
+    process.exit(result.status ?? 1);
+  }
+  return result;
+}
+
+run("build-dist", ["./scripts/build.mjs"]);
 rmSync(".codex-bees", { recursive: true, force: true });
 
 const checks = [
@@ -185,6 +198,50 @@ if (
   !runtimeCatalog.catalog.skills.some((skill) => skill.id === "project-development")
 ) {
   console.error("[smoke:catalog] expected shipped agent and skill catalog");
+  process.exit(1);
+}
+const bundledRuntimeDir = mkdtempSync(join(tmpdir(), "codex-bees-bundled-"));
+const bundledRuntimeCatalog = JSON.parse(
+  runInCwd("catalog-bundled-dist", ["/Users/idah/Projects-combined/codex-bees/dist/index.js", "catalog"], bundledRuntimeDir).stdout
+).catalog;
+if (
+  bundledRuntimeCatalog.kind !== "runtime_catalog_view" ||
+  bundledRuntimeCatalog.recommendedReason !== "catalog_entries_loaded" ||
+  bundledRuntimeCatalog.counts?.agents !== 4 ||
+  bundledRuntimeCatalog.counts?.skills !== 2 ||
+  bundledRuntimeCatalog.catalog?.source !== "bundled" ||
+  !bundledRuntimeCatalog.catalog?.agents?.every((agent) => agent.source === "bundled") ||
+  !bundledRuntimeCatalog.catalog?.paths?.codexDir?.startsWith("@bundled/.codex")
+) {
+  console.error("[smoke:catalog] expected packaged dist catalog to fall back to bundled .codex assets");
+  process.exit(1);
+}
+const bundledRuntimeStatus = JSON.parse(
+  runInCwd("status-bundled-dist", ["/Users/idah/Projects-combined/codex-bees/dist/index.js", "status"], bundledRuntimeDir).stdout
+).status;
+if (
+  bundledRuntimeStatus.kind !== "runtime_status_view" ||
+  bundledRuntimeStatus.status?.catalog?.source !== "bundled" ||
+  bundledRuntimeStatus.counts?.agents !== 4 ||
+  bundledRuntimeStatus.counts?.skills !== 2
+) {
+  console.error("[smoke:status] expected packaged dist status to expose bundled runtime catalog");
+  process.exit(1);
+}
+const bundledPlan = JSON.parse(
+  runInCwd(
+    "plan-bundled-dist",
+    ["/Users/idah/Projects-combined/codex-bees/dist/index.js", "plan", "--task", "agent skill runtime"],
+    bundledRuntimeDir
+  ).stdout
+);
+if (
+  bundledPlan.kind !== "task_plan" ||
+  bundledPlan.evidence?.repoSignals?.hasAgents !== true ||
+  bundledPlan.evidence?.repoSignals?.hasSkills !== true ||
+  bundledPlan.evidence?.roleFiles?.length !== 4
+) {
+  console.error("[smoke:plan] expected packaged dist planner to discover bundled role assets");
   process.exit(1);
 }
 const doctorView = JSON.parse(run("doctor-verify", ["./src/index.js", "doctor"]).stdout);

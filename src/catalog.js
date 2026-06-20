@@ -1,10 +1,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { cwd } from "node:process";
+import { fileURLToPath } from "node:url";
 
-const CODEX_DIR = join(cwd(), ".codex");
-const AGENT_DIR = join(CODEX_DIR, "agents");
-const SKILL_DIR = join(CODEX_DIR, "skills");
+const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const BUNDLED_PREFIX = "@bundled";
 
 function isFile(path) {
   return existsSync(path) && statSync(path).isFile();
@@ -16,6 +16,49 @@ function isDirectory(path) {
 
 function readText(path) {
   return isFile(path) ? readFileSync(path, "utf8") : "";
+}
+
+function workspaceCodexDir() {
+  return join(cwd(), ".codex");
+}
+
+function bundledCodexDir() {
+  return join(PACKAGE_ROOT, ".codex");
+}
+
+function toDisplayPath(path) {
+  const currentWorkingDirectory = cwd();
+  if (path.startsWith(`${currentWorkingDirectory}/`)) {
+    return path.slice(currentWorkingDirectory.length + 1);
+  }
+
+  if (path.startsWith(`${PACKAGE_ROOT}/`)) {
+    return `${BUNDLED_PREFIX}/${relative(PACKAGE_ROOT, path)}`;
+  }
+
+  return path;
+}
+
+export function getRuntimeCatalogPaths() {
+  const workspacePath = workspaceCodexDir();
+  const bundledPath = bundledCodexDir();
+  const source = isDirectory(workspacePath) ? "workspace" : isDirectory(bundledPath) ? "bundled" : "missing";
+  const codexDir = source === "workspace" ? workspacePath : source === "bundled" ? bundledPath : workspacePath;
+
+  return {
+    source,
+    workingDirectory: cwd(),
+    packageRoot: PACKAGE_ROOT,
+    codexDir,
+    agentDir: join(codexDir, "agents"),
+    skillDir: join(codexDir, "skills")
+  };
+}
+
+export function resolveRuntimeCatalogPath(relativePath) {
+  const paths = getRuntimeCatalogPaths();
+  const resolved = join(paths.codexDir, relativePath);
+  return isFile(resolved) || isDirectory(resolved) ? resolved : null;
 }
 
 function parseFrontmatter(text) {
@@ -44,35 +87,38 @@ function parseFrontmatter(text) {
 }
 
 export function listAgentCatalog() {
-  if (!isDirectory(AGENT_DIR)) {
+  const paths = getRuntimeCatalogPaths();
+  if (!isDirectory(paths.agentDir)) {
     return [];
   }
 
-  return readdirSync(AGENT_DIR)
+  return readdirSync(paths.agentDir)
     .filter((name) => name.endsWith(".md"))
     .map((name) => {
-      const path = join(AGENT_DIR, name);
+      const path = join(paths.agentDir, name);
       const frontmatter = parseFrontmatter(readText(path));
       const id = name.replace(/\.md$/, "");
       return {
         id,
         name: frontmatter.name ?? id,
         description: frontmatter.description ?? null,
-        path: `.codex/agents/${name}`
+        path: toDisplayPath(path),
+        source: paths.source
       };
     })
     .sort((left, right) => left.id.localeCompare(right.id));
 }
 
 export function listSkillCatalog() {
-  if (!isDirectory(SKILL_DIR)) {
+  const paths = getRuntimeCatalogPaths();
+  if (!isDirectory(paths.skillDir)) {
     return [];
   }
 
-  return readdirSync(SKILL_DIR)
+  return readdirSync(paths.skillDir)
     .map((name) => {
-      const root = join(SKILL_DIR, name);
-      const directFile = join(SKILL_DIR, `${name}.md`);
+      const root = join(paths.skillDir, name);
+      const directFile = join(paths.skillDir, `${name}.md`);
       const skillFile = isDirectory(root) ? join(root, "SKILL.md") : directFile;
       if (!isFile(skillFile)) {
         return null;
@@ -83,7 +129,8 @@ export function listSkillCatalog() {
         id: name,
         name: frontmatter.name ?? name,
         description: frontmatter.description ?? null,
-        path: skillFile.startsWith(cwd()) ? skillFile.slice(cwd().length + 1) : skillFile
+        path: toDisplayPath(skillFile),
+        source: paths.source
       };
     })
     .filter(Boolean)
@@ -95,7 +142,14 @@ export function listAgentRoleIds() {
 }
 
 export function getRuntimeCatalog() {
+  const paths = getRuntimeCatalogPaths();
   return {
+    source: paths.source,
+    paths: {
+      codexDir: toDisplayPath(paths.codexDir),
+      agentDir: toDisplayPath(paths.agentDir),
+      skillDir: toDisplayPath(paths.skillDir)
+    },
     agents: listAgentCatalog(),
     skills: listSkillCatalog()
   };

@@ -1,11 +1,12 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { getRuntimeCatalogPaths, resolveRuntimeCatalogPath } from "./catalog.js";
 
 const ROLE_FILES = {
-  explore: ".codex/agents/explore.md",
-  executor: ".codex/agents/executor.md",
-  reviewer: ".codex/agents/reviewer.md",
-  tester: ".codex/agents/tester.md"
+  explore: "agents/explore.md",
+  executor: "agents/executor.md",
+  reviewer: "agents/reviewer.md",
+  tester: "agents/tester.md"
 };
 
 function directoryExists(path) {
@@ -16,12 +17,29 @@ function fileExists(path) {
   return existsSync(path) && statSync(path).isFile();
 }
 
+function runtimeRoleFilePath(role) {
+  return resolveRuntimeCatalogPath(ROLE_FILES[role]);
+}
+
+function runtimeRoleFilePaths() {
+  return Object.keys(ROLE_FILES)
+    .map((role) => runtimeRoleFilePath(role))
+    .filter(Boolean);
+}
+
 function baseRepoPaths() {
+  const catalogPaths = getRuntimeCatalogPaths();
   const paths = [];
-  for (const candidate of ["src", "scripts", ".codex/agents", ".codex/skills"]) {
+  for (const candidate of ["src", "scripts"]) {
     if (directoryExists(candidate) || fileExists(candidate)) {
       paths.push(candidate);
     }
+  }
+  if (directoryExists(catalogPaths.agentDir)) {
+    paths.push(catalogPaths.agentDir);
+  }
+  if (directoryExists(catalogPaths.skillDir)) {
+    paths.push(catalogPaths.skillDir);
   }
   return paths;
 }
@@ -78,11 +96,12 @@ function choosePrimaryScope(task) {
   }
 
   if (lower.includes("agent") || lower.includes("prompt")) {
-    return Object.values(ROLE_FILES).filter(fileExists);
+    return runtimeRoleFilePaths();
   }
 
   if (lower.includes("skill")) {
-    return [".codex/skills"].filter((path) => directoryExists(path) || fileExists(path));
+    const skillDir = getRuntimeCatalogPaths().skillDir;
+    return [skillDir].filter((path) => directoryExists(path) || fileExists(path));
   }
 
   if (lower.includes("mcp") || lower.includes("tool")) {
@@ -106,10 +125,11 @@ function choosePrimaryScope(task) {
 }
 
 function chooseDiscoveryScope(primaryScope) {
+  const catalogPaths = getRuntimeCatalogPaths();
   const primarySet = new Set(primaryScope);
   const candidates = uniquePaths([
-    ...Object.values(ROLE_FILES).filter(fileExists),
-    directoryExists(".codex/skills") ? ".codex/skills" : null,
+    ...runtimeRoleFilePaths(),
+    directoryExists(catalogPaths.skillDir) ? catalogPaths.skillDir : null,
     fileExists("README.md") ? "README.md" : null,
     ...scriptFilePaths(),
     ...sourceFilePaths()
@@ -124,17 +144,18 @@ function chooseDiscoveryScope(primaryScope) {
 }
 
 function plannerEvidence(task) {
+  const catalogPaths = getRuntimeCatalogPaths();
   return {
     task,
     repoSignals: {
       hasSrc: directoryExists("src"),
       hasScripts: directoryExists("scripts"),
-      hasAgents: directoryExists(".codex/agents"),
-      hasSkills: directoryExists(".codex/skills")
+      hasAgents: directoryExists(catalogPaths.agentDir),
+      hasSkills: directoryExists(catalogPaths.skillDir)
     },
     roleFiles: Object.entries(ROLE_FILES)
-      .filter(([, path]) => fileExists(path))
-      .map(([role, path]) => ({ role, path }))
+      .map(([role]) => ({ role, path: runtimeRoleFilePath(role) }))
+      .filter((entry) => entry.path)
   };
 }
 
