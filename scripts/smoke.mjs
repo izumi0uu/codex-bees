@@ -1566,6 +1566,26 @@ if (
   console.error("[smoke:installed-mcp-tools] expected installed packaged MCP tool catalog");
   process.exit(1);
 }
+const installedMcpToolsContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getToolCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedMcpTools)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedMcpToolsContractImport.status !== 0 ||
+  JSON.parse(installedMcpToolsContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-mcp-tools-contract] expected direct packaged mcp tools output to match the tool catalog api surface");
+  console.error(installedMcpToolsContractImport.stderr || installedMcpToolsContractImport.stdout);
+  process.exit(installedMcpToolsContractImport.status ?? 1);
+}
 rmSync(packedTarballPath, { force: true });
 const doctorView = JSON.parse(run("doctor-verify", ["./src/index.js", "doctor"]).stdout);
 if (
