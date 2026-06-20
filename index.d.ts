@@ -268,7 +268,7 @@ export interface RuntimeStatusCounts {
 export interface RuntimeStatus {
   product: string;
   version: string;
-  mode: string;
+  mode: "codex-only";
   counts: RuntimeStatusCounts;
   state: {
     taskQueueStatuses: Record<string, number>;
