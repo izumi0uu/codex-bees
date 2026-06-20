@@ -559,7 +559,7 @@ export interface MemorySearchResult extends MemoryRecord {
 
 export interface MemorySearchView {
   kind: "memory_search_view";
-  recommendedReason: string;
+  recommendedReason: "memory_search_has_results" | "memory_search_empty";
   counts: {
     totalResults: number;
   };
