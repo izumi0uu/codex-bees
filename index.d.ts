@@ -207,7 +207,7 @@ export interface PlannedSwarm {
 
 export interface QueuedPlan {
   kind: "queued_plan";
-  recommendedReason: string;
+  recommendedReason: "multiple_plan_tasks_queued" | "single_plan_task_queued";
   objective: string;
   lanes: TaskPlanLane[];
   created: TaskRecord[];
