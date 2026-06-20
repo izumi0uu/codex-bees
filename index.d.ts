@@ -136,7 +136,7 @@ export interface WorkerGuidelines {
 
 export interface WorkerGuidelinesView {
   kind: "worker_guidelines_view";
-  recommendedReason: string;
+  recommendedReason: "worker_guidelines_loaded";
   counts: {
     ruleSections: number;
     validationSteps: number;
