@@ -466,6 +466,12 @@ const documentedMcpImportExports = documentedMcpImportExampleMatch[1]
   .map((name) => name.trim())
   .filter(Boolean)
   .sort();
+const documentedMcpExampleBlockMatch = README_TEXT.match(/Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedMcpExampleBlockMatch) {
+  console.error("[smoke:readme-mcp-example] expected README to document a runnable mcp example block");
+  process.exit(1);
+}
+const documentedMcpExampleScript = documentedMcpExampleBlockMatch[1];
 const exportedSubpaths = Object.keys(packageManifest.exports)
   .filter((key) => key !== ".")
   .sort();
@@ -560,6 +566,26 @@ if (missingDocumentedMcpImports.length > 0) {
   console.error("[smoke:readme-mcp-import-contract] expected README mcp import example to match documented installed mcp exports");
   console.error(JSON.stringify({ missingDocumentedMcpImports, documentedMcpImportExports, installedMcpExports: installedMcpImportPayload.keys }, null, 2));
   process.exit(1);
+}
+const installedMcpExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedMcpExampleScript}\nconsole.log(JSON.stringify({ ok: Array.isArray(tools) && tools.some((tool) => tool.name === "runtime_contract") && Array.isArray(options) && options.some((option) => option.option === "--capabilities") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(contract.content) && contract.content[0]?.type === "text" }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedMcpExample.status !== 0 ||
+  JSON.parse(installedMcpExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-mcp-example-contract] expected README mcp example to execute successfully against the installed package");
+  console.error(installedMcpExample.stderr || installedMcpExample.stdout);
+  process.exit(installedMcpExample.status ?? 1);
 }
 const installedCatalogImport = spawnSync(
   "node",
