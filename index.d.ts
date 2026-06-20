@@ -310,11 +310,18 @@ export interface ToolCatalogView {
   tools: ToolCatalogEntry[];
 }
 
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+export interface JsonObject {
+  [key: string]: JsonValue;
+}
+export type JsonArray = JsonValue[];
+
 export interface McpMessage {
   jsonrpc?: string;
   id?: string | number | null;
   method?: string;
-  params?: Record<string, unknown>;
+  params?: JsonObject;
 }
 
 export interface McpResponse {

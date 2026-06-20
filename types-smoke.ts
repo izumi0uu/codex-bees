@@ -106,6 +106,7 @@ const subpathMcpResult: unknown = handleMcpRequestSubpath({ jsonrpc: "2.0", id: 
 const subpathMcpToolResult: unknown = callMcpToolSubpath("runtime_contract");
 const rootMcpResult: unknown = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
 const rootMcpToolResult: unknown = callMcpTool("runtime_contract");
+const rootMcpParams = handleMcpRequest({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "runtime_contract", arguments: {} } }).id;
 
 const task = addTask({
   title: "typed task",
