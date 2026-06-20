@@ -543,7 +543,7 @@ const installedCommandsImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/commands").then((m) => console.log(JSON.stringify({ ok: m.getCommandCatalogView().kind === "command_catalog_view" && m.getCommandCatalogView().counts.totalCommands > 10 && m.renderHelpText().includes("codex-bees run") && m.renderHelpText().includes("codex-bees metadata") })))'
+    'import("codex-bees/commands").then((m) => { const mcp = m.getCommandCatalogView().commands.find((entry) => entry.command === "mcp"); console.log(JSON.stringify({ ok: m.getCommandCatalogView().kind === "command_catalog_view" && m.getCommandCatalogView().counts.totalCommands > 10 && m.renderHelpText().includes("codex-bees run") && m.renderHelpText().includes("codex-bees metadata") && Array.isArray(mcp?.options) && mcp.options.some((option) => option.option === "--capabilities") && mcp.options.some((option) => option.option === "--tools") })); })'
   ],
   {
     cwd: packedInstallAppDir,

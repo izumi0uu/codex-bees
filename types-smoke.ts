@@ -38,6 +38,7 @@ metadata.repositoryUrl;
 metadata.keywords[0];
 
 getCommandCatalogView().commands[0]?.command;
+getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 renderHelpText();
 getMcpCommandCatalogView().options[0]?.option;
 renderMcpHelpText();

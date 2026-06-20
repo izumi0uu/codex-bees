@@ -19,6 +19,7 @@ export interface PackageMetadataView {
 export interface CommandCatalogEntry {
   command: string;
   description: string;
+  options?: McpCommandCatalogEntry[];
 }
 
 export interface McpCommandCatalogEntry {

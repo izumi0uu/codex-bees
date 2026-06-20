@@ -124,7 +124,7 @@ The `codex-bees/runtime-ready` subpath exposes the default `run` readiness view 
 
 The `codex-bees/metadata` subpath exposes the package identity contract directly, so CLI, MCP, and library consumers can all read the same name, version, description, license, homepage, issue tracker, repository URL, keyword tags, and Codex-only mode surface from one source.
 
-The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs.
+The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` command entry also carries the structured MCP subcommand option list, so one command-catalog read is enough to discover both the top-level `mcp` command and its shipped flags.
 
 The package now also ships lightweight TypeScript declarations for the public API surface. They are intentionally minimal, but they cover the documented root export and subpath imports well enough for editor completion, typed imports, and smoke-level compile checks in downstream projects.
 
