@@ -185,7 +185,13 @@ getSwarmView(swarm.id)?.swarm.id;
 const swarmDetailReason: "swarm_detail_loaded" | undefined = getSwarmView(swarm.id)?.recommendedReason;
 const swarmDerivedStatus: SwarmStatus | undefined = getSwarmView(swarm.id)?.metadata.derivedStatus;
 const swarmReadyToComplete: boolean | undefined = getSwarmView(swarm.id)?.metadata.readyToComplete;
-validateSwarm(swarm.id)?.recommendedReason;
+const swarmValidationReason:
+  | "swarm_ready_to_queue"
+  | "swarm_scope_overlap_detected"
+  | "lane_validation_issues_present"
+  | "swarm_validation_issues_present"
+  | "swarm_validation_visible"
+  | undefined = validateSwarm(swarm.id)?.recommendedReason;
 const swarmValidationReady: boolean | undefined = validateSwarm(swarm.id)?.ready;
 const swarmValidationLane: string | undefined = validateSwarm(swarm.id)?.lanes[0]?.lane;
 const swarmValidationOverlapPath: string | undefined = validateSwarm(swarm.id)?.overlaps[0]?.path;
