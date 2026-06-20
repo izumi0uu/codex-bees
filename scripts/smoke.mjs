@@ -710,6 +710,18 @@ if (
   console.error(installedHelpImport.stderr || installedHelpImport.stdout);
   process.exit(installedHelpImport.status ?? 1);
 }
+const installedDirectCliBad = spawnSync("node", ["./node_modules/codex-bees/dist/index.js", "nope"], {
+  cwd: packedInstallAppDir,
+  encoding: "utf8"
+});
+if (
+  installedDirectCliBad.status === 0 ||
+  !installedDirectCliBad.stderr.includes("Unknown command: nope")
+) {
+  console.error("[smoke:installed-direct-cli-bad] expected direct packaged CLI to reject unknown commands");
+  console.error(installedDirectCliBad.stderr || installedDirectCliBad.stdout);
+  process.exit(1);
+}
 const installedVersion = runInstalled("installed-version", "npx", ["codex-bees", "--version"]);
 if (installedVersion.stdout.trim() !== "0.1.0") {
   console.error("[smoke:installed-version] expected installed npx codex-bees --version output");
