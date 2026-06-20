@@ -86,6 +86,7 @@ const rootHelpTextDirect: string = renderHelpTextRoot();
 const rootHelpText: string = renderHelpTextCommands();
 const rootExecutionModel: "local bounded multi-agent coordination" = getCoordinationOverview().executionModel;
 const rootDeliveryBoundary: "codex-only runtime" = getCoordinationOverview().deliveryBoundary;
+const rootChangeModel: "small reversible steps" = getCoordinationOverview().changeModel;
 const rootCoordinationViewKind: "coordination_overview_view" = getCoordinationOverviewView().kind;
 const coordinationViewReason: "coordination_model_loaded" = getCoordinationOverviewView().recommendedReason;
 const rootWorkerGuideline: string = getWorkerGuidelines().fileOwnership;
