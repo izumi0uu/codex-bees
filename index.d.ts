@@ -214,7 +214,7 @@ export interface QueuedPlan {
 }
 
 export interface RuntimeContract {
-  product: string;
+  product: "codex-bees";
   mode: "codex-only";
   deliveryBoundary: "codex-only runtime";
   workingDirectory: string;
