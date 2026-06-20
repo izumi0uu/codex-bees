@@ -3774,6 +3774,11 @@ const runtimeSignalPackCli = JSON.parse(
 if (
   runtimeSignalPackCli.recommendedSurface !== "runtime:focus" ||
   runtimeSignalPackCli.recommendedReason !== "blocked_focus_priority" ||
+  runtimeSignalPackCli.metadata?.hasFocus !== true ||
+  runtimeSignalPackCli.metadata?.hasAlert !== true ||
+  runtimeSignalPackCli.metadata?.hasActivity !== true ||
+  runtimeSignalPackCli.metadata?.hasRole !== true ||
+  runtimeSignalPackCli.counts?.surfacedNextEntries !== Object.values(runtimeSignalPackCli.next ?? {}).filter(Boolean).length ||
   runtimeSignalPackCli.next?.focus?.taskId !== "task-1" ||
   runtimeSignalPackCli.next?.alert?.taskId !== "task-1" ||
   runtimeSignalPackCli.next?.activity?.taskId !== "task-4" ||
@@ -4513,6 +4518,12 @@ if (
   runtimeSignalPackMcp.status !== 0 ||
   runtimeSignalPackMcpPayload.signalPack?.recommendedSurface !== "runtime:focus" ||
   runtimeSignalPackMcpPayload.signalPack?.recommendedReason !== "blocked_focus_priority" ||
+  runtimeSignalPackMcpPayload.signalPack?.metadata?.hasFocus !== true ||
+  runtimeSignalPackMcpPayload.signalPack?.metadata?.hasAlert !== true ||
+  runtimeSignalPackMcpPayload.signalPack?.metadata?.hasActivity !== true ||
+  runtimeSignalPackMcpPayload.signalPack?.metadata?.hasRole !== true ||
+  runtimeSignalPackMcpPayload.signalPack?.counts?.surfacedNextEntries !==
+    Object.values(runtimeSignalPackMcpPayload.signalPack?.next ?? {}).filter(Boolean).length ||
   runtimeSignalPackMcpPayload.signalPack?.next?.focus?.taskId !== "task-1" ||
   runtimeSignalPackMcpPayload.signalPack?.next?.role?.role?.id !== "tester"
 ) {
