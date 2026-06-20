@@ -373,7 +373,7 @@ export interface TaskRecord {
   reviewedAt: string | null;
   reviewOutcome: string | null;
   reviewNotes: string | null;
-  reviewEvidence?: unknown[] | null;
+  reviewEvidence: unknown[] | null;
   annotations: TaskAnnotation[];
   history: TaskHistoryEntry[];
   createdAt: string | null;
