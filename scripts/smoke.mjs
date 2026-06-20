@@ -751,6 +751,18 @@ if (
   console.error(installedMcpBad.stderr || installedMcpBad.stdout);
   process.exit(1);
 }
+const installedMetadata = JSON.parse(
+  runInstalled("installed-metadata", "npx", ["codex-bees", "metadata"]).stdout
+).metadata;
+if (
+  installedMetadata.kind !== "package_metadata_view" ||
+  installedMetadata.metadata?.product !== "codex-bees" ||
+  installedMetadata.metadata?.version !== "0.1.0" ||
+  installedMetadata.metadata?.homepage !== "https://github.com/izumi0uu/codex-bees#readme"
+) {
+  console.error("[smoke:installed-metadata] expected installed npx codex-bees metadata to expose the package metadata view");
+  process.exit(1);
+}
 const installedCatalog = JSON.parse(
   runInstalled("installed-catalog", "npx", ["codex-bees", "catalog"]).stdout
 ).catalog;
