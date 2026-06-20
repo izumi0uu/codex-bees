@@ -105,7 +105,12 @@ const swarmValidationReady: boolean = validateSwarm(swarm.id).ready;
 const swarmValidationLane: string | undefined = validateSwarm(swarm.id).lanes[0]?.lane;
 const swarmValidationOverlapPath: string | undefined = validateSwarm(swarm.id).overlaps[0]?.path;
 
-storeMemory({ content: "typed memory", namespace: "types", kind: "note" }).id;
+const typedMemory = storeMemory({ content: "typed memory", namespace: "types", kind: "note", title: "typed", tags: ["types"], agent: "tester" });
+typedMemory.id;
+const typedMemoryNamespace: string | undefined = typedMemory.namespace;
+const typedMemoryTitle: string | null | undefined = typedMemory.title;
+const typedMemoryAgent: string | null | undefined = typedMemory.agent;
+const typedMemoryTag: string | undefined = typedMemory.tags?.[0];
 const memoryListNamespace: string | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.namespace;
 const memoryListTitle: string | null | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.title;
 listTasksView().counts.totalTasks;
