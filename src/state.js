@@ -1969,6 +1969,12 @@ export function runtimeRolePack(input = {}) {
     : null;
   const recommendedSurface = deriveRuntimeRolePackSurface({ roleEntry, sessionPack, ownerPack, verifierPack });
   const recommendedReason = deriveRuntimeRolePackReason({ roleEntry, sessionPack, ownerPack, verifierPack });
+  const nextEntries = {
+    role: roleEntry?.nextAction ?? null,
+    session: sessionPack?.next ?? null,
+    owner: ownerPack?.next ?? null,
+    verifier: verifierPack?.next ?? null
+  };
 
   return {
     kind: "runtime_role_pack",
@@ -1977,18 +1983,22 @@ export function runtimeRolePack(input = {}) {
     mode: input.mode ?? "any",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasRole: Boolean(nextEntries.role),
+      hasSession: Boolean(nextEntries.session),
+      hasOwner: Boolean(nextEntries.owner),
+      hasVerifier: Boolean(nextEntries.verifier)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       role: roleEntry?.counts ?? null,
       session: sessionPack?.overview ?? null,
       owner: ownerPack?.overview ?? null,
       verifier: verifierPack?.overview ?? null
     },
-    next: {
-      role: roleEntry?.nextAction ?? null,
-      session: sessionPack?.next ?? null,
-      owner: ownerPack?.next ?? null,
-      verifier: verifierPack?.next ?? null
-    },
+    next: nextEntries,
     surfaces: {
       role: roleEntry,
       sessionPack,

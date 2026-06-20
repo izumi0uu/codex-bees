@@ -3844,6 +3844,11 @@ const runtimeRolePackCli = JSON.parse(
 if (
   runtimeRolePackCli.recommendedSurface !== "worker:closeout" ||
   runtimeRolePackCli.recommendedReason !== "session_priority" ||
+  runtimeRolePackCli.metadata?.hasRole !== true ||
+  runtimeRolePackCli.metadata?.hasSession !== true ||
+  runtimeRolePackCli.metadata?.hasOwner !== true ||
+  runtimeRolePackCli.metadata?.hasVerifier !== true ||
+  runtimeRolePackCli.counts?.surfacedNextEntries !== Object.values(runtimeRolePackCli.next ?? {}).filter(Boolean).length ||
   runtimeRolePackCli.next?.role?.lane !== "verifier" ||
   runtimeRolePackCli.next?.session?.verifier?.review?.taskId !== "task-2" ||
   runtimeRolePackCli.surfaces?.sessionPack?.recommendedSurface !== "worker:closeout"
@@ -4682,6 +4687,12 @@ if (
   runtimeRolePackMcp.status !== 0 ||
   runtimeRolePackMcpPayload.rolePack?.recommendedSurface !== "worker:closeout" ||
   runtimeRolePackMcpPayload.rolePack?.recommendedReason !== "session_priority" ||
+  runtimeRolePackMcpPayload.rolePack?.metadata?.hasRole !== true ||
+  runtimeRolePackMcpPayload.rolePack?.metadata?.hasSession !== true ||
+  runtimeRolePackMcpPayload.rolePack?.metadata?.hasOwner !== true ||
+  runtimeRolePackMcpPayload.rolePack?.metadata?.hasVerifier !== true ||
+  runtimeRolePackMcpPayload.rolePack?.counts?.surfacedNextEntries !==
+    Object.values(runtimeRolePackMcpPayload.rolePack?.next ?? {}).filter(Boolean).length ||
   runtimeRolePackMcpPayload.rolePack?.next?.role?.lane !== "verifier" ||
   runtimeRolePackMcpPayload.rolePack?.next?.session?.verifier?.review?.taskId !== "task-2"
 ) {
