@@ -986,6 +986,26 @@ if (
   console.error("[smoke:installed-doctor] expected installed npx codex-bees doctor view to expose bundled diagnostics");
   process.exit(1);
 }
+const installedDoctorContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'const { createRequire } = require("node:module"); const { dirname, join } = require("node:path"); const { pathToFileURL } = require("node:url"); const pkgRequire = createRequire(process.cwd() + "/__codex_bees_smoke__.cjs"); import("codex-bees/doctor").then((m) => { const apiPath = pkgRequire.resolve("codex-bees"); const entryUrl = pathToFileURL(join(dirname(apiPath), "index.js")).href; const actual = JSON.parse(process.argv[1]); const expected = m.getRuntimeDoctorView(entryUrl); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDoctor)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDoctorContractImport.status !== 0 ||
+  JSON.parse(installedDoctorContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-doctor-contract] expected installed doctor output to match the runtime-doctor api surface");
+  console.error(installedDoctorContractImport.stderr || installedDoctorContractImport.stdout);
+  process.exit(installedDoctorContractImport.status ?? 1);
+}
 const installedDirectCliDoctor = JSON.parse(
   runInstalled("installed-direct-cli-doctor", "node", ["./node_modules/codex-bees/dist/index.js", "doctor"]).stdout
 );
@@ -998,6 +1018,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-doctor] expected direct packaged CLI doctor to expose bundled diagnostics");
   process.exit(1);
+}
+const installedDirectCliDoctorContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'const { createRequire } = require("node:module"); const { dirname, join } = require("node:path"); const { pathToFileURL } = require("node:url"); const pkgRequire = createRequire(process.cwd() + "/__codex_bees_smoke__.cjs"); import("codex-bees/doctor").then((m) => { const apiPath = pkgRequire.resolve("codex-bees"); const entryUrl = pathToFileURL(join(dirname(apiPath), "index.js")).href; const actual = JSON.parse(process.argv[1]); const expected = m.getRuntimeDoctorView(entryUrl); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliDoctor)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliDoctorContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliDoctorContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-doctor-contract] expected direct packaged CLI doctor output to match the runtime-doctor api surface");
+  console.error(installedDirectCliDoctorContractImport.stderr || installedDirectCliDoctorContractImport.stdout);
+  process.exit(installedDirectCliDoctorContractImport.status ?? 1);
 }
 const installedCliTools = JSON.parse(
   runInstalled("installed-tools", "npx", ["codex-bees", "tools"]).stdout
