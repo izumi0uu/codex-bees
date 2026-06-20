@@ -197,6 +197,7 @@ const memoryListReason: "memory_list_has_results" | "memory_list_empty" = listMe
 const taskListReason: "task_list_has_results" | "task_list_empty" = listTasksView().recommendedReason;
 listTasksView().counts.totalTasks;
 const filteredSwarmOwner: string | null | undefined = listSwarmsView({ status: "planned", topology: "bounded-local", owner: "leader" }).swarms[0]?.owner;
+const swarmListReason: "swarm_list_has_results" | "swarm_list_empty" = listSwarmsView({ status: "planned" }).recommendedReason;
 const detailedSwarmRecommended: string | undefined = listSwarmsView({ topology: "bounded-local" }, { detailed: true }).swarms[0]?.recommendedReason;
 const detailedSwarmDerivedStatus: SwarmStatus | undefined = listSwarmsView({ owner: "leader" }, { detailed: true }).swarms[0]?.derivedStatus;
 listSwarmsView({ status: "planned" }, { detailed: true }).counts.totalSwarms;
