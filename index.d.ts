@@ -456,7 +456,14 @@ export interface SwarmOverviewCounts {
 
 export interface SwarmOverview {
   kind: "swarm_overview";
-  recommendedReason: string;
+  recommendedReason:
+    | "swarm_ready_to_complete"
+    | "review_lane_waiting"
+    | "blocked_lanes_present"
+    | "dispatch_lane_ready"
+    | "claimed_lane_active"
+    | "planned_lanes_unqueued"
+    | "swarm_state_visible";
   swarm: SwarmRecord;
   counts: SwarmOverviewCounts;
   lanes: SwarmLaneSummary[];
