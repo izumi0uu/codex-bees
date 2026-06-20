@@ -1278,6 +1278,11 @@ if (
   ownerPackCli.kind !== "runtime_owner_pack" ||
   ownerPackCli.recommendedSurface !== "worker:session" ||
   ownerPackCli.recommendedReason !== "active_task_priority" ||
+  ownerPackCli.metadata?.hasFocus !== true ||
+  ownerPackCli.metadata?.hasCandidate !== true ||
+  ownerPackCli.metadata?.hasHandoff !== true ||
+  ownerPackCli.metadata?.hasCloseout !== true ||
+  ownerPackCli.counts?.surfacedNextEntries !== Object.values(ownerPackCli.next ?? {}).filter(Boolean).length ||
   ownerPackCli.next?.focus?.kind !== "active_task" ||
   ownerPackCli.surfaces?.handoff?.currentTask?.id !== "task-1" ||
   ownerPackCli.mode !== "owner"
@@ -1313,6 +1318,12 @@ if (
   ownerPackMcp.status !== 0 ||
   ownerPackMcpPayload.ownerPack?.recommendedSurface !== "worker:session" ||
   ownerPackMcpPayload.ownerPack?.recommendedReason !== "active_task_priority" ||
+  ownerPackMcpPayload.ownerPack?.metadata?.hasFocus !== true ||
+  ownerPackMcpPayload.ownerPack?.metadata?.hasCandidate !== true ||
+  ownerPackMcpPayload.ownerPack?.metadata?.hasHandoff !== true ||
+  ownerPackMcpPayload.ownerPack?.metadata?.hasCloseout !== true ||
+  ownerPackMcpPayload.ownerPack?.counts?.surfacedNextEntries !==
+    Object.values(ownerPackMcpPayload.ownerPack?.next ?? {}).filter(Boolean).length ||
   ownerPackMcpPayload.ownerPack?.next?.focus?.taskId !== "task-1" ||
   ownerPackMcpPayload.ownerPack?.surfaces?.handoff?.currentTask?.id !== "task-1"
 ) {

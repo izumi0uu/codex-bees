@@ -2239,6 +2239,12 @@ export function runtimeOwnerPack(input = {}) {
   });
   const recommendedSurface = deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role: input.role, workerId: input.workerId });
   const recommendedReason = deriveRuntimeOwnerPackReason({ session, handoff, closeout, next });
+  const nextEntries = {
+    focus: session?.focus ?? null,
+    candidate: next?.candidate ?? null,
+    handoff: handoff?.currentTask ?? null,
+    closeout: closeout?.report?.task ?? null
+  };
 
   return {
     kind: "runtime_owner_pack",
@@ -2247,16 +2253,20 @@ export function runtimeOwnerPack(input = {}) {
     mode: "owner",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasFocus: Boolean(nextEntries.focus),
+      hasCandidate: Boolean(nextEntries.candidate),
+      hasHandoff: Boolean(nextEntries.handoff),
+      hasCloseout: Boolean(nextEntries.closeout)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       session: session?.counts ?? null,
       inbox: session?.inbox?.counts ?? null
     },
-    next: {
-      focus: session?.focus ?? null,
-      candidate: next?.candidate ?? null,
-      handoff: handoff?.currentTask ?? null,
-      closeout: closeout?.report?.task ?? null
-    },
+    next: nextEntries,
     surfaces: {
       session,
       handoff,
