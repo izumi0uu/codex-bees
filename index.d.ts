@@ -360,7 +360,7 @@ export interface TaskRecord {
   owner: string | null;
   verifier: string | null;
   status?: string;
-  queueStatus?: string;
+  queueStatus: string;
   objective: string | null;
   lane: string | null;
   swarmId: string | null;
