@@ -1,6 +1,7 @@
 import {
   PACKAGE_VERSION,
   PRODUCT_NAME,
+  getCommandCatalog,
   getCommandCatalogView,
   getMcpCommandCatalog,
   getMcpCommandCatalogView,
@@ -58,6 +59,7 @@ metadata.keywords[0];
 
 getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
+const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 renderHelpText();
 getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
