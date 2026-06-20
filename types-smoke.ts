@@ -86,6 +86,7 @@ const rootHelpTextDirect: string = renderHelpTextRoot();
 const rootHelpText: string = renderHelpTextCommands();
 const rootExecutionModel: string = getCoordinationOverview().executionModel;
 const rootCoordinationViewKind: "coordination_overview_view" = getCoordinationOverviewView().kind;
+const coordinationViewReason: "coordination_model_loaded" = getCoordinationOverviewView().recommendedReason;
 const rootWorkerGuideline: string = getWorkerGuidelines().fileOwnership;
 const rootWorkerGuidelinesKind: "worker_guidelines_view" = getWorkerGuidelinesView().kind;
 renderHelpTextCommands();
