@@ -446,12 +446,18 @@ const documentedSubpaths = Array.from(
   README_TEXT.matchAll(/- `codex-bees\/([^`]+)`/g),
   (match) => `./${match[1]}`
 ).sort();
-const documentedRootImportExampleMatch = README_TEXT.match(/The root package export now exposes a small official programmatic API as well:\n\n```js\nimport\s*{\n([\s\S]*?)\n}\sfrom\s"codex-bees";\n```/);
-if (!documentedRootImportExampleMatch) {
-  console.error("[smoke:readme-root-import] expected README to document the root package import example");
+const documentedRootExampleBlockMatch = README_TEXT.match(/The root package export now exposes a small official programmatic API as well:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedRootExampleBlockMatch) {
+  console.error("[smoke:readme-root-example] expected README to document the root package example block");
   process.exit(1);
 }
-const documentedRootImportExports = documentedRootImportExampleMatch[1]
+const documentedRootExampleScript = documentedRootExampleBlockMatch[1];
+const documentedRootImportClauseMatch = documentedRootExampleScript.match(/import\s*{\n([\s\S]*?)\n}\sfrom\s"codex-bees";/);
+if (!documentedRootImportClauseMatch) {
+  console.error("[smoke:readme-root-import] expected README root example to import from codex-bees");
+  process.exit(1);
+}
+const documentedRootImportExports = documentedRootImportClauseMatch[1]
   .split("\n")
   .map((line) => line.trim().replace(/,$/, ""))
   .filter(Boolean)
@@ -538,6 +544,26 @@ if (missingDocumentedRootImports.length > 0) {
   console.error("[smoke:readme-root-import-contract] expected README root import example to match installed root exports");
   console.error(JSON.stringify({ missingDocumentedRootImports, documentedRootImportExports, installedRootExports: installedImportPayload.keys }, null, 2));
   process.exit(1);
+}
+const installedRootExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedRootExampleScript}\nconsole.log(JSON.stringify({ ok: metadata.product === "codex-bees" && typeof stateFilePath() === "string" && getCommandCatalogView().kind === "command_catalog_view" && Array.isArray(getMcpCommandCatalog()) && getMcpCommandCatalogView().kind === "mcp_command_catalog_view" && getRuntimeCatalogView().kind === "runtime_catalog_view" && getRuntimeDoctorView().kind === "runtime_doctor_view" && getRuntimeReadyView().kind === "runtime_ready_view" && status.kind === "runtime_status_view" && getRuntimeContractView().kind === "runtime_contract_view" && planTask("readme root example").kind === "task_plan" && planSwarm("readme root swarm").kind === "planned_swarm" && renderMcpHelpText().includes("codex-bees mcp --help") }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRootExample.status !== 0 ||
+  JSON.parse(installedRootExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-root-example-contract] expected README root example to execute successfully against the installed package");
+  console.error(installedRootExample.stderr || installedRootExample.stdout);
+  process.exit(installedRootExample.status ?? 1);
 }
 const installedMcpImport = spawnSync(
   "node",

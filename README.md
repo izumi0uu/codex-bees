@@ -73,6 +73,12 @@ import {
   stateFilePath,
   storeMemory
 } from "codex-bees";
+
+const metadata = getPackageMetadata();
+const status = getRuntimeStatusView({
+  version: metadata.version,
+  toolCount: getToolCatalogView().tools.length
+});
 ```
 
 The package manifest now aligns with that contract too: the root export and `main` entry both point at the library surface (`dist/api.js`), while the `codex-bees` bin continues to point at the CLI entrypoint. It also ships npm-facing project metadata for the public GitHub home, issue tracker, and searchable package keywords, so installed consumers get a package surface that behaves like a real maintained product instead of a bare internal tarball.
