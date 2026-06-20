@@ -94,7 +94,7 @@ export interface RuntimeContractView {
 export interface RuntimeDoctorView {
   kind: "runtime_doctor_view";
   recommendedReason: string;
-  status: SwarmStatus;
+  status: "ok";
   executable: boolean;
   entry: string;
   stateFile: string;
@@ -405,7 +405,7 @@ export interface TaskRecord {
 export interface SwarmRecord {
   id: string;
   objective: string;
-  status: string;
+  status: SwarmStatus;
   topology: string;
   maxWorkers: number;
   owner: string | null;
