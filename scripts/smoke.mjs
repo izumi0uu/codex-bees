@@ -959,6 +959,26 @@ if (
   console.error("[smoke:installed-status] expected installed npx codex-bees status to expose bundled runtime catalog");
   process.exit(1);
 }
+const installedStatusContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const metadata = m.getPackageMetadata(); const actual = JSON.parse(process.argv[1]); const expected = m.getRuntimeStatusView({ version: metadata.version, toolCount: m.listMcpTools().length }); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedStatus)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedStatusContractImport.status !== 0 ||
+  JSON.parse(installedStatusContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-status-contract] expected installed status output to match the runtime-status api surface");
+  console.error(installedStatusContractImport.stderr || installedStatusContractImport.stdout);
+  process.exit(installedStatusContractImport.status ?? 1);
+}
 const installedDirectCliStatus = JSON.parse(
   runInstalled("installed-direct-cli-status", "node", ["./node_modules/codex-bees/dist/index.js", "status"]).stdout
 ).status;
@@ -972,6 +992,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-status] expected direct packaged CLI status to expose bundled runtime catalog");
   process.exit(1);
+}
+const installedDirectCliStatusContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const metadata = m.getPackageMetadata(); const actual = JSON.parse(process.argv[1]); const expected = m.getRuntimeStatusView({ version: metadata.version, toolCount: m.listMcpTools().length }); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliStatus)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliStatusContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliStatusContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-status-contract] expected direct packaged CLI status output to match the runtime-status api surface");
+  console.error(installedDirectCliStatusContractImport.stderr || installedDirectCliStatusContractImport.stdout);
+  process.exit(installedDirectCliStatusContractImport.status ?? 1);
 }
 const installedDoctor = JSON.parse(
   runInstalled("installed-doctor", "npx", ["codex-bees", "doctor"]).stdout
