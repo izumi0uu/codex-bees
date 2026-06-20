@@ -16,6 +16,7 @@ export {
 } from "./runtime-status.js";
 
 export { getRuntimeContractView } from "./runtime-contract.js";
+export { getRuntimeDoctorView } from "./doctor.js";
 
 export {
   getCoordinationOverview,

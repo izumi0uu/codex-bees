@@ -58,6 +58,7 @@ The root package export now exposes a small official programmatic API as well:
 import {
   addTask,
   getRuntimeCatalogView,
+  getRuntimeDoctorView,
   getRuntimeStatusView,
   getToolCatalogView,
   getRuntimeContractView,
@@ -74,6 +75,7 @@ Official subpath exports are also available for narrower integrations:
 
 - `codex-bees/api`
 - `codex-bees/catalog`
+- `codex-bees/doctor`
 - `codex-bees/mcp`
 - `codex-bees/planner`
 - `codex-bees/state`
@@ -107,6 +109,8 @@ The `codex-bees/runtime-guidance` subpath exposes the same coordination primitiv
 - `getCoordinationOverviewView()`
 - `getWorkerGuidelines()`
 - `getWorkerGuidelinesView()`
+
+The `codex-bees/doctor` subpath exposes the same diagnostic view that the CLI prints for `codex-bees doctor`, so integrations can inspect entrypoint health, state-file location, runtime catalog, and contract details without shelling out.
 
 ## CLI
 

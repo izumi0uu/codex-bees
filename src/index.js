@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
 import { stdout, stderr, exit, argv, env } from "node:process";
-import { realpathSync, statSync } from "node:fs";
+import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
+import { getRuntimeDoctorView } from "./doctor.js";
 import {
   activateSwarm,
   addTask,
@@ -228,24 +229,7 @@ function printHelp() {
 }
 
 function printDoctor() {
-  const selfPath = fileURLToPath(import.meta.url);
-  const exists = statSync(selfPath).isFile();
-  write(
-    JSON.stringify(
-      {
-        kind: "runtime_doctor_view",
-        recommendedReason: exists ? "doctor_ready" : "doctor_entry_missing",
-        status: "ok",
-        executable: exists,
-        entry: selfPath,
-        stateFile: stateFilePath(),
-        catalog: getRuntimeCatalogView(),
-        contract: getRuntimeContractView()
-      },
-      null,
-      2
-    ) + "\n"
-  );
+  write(JSON.stringify(getRuntimeDoctorView(import.meta.url), null, 2) + "\n");
 }
 
 function printCatalog() {

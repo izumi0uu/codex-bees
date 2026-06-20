@@ -163,6 +163,7 @@ const importedSourceApi = JSON.parse(
 );
 if (
   !importedSourceApi.includes("getRuntimeCatalogView") ||
+  !importedSourceApi.includes("getRuntimeDoctorView") ||
   !importedSourceApi.includes("getToolCatalogView") ||
   !importedSourceApi.includes("getCoordinationOverviewView") ||
   !importedSourceApi.includes("getWorkerGuidelinesView") ||
@@ -184,6 +185,7 @@ const importedDistApi = JSON.parse(
 );
 if (
   !importedDistApi.includes("getRuntimeCatalogView") ||
+  !importedDistApi.includes("getRuntimeDoctorView") ||
   !importedDistApi.includes("getToolCatalogView") ||
   !importedDistApi.includes("getCoordinationOverviewView") ||
   !importedDistApi.includes("getWorkerGuidelinesView") ||
@@ -429,6 +431,25 @@ if (
   console.error("[smoke:installed-catalog-import] expected installed codex-bees/catalog subpath export");
   console.error(installedCatalogImport.stderr || installedCatalogImport.stdout);
   process.exit(installedCatalogImport.status ?? 1);
+}
+const installedDoctorImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/doctor").then((m) => console.log(JSON.stringify({ ok: m.getRuntimeDoctorView().kind === "runtime_doctor_view" && m.getRuntimeDoctorView().contract?.kind === "runtime_contract_view" })))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDoctorImport.status !== 0 ||
+  JSON.parse(installedDoctorImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-doctor-import] expected installed codex-bees/doctor subpath export");
+  console.error(installedDoctorImport.stderr || installedDoctorImport.stdout);
+  process.exit(installedDoctorImport.status ?? 1);
 }
 const installedRuntimeGuidanceImport = spawnSync(
   "node",

@@ -17,6 +17,7 @@
     ".": "./dist/api.js",
     "./api": "./dist/api.js",
     "./catalog": "./dist/catalog.js",
+    "./doctor": "./dist/doctor.js",
     "./mcp": "./dist/mcp.js",
     "./planner": "./dist/planner.js",
     "./state": "./dist/state.js",
