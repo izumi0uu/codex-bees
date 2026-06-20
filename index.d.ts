@@ -94,7 +94,7 @@ export interface RuntimeContractView {
 export interface RuntimeDoctorView {
   kind: "runtime_doctor_view";
   recommendedReason: string;
-  status: string;
+  status: SwarmStatus;
   executable: boolean;
   entry: string;
   stateFile: string;
