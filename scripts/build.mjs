@@ -45,6 +45,7 @@ function verifyDistScript(label, script) {
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist", { recursive: true });
 copySourceModules();
+copyFileSync("index.d.ts", join("dist", "api.d.ts"));
 copyTree(".codex", join("dist", ".codex"));
 
 verifyDistCommand("dist-help", ["./dist/index.js", "--help"]);

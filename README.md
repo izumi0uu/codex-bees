@@ -124,6 +124,8 @@ The `codex-bees/metadata` subpath exposes the package identity and version contr
 
 The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs.
 
+The package now also ships lightweight TypeScript declarations for the public API surface. They are intentionally minimal, but they cover the documented root export and subpath imports well enough for editor completion, typed imports, and smoke-level compile checks in downstream projects.
+
 ## CLI
 
 ```bash

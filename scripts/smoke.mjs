@@ -383,6 +383,13 @@ if (installedManifestMain !== "dist/api.js") {
   console.error("[smoke:installed-manifest] expected installed package main entry to target dist/api.js");
   process.exit(1);
 }
+const installedManifestTypes = JSON.parse(
+  readFileSync(join(packedInstallAppDir, "node_modules", "codex-bees", "package.json"), "utf8")
+).types;
+if (installedManifestTypes !== "./dist/api.d.ts") {
+  console.error("[smoke:installed-manifest-types] expected installed package types entry to target dist/api.d.ts");
+  process.exit(1);
+}
 const packageManifest = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8"));
 const documentedSubpaths = Array.from(
   readFileSync(README_PATH, "utf8").matchAll(/- `codex-bees\/([^`]+)`/g),
@@ -414,6 +421,11 @@ if (
   console.error("[smoke:installed-export-surface] expected every documented public subpath export to import after install");
   console.error(installedExportSmoke.stderr || installedExportSmoke.stdout);
   process.exit(installedExportSmoke.status ?? 1);
+}
+const installedTypesFile = existsSync(join(packedInstallAppDir, "node_modules", "codex-bees", "dist", "api.d.ts"));
+if (!installedTypesFile) {
+  console.error("[smoke:installed-types-file] expected installed package to ship dist/api.d.ts");
+  process.exit(1);
 }
 const installedImport = spawnSync(
   "node",
@@ -651,6 +663,15 @@ const installedVersion = runInstalled("installed-version", "npx", ["codex-bees",
 if (installedVersion.stdout.trim() !== "0.1.0") {
   console.error("[smoke:installed-version] expected installed npx codex-bees --version output");
   process.exit(1);
+}
+const installedTypecheck = spawnSync("npx", ["-y", "-p", "typescript", "tsc", "--noEmit", "/Users/idah/Projects-combined/codex-bees/types-smoke.ts"], {
+  cwd: packedInstallAppDir,
+  encoding: "utf8"
+});
+if (installedTypecheck.status !== 0) {
+  console.error("[smoke:installed-typecheck] expected installed codex-bees typings to compile in a downstream project");
+  console.error(installedTypecheck.stderr || installedTypecheck.stdout);
+  process.exit(installedTypecheck.status ?? 1);
 }
 const installedMcpHelp = runInstalled("installed-mcp-help", "npx", ["codex-bees", "mcp", "--help"]);
 if (

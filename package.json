@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Codex-native multi-agent runtime for explicit local orchestration.",
   "license": "MIT",
+  "types": "./dist/api.d.ts",
   "files": [
     "dist",
     "README.md",
@@ -14,19 +15,58 @@
     "url": "git@github.com:izumi0uu/codex-bees.git"
   },
   "exports": {
-    ".": "./dist/api.js",
-    "./api": "./dist/api.js",
-    "./catalog": "./dist/catalog.js",
-    "./commands": "./dist/commands.js",
-    "./doctor": "./dist/doctor.js",
-    "./metadata": "./dist/metadata.js",
-    "./mcp": "./dist/mcp.js",
-    "./planner": "./dist/planner.js",
-    "./runtime-ready": "./dist/runtime-ready.js",
-    "./state": "./dist/state.js",
-    "./runtime-guidance": "./dist/runtime-guidance.js",
-    "./runtime-status": "./dist/runtime-status.js",
-    "./runtime-contract": "./dist/runtime-contract.js"
+    ".": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/api.js"
+    },
+    "./api": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/api.js"
+    },
+    "./catalog": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/catalog.js"
+    },
+    "./commands": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/commands.js"
+    },
+    "./doctor": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/doctor.js"
+    },
+    "./metadata": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/metadata.js"
+    },
+    "./mcp": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/mcp.js"
+    },
+    "./planner": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/planner.js"
+    },
+    "./runtime-ready": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/runtime-ready.js"
+    },
+    "./state": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/state.js"
+    },
+    "./runtime-guidance": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/runtime-guidance.js"
+    },
+    "./runtime-status": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/runtime-status.js"
+    },
+    "./runtime-contract": {
+      "types": "./dist/api.d.ts",
+      "default": "./dist/runtime-contract.js"
+    }
   },
   "main": "dist/api.js",
   "bin": {
@@ -35,7 +75,8 @@
   "scripts": {
     "dev": "node ./src/index.js run",
     "build": "node ./scripts/build.mjs",
-    "check": "node --check ./src/index.js && node --check ./src/mcp.js && node --check ./scripts/build.mjs && node --check ./scripts/smoke.mjs",
-    "smoke": "node ./scripts/smoke.mjs"
+    "check": "node --check ./src/index.js && node --check ./src/mcp.js && node --check ./scripts/build.mjs && node --check ./scripts/smoke.mjs && npm run typecheck:types",
+    "smoke": "node ./scripts/smoke.mjs",
+    "typecheck:types": "npx -y -p typescript tsc --noEmit -p ./tsconfig.types.json"
   }
 }
