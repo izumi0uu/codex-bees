@@ -162,6 +162,15 @@ The `codex-bees/runtime-ready` subpath exposes the default `run` readiness view 
 
 The `codex-bees/metadata` subpath exposes the package identity contract directly, so CLI, MCP, and library consumers can all read the same name, version, description, license, homepage, issue tracker, repository URL, keyword tags, and Codex-only mode surface from one source.
 
+Example:
+
+```js
+import { getPackageMetadata, getPackageMetadataView } from "codex-bees/metadata";
+
+const metadata = getPackageMetadata();
+const view = getPackageMetadataView();
+```
+
 The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` command entry also carries the structured MCP subcommand option list, so one command-catalog read is enough to discover both the top-level `mcp` command and its shipped flags.
 
 Example:

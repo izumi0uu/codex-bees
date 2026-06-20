@@ -484,6 +484,12 @@ if (!documentedRuntimeGuidanceExampleBlockMatch) {
   process.exit(1);
 }
 const documentedRuntimeGuidanceExampleScript = documentedRuntimeGuidanceExampleBlockMatch[1];
+const documentedMetadataExampleBlockMatch = README_TEXT.match(/The `codex-bees\/metadata` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedMetadataExampleBlockMatch) {
+  console.error("[smoke:readme-metadata-example] expected README to document a runnable metadata example block");
+  process.exit(1);
+}
+const documentedMetadataExampleScript = documentedMetadataExampleBlockMatch[1];
 const documentedCommandsExampleBlockMatch = README_TEXT.match(/The `codex-bees\/commands` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedCommandsExampleBlockMatch) {
   console.error("[smoke:readme-commands-example] expected README to document a runnable commands example block");
@@ -622,6 +628,26 @@ if (
   console.error("[smoke:readme-runtime-guidance-example-contract] expected README runtime-guidance example to execute successfully against the installed package");
   console.error(installedRuntimeGuidanceExample.stderr || installedRuntimeGuidanceExample.stdout);
   process.exit(installedRuntimeGuidanceExample.status ?? 1);
+}
+const installedMetadataExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedMetadataExampleScript}\nconsole.log(JSON.stringify({ ok: metadata.product === "codex-bees" && metadata.mode === "codex-only" && Array.isArray(metadata.keywords) && metadata.keywords.includes("codex") && view.kind === "package_metadata_view" && view.metadata.product === metadata.product }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedMetadataExample.status !== 0 ||
+  JSON.parse(installedMetadataExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-metadata-example-contract] expected README metadata example to execute successfully against the installed package");
+  console.error(installedMetadataExample.stderr || installedMetadataExample.stdout);
+  process.exit(installedMetadataExample.status ?? 1);
 }
 const installedCommandsExample = spawnSync(
   "node",
