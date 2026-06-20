@@ -456,7 +456,7 @@ export interface SwarmOverview {
   lanes: SwarmLaneSummary[];
   tasks: TaskRecord[];
   nextLane: SwarmLaneSummary | null;
-  derivedStatus: string;
+  derivedStatus: SwarmStatus;
   statusAligned: boolean;
   readyToComplete: boolean;
   dispatchableCount: number;
