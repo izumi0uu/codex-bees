@@ -13,6 +13,15 @@ const README_PATH = join(REPO_ROOT, "README.md");
 const PACKAGE_JSON_PATH = join(REPO_ROOT, "package.json");
 const README_TEXT = readFileSync(README_PATH, "utf8");
 const NPM_CACHE_DIR = join(tmpdir(), "codex-bees-smoke-npm-cache");
+let packedTarballPath = null;
+
+function cleanupPackedTarball() {
+  if (packedTarballPath) {
+    rmSync(packedTarballPath, { force: true });
+  }
+}
+
+process.on("exit", cleanupPackedTarball);
 
 function run(label, args, expectedStatus = 0) {
   const result = spawnSync("node", args, { encoding: "utf8" });
@@ -398,7 +407,7 @@ const packedInstallAppDir = join(packedInstallDir, "app");
 const packResult = JSON.parse(
   runNpm(["pack", "--json"]).stdout
 )[0];
-const packedTarballPath = join(REPO_ROOT, packResult.filename);
+packedTarballPath = join(REPO_ROOT, packResult.filename);
 mkdirSync(packedInstallAppDir, { recursive: true });
 const installInit = runNpm(["init", "-y"], { cwd: packedInstallAppDir });
 if (installInit.status !== 0) {
