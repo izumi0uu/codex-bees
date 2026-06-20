@@ -442,6 +442,12 @@ export interface DetailedSwarmListView {
   swarms: SwarmOverview[];
 }
 
+export interface SwarmFilters {
+  status?: string;
+  topology?: string;
+  owner?: string;
+}
+
 export interface SwarmDetailView {
   kind: "swarm_detail";
   recommendedReason: string;
@@ -649,8 +655,8 @@ export declare function initSwarm(input: SwarmInput): SwarmRecord;
 export declare function getSwarm(id: string): SwarmRecord | null;
 export declare function getSwarmView(id: string): SwarmDetailView | null;
 export declare function listTasksView(): TaskListView;
-export declare function listSwarmsView(filters?: Record<string, unknown>, options?: { detailed?: false }): SwarmListView;
-export declare function listSwarmsView(filters: Record<string, unknown> | undefined, options: { detailed: true }): DetailedSwarmListView;
+export declare function listSwarmsView(filters?: SwarmFilters, options?: { detailed?: false }): SwarmListView;
+export declare function listSwarmsView(filters: SwarmFilters | undefined, options: { detailed: true }): DetailedSwarmListView;
 export declare function listMemoriesView(filters?: MemoryFilters): MemoryListView;
 export declare function searchMemoriesView(query: string, filters?: MemoryFilters, limit?: number): MemorySearchView;
 export declare function storeMemory(input: MemoryInput): MemoryRecord;

@@ -121,9 +121,10 @@ const memoryListNamespace: string | undefined = listMemoriesView({ namespace: "t
 const memoryListTitle: string | null | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.title;
 const memoryListAgent: string | null | undefined = listMemoriesView({ agent: "tester", tags: ["types"] }).memories[0]?.agent;
 listTasksView().counts.totalTasks;
-const detailedSwarmRecommended: string | undefined = listSwarmsView({}, { detailed: true }).swarms[0]?.recommendedReason;
-const detailedSwarmDerivedStatus: string | undefined = listSwarmsView({}, { detailed: true }).swarms[0]?.derivedStatus;
-listSwarmsView({}, { detailed: true }).counts.totalSwarms;
+const filteredSwarmOwner: string | null | undefined = listSwarmsView({ status: "planned", topology: "bounded-local", owner: "leader" }).swarms[0]?.owner;
+const detailedSwarmRecommended: string | undefined = listSwarmsView({ topology: "bounded-local" }, { detailed: true }).swarms[0]?.recommendedReason;
+const detailedSwarmDerivedStatus: string | undefined = listSwarmsView({ owner: "leader" }, { detailed: true }).swarms[0]?.derivedStatus;
+listSwarmsView({ status: "planned" }, { detailed: true }).counts.totalSwarms;
 listMemoriesView({ namespace: "types" }).counts.totalMemories;
 searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5);
 stateFilePath();
