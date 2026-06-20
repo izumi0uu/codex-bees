@@ -24,47 +24,47 @@
       "default": "./dist/api.js"
     },
     "./catalog": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/catalog.d.ts",
       "default": "./dist/catalog.js"
     },
     "./commands": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/commands.d.ts",
       "default": "./dist/commands.js"
     },
     "./doctor": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/doctor.d.ts",
       "default": "./dist/doctor.js"
     },
     "./metadata": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/metadata.d.ts",
       "default": "./dist/metadata.js"
     },
     "./mcp": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/mcp.d.ts",
       "default": "./dist/mcp.js"
     },
     "./planner": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/planner.d.ts",
       "default": "./dist/planner.js"
     },
     "./runtime-ready": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/runtime-ready.d.ts",
       "default": "./dist/runtime-ready.js"
     },
     "./state": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/state.d.ts",
       "default": "./dist/state.js"
     },
     "./runtime-guidance": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/runtime-guidance.d.ts",
       "default": "./dist/runtime-guidance.js"
     },
     "./runtime-status": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/runtime-status.d.ts",
       "default": "./dist/runtime-status.js"
     },
     "./runtime-contract": {
-      "types": "./dist/api.d.ts",
+      "types": "./dist/runtime-contract.d.ts",
       "default": "./dist/runtime-contract.js"
     }
   },

@@ -3,6 +3,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, write
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { PUBLIC_TYPE_ENTRYPOINTS } from "../src/typings.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "..");
@@ -426,6 +427,13 @@ const installedTypesFile = existsSync(join(packedInstallAppDir, "node_modules", 
 if (!installedTypesFile) {
   console.error("[smoke:installed-types-file] expected installed package to ship dist/api.d.ts");
   process.exit(1);
+}
+for (const entrypoint of PUBLIC_TYPE_ENTRYPOINTS) {
+  const typePath = join(packedInstallAppDir, "node_modules", "codex-bees", "dist", `${entrypoint}.d.ts`);
+  if (!existsSync(typePath)) {
+    console.error(`[smoke:installed-types-subpath] expected installed package to ship ${entrypoint}.d.ts`);
+    process.exit(1);
+  }
 }
 const installedImport = spawnSync(
   "node",

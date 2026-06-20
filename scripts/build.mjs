@@ -1,6 +1,7 @@
 import { copyFileSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { PUBLIC_TYPE_ENTRYPOINTS } from "../src/typings.js";
 
 function copySourceModules() {
   for (const entry of readdirSync("src")) {
@@ -46,6 +47,9 @@ rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist", { recursive: true });
 copySourceModules();
 copyFileSync("index.d.ts", join("dist", "api.d.ts"));
+for (const entrypoint of PUBLIC_TYPE_ENTRYPOINTS) {
+  copyFileSync("index.d.ts", join("dist", `${entrypoint}.d.ts`));
+}
 copyTree(".codex", join("dist", ".codex"));
 
 verifyDistCommand("dist-help", ["./dist/index.js", "--help"]);
