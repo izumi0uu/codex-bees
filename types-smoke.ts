@@ -94,6 +94,7 @@ renderMcpHelpText();
 getRuntimeCatalogView().catalog.paths.codexDir;
 getRuntimeDoctorView().contract.kind;
 const runtimeDoctorStatus: "ok" = getRuntimeDoctorView().status;
+const runtimeReadyStatus: "ready" = getRuntimeReadyView().status;
 getRuntimeReadyView().next[0];
 getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).kind;
 getToolCatalogView().tools[0]?.name;
