@@ -2282,6 +2282,12 @@ export function runtimeWorkerPack(input = {}) {
   });
   const recommendedSurface = deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next });
   const recommendedReason = deriveRuntimeWorkerPackReason({ session, handoff, closeout, next });
+  const nextEntries = {
+    focus: session?.focus ?? null,
+    candidate: next?.candidate ?? null,
+    handoff: handoff?.currentTask ?? null,
+    closeout: closeout?.report?.task ?? null
+  };
 
   return {
     kind: "runtime_worker_pack",
@@ -2290,16 +2296,20 @@ export function runtimeWorkerPack(input = {}) {
     mode: session?.mode ?? normalizeNextMode(input.mode),
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasFocus: Boolean(session?.focus),
+      hasCandidate: Boolean(next?.candidate),
+      hasHandoff: Boolean(handoff?.currentTask),
+      hasCloseout: Boolean(closeout?.report?.task)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       session: session?.counts ?? null,
       inbox: session?.inbox?.counts ?? null
     },
-    next: {
-      focus: session?.focus ?? null,
-      candidate: next?.candidate ?? null,
-      handoff: handoff?.currentTask ?? null,
-      closeout: closeout?.report?.task ?? null
-    },
+    next: nextEntries,
     surfaces: {
       session,
       handoff,

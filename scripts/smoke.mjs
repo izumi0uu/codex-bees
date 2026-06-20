@@ -1261,6 +1261,10 @@ if (
   ownerWorkerPack.kind !== "runtime_worker_pack" ||
   ownerWorkerPack.recommendedSurface !== "worker:session" ||
   ownerWorkerPack.recommendedReason !== "active_task_priority" ||
+  ownerWorkerPack.metadata?.hasFocus !== true ||
+  ownerWorkerPack.metadata?.hasHandoff !== true ||
+  ownerWorkerPack.metadata?.hasCloseout !== true ||
+  ownerWorkerPack.counts?.surfacedNextEntries !== Object.values(ownerWorkerPack.next ?? {}).filter(Boolean).length ||
   ownerWorkerPack.next?.focus?.kind !== "active_task" ||
   ownerWorkerPack.surfaces?.handoff?.currentTask?.id !== "task-1"
 ) {
@@ -5653,6 +5657,9 @@ const verifierWorkerPack = JSON.parse(
 if (
   verifierWorkerPack.recommendedSurface !== "worker:closeout" ||
   verifierWorkerPack.recommendedReason !== "review_task_priority" ||
+  verifierWorkerPack.metadata?.hasFocus !== true ||
+  verifierWorkerPack.metadata?.hasCloseout !== true ||
+  verifierWorkerPack.counts?.surfacedNextEntries !== Object.values(verifierWorkerPack.next ?? {}).filter(Boolean).length ||
   verifierWorkerPack.next?.focus?.kind !== "review_task" ||
   verifierWorkerPack.surfaces?.closeout?.report?.task?.id !== "task-2"
 ) {
@@ -6086,6 +6093,7 @@ if (
   workerPackMcp.status !== 0 ||
   workerPackMcpPayload.workerPack?.recommendedSurface !== "worker:closeout" ||
   workerPackMcpPayload.workerPack?.recommendedReason !== "review_task_priority" ||
+  workerPackMcpPayload.workerPack?.metadata?.hasCloseout !== true ||
   workerPackMcpPayload.workerPack?.surfaces?.closeout?.report?.task?.id !== "task-2"
 ) {
   console.error("[smoke:runtime-worker-pack-mcp] expected MCP worker pack");
