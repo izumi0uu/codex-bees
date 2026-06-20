@@ -23,6 +23,7 @@ import {
   getWorkerGuidelines,
   getWorkerGuidelinesView,
   listAgentCatalog,
+  planSwarm,
   planTask,
   queueTasksFromPlan,
   renderHelpText as renderRootHelpText,
@@ -88,6 +89,7 @@ getRuntimeReadyView().next[0];
 getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).kind;
 getToolCatalogView().tools[0]?.name;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
+const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWorkers;
 planTask("typed smoke").lanes[0]?.owner;
 
 handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
