@@ -160,6 +160,14 @@ The `codex-bees/doctor` subpath exposes the same diagnostic view that the CLI pr
 
 The `codex-bees/runtime-ready` subpath exposes the default `run` readiness view as a library call, so tools can read the startup contract and recommended next steps without scraping CLI output.
 
+Example:
+
+```js
+import { getRuntimeReadyView } from "codex-bees/runtime-ready";
+
+const ready = getRuntimeReadyView();
+```
+
 The `codex-bees/metadata` subpath exposes the package identity contract directly, so CLI, MCP, and library consumers can all read the same name, version, description, license, homepage, issue tracker, repository URL, keyword tags, and Codex-only mode surface from one source.
 
 Example:

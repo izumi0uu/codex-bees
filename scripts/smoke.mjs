@@ -484,6 +484,12 @@ if (!documentedRuntimeGuidanceExampleBlockMatch) {
   process.exit(1);
 }
 const documentedRuntimeGuidanceExampleScript = documentedRuntimeGuidanceExampleBlockMatch[1];
+const documentedRuntimeReadyExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-ready` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedRuntimeReadyExampleBlockMatch) {
+  console.error("[smoke:readme-runtime-ready-example] expected README to document a runnable runtime-ready example block");
+  process.exit(1);
+}
+const documentedRuntimeReadyExampleScript = documentedRuntimeReadyExampleBlockMatch[1];
 const documentedMetadataExampleBlockMatch = README_TEXT.match(/The `codex-bees\/metadata` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedMetadataExampleBlockMatch) {
   console.error("[smoke:readme-metadata-example] expected README to document a runnable metadata example block");
@@ -628,6 +634,26 @@ if (
   console.error("[smoke:readme-runtime-guidance-example-contract] expected README runtime-guidance example to execute successfully against the installed package");
   console.error(installedRuntimeGuidanceExample.stderr || installedRuntimeGuidanceExample.stdout);
   process.exit(installedRuntimeGuidanceExample.status ?? 1);
+}
+const installedRuntimeReadyExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedRuntimeReadyExampleScript}\nconsole.log(JSON.stringify({ ok: ready.kind === "runtime_ready_view" && ready.status === "ready" && ready.contract?.kind === "runtime_contract_view" && ready.next?.[0] === "use \`codex-bees doctor\` to inspect runtime boundaries" }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRuntimeReadyExample.status !== 0 ||
+  JSON.parse(installedRuntimeReadyExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-runtime-ready-example-contract] expected README runtime-ready example to execute successfully against the installed package");
+  console.error(installedRuntimeReadyExample.stderr || installedRuntimeReadyExample.stdout);
+  process.exit(installedRuntimeReadyExample.status ?? 1);
 }
 const installedMetadataExample = spawnSync(
   "node",
