@@ -14,8 +14,10 @@ import {
   queueTasksFromPlan,
   listMcpTools,
   addTask,
+  getTask,
   getTaskView,
   initSwarm,
+  getSwarm,
   getSwarmView,
   listMemoriesView,
   listSwarmsView,
@@ -75,6 +77,7 @@ const task = addTask({
   verification: ["ok"]
 });
 task.id;
+const fetchedTaskId: string | undefined = getTask(task.id)?.id;
 const taskOwner: string | null | undefined = task.owner;
 const taskScopePath: string | undefined = task.scope?.[0];
 getTaskView(task.id)?.task.id;
@@ -100,6 +103,7 @@ const swarm = initSwarm({
   ]
 });
 swarm.id;
+const fetchedSwarmId: string | undefined = getSwarm(swarm.id)?.id;
 const swarmOwner: string | null | undefined = swarm.owner;
 const swarmTopology: string | undefined = swarm.topology;
 const swarmLaneSummary: string | undefined = swarm.lanes?.[0]?.summary;
