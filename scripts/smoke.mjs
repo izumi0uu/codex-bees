@@ -854,6 +854,18 @@ if (
   console.error("[smoke:installed-tools] expected installed npx codex-bees tools catalog");
   process.exit(1);
 }
+const installedDirectCliTools = JSON.parse(
+  runInstalled("installed-direct-cli-tools", "node", ["./node_modules/codex-bees/dist/index.js", "tools"]).stdout
+).tools;
+if (
+  installedDirectCliTools.kind !== "tool_catalog_view" ||
+  installedDirectCliTools.recommendedReason !== "tool_catalog_loaded" ||
+  installedDirectCliTools.counts?.totalTools < 10 ||
+  !installedDirectCliTools.tools?.some((tool) => tool.name === "runtime_contract")
+) {
+  console.error("[smoke:installed-direct-cli-tools] expected direct packaged CLI tools catalog");
+  process.exit(1);
+}
 const installedCliMcpTools = JSON.parse(
   runInstalled("installed-cli-mcp-tools", "npx", ["codex-bees", "mcp", "--tools"]).stdout
 ).tools;
