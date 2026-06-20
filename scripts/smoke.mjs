@@ -1253,6 +1253,26 @@ if (
   console.error("[smoke:installed-direct-mcp-capabilities] expected installed packaged MCP entrypoint capabilities surface");
   process.exit(1);
 }
+const installedDirectMcpCapabilitiesContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-status").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getCapabilityCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectMcpCapabilities)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectMcpCapabilitiesContractImport.status !== 0 ||
+  JSON.parse(installedDirectMcpCapabilitiesContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-mcp-capabilities-contract] expected direct packaged MCP capabilities output to match the runtime-status api surface");
+  console.error(installedDirectMcpCapabilitiesContractImport.stderr || installedDirectMcpCapabilitiesContractImport.stdout);
+  process.exit(installedDirectMcpCapabilitiesContractImport.status ?? 1);
+}
 const installedDirectMcpStdioInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} })
