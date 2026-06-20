@@ -3867,6 +3867,13 @@ const runtimeExecutionPackCli = JSON.parse(
 if (
   runtimeExecutionPackCli.recommendedSurface !== "runtime:focus" ||
   runtimeExecutionPackCli.recommendedReason !== "blocked_focus_priority" ||
+  runtimeExecutionPackCli.metadata?.hasFocus !== true ||
+  runtimeExecutionPackCli.metadata?.hasDispatch !== true ||
+  runtimeExecutionPackCli.metadata?.hasAssignmentLaunch !== true ||
+  runtimeExecutionPackCli.metadata?.hasAssignmentLaunchStep !== true ||
+  runtimeExecutionPackCli.metadata?.hasRole !== true ||
+  runtimeExecutionPackCli.metadata?.hasQueue !== true ||
+  runtimeExecutionPackCli.counts?.surfacedNextEntries !== Object.values(runtimeExecutionPackCli.next ?? {}).filter(Boolean).length ||
   runtimeExecutionPackCli.next?.focus?.taskId !== "task-1" ||
   runtimeExecutionPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeExecutionPackCli.next?.role?.role?.id !== "tester" ||
@@ -4736,6 +4743,14 @@ if (
   runtimeExecutionPackMcp.status !== 0 ||
   runtimeExecutionPackMcpPayload.executionPack?.recommendedSurface !== "runtime:focus" ||
   runtimeExecutionPackMcpPayload.executionPack?.recommendedReason !== "blocked_focus_priority" ||
+  runtimeExecutionPackMcpPayload.executionPack?.metadata?.hasFocus !== true ||
+  runtimeExecutionPackMcpPayload.executionPack?.metadata?.hasDispatch !== true ||
+  runtimeExecutionPackMcpPayload.executionPack?.metadata?.hasAssignmentLaunch !== true ||
+  runtimeExecutionPackMcpPayload.executionPack?.metadata?.hasAssignmentLaunchStep !== true ||
+  runtimeExecutionPackMcpPayload.executionPack?.metadata?.hasRole !== true ||
+  runtimeExecutionPackMcpPayload.executionPack?.metadata?.hasQueue !== true ||
+  runtimeExecutionPackMcpPayload.executionPack?.counts?.surfacedNextEntries !==
+    Object.values(runtimeExecutionPackMcpPayload.executionPack?.next ?? {}).filter(Boolean).length ||
   runtimeExecutionPackMcpPayload.executionPack?.next?.focus?.taskId !== "task-1" ||
   runtimeExecutionPackMcpPayload.executionPack?.next?.dispatch?.lane !== "lane-dashboard"
 ) {

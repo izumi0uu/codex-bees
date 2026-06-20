@@ -2028,11 +2028,30 @@ export function runtimeExecutionPack(input = {}) {
   const queuePack = runtimeQueuePack(input);
   const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
   const recommendedReason = deriveRuntimeExecutionPackReason({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
+  const nextEntries = {
+    focus: focus?.focus ?? null,
+    dispatch: dispatch?.next ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
+    role: roles?.next ?? null,
+    queue: queuePack?.next?.queue ?? null
+  };
 
   return {
     kind: "runtime_execution_pack",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasFocus: Boolean(nextEntries.focus),
+      hasDispatch: Boolean(nextEntries.dispatch),
+      hasAssignmentLaunch: Boolean(nextEntries.assignmentLaunch),
+      hasAssignmentLaunchStep: Boolean(nextEntries.assignmentLaunchStep),
+      hasRole: Boolean(nextEntries.role),
+      hasQueue: Boolean(nextEntries.queue)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
       dispatch: dispatch?.counts ?? null,
@@ -2041,14 +2060,7 @@ export function runtimeExecutionPack(input = {}) {
       roles: roles?.counts ?? null,
       queue: queuePack?.overview?.queue ?? null
     },
-    next: {
-      focus: focus?.focus ?? null,
-      dispatch: dispatch?.next ?? null,
-      assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-      assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
-      role: roles?.next ?? null,
-      queue: queuePack?.next?.queue ?? null
-    },
+    next: nextEntries,
     surfaces: {
       focus,
       dispatch,
