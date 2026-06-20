@@ -791,7 +791,8 @@ const installedMcpBad = spawnSync("npx", ["codex-bees", "mcp", "nope"], {
 });
 if (
   installedMcpBad.status === 0 ||
-  !installedMcpBad.stderr.includes("Unknown mcp option: nope")
+  !installedMcpBad.stderr.includes("Unknown mcp option: nope") ||
+  installedMcpBad.stderr.includes("at runMcpCli")
 ) {
   console.error("[smoke:installed-mcp-bad] expected installed codex-bees mcp to reject unknown options");
   console.error(installedMcpBad.stderr || installedMcpBad.stdout);
@@ -1010,10 +1011,25 @@ const installedDirectMcpBad = spawnSync("node", ["./node_modules/codex-bees/dist
 });
 if (
   installedDirectMcpBad.status === 0 ||
-  !installedDirectMcpBad.stderr.includes("Unknown mcp option: nope")
+  !installedDirectMcpBad.stderr.includes("Unknown mcp option: nope") ||
+  installedDirectMcpBad.stderr.includes("at runMcpCli") ||
+  installedDirectMcpBad.stderr.includes("Node.js v")
 ) {
   console.error("[smoke:installed-direct-mcp-bad] expected installed packaged MCP entrypoint to reject unknown options");
   console.error(installedDirectMcpBad.stderr || installedDirectMcpBad.stdout);
+  process.exit(1);
+}
+const installedDirectCliMcpBad = spawnSync("node", ["./node_modules/codex-bees/dist/index.js", "mcp", "nope"], {
+  cwd: packedInstallAppDir,
+  encoding: "utf8"
+});
+if (
+  installedDirectCliMcpBad.status === 0 ||
+  !installedDirectCliMcpBad.stderr.includes("Unknown mcp option: nope") ||
+  installedDirectCliMcpBad.stderr.includes("at runMcpCli")
+) {
+  console.error("[smoke:installed-direct-cli-mcp-bad] expected direct packaged CLI mcp route to reject unknown options without stack traces");
+  console.error(installedDirectCliMcpBad.stderr || installedDirectCliMcpBad.stdout);
   process.exit(1);
 }
 const installedMcpTools = JSON.parse(

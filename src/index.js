@@ -122,6 +122,7 @@ import {
 } from "./state.js";
 
 const MODULE_PATH = fileURLToPath(import.meta.url);
+const MCP_CLI_USAGE_ERROR_CODE = "CODEX_BEES_MCP_USAGE";
 
 function write(text) {
   stdout.write(text);
@@ -1597,7 +1598,7 @@ if (isCliEntrypoint()) {
   }
 
   runCommand(argv[2]).catch((error) => {
-    writeErr(`${error.stack || error.message}\n`);
+    writeErr(`${error?.code === MCP_CLI_USAGE_ERROR_CODE ? error.message : error.stack || error.message}\n`);
     exit(1);
   });
 }

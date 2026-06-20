@@ -1,4 +1,4 @@
-import { argv, stdin, stdout, stderr } from "node:process";
+import { argv, stdin, stdout, stderr, exit } from "node:process";
 import { fileURLToPath } from "node:url";
 import { getRuntimeCatalogView } from "./catalog.js";
 import { getPackageMetadata, PACKAGE_VERSION } from "./metadata.js";
@@ -1268,6 +1268,18 @@ export const toolCatalog = [
     }
   }
 ];
+
+const MCP_CLI_USAGE_ERROR_CODE = "CODEX_BEES_MCP_USAGE";
+
+function createMcpCliUsageError(message) {
+  const error = new Error(message);
+  error.code = MCP_CLI_USAGE_ERROR_CODE;
+  return error;
+}
+
+function isMcpCliUsageError(error) {
+  return error?.code === MCP_CLI_USAGE_ERROR_CODE;
+}
 
 function toolGroupFromName(name) {
   if (!name) {
@@ -2700,9 +2712,14 @@ export async function runMcpCli(args = []) {
     return startMcpServer();
   }
 
-  throw new Error(`Unknown mcp option: ${args.join(" ")}`);
+  throw createMcpCliUsageError(`Unknown mcp option: ${args.join(" ")}`);
 }
 
 if (argv[1] && fileURLToPath(import.meta.url) === argv[1]) {
-  await runMcpCli(argv.slice(2));
+  try {
+    await runMcpCli(argv.slice(2));
+  } catch (error) {
+    stderr.write(`${isMcpCliUsageError(error) ? error.message : error.stack || error.message}\n`);
+    exit(1);
+  }
 }
