@@ -130,7 +130,7 @@ export interface CoordinationOverviewView {
 
 export interface WorkerGuidelines {
   fileOwnership: "one active writer per file";
-  parallelism: string;
+  parallelism: "parallelize only with disjoint ownership";
   validation: string[];
 }
 
