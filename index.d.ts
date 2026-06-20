@@ -493,7 +493,7 @@ export interface TaskListView {
 
 export interface TaskDetailView {
   kind: "task_detail";
-  recommendedReason: string;
+  recommendedReason: "task_detail_loaded";
   metadata: TaskDetailMetadata;
   task: TaskRecord;
 }
