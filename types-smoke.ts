@@ -99,7 +99,8 @@ const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWork
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
 const rootStartMcpServer: () => Promise<void> = startMcpServer;
-planTask("typed smoke").lanes[0]?.owner;
+const plannerHasSrc: boolean = planTask("typed smoke").evidence.repoSignals.hasSrc;
+const plannerRolePath: string | undefined = planTask("typed smoke").evidence.roleFiles[0]?.path;
 
 const subpathMcpResult: unknown = handleMcpRequestSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
 const subpathMcpToolResult: unknown = callMcpToolSubpath("runtime_contract");

@@ -173,11 +173,27 @@ export interface TaskPlanLane {
   verification: string[];
 }
 
+export interface PlannerRoleFileEvidence {
+  role: string;
+  path: string;
+}
+
+export interface PlannerEvidence {
+  task: string;
+  repoSignals: {
+    hasSrc: boolean;
+    hasScripts: boolean;
+    hasAgents: boolean;
+    hasSkills: boolean;
+  };
+  roleFiles: PlannerRoleFileEvidence[];
+}
+
 export interface TaskPlan {
   kind: "task_plan";
   recommendedReason: string;
   objective: string;
-  evidence: Record<string, unknown>;
+  evidence: PlannerEvidence;
   lanes: TaskPlanLane[];
 }
 
@@ -185,7 +201,7 @@ export interface PlannedSwarm {
   kind: "planned_swarm";
   recommendedReason: string;
   objective: string;
-  evidence: Record<string, unknown>;
+  evidence: PlannerEvidence;
   swarm: PlannedSwarmShape;
 }
 
