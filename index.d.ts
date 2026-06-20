@@ -642,7 +642,12 @@ export interface SwarmOverlapIssue extends ValidationIssue {
 
 export interface TaskValidationView {
   kind: "task_validation";
-  recommendedReason: string;
+  recommendedReason:
+    | "task_ready_to_claim"
+    | "task_role_validation_issues_present"
+    | "claimed_task_metadata_incomplete"
+    | "task_validation_issues_present"
+    | "task_validation_visible";
   task: TaskRecord;
   ready: boolean;
   issues: ValidationIssue[];
