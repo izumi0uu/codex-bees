@@ -456,6 +456,7 @@ export interface MemoryRecord {
   agent?: string | null;
   tags?: string[];
   notes?: string | null;
+  createdAt?: string | null;
   updatedAt?: string | null;
   [key: string]: unknown;
 }
