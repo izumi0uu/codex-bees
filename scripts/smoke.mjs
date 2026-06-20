@@ -932,6 +932,26 @@ if (
   console.error("[smoke:installed-catalog] expected installed npx codex-bees to use bundled catalog assets");
   process.exit(1);
 }
+const installedCatalogContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getRuntimeCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedCatalog)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCatalogContractImport.status !== 0 ||
+  JSON.parse(installedCatalogContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-catalog-contract] expected installed catalog output to match the runtime catalog api surface");
+  console.error(installedCatalogContractImport.stderr || installedCatalogContractImport.stdout);
+  process.exit(installedCatalogContractImport.status ?? 1);
+}
 const installedDirectCliCatalog = JSON.parse(
   runInstalled("installed-direct-cli-catalog", "node", ["./node_modules/codex-bees/dist/index.js", "catalog"]).stdout
 ).catalog;
@@ -944,6 +964,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-catalog] expected direct packaged CLI catalog to use bundled assets");
   process.exit(1);
+}
+const installedDirectCliCatalogContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getRuntimeCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliCatalog)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliCatalogContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliCatalogContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-catalog-contract] expected direct packaged CLI catalog output to match the runtime catalog api surface");
+  console.error(installedDirectCliCatalogContractImport.stderr || installedDirectCliCatalogContractImport.stdout);
+  process.exit(installedDirectCliCatalogContractImport.status ?? 1);
 }
 const installedStatus = JSON.parse(
   runInstalled("installed-status", "npx", ["codex-bees", "status"]).stdout
