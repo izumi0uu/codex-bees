@@ -142,6 +142,7 @@ const taskCreatedAt: string | null | undefined = task.createdAt;
 const taskUpdatedAt: string | null | undefined = task.updatedAt;
 const taskHistoryType: string | undefined = task.history?.[0]?.type;
 const taskAnnotationKind: string | undefined = task.annotations?.[0]?.kind;
+const taskDetailReason: "task_detail_loaded" | undefined = getTaskView(task.id)?.recommendedReason;
 getTaskView(task.id)?.task.id;
 const taskHasHistory: boolean | undefined = getTaskView(task.id)?.metadata.hasHistory;
 const taskReviewState: TaskReviewState | undefined = getTaskView(task.id)?.metadata.reviewState;
