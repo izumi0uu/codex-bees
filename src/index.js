@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { stdout, stderr, exit, argv, env } from "node:process";
-import { statSync } from "node:fs";
+import { realpathSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getRuntimeCatalogView } from "./catalog.js";
@@ -118,6 +118,7 @@ import {
 } from "./state.js";
 
 const VERSION = "0.1.0";
+const MODULE_PATH = fileURLToPath(import.meta.url);
 
 function write(text) {
   stdout.write(text);
@@ -1701,11 +1702,25 @@ async function runCommand(command) {
   }
 }
 
-if (env.CODEX_BEES_CLI_TRACE === "1") {
-  writeErr(`[codex-bees] argv=${JSON.stringify(argv.slice(2))}\n`);
+function isCliEntrypoint() {
+  if (!argv[1]) {
+    return false;
+  }
+
+  try {
+    return realpathSync(argv[1]) === realpathSync(MODULE_PATH);
+  } catch {
+    return false;
+  }
 }
 
-runCommand(argv[2]).catch((error) => {
-  writeErr(`${error.stack || error.message}\n`);
-  exit(1);
-});
+if (isCliEntrypoint()) {
+  if (env.CODEX_BEES_CLI_TRACE === "1") {
+    writeErr(`[codex-bees] argv=${JSON.stringify(argv.slice(2))}\n`);
+  }
+
+  runCommand(argv[2]).catch((error) => {
+    writeErr(`${error.stack || error.message}\n`);
+    exit(1);
+  });
+}

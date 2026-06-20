@@ -138,6 +138,24 @@ for (const [label, args, expectedStatus = 0] of checks) {
   run(label, args, expectedStatus);
 }
 
+const importedSourceCli = run("import-src-index", [
+  "-e",
+  'import("./src/index.js").then(() => console.log("IMPORT_OK"))'
+]).stdout.trim();
+if (importedSourceCli !== "IMPORT_OK") {
+  console.error("[smoke:import-src-index] expected source index import to stay silent and resolve");
+  process.exit(1);
+}
+
+const importedDistCli = run("import-dist-index", [
+  "-e",
+  'import("./dist/index.js").then(() => console.log("DIST_IMPORT_OK"))'
+]).stdout.trim();
+if (importedDistCli !== "DIST_IMPORT_OK") {
+  console.error("[smoke:import-dist-index] expected dist index import to stay silent and resolve");
+  process.exit(1);
+}
+
 const storedMemoryCli = JSON.parse(
   run("memory-store-cli", [
     "./src/index.js",
@@ -306,6 +324,22 @@ if (installPackage.status !== 0) {
   console.error("[smoke:install-package] failed");
   console.error(installPackage.stderr || installPackage.stdout);
   process.exit(installPackage.status ?? 1);
+}
+const installedImport = spawnSync(
+  "node",
+  ["-e", 'import("codex-bees").then(() => console.log("PKG_IMPORT_OK"))'],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedImport.status !== 0 ||
+  installedImport.stdout.trim() !== "PKG_IMPORT_OK"
+) {
+  console.error("[smoke:installed-import] expected installed codex-bees import to stay silent and resolve");
+  console.error(installedImport.stderr || installedImport.stdout);
+  process.exit(installedImport.status ?? 1);
 }
 function runInstalled(label, command, args) {
   const result = spawnSync(command, args, {

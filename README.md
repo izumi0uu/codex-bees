@@ -50,6 +50,8 @@ Installed package entrypoints are part of the tested product surface too. A pack
 
 The `mcp` subcommand now has its own explicit CLI contract: `codex-bees mcp --stdio` starts the stdio runtime, `codex-bees mcp --tools` prints the tool catalog, and `codex-bees mcp --help` prints subcommand help. Unknown `mcp` options fail fast instead of silently doing nothing.
 
+The package is also safe to import as a module. Importing `codex-bees`, `./src/index.js`, or `./dist/index.js` no longer auto-executes the CLI entrypoint; runtime output only appears when the binary is explicitly invoked.
+
 ## CLI
 
 ```bash
