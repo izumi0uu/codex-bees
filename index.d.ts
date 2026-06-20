@@ -131,7 +131,7 @@ export interface CoordinationOverviewView {
 export interface WorkerGuidelines {
   fileOwnership: "one active writer per file";
   parallelism: "parallelize only with disjoint ownership";
-  validation: string[];
+  validation: Array<"targeted verification" | "fresh evidence" | "handoff discipline">;
 }
 
 export interface WorkerGuidelinesView {
