@@ -86,7 +86,7 @@ export interface RuntimeCatalogView {
 
 export interface RuntimeContractView {
   kind: "runtime_contract_view";
-  recommendedReason: string;
+  recommendedReason: "contract_loaded";
   counts: Record<string, number>;
   contract: RuntimeContract;
 }
