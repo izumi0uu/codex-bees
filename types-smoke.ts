@@ -5,6 +5,7 @@ import {
   getPackageMetadata,
   getPackageMetadataView,
   getCapabilityCatalog,
+  getRuntimeCatalogPaths,
   getRuntimeCatalogView,
   getRuntimeDoctorView,
   getRuntimeReadyView,
@@ -26,6 +27,7 @@ import {
   stateFilePath,
   storeMemory,
   renderMcpHelpText,
+  resolveRuntimeCatalogPath,
   validateSwarm,
   validateTask
 } from "codex-bees";
@@ -137,6 +139,8 @@ stateFilePath();
 const apiMetadataProduct: string = getApiPackageMetadata().product;
 const packageMetadataViewKind: "package_metadata_view" = getPackageMetadataView().kind;
 const packageMetadataViewMode: string = getPackageMetadataView().metadata.mode;
+const runtimeCatalogSource: string = getRuntimeCatalogPaths().source;
+const resolvedSkillPath: string | null = resolveRuntimeCatalogPath("skills");
 const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
 const apiToolName: string | undefined = getApiToolCatalogView().tools[0]?.name;
 const catalogSource: string = getCatalogSubpathView().catalog.source;
