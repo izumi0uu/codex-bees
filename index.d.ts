@@ -50,11 +50,11 @@ export interface RuntimeCatalogEntry {
   name: string;
   description: string | null;
   path: string;
-  source: string;
+  source: "workspace" | "bundled" | "missing";
 }
 
 export interface RuntimeCatalogPaths {
-  source: string;
+  source: "workspace" | "bundled" | "missing";
   workingDirectory: string;
   packageRoot: string;
   codexDir: string;
@@ -63,7 +63,7 @@ export interface RuntimeCatalogPaths {
 }
 
 export interface RuntimeCatalog {
-  source: string;
+  source: "workspace" | "bundled" | "missing";
   paths: {
     codexDir: string;
     agentDir: string;
