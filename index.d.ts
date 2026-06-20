@@ -75,7 +75,7 @@ export interface RuntimeCatalog {
 
 export interface RuntimeCatalogView {
   kind: "runtime_catalog_view";
-  recommendedReason: string;
+  recommendedReason: "catalog_entries_loaded" | "catalog_empty";
   counts: {
     agents: number;
     skills: number;
