@@ -80,6 +80,7 @@ metadata.keywords[0];
 
 getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
+const commandCatalogReason: "command_catalog_loaded" | "command_catalog_empty" = getCommandCatalogView().recommendedReason;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 const rootHelpTextDirect: string = renderHelpTextRoot();
 const rootHelpText: string = renderHelpTextCommands();
