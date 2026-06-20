@@ -3793,6 +3793,11 @@ const runtimeHandoffPackCli = JSON.parse(
 if (
   runtimeHandoffPackCli.recommendedSurface !== "runtime:handoffs" ||
   runtimeHandoffPackCli.recommendedReason !== "review_handoffs_waiting" ||
+  runtimeHandoffPackCli.metadata?.hasHandoff !== true ||
+  runtimeHandoffPackCli.metadata?.hasDispatch !== true ||
+  runtimeHandoffPackCli.metadata?.hasReview !== true ||
+  runtimeHandoffPackCli.metadata?.hasRecovery !== true ||
+  runtimeHandoffPackCli.counts?.surfacedNextEntries !== Object.values(runtimeHandoffPackCli.next ?? {}).filter(Boolean).length ||
   runtimeHandoffPackCli.next?.handoff?.taskId !== "task-2" ||
   runtimeHandoffPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeHandoffPackCli.next?.review?.taskId !== "task-2" ||
@@ -4556,6 +4561,12 @@ if (
   runtimeHandoffPackMcp.status !== 0 ||
   runtimeHandoffPackMcpPayload.handoffPack?.recommendedSurface !== "runtime:handoffs" ||
   runtimeHandoffPackMcpPayload.handoffPack?.recommendedReason !== "review_handoffs_waiting" ||
+  runtimeHandoffPackMcpPayload.handoffPack?.metadata?.hasHandoff !== true ||
+  runtimeHandoffPackMcpPayload.handoffPack?.metadata?.hasDispatch !== true ||
+  runtimeHandoffPackMcpPayload.handoffPack?.metadata?.hasReview !== true ||
+  runtimeHandoffPackMcpPayload.handoffPack?.metadata?.hasRecovery !== true ||
+  runtimeHandoffPackMcpPayload.handoffPack?.counts?.surfacedNextEntries !==
+    Object.values(runtimeHandoffPackMcpPayload.handoffPack?.next ?? {}).filter(Boolean).length ||
   runtimeHandoffPackMcpPayload.handoffPack?.next?.handoff?.taskId !== "task-2" ||
   runtimeHandoffPackMcpPayload.handoffPack?.next?.recovery?.taskId !== "task-1"
 ) {

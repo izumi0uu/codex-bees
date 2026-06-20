@@ -1794,23 +1794,33 @@ export function runtimeHandoffPack() {
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeHandoffPackSurface({ handoffs, dispatch, review, recovery });
   const recommendedReason = deriveRuntimeHandoffPackReason({ handoffs, dispatch, review, recovery });
+  const nextEntries = {
+    handoff: handoffs?.next ?? null,
+    dispatch: dispatch?.next ?? null,
+    review: review?.next ?? null,
+    recovery: recovery?.next ?? null
+  };
 
   return {
     kind: "runtime_handoff_pack",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasHandoff: Boolean(nextEntries.handoff),
+      hasDispatch: Boolean(nextEntries.dispatch),
+      hasReview: Boolean(nextEntries.review),
+      hasRecovery: Boolean(nextEntries.recovery)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       handoffs: handoffs?.counts ?? null,
       dispatch: dispatch?.counts ?? null,
       review: review?.counts ?? null,
       recovery: recovery?.counts ?? null
     },
-    next: {
-      handoff: handoffs?.next ?? null,
-      dispatch: dispatch?.next ?? null,
-      review: review?.next ?? null,
-      recovery: recovery?.next ?? null
-    },
+    next: nextEntries,
     surfaces: {
       handoffs,
       dispatch,
