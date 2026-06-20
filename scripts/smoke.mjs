@@ -306,24 +306,30 @@ if (installPackage.status !== 0) {
   console.error(installPackage.stderr || installPackage.stdout);
   process.exit(installPackage.status ?? 1);
 }
-const installedHelp = spawnSync("npx", ["codex-bees", "--help"], {
-  cwd: packedInstallAppDir,
-  encoding: "utf8"
-});
-if (
-  installedHelp.status !== 0 ||
-  !installedHelp.stdout.includes("codex-bees") ||
-  !installedHelp.stdout.includes("codex-bees catalog")
-) {
-  console.error("[smoke:installed-help] expected installed npx codex-bees help surface");
-  console.error(installedHelp.stderr || installedHelp.stdout);
-  process.exit(installedHelp.status ?? 1);
-}
-const installedCatalog = JSON.parse(
-  spawnSync("npx", ["codex-bees", "catalog"], {
+function runInstalled(label, command, args) {
+  const result = spawnSync(command, args, {
     cwd: packedInstallAppDir,
     encoding: "utf8"
-  }).stdout
+  });
+  if (result.status !== 0) {
+    console.error(`[smoke:${label}] failed`);
+    console.error(result.stderr || result.stdout);
+    process.exit(result.status ?? 1);
+  }
+  return result;
+}
+
+const installedHelp = runInstalled("installed-help", "npx", ["codex-bees", "--help"]);
+if (
+  !installedHelp.stdout.includes("codex-bees") ||
+  !installedHelp.stdout.includes("codex-bees catalog") ||
+  !installedHelp.stdout.includes("codex-bees mcp")
+) {
+  console.error("[smoke:installed-help] expected installed npx codex-bees help surface");
+  process.exit(1);
+}
+const installedCatalog = JSON.parse(
+  runInstalled("installed-catalog", "npx", ["codex-bees", "catalog"]).stdout
 ).catalog;
 if (
   installedCatalog.kind !== "runtime_catalog_view" ||
@@ -336,10 +342,7 @@ if (
   process.exit(1);
 }
 const installedStatus = JSON.parse(
-  spawnSync("npx", ["codex-bees", "status"], {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }).stdout
+  runInstalled("installed-status", "npx", ["codex-bees", "status"]).stdout
 ).status;
 if (
   installedStatus.kind !== "runtime_status_view" ||
@@ -348,6 +351,43 @@ if (
   installedStatus.counts?.skills !== 2
 ) {
   console.error("[smoke:installed-status] expected installed npx codex-bees status to expose bundled runtime catalog");
+  process.exit(1);
+}
+const installedDoctor = JSON.parse(
+  runInstalled("installed-doctor", "npx", ["codex-bees", "doctor"]).stdout
+);
+if (
+  installedDoctor.kind !== "runtime_doctor_view" ||
+  installedDoctor.recommendedReason !== "doctor_ready" ||
+  installedDoctor.catalog?.catalog?.source !== "bundled" ||
+  installedDoctor.contract?.kind !== "runtime_contract_view" ||
+  !installedDoctor.catalog?.catalog?.paths?.codexDir?.startsWith("@bundled/dist/.codex")
+) {
+  console.error("[smoke:installed-doctor] expected installed npx codex-bees doctor view to expose bundled diagnostics");
+  process.exit(1);
+}
+const installedCliTools = JSON.parse(
+  runInstalled("installed-tools", "npx", ["codex-bees", "tools"]).stdout
+).tools;
+if (
+  installedCliTools.kind !== "tool_catalog_view" ||
+  installedCliTools.recommendedReason !== "tool_catalog_loaded" ||
+  installedCliTools.counts?.totalTools < 10 ||
+  !installedCliTools.tools?.some((tool) => tool.name === "runtime_contract")
+) {
+  console.error("[smoke:installed-tools] expected installed npx codex-bees tools catalog");
+  process.exit(1);
+}
+const installedMcpTools = JSON.parse(
+  runInstalled("installed-mcp-tools", "node", ["./node_modules/codex-bees/dist/mcp.js", "--tools"]).stdout
+).tools;
+if (
+  installedMcpTools.kind !== "tool_catalog_view" ||
+  installedMcpTools.recommendedReason !== "tool_catalog_loaded" ||
+  installedMcpTools.counts?.totalTools < 10 ||
+  !installedMcpTools.tools?.some((tool) => tool.name === "task_add")
+) {
+  console.error("[smoke:installed-mcp-tools] expected installed packaged MCP tool catalog");
   process.exit(1);
 }
 rmSync(packedTarballPath, { force: true });

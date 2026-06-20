@@ -46,7 +46,7 @@ When the current working directory does not provide its own `.codex/agents` or `
 
 The npm package is also trimmed to distributable runtime content only: `dist/`, `README.md`, and `LICENSE`. Development-only source files, smoke scripts, and repo-local orchestration docs are excluded from the published tarball.
 
-Installed package entrypoints are part of the tested product surface too. A packed install can be exercised directly with `npx codex-bees --help`, `npx codex-bees catalog`, and `npx codex-bees status`, and the smoke suite now verifies that those installed commands still resolve the bundled runtime catalog from `dist/.codex`.
+Installed package entrypoints are part of the tested product surface too. A packed install can be exercised directly with `npx codex-bees --help`, `npx codex-bees catalog`, `npx codex-bees status`, `npx codex-bees doctor`, and `npx codex-bees tools`, and the smoke suite now verifies that those installed commands still resolve the bundled runtime catalog from `dist/.codex`. It also verifies the packaged MCP entrypoint itself through `node ./node_modules/codex-bees/dist/mcp.js --tools`, so the published tarball keeps both CLI and MCP introspection surfaces alive after install.
 
 ## CLI
 
