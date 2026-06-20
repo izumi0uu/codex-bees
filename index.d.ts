@@ -500,7 +500,7 @@ export interface TaskDetailView {
 
 export interface SwarmListView {
   kind: "swarm_view";
-  recommendedReason: string;
+  recommendedReason: "swarm_list_has_results" | "swarm_list_empty";
   detailed: false;
   counts: {
     totalSwarms: number;
@@ -510,7 +510,7 @@ export interface SwarmListView {
 
 export interface DetailedSwarmListView {
   kind: "swarm_view";
-  recommendedReason: string;
+  recommendedReason: "swarm_list_has_results" | "swarm_list_empty";
   detailed: true;
   counts: {
     totalSwarms: number;
