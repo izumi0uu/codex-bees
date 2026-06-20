@@ -176,6 +176,7 @@ const swarmMaxWorkers: number | undefined = swarm.maxWorkers;
 const swarmCreatedAt: string | null | undefined = swarm.createdAt;
 const swarmUpdatedAt: string | null | undefined = swarm.updatedAt;
 getSwarmView(swarm.id)?.swarm.id;
+const swarmDetailReason: "swarm_detail_loaded" | undefined = getSwarmView(swarm.id)?.recommendedReason;
 const swarmDerivedStatus: SwarmStatus | undefined = getSwarmView(swarm.id)?.metadata.derivedStatus;
 const swarmReadyToComplete: boolean | undefined = getSwarmView(swarm.id)?.metadata.readyToComplete;
 validateSwarm(swarm.id)?.recommendedReason;
