@@ -74,6 +74,8 @@ const task = addTask({
   verification: ["ok"]
 });
 task.id;
+const taskOwner: string | null | undefined = task.owner;
+const taskScopePath: string | undefined = task.scope?.[0];
 getTaskView(task.id)?.task.id;
 const taskHasHistory: boolean | undefined = getTaskView(task.id)?.metadata.hasHistory;
 const taskReviewState: string | undefined = getTaskView(task.id)?.metadata.reviewState;

@@ -318,6 +318,23 @@ export interface TaskRecord {
   verifier?: string | null;
   status?: string;
   queueStatus?: string;
+  objective?: string | null;
+  lane?: string | null;
+  swarmId?: string | null;
+  scope?: string[] | null;
+  acceptance?: string[] | null;
+  verification?: string[] | null;
+  claimedBy?: string | null;
+  notes?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  reviewOutcome?: string | null;
+  reviewNotes?: string | null;
+  reviewEvidence?: unknown[] | null;
+  annotations?: unknown[];
+  history?: unknown[];
+  createdAt?: string | null;
+  updatedAt?: string | null;
   [key: string]: unknown;
 }
 
@@ -469,6 +486,28 @@ export interface MemoryInput {
   notes?: string | null;
 }
 
+export interface TaskInput {
+  title: string;
+  status?: string;
+  queueStatus?: string;
+  owner?: string | null;
+  verifier?: string | null;
+  objective?: string | null;
+  lane?: string | null;
+  swarmId?: string | null;
+  scope?: string[] | null;
+  acceptance?: string[] | null;
+  verification?: string[] | null;
+  claimedBy?: string | null;
+  notes?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  reviewOutcome?: string | null;
+  reviewNotes?: string | null;
+  reviewEvidence?: unknown[] | null;
+  annotations?: unknown[];
+}
+
 export interface ValidationView {
   ready?: boolean;
   recommendedReason?: string;
@@ -564,7 +603,7 @@ export declare function serializeMcpMessage(message: Record<string, unknown>): s
 export declare function runMcpCli(args?: string[]): Promise<void>;
 export declare function startMcpServer(): Promise<void>;
 
-export declare function addTask(input: Record<string, unknown>): TaskRecord;
+export declare function addTask(input: TaskInput): TaskRecord;
 export declare function getTask(id: string): TaskRecord | null;
 export declare function getTaskView(id: string): TaskDetailView | null;
 export declare function initSwarm(input: Record<string, unknown>): SwarmRecord;
