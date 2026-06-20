@@ -359,7 +359,7 @@ export interface TaskRecord {
   title?: string;
   owner: string | null;
   verifier: string | null;
-  status?: string;
+  status: string;
   queueStatus: string;
   objective: string | null;
   lane: string | null;
