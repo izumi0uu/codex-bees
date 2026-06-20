@@ -8,6 +8,8 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "..");
 const DIST_INDEX = join(REPO_ROOT, "dist", "index.js");
 const DIST_DIR = join(REPO_ROOT, "dist");
+const README_PATH = join(REPO_ROOT, "README.md");
+const PACKAGE_JSON_PATH = join(REPO_ROOT, "package.json");
 
 function run(label, args, expectedStatus = 0) {
   const result = spawnSync("node", args, { encoding: "utf8" });
@@ -378,6 +380,38 @@ const installedManifestMain = JSON.parse(
 if (installedManifestMain !== "dist/api.js") {
   console.error("[smoke:installed-manifest] expected installed package main entry to target dist/api.js");
   process.exit(1);
+}
+const packageManifest = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8"));
+const documentedSubpaths = Array.from(
+  readFileSync(README_PATH, "utf8").matchAll(/- `codex-bees\/([^`]+)`/g),
+  (match) => `./${match[1]}`
+).sort();
+const exportedSubpaths = Object.keys(packageManifest.exports)
+  .filter((key) => key !== ".")
+  .sort();
+if (JSON.stringify(documentedSubpaths) !== JSON.stringify(exportedSubpaths)) {
+  console.error("[smoke:documented-exports] expected README subpath export list to match package.json exports");
+  console.error(JSON.stringify({ documentedSubpaths, exportedSubpaths }, null, 2));
+  process.exit(1);
+}
+const installedExportSmoke = spawnSync(
+  "node",
+  [
+    "-e",
+    `const subpaths = ${JSON.stringify(exportedSubpaths.map((item) => item.slice(2)))};\nPromise.all(subpaths.map((subpath) => import(\`codex-bees/\${subpath}\`).then(() => subpath))).then((loaded) => console.log(JSON.stringify({ ok: loaded.length === subpaths.length, loaded: loaded.sort() })));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedExportSmoke.status !== 0 ||
+  JSON.parse(installedExportSmoke.stdout).ok !== true
+) {
+  console.error("[smoke:installed-export-surface] expected every documented public subpath export to import after install");
+  console.error(installedExportSmoke.stderr || installedExportSmoke.stdout);
+  process.exit(installedExportSmoke.status ?? 1);
 }
 const installedImport = spawnSync(
   "node",
