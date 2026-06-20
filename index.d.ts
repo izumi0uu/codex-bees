@@ -449,13 +449,13 @@ export interface SwarmOverview {
 
 export interface MemoryRecord {
   id: string;
-  title?: string | null;
-  content?: string;
-  namespace?: string;
-  kind?: string;
-  agent?: string | null;
-  tags?: string[];
-  notes?: string | null;
+  title: string | null;
+  content: string;
+  namespace: string;
+  kind: string;
+  agent: string | null;
+  tags: string[];
+  notes: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   [key: string]: unknown;
