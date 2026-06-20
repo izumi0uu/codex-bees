@@ -357,8 +357,8 @@ export interface TaskAnnotation {
 export interface TaskRecord {
   id: string;
   title?: string;
-  owner?: string | null;
-  verifier?: string | null;
+  owner: string | null;
+  verifier: string | null;
   status?: string;
   queueStatus?: string;
   objective?: string | null;
@@ -367,8 +367,8 @@ export interface TaskRecord {
   scope: string[] | null;
   acceptance: string[] | null;
   verification: string[] | null;
-  claimedBy?: string | null;
-  notes?: string | null;
+  claimedBy: string | null;
+  notes: string | null;
   reviewedBy?: string | null;
   reviewedAt?: string | null;
   reviewOutcome?: string | null;
