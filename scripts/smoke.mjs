@@ -496,6 +496,12 @@ if (!documentedRuntimeReadyExampleBlockMatch) {
   process.exit(1);
 }
 const documentedRuntimeReadyExampleScript = documentedRuntimeReadyExampleBlockMatch[1];
+const documentedRuntimeStatusExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-status` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedRuntimeStatusExampleBlockMatch) {
+  console.error("[smoke:readme-runtime-status-example] expected README to document a runnable runtime-status example block");
+  process.exit(1);
+}
+const documentedRuntimeStatusExampleScript = documentedRuntimeStatusExampleBlockMatch[1];
 const documentedMetadataExampleBlockMatch = README_TEXT.match(/The `codex-bees\/metadata` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedMetadataExampleBlockMatch) {
   console.error("[smoke:readme-metadata-example] expected README to document a runnable metadata example block");
@@ -680,6 +686,26 @@ if (
   console.error("[smoke:readme-runtime-ready-example-contract] expected README runtime-ready example to execute successfully against the installed package");
   console.error(installedRuntimeReadyExample.stderr || installedRuntimeReadyExample.stdout);
   process.exit(installedRuntimeReadyExample.status ?? 1);
+}
+const installedRuntimeStatusExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedRuntimeStatusExampleScript}\nconsole.log(JSON.stringify({ ok: status.kind === "runtime_status_view" && status.status.product === "codex-bees" && status.status.mode === "codex-only" && typeof status.counts.tools === "number" && Array.isArray(status.status.capabilities) && status.status.capabilities.length > 0 && Array.isArray(status.status.recommendedEntryPoints.cli) && status.status.recommendedEntryPoints.cli.includes("status") }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRuntimeStatusExample.status !== 0 ||
+  JSON.parse(installedRuntimeStatusExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-runtime-status-example-contract] expected README runtime-status example to execute successfully against the installed package");
+  console.error(installedRuntimeStatusExample.stderr || installedRuntimeStatusExample.stdout);
+  process.exit(installedRuntimeStatusExample.status ?? 1);
 }
 const installedMetadataExample = spawnSync(
   "node",

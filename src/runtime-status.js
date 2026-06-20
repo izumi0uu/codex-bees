@@ -1,6 +1,7 @@
 import { getRuntimeCatalog } from "./catalog.js";
 import { listMemories, listSwarms, listTasks } from "./state.js";
 import { getPackageMetadata } from "./metadata.js";
+import { listMcpTools } from "./mcp.js";
 
 const CAPABILITY_CATALOG = [
   {
@@ -158,13 +159,14 @@ export function getCapabilityCatalogView() {
   };
 }
 
-export function getRuntimeStatus({ version, toolCount }) {
+export function getRuntimeStatus({ version, toolCount } = {}) {
   const metadata = getPackageMetadata();
   const catalog = getRuntimeCatalog();
   const tasks = listTasks();
   const swarms = listSwarms();
   const memories = listMemories();
   const capabilities = getCapabilityCatalog();
+  const resolvedToolCount = toolCount ?? listMcpTools().length;
   const highlights = capabilities.flatMap((capability) => capability.highlights ?? []).slice(0, 6);
   const recommendedEntryPoints = {
     cli: [...new Set(capabilities.flatMap((capability) => capability.preferredEntryPoints?.cli ?? []))].slice(0, 6),
@@ -177,7 +179,7 @@ export function getRuntimeStatus({ version, toolCount }) {
     version: version ?? metadata.version,
     mode: metadata.mode,
     counts: {
-      tools: toolCount,
+      tools: resolvedToolCount,
       agents: catalog.agents.length,
       skills: catalog.skills.length,
       capabilities: capabilities.length,
@@ -206,7 +208,7 @@ export function getRuntimeStatus({ version, toolCount }) {
   };
 }
 
-export function getRuntimeStatusView({ version, toolCount }) {
+export function getRuntimeStatusView({ version, toolCount } = {}) {
   const status = getRuntimeStatus({ version, toolCount });
   const trackedStateEntries =
     status.counts.tasks +

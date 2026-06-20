@@ -176,6 +176,16 @@ import { getRuntimeReadyView } from "codex-bees/runtime-ready";
 const ready = getRuntimeReadyView();
 ```
 
+The `codex-bees/runtime-status` subpath exposes the same runtime inventory shape that powers `codex-bees status`, so tools can inspect counts, recommended entry points, and catalog-backed capability summaries without shelling out.
+
+Example:
+
+```js
+import { getRuntimeStatusView } from "codex-bees/runtime-status";
+
+const status = getRuntimeStatusView();
+```
+
 The `codex-bees/metadata` subpath exposes the package identity contract directly, so CLI, MCP, and library consumers can all read the same name, version, description, license, homepage, issue tracker, repository URL, keyword tags, and Codex-only mode surface from one source.
 
 Example:
