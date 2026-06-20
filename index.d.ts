@@ -230,7 +230,7 @@ export interface RuntimeContract {
 
 export interface RuntimeCapabilitySummary {
   id: string;
-  category: string;
+  category: "runtime" | "planning" | "coordination" | "memory" | "introspection";
   cliCommandCount: number;
   mcpToolCount: number;
   highlights: string[];
@@ -243,7 +243,7 @@ export interface RuntimeCapabilitySummary {
 
 export interface RuntimeCapability {
   id: string;
-  category: string;
+  category: "runtime" | "planning" | "coordination" | "memory" | "introspection";
   description: string;
   cliCommands: string[];
   mcpTools: string[];
