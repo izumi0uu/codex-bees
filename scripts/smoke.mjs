@@ -484,6 +484,12 @@ if (!documentedRuntimeGuidanceExampleBlockMatch) {
   process.exit(1);
 }
 const documentedRuntimeGuidanceExampleScript = documentedRuntimeGuidanceExampleBlockMatch[1];
+const documentedDoctorExampleBlockMatch = README_TEXT.match(/The `codex-bees\/doctor` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedDoctorExampleBlockMatch) {
+  console.error("[smoke:readme-doctor-example] expected README to document a runnable doctor example block");
+  process.exit(1);
+}
+const documentedDoctorExampleScript = documentedDoctorExampleBlockMatch[1];
 const documentedRuntimeReadyExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-ready` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedRuntimeReadyExampleBlockMatch) {
   console.error("[smoke:readme-runtime-ready-example] expected README to document a runnable runtime-ready example block");
@@ -634,6 +640,26 @@ if (
   console.error("[smoke:readme-runtime-guidance-example-contract] expected README runtime-guidance example to execute successfully against the installed package");
   console.error(installedRuntimeGuidanceExample.stderr || installedRuntimeGuidanceExample.stdout);
   process.exit(installedRuntimeGuidanceExample.status ?? 1);
+}
+const installedDoctorExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedDoctorExampleScript}\nconsole.log(JSON.stringify({ ok: doctor.kind === "runtime_doctor_view" && doctor.status === "ok" && doctor.executable === true && doctor.catalog?.kind === "runtime_catalog_view" && doctor.contract?.kind === "runtime_contract_view" && typeof doctor.stateFile === "string" && doctor.stateFile.length > 0 }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDoctorExample.status !== 0 ||
+  JSON.parse(installedDoctorExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-doctor-example-contract] expected README doctor example to execute successfully against the installed package");
+  console.error(installedDoctorExample.stderr || installedDoctorExample.stdout);
+  process.exit(installedDoctorExample.status ?? 1);
 }
 const installedRuntimeReadyExample = spawnSync(
   "node",

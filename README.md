@@ -158,6 +158,14 @@ const guidelines = getWorkerGuidelinesView();
 
 The `codex-bees/doctor` subpath exposes the same diagnostic view that the CLI prints for `codex-bees doctor`, so integrations can inspect entrypoint health, state-file location, runtime catalog, and contract details without shelling out.
 
+Example:
+
+```js
+import { getRuntimeDoctorView } from "codex-bees/doctor";
+
+const doctor = getRuntimeDoctorView();
+```
+
 The `codex-bees/runtime-ready` subpath exposes the default `run` readiness view as a library call, so tools can read the startup contract and recommended next steps without scraping CLI output.
 
 Example:
