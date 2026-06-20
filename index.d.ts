@@ -532,7 +532,7 @@ export interface TaskDetailMetadata {
 }
 
 export interface SwarmDetailMetadata {
-  derivedStatus: string;
+  derivedStatus: SwarmStatus;
   statusAligned: boolean;
   readyToComplete: boolean;
   dispatchableCount: number;
