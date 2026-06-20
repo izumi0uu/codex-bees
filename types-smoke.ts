@@ -89,6 +89,7 @@ const rootCoordinationViewKind: "coordination_overview_view" = getCoordinationOv
 const coordinationViewReason: "coordination_model_loaded" = getCoordinationOverviewView().recommendedReason;
 const rootWorkerGuideline: string = getWorkerGuidelines().fileOwnership;
 const rootWorkerGuidelinesKind: "worker_guidelines_view" = getWorkerGuidelinesView().kind;
+const workerGuidelinesReason: "worker_guidelines_loaded" = getWorkerGuidelinesView().recommendedReason;
 renderHelpTextCommands();
 getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
