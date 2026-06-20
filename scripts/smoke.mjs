@@ -390,6 +390,29 @@ if (
   console.error("[smoke:installed-cli-mcp-tools] expected installed codex-bees mcp --tools surface");
   process.exit(1);
 }
+const installedCliMcpStdioInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} })
+].join("\n") + "\n";
+const installedCliMcpStdio = spawnSync("npx", ["codex-bees", "mcp", "--stdio"], {
+  cwd: packedInstallAppDir,
+  input: installedCliMcpStdioInput,
+  encoding: "utf8"
+});
+const installedCliMcpStdioLines = installedCliMcpStdio.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const installedCliMcpToolsPayload = JSON.parse(installedCliMcpStdioLines[1]).result;
+if (
+  installedCliMcpStdio.status !== 0 ||
+  !Array.isArray(installedCliMcpToolsPayload?.tools) ||
+  !installedCliMcpToolsPayload.tools.some((tool) => tool.name === "runtime_contract")
+) {
+  console.error("[smoke:installed-cli-mcp-stdio] expected installed codex-bees mcp --stdio to answer tools/list");
+  console.error(installedCliMcpStdio.stderr || installedCliMcpStdio.stdout);
+  process.exit(1);
+}
 const installedMcpTools = JSON.parse(
   runInstalled("installed-mcp-tools", "node", ["./node_modules/codex-bees/dist/mcp.js", "--tools"]).stdout
 ).tools;
