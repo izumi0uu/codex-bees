@@ -9,6 +9,7 @@ import {
   getMcpCommandCatalogView,
   getPackageMetadata,
   getPackageMetadataView,
+  handleMcpRequest,
   getCapabilityCatalog,
   getCapabilityCatalogView,
   getRuntimeCatalog,
@@ -31,6 +32,7 @@ import {
   listMcpTools,
   listSkillCatalog,
   addTask,
+  callMcpTool,
   getTask,
   getTaskView,
   initSwarm,
@@ -51,7 +53,7 @@ import {
 } from "codex-bees";
 
 import { renderHelpText } from "codex-bees/commands";
-import { callMcpTool, handleMcpRequest } from "codex-bees/mcp";
+import { callMcpTool as callMcpToolSubpath, handleMcpRequest as handleMcpRequestSubpath } from "codex-bees/mcp";
 import {
   getPackageMetadata as getApiPackageMetadata,
   getRuntimeReadyView as getApiRuntimeReadyView,
@@ -94,6 +96,8 @@ const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWork
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 planTask("typed smoke").lanes[0]?.owner;
 
+handleMcpRequestSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
+callMcpToolSubpath("runtime_contract");
 handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
 callMcpTool("runtime_contract");
 
