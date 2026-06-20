@@ -56,12 +56,15 @@ The root package export now exposes a small official programmatic API as well:
 
 ```js
 import {
+  addTask,
   getRuntimeCatalogView,
   getRuntimeStatusView,
   getToolCatalogView,
   getRuntimeContractView,
   planTask,
-  planSwarm
+  planSwarm,
+  stateFilePath,
+  storeMemory
 } from "codex-bees";
 ```
 
@@ -73,8 +76,11 @@ Official subpath exports are also available for narrower integrations:
 - `codex-bees/catalog`
 - `codex-bees/mcp`
 - `codex-bees/planner`
+- `codex-bees/state`
 - `codex-bees/runtime-status`
 - `codex-bees/runtime-contract`
+
+The `codex-bees/state` subpath is the smallest official programmatic bridge into persisted local coordination state. It exposes helpers such as `addTask`, `getTaskView`, `listTasksView`, `initSwarm`, `listSwarmsView`, `storeMemory`, `listMemoriesView`, `validateTask`, `validateSwarm`, and `stateFilePath`.
 
 ## CLI
 
