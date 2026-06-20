@@ -951,6 +951,20 @@ if (
   console.error("[smoke:installed-direct-cli-tools] expected direct packaged CLI tools catalog");
   process.exit(1);
 }
+const installedDirectCliCapabilities = JSON.parse(
+  runInstalled("installed-direct-cli-capabilities", "node", ["./node_modules/codex-bees/dist/index.js", "capabilities"]).stdout
+).capabilities;
+if (
+  installedDirectCliCapabilities.kind !== "runtime_capabilities_view" ||
+  installedDirectCliCapabilities.recommendedReason !== "capabilities_loaded" ||
+  installedDirectCliCapabilities.counts?.totalCapabilities < 6 ||
+  installedDirectCliCapabilities.counts?.categories?.coordination < 1 ||
+  !Array.isArray(installedDirectCliCapabilities.capabilities) ||
+  !installedDirectCliCapabilities.capabilities.some((capability) => capability.id === "swarm_coordination")
+) {
+  console.error("[smoke:installed-direct-cli-capabilities] expected direct packaged CLI capabilities surface");
+  process.exit(1);
+}
 const installedCliMcpTools = JSON.parse(
   runInstalled("installed-cli-mcp-tools", "npx", ["codex-bees", "mcp", "--tools"]).stdout
 ).tools;
