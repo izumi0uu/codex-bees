@@ -10,6 +10,7 @@ import {
   getPackageMetadata,
   getPackageMetadataView,
   getCapabilityCatalog,
+  getCapabilityCatalogView,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
   getRuntimeCatalogView,
@@ -160,6 +161,7 @@ const packageMetadataViewKind: "package_metadata_view" = getPackageMetadataView(
 const packageMetadataViewMode: string = getPackageMetadataView().metadata.mode;
 const productName: string = PRODUCT_NAME;
 const packageVersion: string = PACKAGE_VERSION;
+const rootCapabilityCatalogViewKind: "runtime_capabilities_view" = getCapabilityCatalogView().kind;
 const rootAgentId: string | undefined = listAgentCatalog()[0]?.id;
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
 const rootSkillId: string | undefined = listSkillCatalog()[0]?.id;
