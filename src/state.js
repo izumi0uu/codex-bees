@@ -2110,6 +2110,12 @@ export function runtimePickupPack(input = {}) {
     mode
   });
   const recommendedReason = deriveRuntimePickupPackReason({ session, pickup, next, rolePack });
+  const nextEntries = {
+    focus: session?.focus ?? null,
+    candidate: next?.candidate ?? null,
+    brief: pickup?.brief ?? next?.brief ?? null,
+    pickup
+  };
 
   return {
     kind: "runtime_pickup_pack",
@@ -2118,6 +2124,15 @@ export function runtimePickupPack(input = {}) {
     mode,
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasFocus: Boolean(nextEntries.focus),
+      hasCandidate: Boolean(nextEntries.candidate),
+      hasBrief: Boolean(nextEntries.brief),
+      hasPickup: Boolean(nextEntries.pickup)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       session: session?.counts ?? null,
       inbox: session?.inbox?.counts ?? null,
@@ -2130,12 +2145,7 @@ export function runtimePickupPack(input = {}) {
         : null,
       role: rolePack?.overview?.role ?? null
     },
-    next: {
-      focus: session?.focus ?? null,
-      candidate: next?.candidate ?? null,
-      brief: pickup?.brief ?? next?.brief ?? null,
-      pickup
-    },
+    next: nextEntries,
     surfaces: {
       session,
       next,

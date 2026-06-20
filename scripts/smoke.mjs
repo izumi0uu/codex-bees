@@ -4787,6 +4787,12 @@ if (
   runtimePickupPackMcp.status !== 0 ||
   runtimePickupPackMcpPayload.pickupPack?.recommendedSurface !== "worker:closeout" ||
   runtimePickupPackMcpPayload.pickupPack?.recommendedReason !== "review_task_priority" ||
+  runtimePickupPackMcpPayload.pickupPack?.metadata?.hasFocus !== true ||
+  runtimePickupPackMcpPayload.pickupPack?.metadata?.hasCandidate !== true ||
+  runtimePickupPackMcpPayload.pickupPack?.metadata?.hasBrief !== true ||
+  runtimePickupPackMcpPayload.pickupPack?.metadata?.hasPickup !== true ||
+  runtimePickupPackMcpPayload.pickupPack?.counts?.surfacedNextEntries !==
+    Object.values(runtimePickupPackMcpPayload.pickupPack?.next ?? {}).filter(Boolean).length ||
   runtimePickupPackMcpPayload.pickupPack?.next?.pickup?.candidate?.id !== "task-2" ||
   runtimePickupPackMcpPayload.pickupPack?.next?.pickup?.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
@@ -5854,6 +5860,11 @@ const runtimePickupPackVerifier = JSON.parse(
 if (
   runtimePickupPackVerifier.recommendedSurface !== "worker:closeout" ||
   runtimePickupPackVerifier.recommendedReason !== "review_task_priority" ||
+  runtimePickupPackVerifier.metadata?.hasFocus !== true ||
+  runtimePickupPackVerifier.metadata?.hasCandidate !== true ||
+  runtimePickupPackVerifier.metadata?.hasBrief !== true ||
+  runtimePickupPackVerifier.metadata?.hasPickup !== true ||
+  runtimePickupPackVerifier.counts?.surfacedNextEntries !== Object.values(runtimePickupPackVerifier.next ?? {}).filter(Boolean).length ||
   runtimePickupPackVerifier.next?.pickup?.candidate?.id !== "task-2" ||
   runtimePickupPackVerifier.next?.pickup?.command !== "node ./src/index.js task:approve --id task-2 --by tester" ||
   runtimePickupPackVerifier.surfaces?.rolePack?.recommendedSurface !== "worker:closeout"
@@ -5895,6 +5906,12 @@ const runtimePickupPackOwner = JSON.parse(
 if (
   runtimePickupPackOwner.recommendedSurface !== "task:pickup --role executor --worker worker-owner --mode owner" ||
   runtimePickupPackOwner.recommendedReason !== "claimable_pickup_ready" ||
+  runtimePickupPackOwner.metadata?.hasFocus !== true ||
+  runtimePickupPackOwner.metadata?.hasCandidate !== true ||
+  runtimePickupPackOwner.metadata?.hasBrief !== true ||
+  runtimePickupPackOwner.metadata?.hasPickup !== true ||
+  runtimePickupPackOwner.counts?.surfacedNextEntries !== Object.values(runtimePickupPackOwner.next ?? {}).filter(Boolean).length ||
+  runtimePickupPackOwner.next?.focus?.taskId !== "task-1" ||
   runtimePickupPackOwner.next?.pickup?.outcome !== "claimable" ||
   runtimePickupPackOwner.next?.pickup?.candidate?.id !== "task-1"
 ) {
