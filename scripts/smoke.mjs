@@ -782,6 +782,26 @@ if (
   console.error("[smoke:installed-run] expected installed npx codex-bees run readiness surface");
   process.exit(1);
 }
+const installedRunImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-ready").then((m) => console.log(JSON.stringify({ ok: JSON.stringify(m.getRuntimeReadyView()) === process.argv[1] })))',
+    JSON.stringify(installedRun)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRunImport.status !== 0 ||
+  JSON.parse(installedRunImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-run-contract] expected installed npx codex-bees run output to match runtime-ready api surface");
+  console.error(installedRunImport.stderr || installedRunImport.stdout);
+  process.exit(installedRunImport.status ?? 1);
+}
 const installedDirectCliRun = JSON.parse(
   runInstalled("installed-direct-cli-run", "node", ["./node_modules/codex-bees/dist/index.js", "run"]).stdout
 );
@@ -796,6 +816,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-run] expected direct packaged CLI run readiness surface");
   process.exit(1);
+}
+const installedDirectCliRunImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-ready").then((m) => console.log(JSON.stringify({ ok: JSON.stringify(m.getRuntimeReadyView()) === process.argv[1] })))',
+    JSON.stringify(installedDirectCliRun)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliRunImport.status !== 0 ||
+  JSON.parse(installedDirectCliRunImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-run-contract] expected direct packaged CLI run output to match runtime-ready api surface");
+  console.error(installedDirectCliRunImport.stderr || installedDirectCliRunImport.stdout);
+  process.exit(installedDirectCliRunImport.status ?? 1);
 }
 const installedTypecheck = spawnSync("npx", ["-y", "-p", "typescript", "tsc", "--noEmit", "/Users/idah/Projects-combined/codex-bees/types-smoke.ts"], {
   cwd: packedInstallAppDir,
