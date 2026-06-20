@@ -501,7 +501,7 @@ const installedMcpImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") })); })'
+    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); const mcpCatalog = m.getMcpCommandCatalogView(); const mcpHelp = m.renderMcpHelpText(); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") && mcpCatalog.kind === "mcp_command_catalog_view" && mcpCatalog.counts.totalOptions >= 5 && mcpCatalog.options.some((option) => option.option === "--capabilities") && mcpHelp.includes("codex-bees mcp --tools") && mcpHelp.includes("codex-bees mcp --capabilities") })); })'
   ],
   {
     cwd: packedInstallAppDir,
@@ -780,6 +780,26 @@ if (
 ) {
   console.error("[smoke:installed-mcp-help] expected installed codex-bees mcp help surface");
   process.exit(1);
+}
+const installedMcpHelpImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/mcp").then((m) => console.log(JSON.stringify({ ok: m.renderMcpHelpText() === process.argv[1] && m.getMcpCommandCatalogView().options.some((option) => option.option === "--capabilities") && m.getMcpCommandCatalogView().counts.totalOptions >= 5 })))',
+    installedMcpHelp.stdout
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedMcpHelpImport.status !== 0 ||
+  JSON.parse(installedMcpHelpImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-mcp-help-contract] expected installed mcp help output to match structured mcp command surface");
+  console.error(installedMcpHelpImport.stderr || installedMcpHelpImport.stdout);
+  process.exit(installedMcpHelpImport.status ?? 1);
 }
 const installedMcpVersion = runInstalled("installed-mcp-version", "npx", ["codex-bees", "mcp", "--version"]);
 if (installedMcpVersion.stdout.trim() !== "0.1.0") {

@@ -21,6 +21,11 @@ export interface CommandCatalogEntry {
   description: string;
 }
 
+export interface McpCommandCatalogEntry {
+  option: string;
+  description: string;
+}
+
 export interface CommandCatalogView {
   kind: "command_catalog_view";
   recommendedReason: string;
@@ -28,6 +33,15 @@ export interface CommandCatalogView {
     totalCommands: number;
   };
   commands: CommandCatalogEntry[];
+}
+
+export interface McpCommandCatalogView {
+  kind: "mcp_command_catalog_view";
+  recommendedReason: string;
+  counts: {
+    totalOptions: number;
+  };
+  options: McpCommandCatalogEntry[];
 }
 
 export interface RuntimeCatalogEntry {
@@ -289,6 +303,9 @@ export declare function getPackageMetadataView(): PackageMetadataView;
 export declare function getCommandCatalog(): CommandCatalogEntry[];
 export declare function getCommandCatalogView(): CommandCatalogView;
 export declare function renderHelpText(): string;
+export declare function getMcpCommandCatalog(): McpCommandCatalogEntry[];
+export declare function getMcpCommandCatalogView(): McpCommandCatalogView;
+export declare function renderMcpHelpText(): string;
 
 export declare function getRuntimeCatalogPaths(): RuntimeCatalogPaths;
 export declare function resolveRuntimeCatalogPath(relativePath: string): string | null;

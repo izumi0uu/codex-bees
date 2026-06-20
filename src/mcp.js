@@ -1,5 +1,6 @@
 import { argv, stdin, stdout, stderr, exit } from "node:process";
 import { fileURLToPath } from "node:url";
+import { PRODUCT_NAME } from "./metadata.js";
 import { getRuntimeCatalogView } from "./catalog.js";
 import { getPackageMetadata, PACKAGE_VERSION } from "./metadata.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
@@ -2684,13 +2685,37 @@ export async function startMcpServer() {
 }
 
 function writeMcpHelp() {
-  stdout.write("codex-bees mcp\n\n");
-  stdout.write("Usage:\n");
-  stdout.write("  codex-bees mcp --stdio     Start the local MCP stdio runtime\n");
-  stdout.write("  codex-bees mcp --tools     Print the current MCP tool catalog\n");
-  stdout.write("  codex-bees mcp --capabilities Print the shipped runtime capability inventory\n");
-  stdout.write("  codex-bees mcp --version   Show MCP subcommand version\n");
-  stdout.write("  codex-bees mcp --help      Show MCP subcommand help\n");
+  stdout.write(renderMcpHelpText());
+}
+
+export function getMcpCommandCatalog() {
+  return [
+    { option: "--stdio", description: "Start the local MCP stdio runtime" },
+    { option: "--tools", description: "Print the current MCP tool catalog" },
+    { option: "--capabilities", description: "Print the shipped runtime capability inventory" },
+    { option: "--version", description: "Show MCP subcommand version" },
+    { option: "--help", description: "Show MCP subcommand help" }
+  ];
+}
+
+export function getMcpCommandCatalogView() {
+  const options = getMcpCommandCatalog();
+  return {
+    kind: "mcp_command_catalog_view",
+    recommendedReason: options.length > 0 ? "mcp_command_catalog_loaded" : "mcp_command_catalog_empty",
+    counts: {
+      totalOptions: options.length
+    },
+    options
+  };
+}
+
+export function renderMcpHelpText() {
+  const lines = [`${PRODUCT_NAME} mcp`, "", "Usage:"];
+  for (const entry of getMcpCommandCatalog()) {
+    lines.push(`  ${PRODUCT_NAME} mcp ${entry.option.padEnd(15)} ${entry.description}`);
+  }
+  return lines.join("\n") + "\n";
 }
 
 export async function runMcpCli(args = []) {

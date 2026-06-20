@@ -23,7 +23,7 @@ import {
 } from "codex-bees";
 
 import { renderHelpText } from "codex-bees/commands";
-import { callMcpTool, handleMcpRequest } from "codex-bees/mcp";
+import { callMcpTool, getMcpCommandCatalogView, handleMcpRequest, renderMcpHelpText } from "codex-bees/mcp";
 
 const metadata = getPackageMetadata();
 metadata.product;
@@ -37,6 +37,8 @@ metadata.keywords[0];
 
 getCommandCatalogView().commands[0]?.command;
 renderHelpText();
+getMcpCommandCatalogView().options[0]?.option;
+renderMcpHelpText();
 getRuntimeCatalogView().catalog.paths.codexDir;
 getRuntimeDoctorView().contract.kind;
 getRuntimeReadyView().next[0];

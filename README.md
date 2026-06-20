@@ -95,8 +95,10 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 
 - `listMcpTools()` for the raw tool inventory
 - `getToolCatalogView()` for the grouped catalog view
+- `getMcpCommandCatalogView()` for the structured `mcp` subcommand option catalog
 - `handleMcpRequest(message)` for one-shot JSON-RPC request handling
 - `callMcpTool(name, args)` for direct tool execution
+- `renderMcpHelpText()` for the same help contract printed by `codex-bees mcp --help`
 - `serializeMcpMessage(message)` for newline-delimited stdio framing
 
 Example:
