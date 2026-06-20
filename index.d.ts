@@ -191,7 +191,7 @@ export interface PlannerEvidence {
 
 export interface TaskPlan {
   kind: "task_plan";
-  recommendedReason: string;
+  recommendedReason: "multi_lane_plan_ready" | "single_lane_plan_ready";
   objective: string;
   evidence: PlannerEvidence;
   lanes: TaskPlanLane[];
