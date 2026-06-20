@@ -10,6 +10,7 @@ import {
   getRuntimeStatusView,
   getToolCatalogView,
   planTask,
+  queueTasksFromPlan,
   listMcpTools,
   addTask,
   getTaskView,
@@ -113,3 +114,4 @@ const statusCliEntry: string | undefined = getStatusSubpathView().status.recomme
 const plannerLane: string | undefined = planTaskSubpath("typed downstream planner").lanes[0]?.lane;
 const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm").swarm.lanes[0]?.lane;
 const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.maxWorkers;
+const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks: unknown[]) => tasks as any).kind;

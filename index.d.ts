@@ -189,6 +189,14 @@ export interface PlannedSwarm {
   swarm: PlannedSwarmShape;
 }
 
+export interface QueuedPlan {
+  kind: "queued_plan";
+  recommendedReason: string;
+  objective: string;
+  lanes: TaskPlanLane[];
+  created: TaskRecord[];
+}
+
 export interface RuntimeContract {
   product: string;
   mode: string;
@@ -414,7 +422,7 @@ export declare function getRuntimeStatusView(input?: { version?: string; toolCou
 
 export declare function planTask(task: string): TaskPlan;
 export declare function planSwarm(task: string): PlannedSwarm;
-export declare function queueTasksFromPlan(task: string, addTasksFn?: (...args: any[]) => any): Record<string, unknown>;
+export declare function queueTasksFromPlan(task: string, addTasksFn?: (...args: any[]) => any): QueuedPlan;
 
 export declare function listMcpTools(): ToolCatalogEntry[];
 export declare function getToolCatalogView(): ToolCatalogView;
