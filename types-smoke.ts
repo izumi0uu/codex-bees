@@ -93,6 +93,7 @@ const workerGuidelinesReason: "worker_guidelines_loaded" = getWorkerGuidelinesVi
 renderHelpTextCommands();
 getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
+const mcpCommandCatalogReason: "mcp_command_catalog_loaded" | "mcp_command_catalog_empty" = getMcpCommandCatalogView().recommendedReason;
 renderMcpHelpText();
 getRuntimeCatalogView().catalog.paths.codexDir;
 const runtimeCatalogReason: "catalog_entries_loaded" | "catalog_empty" = getRuntimeCatalogView().recommendedReason;
