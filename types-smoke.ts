@@ -193,6 +193,7 @@ const typedMemoryUpdatedAt: string | null | undefined = typedMemory.updatedAt;
 const memoryListNamespace: string | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.namespace;
 const memoryListTitle: string | null | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.title;
 const memoryListAgent: string | null | undefined = listMemoriesView({ agent: "tester", tags: ["types"] }).memories[0]?.agent;
+const taskListReason: "task_list_has_results" | "task_list_empty" = listTasksView().recommendedReason;
 listTasksView().counts.totalTasks;
 const filteredSwarmOwner: string | null | undefined = listSwarmsView({ status: "planned", topology: "bounded-local", owner: "leader" }).swarms[0]?.owner;
 const detailedSwarmRecommended: string | undefined = listSwarmsView({ topology: "bounded-local" }, { detailed: true }).swarms[0]?.recommendedReason;
