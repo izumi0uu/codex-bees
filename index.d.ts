@@ -384,14 +384,14 @@ export interface TaskRecord {
 export interface SwarmRecord {
   id: string;
   objective?: string;
-  status?: string;
-  topology?: string;
-  maxWorkers?: number;
-  owner?: string | null;
-  laneSource?: string;
-  lanes?: SwarmLaneRecord[];
-  queuedAt?: string | null;
-  notes?: string | null;
+  status: string;
+  topology: string;
+  maxWorkers: number;
+  owner: string | null;
+  laneSource: string;
+  lanes: SwarmLaneRecord[];
+  queuedAt: string | null;
+  notes: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   [key: string]: unknown;
