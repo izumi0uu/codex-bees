@@ -29,7 +29,7 @@ export interface McpCommandCatalogEntry {
 
 export interface CommandCatalogView {
   kind: "command_catalog_view";
-  recommendedReason: string;
+  recommendedReason: "command_catalog_loaded" | "command_catalog_empty";
   counts: {
     totalCommands: number;
   };
