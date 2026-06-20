@@ -18,6 +18,8 @@ import {
   getRuntimeReadyView,
   getRuntimeStatusView,
   getToolCatalogView,
+  getWorkerGuidelines,
+  getWorkerGuidelinesView,
   listAgentCatalog,
   planTask,
   queueTasksFromPlan,
@@ -71,6 +73,8 @@ const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 const rootHelpText: string = renderRootHelpText();
 const rootExecutionModel: string = getCoordinationOverview().executionModel;
 const rootCoordinationViewKind: "coordination_overview_view" = getCoordinationOverviewView().kind;
+const rootWorkerGuideline: string = getWorkerGuidelines().fileOwnership;
+const rootWorkerGuidelinesKind: "worker_guidelines_view" = getWorkerGuidelinesView().kind;
 renderHelpText();
 getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
