@@ -146,7 +146,13 @@ const taskDetailReason: "task_detail_loaded" | undefined = getTaskView(task.id)?
 getTaskView(task.id)?.task.id;
 const taskHasHistory: boolean | undefined = getTaskView(task.id)?.metadata.hasHistory;
 const taskReviewState: TaskReviewState | undefined = getTaskView(task.id)?.metadata.reviewState;
-validateTask(task.id)?.recommendedReason;
+const taskValidationReason:
+  | "task_ready_to_claim"
+  | "task_role_validation_issues_present"
+  | "claimed_task_metadata_incomplete"
+  | "task_validation_issues_present"
+  | "task_validation_visible"
+  | undefined = validateTask(task.id)?.recommendedReason;
 const taskValidationReady: boolean | undefined = validateTask(task.id)?.ready;
 const taskValidationIssueCode: string | undefined = validateTask(task.id)?.issues[0]?.code;
 
