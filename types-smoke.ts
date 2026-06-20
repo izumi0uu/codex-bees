@@ -104,6 +104,7 @@ const runtimeReadyReason: "runtime_entry_ready" = getRuntimeReadyView().recommen
 const runtimeReadyStatus: "ready" = getRuntimeReadyView().status;
 getRuntimeReadyView().next[0];
 getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).kind;
+const runtimeStatusReason: "runtime_state_visible" | "runtime_state_empty" = getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).recommendedReason;
 getToolCatalogView().tools[0]?.name;
 const toolCatalogReason: "tool_catalog_loaded" | "tool_catalog_empty" = getToolCatalogView().recommendedReason;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
