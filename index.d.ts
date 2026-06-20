@@ -342,6 +342,15 @@ export interface SwarmRecord {
   id: string;
   objective?: string;
   status?: string;
+  topology?: string;
+  maxWorkers?: number;
+  owner?: string | null;
+  laneSource?: string;
+  lanes?: SwarmLaneInput[];
+  queuedAt?: string | null;
+  notes?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   [key: string]: unknown;
 }
 
@@ -508,6 +517,29 @@ export interface TaskInput {
   annotations?: unknown[];
 }
 
+export interface SwarmLaneInput {
+  lane?: string;
+  summary?: string;
+  owner?: string | null;
+  verifier?: string | null;
+  scope?: string[] | null;
+  acceptance?: string[] | null;
+  verification?: string[] | null;
+  taskId?: string | null;
+}
+
+export interface SwarmInput {
+  objective: string;
+  status?: string;
+  topology?: string;
+  maxWorkers?: number;
+  owner?: string | null;
+  laneSource?: string;
+  lanes?: SwarmLaneInput[];
+  queuedAt?: string | null;
+  notes?: string | null;
+}
+
 export interface ValidationView {
   ready?: boolean;
   recommendedReason?: string;
@@ -606,7 +638,7 @@ export declare function startMcpServer(): Promise<void>;
 export declare function addTask(input: TaskInput): TaskRecord;
 export declare function getTask(id: string): TaskRecord | null;
 export declare function getTaskView(id: string): TaskDetailView | null;
-export declare function initSwarm(input: Record<string, unknown>): SwarmRecord;
+export declare function initSwarm(input: SwarmInput): SwarmRecord;
 export declare function getSwarm(id: string): SwarmRecord | null;
 export declare function getSwarmView(id: string): SwarmDetailView | null;
 export declare function listTasksView(): TaskListView;

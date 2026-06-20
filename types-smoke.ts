@@ -99,6 +99,10 @@ const swarm = initSwarm({
   ]
 });
 swarm.id;
+const swarmOwner: string | null | undefined = swarm.owner;
+const swarmTopology: string | undefined = swarm.topology;
+const swarmLaneSummary: string | undefined = swarm.lanes?.[0]?.summary;
+const swarmMaxWorkers: number | undefined = swarm.maxWorkers;
 getSwarmView(swarm.id)?.swarm.id;
 const swarmDerivedStatus: string | undefined = getSwarmView(swarm.id)?.metadata.derivedStatus;
 const swarmReadyToComplete: boolean | undefined = getSwarmView(swarm.id)?.metadata.readyToComplete;
