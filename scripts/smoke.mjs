@@ -1072,6 +1072,26 @@ if (
   console.error("[smoke:installed-direct-mcp-help] expected installed packaged MCP entrypoint help surface");
   process.exit(1);
 }
+const installedDirectMcpHelpImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/mcp").then((m) => console.log(JSON.stringify({ ok: m.renderMcpHelpText() === process.argv[1] && m.getMcpCommandCatalogView().options.some((option) => option.option === "--capabilities") && m.getMcpCommandCatalogView().counts.totalOptions >= 5 })))',
+    installedDirectMcpHelp.stdout
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectMcpHelpImport.status !== 0 ||
+  JSON.parse(installedDirectMcpHelpImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-mcp-help-contract] expected installed packaged MCP help output to match structured mcp command surface");
+  console.error(installedDirectMcpHelpImport.stderr || installedDirectMcpHelpImport.stdout);
+  process.exit(installedDirectMcpHelpImport.status ?? 1);
+}
 const installedDirectMcpVersion = runInstalled("installed-direct-mcp-version", "node", ["./node_modules/codex-bees/dist/mcp.js", "--version"]);
 if (installedDirectMcpVersion.stdout.trim() !== "0.1.0") {
   console.error("[smoke:installed-direct-mcp-version] expected installed packaged MCP entrypoint version output");
@@ -1154,6 +1174,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-mcp-help] expected direct packaged CLI mcp help surface");
   process.exit(1);
+}
+const installedDirectCliMcpHelpImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/mcp").then((m) => console.log(JSON.stringify({ ok: m.renderMcpHelpText() === process.argv[1] && m.getMcpCommandCatalogView().options.some((option) => option.option === "--capabilities") && m.getMcpCommandCatalogView().counts.totalOptions >= 5 })))',
+    installedDirectCliMcpHelp.stdout
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliMcpHelpImport.status !== 0 ||
+  JSON.parse(installedDirectCliMcpHelpImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-mcp-help-contract] expected direct packaged CLI mcp help output to match structured mcp command surface");
+  console.error(installedDirectCliMcpHelpImport.stderr || installedDirectCliMcpHelpImport.stdout);
+  process.exit(installedDirectCliMcpHelpImport.status ?? 1);
 }
 const installedDirectCliMcpVersion = runInstalled("installed-direct-cli-mcp-version", "node", ["./node_modules/codex-bees/dist/index.js", "mcp", "--version"]);
 if (installedDirectCliMcpVersion.stdout.trim() !== "0.1.0") {
