@@ -664,7 +664,12 @@ export interface SwarmLaneValidation {
 
 export interface SwarmValidationView {
   kind: "swarm_validation";
-  recommendedReason: string;
+  recommendedReason:
+    | "swarm_ready_to_queue"
+    | "swarm_scope_overlap_detected"
+    | "lane_validation_issues_present"
+    | "swarm_validation_issues_present"
+    | "swarm_validation_visible";
   swarm: SwarmRecord;
   ready: boolean;
   issues: ValidationIssue[];
