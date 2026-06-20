@@ -114,7 +114,7 @@ export interface RuntimeReadyView {
 }
 
 export interface CoordinationOverview {
-  executionModel: string;
+  executionModel: "local bounded multi-agent coordination";
   deliveryBoundary: string;
   changeModel: string;
 }
