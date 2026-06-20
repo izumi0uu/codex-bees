@@ -222,7 +222,7 @@ export interface RuntimeContract {
   architecture: string[];
   transport: {
     cli: "stdio";
-    mcp: string;
+    mcp: "stdio-jsonrpc";
   };
   responsibilities: string[];
   exclusions: string[];
