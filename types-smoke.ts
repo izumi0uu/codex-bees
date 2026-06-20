@@ -89,7 +89,7 @@ const rootDeliveryBoundary: "codex-only runtime" = getCoordinationOverview().del
 const rootChangeModel: "small reversible steps" = getCoordinationOverview().changeModel;
 const rootCoordinationViewKind: "coordination_overview_view" = getCoordinationOverviewView().kind;
 const coordinationViewReason: "coordination_model_loaded" = getCoordinationOverviewView().recommendedReason;
-const rootWorkerGuideline: string = getWorkerGuidelines().fileOwnership;
+const rootWorkerGuideline: "one active writer per file" = getWorkerGuidelines().fileOwnership;
 const rootWorkerGuidelinesKind: "worker_guidelines_view" = getWorkerGuidelinesView().kind;
 const workerGuidelinesReason: "worker_guidelines_loaded" = getWorkerGuidelinesView().recommendedReason;
 renderHelpTextCommands();
