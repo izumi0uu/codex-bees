@@ -31,7 +31,9 @@ import {
   listAgentRoleIds,
   listMcpTools,
   listSkillCatalog,
+  runMcpCli,
   addTask,
+  startMcpServer,
   callMcpTool,
   getTask,
   getTaskView,
@@ -94,6 +96,8 @@ getToolCatalogView().tools[0]?.name;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
 const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWorkers;
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
+const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
+const rootStartMcpServer: () => Promise<void> = startMcpServer;
 planTask("typed smoke").lanes[0]?.owner;
 
 handleMcpRequestSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
