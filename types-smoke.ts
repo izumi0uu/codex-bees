@@ -93,6 +93,7 @@ getMcpCommandCatalogView().options[0]?.option;
 renderMcpHelpText();
 getRuntimeCatalogView().catalog.paths.codexDir;
 getRuntimeDoctorView().contract.kind;
+const runtimeDoctorStatus: "ok" = getRuntimeDoctorView().status;
 getRuntimeReadyView().next[0];
 getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).kind;
 getToolCatalogView().tools[0]?.name;
@@ -151,6 +152,7 @@ const swarm = initSwarm({
 });
 swarm.id;
 const fetchedSwarmId: string | undefined = getSwarm(swarm.id)?.id;
+const swarmStatus: SwarmStatus | undefined = getSwarm(swarm.id)?.status;
 const swarmOwner: string | null | undefined = swarm.owner;
 const swarmTopology: string | undefined = swarm.topology;
 const swarmLaneSummary: string | undefined = swarm.lanes?.[0]?.summary;
