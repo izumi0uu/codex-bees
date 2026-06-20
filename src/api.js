@@ -18,6 +18,7 @@ export {
 export { getRuntimeContractView } from "./runtime-contract.js";
 export { getRuntimeDoctorView } from "./doctor.js";
 export { getRuntimeReadyView } from "./runtime-ready.js";
+export { getPackageMetadata, getPackageMetadataView, PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
 
 export {
   getCoordinationOverview,

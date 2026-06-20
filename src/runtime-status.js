@@ -1,5 +1,6 @@
 import { getRuntimeCatalog } from "./catalog.js";
 import { listMemories, listSwarms, listTasks } from "./state.js";
+import { getPackageMetadata } from "./metadata.js";
 
 const CAPABILITY_CATALOG = [
   {
@@ -158,6 +159,7 @@ export function getCapabilityCatalogView() {
 }
 
 export function getRuntimeStatus({ version, toolCount }) {
+  const metadata = getPackageMetadata();
   const catalog = getRuntimeCatalog();
   const tasks = listTasks();
   const swarms = listSwarms();
@@ -171,9 +173,9 @@ export function getRuntimeStatus({ version, toolCount }) {
   const useCases = [...new Set(capabilities.flatMap((capability) => capability.useCases ?? []))].slice(0, 6);
 
   return {
-    product: "codex-bees",
-    version,
-    mode: "codex-only",
+    product: metadata.product,
+    version: version ?? metadata.version,
+    mode: metadata.mode,
     counts: {
       tools: toolCount,
       agents: catalog.agents.length,

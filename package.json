@@ -18,6 +18,7 @@
     "./api": "./dist/api.js",
     "./catalog": "./dist/catalog.js",
     "./doctor": "./dist/doctor.js",
+    "./metadata": "./dist/metadata.js",
     "./mcp": "./dist/mcp.js",
     "./planner": "./dist/planner.js",
     "./runtime-ready": "./dist/runtime-ready.js",

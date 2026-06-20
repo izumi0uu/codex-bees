@@ -1,6 +1,7 @@
 import { argv, stdin, stdout, stderr } from "node:process";
 import { fileURLToPath } from "node:url";
 import { getRuntimeCatalogView } from "./catalog.js";
+import { getPackageMetadata } from "./metadata.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
@@ -1322,12 +1323,13 @@ function createTextPayload(value) {
 
 function handleRequest(message) {
   const { id = null, method, params = {} } = message ?? {};
+  const metadata = getPackageMetadata();
 
   if (method === "initialize") {
     return createSuccess(id, {
       serverInfo: {
-        name: "codex-bees",
-        version: "0.1.0"
+        name: metadata.product,
+        version: metadata.version
       },
       capabilities: {
         tools: { listChanged: false }
@@ -1365,7 +1367,7 @@ function handleRequest(message) {
     if (name === "runtime_status") {
       return createSuccess(
         id,
-        createTextPayload({ status: getRuntimeStatusView({ version: "0.1.0", toolCount: toolCatalog.length }) })
+        createTextPayload({ status: getRuntimeStatusView({ version: metadata.version, toolCount: toolCatalog.length }) })
       );
     }
 

@@ -9,6 +9,7 @@ import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
 import { getRuntimeDoctorView } from "./doctor.js";
+import { PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
 import {
   activateSwarm,
@@ -119,7 +120,6 @@ import {
   validateTask
 } from "./state.js";
 
-const VERSION = "0.1.0";
 const MODULE_PATH = fileURLToPath(import.meta.url);
 
 function write(text) {
@@ -131,102 +131,102 @@ function writeErr(text) {
 }
 
 function printHelp() {
-  write(`codex-bees\n\n`);
+  write(`${PRODUCT_NAME}\n\n`);
   write(`Usage:\n`);
-  write(`  codex-bees run             Start the local Codex runtime shell contract\n`);
-  write(`  codex-bees mcp             Start the local Codex MCP stdio runtime or inspect its subcommands\n`);
-  write(`  codex-bees tools           Print the current MCP tool catalog\n`);
-  write(`  codex-bees catalog         Print the shipped local agent and skill catalog\n`);
-  write(`  codex-bees doctor          Print runtime contract diagnostics\n`);
-  write(`  codex-bees status          Print runtime state and surface summary\n`);
-  write(`  codex-bees capabilities    Print the shipped runtime capability inventory\n`);
-  write(`  codex-bees runtime:alerts  Build the top-level orchestration alert stream\n`);
-  write(`  codex-bees runtime:activity Build the recent runtime activity stream\n`);
-  write(`  codex-bees runtime:assignment-pack Build the leader-to-worker assignment package\n`);
-  write(`  codex-bees runtime:dashboard Build the top-level orchestration dashboard\n`);
-  write(`  codex-bees runtime:closeout Build the final closeout workspace\n`);
-  write(`  codex-bees runtime:closeout-pack Build the closeout-oriented runtime package\n`);
-  write(`  codex-bees runtime:control-pack Build the automation/control runtime package\n`);
-  write(`  codex-bees runtime:dispatch Build the owner-grouped dispatch workspace\n`);
-  write(`  codex-bees runtime:dispatch-pack Build the dispatch-oriented runtime package\n`);
-  write(`  codex-bees runtime:execution-pack Build the execution-oriented runtime package\n`);
-  write(`  codex-bees runtime:focus   Build the single next-action runtime focus\n`);
-  write(`  codex-bees runtime:handoff-pack Build the handoff-oriented runtime package\n`);
-  write(`  codex-bees runtime:handoffs Build the next-actor handoff workspace\n`);
-  write(`  codex-bees runtime:leader-pack Build the leader-oriented runtime package\n`);
-  write(`  codex-bees runtime:operator-pack Build the operator-oriented runtime package\n`);
-  write(`  codex-bees runtime:owner-pack Build the owner-oriented runtime package\n`);
-  write(`  codex-bees runtime:pickup-pack Build the start-work pickup package for one worker\n`);
-  write(`  codex-bees runtime:queue-pack Build the queue-oriented runtime package with launch-first recommendations\n`);
-  write(`  codex-bees runtime:recovery-pack Build the recovery-oriented runtime package\n`);
-  write(`  codex-bees runtime:recovery Build the recovery-oriented task workspace\n`);
-  write(`  codex-bees runtime:role-pack Build the role-oriented runtime package\n`);
-  write(`  codex-bees runtime:review-pack Build the review-oriented runtime package\n`);
-  write(`  codex-bees runtime:session-pack Build the per-worker runtime session package\n`);
-  write(`  codex-bees runtime:signal-pack Build the signal-oriented runtime package\n`);
-  write(`  codex-bees runtime:summary-pack Build the automation-first summary package with compact launch context\n`);
-  write(`  codex-bees runtime:triage-pack Build the triage-oriented runtime package\n`);
-  write(`  codex-bees runtime:verifier-pack Build the verifier-oriented runtime package\n`);
-  write(`  codex-bees runtime:workspace-pack Build the orchestration workspace package\n`);
-  write(`  codex-bees runtime:worker-pack Build the worker-oriented runtime package\n`);
-  write(`  codex-bees runtime:review  Build the verifier-grouped review workspace\n`);
-  write(`  codex-bees runtime:roles   Build the role-level orchestration queue view\n`);
-  write(`  codex-bees plan            Generate a bounded read-only execution plan\n`);
-  write(`  codex-bees plan:queue      Generate a plan and queue its lanes as local tasks\n`);
-  write(`  codex-bees plan:swarm      Generate a bounded swarm contract from a task brief\n`);
-  write(`  codex-bees task:list       List local coordination tasks\n`);
-  write(`  codex-bees task:add        Add a local coordination task\n`);
-  write(`  codex-bees task:get        Show one local coordination task\n`);
-  write(`  codex-bees task:history    Show structured handoff history for one task\n`);
-  write(`  codex-bees task:annotate   Add a persistent handoff note to one task\n`);
-  write(`  codex-bees task:report     Build a delivery-ready report for one task\n`);
-  write(`  codex-bees task:brief      Render an execution brief for one task\n`);
-  write(`  codex-bees task:inbox      List role-relevant tasks in execution priority order\n`);
-  write(`  codex-bees task:next       Resolve the next task a role should pick up\n`);
-  write(`  codex-bees task:assignment-preview Preview the next leader-assigned task for one worker\n`);
-  write(`  codex-bees task:assignment-pickup Claim or resume the next leader-assigned task for one worker\n`);
-  write(`  codex-bees task:pickup-preview Preview what the next pickup would do for one worker\n`);
-  write(`  codex-bees task:pickup     Claim or resume the next task for one worker\n`);
-  write(`  codex-bees worker:session  Show the current execution workspace for one worker\n`);
-  write(`  codex-bees worker:handoff  Build a return-ready handoff package for one worker\n`);
-  write(`  codex-bees worker:closeout Build a closure-oriented bundle for one worker\n`);
-  write(`  codex-bees verifier:bundle Build a decision-ready bundle for one verifier\n`);
-  write(`  codex-bees leader:assignment-dispatch Build a worker-targeted dispatch package for one leader assignment\n`);
-  write(`  codex-bees leader:assignment-dispatch-bundle Build a multi-worker launch bundle across owner groups\n`);
-  write(`  codex-bees leader:assignment-launch-plan Build a step-by-step startup plan across worker launches\n`);
-  write(`  codex-bees leader:assignment-dispatch-pack Build worker-targeted dispatch packages across owner groups\n`);
-  write(`  codex-bees leader:assignments Build owner-grouped dispatch assignments across swarms\n`);
-  write(`  codex-bees leader:queue    Build a prioritized leader decision queue across swarms\n`);
-  write(`  codex-bees leader:workspace Build a leader-ready orchestration workspace across swarms\n`);
-  write(`  codex-bees task:claim      Claim a local coordination task\n`);
-  write(`  codex-bees task:block      Mark a claimed task as blocked\n`);
-  write(`  codex-bees task:review     Mark a task as ready for review\n`);
-  write(`  codex-bees task:approve    Approve a ready-for-review task as its verifier\n`);
-  write(`  codex-bees task:reject     Return a ready-for-review task for more work\n`);
-  write(`  codex-bees task:done       Approve a ready-for-review task as its verifier\n`);
-  write(`  codex-bees task:release    Release a local coordination task\n`);
-  write(`  codex-bees task:update     Update a local coordination task\n`);
-  write(`  codex-bees task:check      Validate one local coordination task for bounded execution\n`);
-  write(`  codex-bees swarm:init      Create a bounded local swarm contract\n`);
-  write(`  codex-bees swarm:list      List local swarm contracts\n`);
-  write(`  codex-bees swarm:get       Show one local swarm contract\n`);
-  write(`  codex-bees swarm:brief     Render an execution brief for one swarm\n`);
-  write(`  codex-bees swarm:bundle    Build a leader-ready orchestration bundle for one swarm\n`);
-  write(`  codex-bees swarm:blockers Build a blocker-oriented bundle for one swarm\n`);
-  write(`  codex-bees swarm:closeout  Build a closure-oriented bundle for one swarm\n`);
-  write(`  codex-bees swarm:dispatch-bundle Build a dispatch-oriented bundle for one swarm\n`);
-  write(`  codex-bees swarm:update    Update a local swarm contract\n`);
-  write(`  codex-bees swarm:check     Validate one swarm contract for lane readiness\n`);
-  write(`  codex-bees swarm:start     Mark a planned swarm active\n`);
-  write(`  codex-bees swarm:block     Mark an active swarm blocked\n`);
-  write(`  codex-bees swarm:done      Mark a swarm complete\n`);
-  write(`  codex-bees swarm:cancel    Cancel a swarm\n`);
-  write(`  codex-bees swarm:queue     Queue swarm lanes into local tasks\n`);
-  write(`  codex-bees memory:store    Store a persistent local memory\n`);
-  write(`  codex-bees memory:list     List persistent local memories\n`);
-  write(`  codex-bees memory:search   Search persistent local memories\n`);
-  write(`  codex-bees --help          Show help\n`);
-  write(`  codex-bees --version       Show version\n`);
+  write(`  ${PRODUCT_NAME} run             Start the local Codex runtime shell contract\n`);
+  write(`  ${PRODUCT_NAME} mcp             Start the local Codex MCP stdio runtime or inspect its subcommands\n`);
+  write(`  ${PRODUCT_NAME} tools           Print the current MCP tool catalog\n`);
+  write(`  ${PRODUCT_NAME} catalog         Print the shipped local agent and skill catalog\n`);
+  write(`  ${PRODUCT_NAME} doctor          Print runtime contract diagnostics\n`);
+  write(`  ${PRODUCT_NAME} status          Print runtime state and surface summary\n`);
+  write(`  ${PRODUCT_NAME} capabilities    Print the shipped runtime capability inventory\n`);
+  write(`  ${PRODUCT_NAME} runtime:alerts  Build the top-level orchestration alert stream\n`);
+  write(`  ${PRODUCT_NAME} runtime:activity Build the recent runtime activity stream\n`);
+  write(`  ${PRODUCT_NAME} runtime:assignment-pack Build the leader-to-worker assignment package\n`);
+  write(`  ${PRODUCT_NAME} runtime:dashboard Build the top-level orchestration dashboard\n`);
+  write(`  ${PRODUCT_NAME} runtime:closeout Build the final closeout workspace\n`);
+  write(`  ${PRODUCT_NAME} runtime:closeout-pack Build the closeout-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:control-pack Build the automation/control runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:dispatch Build the owner-grouped dispatch workspace\n`);
+  write(`  ${PRODUCT_NAME} runtime:dispatch-pack Build the dispatch-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:execution-pack Build the execution-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:focus   Build the single next-action runtime focus\n`);
+  write(`  ${PRODUCT_NAME} runtime:handoff-pack Build the handoff-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:handoffs Build the next-actor handoff workspace\n`);
+  write(`  ${PRODUCT_NAME} runtime:leader-pack Build the leader-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:operator-pack Build the operator-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:owner-pack Build the owner-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:pickup-pack Build the start-work pickup package for one worker\n`);
+  write(`  ${PRODUCT_NAME} runtime:queue-pack Build the queue-oriented runtime package with launch-first recommendations\n`);
+  write(`  ${PRODUCT_NAME} runtime:recovery-pack Build the recovery-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:recovery Build the recovery-oriented task workspace\n`);
+  write(`  ${PRODUCT_NAME} runtime:role-pack Build the role-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:review-pack Build the review-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:session-pack Build the per-worker runtime session package\n`);
+  write(`  ${PRODUCT_NAME} runtime:signal-pack Build the signal-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:summary-pack Build the automation-first summary package with compact launch context\n`);
+  write(`  ${PRODUCT_NAME} runtime:triage-pack Build the triage-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:verifier-pack Build the verifier-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:workspace-pack Build the orchestration workspace package\n`);
+  write(`  ${PRODUCT_NAME} runtime:worker-pack Build the worker-oriented runtime package\n`);
+  write(`  ${PRODUCT_NAME} runtime:review  Build the verifier-grouped review workspace\n`);
+  write(`  ${PRODUCT_NAME} runtime:roles   Build the role-level orchestration queue view\n`);
+  write(`  ${PRODUCT_NAME} plan            Generate a bounded read-only execution plan\n`);
+  write(`  ${PRODUCT_NAME} plan:queue      Generate a plan and queue its lanes as local tasks\n`);
+  write(`  ${PRODUCT_NAME} plan:swarm      Generate a bounded swarm contract from a task brief\n`);
+  write(`  ${PRODUCT_NAME} task:list       List local coordination tasks\n`);
+  write(`  ${PRODUCT_NAME} task:add        Add a local coordination task\n`);
+  write(`  ${PRODUCT_NAME} task:get        Show one local coordination task\n`);
+  write(`  ${PRODUCT_NAME} task:history    Show structured handoff history for one task\n`);
+  write(`  ${PRODUCT_NAME} task:annotate   Add a persistent handoff note to one task\n`);
+  write(`  ${PRODUCT_NAME} task:report     Build a delivery-ready report for one task\n`);
+  write(`  ${PRODUCT_NAME} task:brief      Render an execution brief for one task\n`);
+  write(`  ${PRODUCT_NAME} task:inbox      List role-relevant tasks in execution priority order\n`);
+  write(`  ${PRODUCT_NAME} task:next       Resolve the next task a role should pick up\n`);
+  write(`  ${PRODUCT_NAME} task:assignment-preview Preview the next leader-assigned task for one worker\n`);
+  write(`  ${PRODUCT_NAME} task:assignment-pickup Claim or resume the next leader-assigned task for one worker\n`);
+  write(`  ${PRODUCT_NAME} task:pickup-preview Preview what the next pickup would do for one worker\n`);
+  write(`  ${PRODUCT_NAME} task:pickup     Claim or resume the next task for one worker\n`);
+  write(`  ${PRODUCT_NAME} worker:session  Show the current execution workspace for one worker\n`);
+  write(`  ${PRODUCT_NAME} worker:handoff  Build a return-ready handoff package for one worker\n`);
+  write(`  ${PRODUCT_NAME} worker:closeout Build a closure-oriented bundle for one worker\n`);
+  write(`  ${PRODUCT_NAME} verifier:bundle Build a decision-ready bundle for one verifier\n`);
+  write(`  ${PRODUCT_NAME} leader:assignment-dispatch Build a worker-targeted dispatch package for one leader assignment\n`);
+  write(`  ${PRODUCT_NAME} leader:assignment-dispatch-bundle Build a multi-worker launch bundle across owner groups\n`);
+  write(`  ${PRODUCT_NAME} leader:assignment-launch-plan Build a step-by-step startup plan across worker launches\n`);
+  write(`  ${PRODUCT_NAME} leader:assignment-dispatch-pack Build worker-targeted dispatch packages across owner groups\n`);
+  write(`  ${PRODUCT_NAME} leader:assignments Build owner-grouped dispatch assignments across swarms\n`);
+  write(`  ${PRODUCT_NAME} leader:queue    Build a prioritized leader decision queue across swarms\n`);
+  write(`  ${PRODUCT_NAME} leader:workspace Build a leader-ready orchestration workspace across swarms\n`);
+  write(`  ${PRODUCT_NAME} task:claim      Claim a local coordination task\n`);
+  write(`  ${PRODUCT_NAME} task:block      Mark a claimed task as blocked\n`);
+  write(`  ${PRODUCT_NAME} task:review     Mark a task as ready for review\n`);
+  write(`  ${PRODUCT_NAME} task:approve    Approve a ready-for-review task as its verifier\n`);
+  write(`  ${PRODUCT_NAME} task:reject     Return a ready-for-review task for more work\n`);
+  write(`  ${PRODUCT_NAME} task:done       Approve a ready-for-review task as its verifier\n`);
+  write(`  ${PRODUCT_NAME} task:release    Release a local coordination task\n`);
+  write(`  ${PRODUCT_NAME} task:update     Update a local coordination task\n`);
+  write(`  ${PRODUCT_NAME} task:check      Validate one local coordination task for bounded execution\n`);
+  write(`  ${PRODUCT_NAME} swarm:init      Create a bounded local swarm contract\n`);
+  write(`  ${PRODUCT_NAME} swarm:list      List local swarm contracts\n`);
+  write(`  ${PRODUCT_NAME} swarm:get       Show one local swarm contract\n`);
+  write(`  ${PRODUCT_NAME} swarm:brief     Render an execution brief for one swarm\n`);
+  write(`  ${PRODUCT_NAME} swarm:bundle    Build a leader-ready orchestration bundle for one swarm\n`);
+  write(`  ${PRODUCT_NAME} swarm:blockers Build a blocker-oriented bundle for one swarm\n`);
+  write(`  ${PRODUCT_NAME} swarm:closeout  Build a closure-oriented bundle for one swarm\n`);
+  write(`  ${PRODUCT_NAME} swarm:dispatch-bundle Build a dispatch-oriented bundle for one swarm\n`);
+  write(`  ${PRODUCT_NAME} swarm:update    Update a local swarm contract\n`);
+  write(`  ${PRODUCT_NAME} swarm:check     Validate one swarm contract for lane readiness\n`);
+  write(`  ${PRODUCT_NAME} swarm:start     Mark a planned swarm active\n`);
+  write(`  ${PRODUCT_NAME} swarm:block     Mark an active swarm blocked\n`);
+  write(`  ${PRODUCT_NAME} swarm:done      Mark a swarm complete\n`);
+  write(`  ${PRODUCT_NAME} swarm:cancel    Cancel a swarm\n`);
+  write(`  ${PRODUCT_NAME} swarm:queue     Queue swarm lanes into local tasks\n`);
+  write(`  ${PRODUCT_NAME} memory:store    Store a persistent local memory\n`);
+  write(`  ${PRODUCT_NAME} memory:list     List persistent local memories\n`);
+  write(`  ${PRODUCT_NAME} memory:search   Search persistent local memories\n`);
+  write(`  ${PRODUCT_NAME} --help          Show help\n`);
+  write(`  ${PRODUCT_NAME} --version       Show version\n`);
 }
 
 function printDoctor() {
@@ -238,7 +238,7 @@ function printCatalog() {
 }
 
 function printStatus() {
-  write(JSON.stringify({ status: getRuntimeStatusView({ version: VERSION, toolCount: toolCatalog.length }) }, null, 2) + "\n");
+  write(JSON.stringify({ status: getRuntimeStatusView({ version: PACKAGE_VERSION, toolCount: toolCatalog.length }) }, null, 2) + "\n");
 }
 
 function printCapabilities() {
@@ -1657,7 +1657,7 @@ async function runCommand(command) {
       return;
     case "--version":
     case "version":
-      write(`${VERSION}\n`);
+      write(`${PACKAGE_VERSION}\n`);
       return;
     default:
       writeErr(`Unknown command: ${command}\n\n`);

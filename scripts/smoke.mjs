@@ -163,6 +163,7 @@ const importedSourceApi = JSON.parse(
 );
 if (
   !importedSourceApi.includes("getRuntimeCatalogView") ||
+  !importedSourceApi.includes("getPackageMetadata") ||
   !importedSourceApi.includes("getRuntimeDoctorView") ||
   !importedSourceApi.includes("getRuntimeReadyView") ||
   !importedSourceApi.includes("getToolCatalogView") ||
@@ -186,6 +187,7 @@ const importedDistApi = JSON.parse(
 );
 if (
   !importedDistApi.includes("getRuntimeCatalogView") ||
+  !importedDistApi.includes("getPackageMetadata") ||
   !importedDistApi.includes("getRuntimeDoctorView") ||
   !importedDistApi.includes("getRuntimeReadyView") ||
   !importedDistApi.includes("getToolCatalogView") ||
@@ -453,6 +455,25 @@ if (
   console.error(installedDoctorImport.stderr || installedDoctorImport.stdout);
   process.exit(installedDoctorImport.status ?? 1);
 }
+const installedMetadataImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/metadata").then((m) => console.log(JSON.stringify({ ok: m.getPackageMetadata().product === "codex-bees" && m.getPackageMetadata().version === "0.1.0" && m.getPackageMetadataView().kind === "package_metadata_view" })))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedMetadataImport.status !== 0 ||
+  JSON.parse(installedMetadataImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-metadata-import] expected installed codex-bees/metadata subpath export");
+  console.error(installedMetadataImport.stderr || installedMetadataImport.stdout);
+  process.exit(installedMetadataImport.status ?? 1);
+}
 const installedRuntimeReadyImport = spawnSync(
   "node",
   [
@@ -551,6 +572,11 @@ if (
   console.error("[smoke:installed-help] expected installed npx codex-bees help surface");
   process.exit(1);
 }
+const installedVersion = runInstalled("installed-version", "npx", ["codex-bees", "--version"]);
+if (installedVersion.stdout.trim() !== "0.1.0") {
+  console.error("[smoke:installed-version] expected installed npx codex-bees --version output");
+  process.exit(1);
+}
 const installedMcpHelp = runInstalled("installed-mcp-help", "npx", ["codex-bees", "mcp", "--help"]);
 if (
   !installedMcpHelp.stdout.includes("codex-bees mcp") ||
@@ -591,6 +617,8 @@ const installedStatus = JSON.parse(
 if (
   installedStatus.kind !== "runtime_status_view" ||
   installedStatus.status?.catalog?.source !== "bundled" ||
+  installedStatus.status?.version !== "0.1.0" ||
+  installedStatus.status?.product !== "codex-bees" ||
   installedStatus.counts?.agents !== 4 ||
   installedStatus.counts?.skills !== 2
 ) {
@@ -647,9 +675,12 @@ const installedCliMcpStdioLines = installedCliMcpStdio.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
+const installedCliMcpInitializePayload = JSON.parse(installedCliMcpStdioLines[0]).result;
 const installedCliMcpToolsPayload = JSON.parse(installedCliMcpStdioLines[1]).result;
 if (
   installedCliMcpStdio.status !== 0 ||
+  installedCliMcpInitializePayload?.serverInfo?.name !== "codex-bees" ||
+  installedCliMcpInitializePayload?.serverInfo?.version !== "0.1.0" ||
   !Array.isArray(installedCliMcpToolsPayload?.tools) ||
   !installedCliMcpToolsPayload.tools.some((tool) => tool.name === "runtime_contract")
 ) {
