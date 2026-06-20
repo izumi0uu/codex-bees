@@ -40,6 +40,7 @@ import {
   listSwarmsView,
   listTasksView,
   searchMemoriesView,
+  serializeMcpMessage,
   stateFilePath,
   storeMemory,
   toolCatalog,
@@ -90,6 +91,7 @@ getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().leng
 getToolCatalogView().tools[0]?.name;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
 const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWorkers;
+const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 planTask("typed smoke").lanes[0]?.owner;
 
 handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
