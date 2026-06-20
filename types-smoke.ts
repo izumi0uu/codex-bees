@@ -1,5 +1,6 @@
 import {
   getCommandCatalogView,
+  getMcpCommandCatalog,
   getMcpCommandCatalogView,
   getPackageMetadata,
   getRuntimeCatalogView,
@@ -40,6 +41,7 @@ metadata.keywords[0];
 getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 renderHelpText();
+getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
 renderMcpHelpText();
 getRuntimeCatalogView().catalog.paths.codexDir;

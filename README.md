@@ -57,6 +57,8 @@ The root package export now exposes a small official programmatic API as well:
 ```js
 import {
   getCommandCatalogView,
+  getMcpCommandCatalog,
+  getMcpCommandCatalogView,
   addTask,
   getPackageMetadata,
   getRuntimeCatalogView,
@@ -67,6 +69,7 @@ import {
   getRuntimeContractView,
   planTask,
   planSwarm,
+  renderMcpHelpText,
   stateFilePath,
   storeMemory
 } from "codex-bees";
@@ -94,6 +97,7 @@ The `codex-bees/state` subpath is the smallest official programmatic bridge into
 The `codex-bees/mcp` subpath is also usable as a small programmatic adapter layer when you want the same local MCP behavior without spawning the stdio server first. It exposes:
 
 - `listMcpTools()` for the raw tool inventory
+- `getMcpCommandCatalog()` for the raw structured `mcp` subcommand option list
 - `getToolCatalogView()` for the grouped catalog view
 - `getMcpCommandCatalogView()` for the structured `mcp` subcommand option catalog
 - `handleMcpRequest(message)` for one-shot JSON-RPC request handling
@@ -104,9 +108,10 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 Example:
 
 ```js
-import { callMcpTool, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
+import { callMcpTool, getMcpCommandCatalog, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
 
 const tools = listMcpTools();
+const options = getMcpCommandCatalog();
 const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const contract = callMcpTool("runtime_contract");
 ```

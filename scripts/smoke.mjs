@@ -169,6 +169,7 @@ const importedSourceApi = JSON.parse(
 if (
   !importedSourceApi.includes("getRuntimeCatalogView") ||
   !importedSourceApi.includes("getCommandCatalogView") ||
+  !importedSourceApi.includes("getMcpCommandCatalog") ||
   !importedSourceApi.includes("getMcpCommandCatalogView") ||
   !importedSourceApi.includes("renderMcpHelpText") ||
   !importedSourceApi.includes("getPackageMetadata") ||
@@ -196,6 +197,7 @@ const importedDistApi = JSON.parse(
 if (
   !importedDistApi.includes("getRuntimeCatalogView") ||
   !importedDistApi.includes("getCommandCatalogView") ||
+  !importedDistApi.includes("getMcpCommandCatalog") ||
   !importedDistApi.includes("getMcpCommandCatalogView") ||
   !importedDistApi.includes("renderMcpHelpText") ||
   !importedDistApi.includes("getPackageMetadata") ||
@@ -486,7 +488,7 @@ const installedImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && Object.keys(m).includes("getToolCatalogView") && Object.keys(m).includes("getMcpCommandCatalogView") && Object.keys(m).includes("renderMcpHelpText") && Object.keys(m).includes("planTask") && Object.keys(m).includes("addTask") && Object.keys(m).includes("stateFilePath") && m.getMcpCommandCatalogView().counts.totalOptions >= 5 && m.renderMcpHelpText().includes("codex-bees mcp --capabilities"), keys:Object.keys(m).sort()})))'
+    'import("codex-bees").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && Object.keys(m).includes("getToolCatalogView") && Object.keys(m).includes("getMcpCommandCatalog") && Object.keys(m).includes("getMcpCommandCatalogView") && Object.keys(m).includes("renderMcpHelpText") && Object.keys(m).includes("planTask") && Object.keys(m).includes("addTask") && Object.keys(m).includes("stateFilePath") && Array.isArray(m.getMcpCommandCatalog()) && m.getMcpCommandCatalog().some((option) => option.option === "--capabilities") && m.getMcpCommandCatalogView().counts.totalOptions >= 5 && m.renderMcpHelpText().includes("codex-bees mcp --capabilities"), keys:Object.keys(m).sort()})))'
   ],
   {
     cwd: packedInstallAppDir,
@@ -505,7 +507,7 @@ const installedMcpImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); const mcpCatalog = m.getMcpCommandCatalogView(); const mcpHelp = m.renderMcpHelpText(); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") && mcpCatalog.kind === "mcp_command_catalog_view" && mcpCatalog.counts.totalOptions >= 5 && mcpCatalog.options.some((option) => option.option === "--capabilities") && mcpHelp.includes("codex-bees mcp --tools") && mcpHelp.includes("codex-bees mcp --capabilities") })); })'
+    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); const mcpOptions = m.getMcpCommandCatalog(); const mcpCatalog = m.getMcpCommandCatalogView(); const mcpHelp = m.renderMcpHelpText(); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") && Array.isArray(mcpOptions) && mcpOptions.some((option) => option.option === "--capabilities") && mcpCatalog.kind === "mcp_command_catalog_view" && mcpCatalog.counts.totalOptions >= 5 && mcpCatalog.options.some((option) => option.option === "--capabilities") && mcpHelp.includes("codex-bees mcp --tools") && mcpHelp.includes("codex-bees mcp --capabilities") })); })'
   ],
   {
     cwd: packedInstallAppDir,
