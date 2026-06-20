@@ -546,7 +546,7 @@ export interface SwarmDetailMetadata {
 
 export interface MemoryListView {
   kind: "memory_view";
-  recommendedReason: string;
+  recommendedReason: "memory_list_has_results" | "memory_list_empty";
   counts: {
     totalMemories: number;
   };
