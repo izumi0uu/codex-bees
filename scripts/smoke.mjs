@@ -3826,6 +3826,11 @@ const runtimeSessionPackCli = JSON.parse(
 if (
   runtimeSessionPackCli.recommendedSurface !== "worker:closeout" ||
   runtimeSessionPackCli.recommendedReason !== "worker_priority" ||
+  runtimeSessionPackCli.metadata?.hasWorker !== true ||
+  runtimeSessionPackCli.metadata?.hasOwner !== true ||
+  runtimeSessionPackCli.metadata?.hasVerifier !== true ||
+  runtimeSessionPackCli.metadata?.hasRole !== true ||
+  runtimeSessionPackCli.counts?.surfacedNextEntries !== Object.values(runtimeSessionPackCli.next ?? {}).filter(Boolean).length ||
   runtimeSessionPackCli.next?.verifier?.review?.taskId !== "task-2" ||
   runtimeSessionPackCli.next?.role?.lane !== "verifier" ||
   runtimeSessionPackCli.surfaces?.verifierPack?.recommendedSurface !== "worker:closeout"
@@ -4635,6 +4640,12 @@ if (
   runtimeSessionPackMcp.status !== 0 ||
   runtimeSessionPackMcpPayload.sessionPack?.recommendedSurface !== "worker:closeout" ||
   runtimeSessionPackMcpPayload.sessionPack?.recommendedReason !== "worker_priority" ||
+  runtimeSessionPackMcpPayload.sessionPack?.metadata?.hasWorker !== true ||
+  runtimeSessionPackMcpPayload.sessionPack?.metadata?.hasOwner !== true ||
+  runtimeSessionPackMcpPayload.sessionPack?.metadata?.hasVerifier !== true ||
+  runtimeSessionPackMcpPayload.sessionPack?.metadata?.hasRole !== true ||
+  runtimeSessionPackMcpPayload.sessionPack?.counts?.surfacedNextEntries !==
+    Object.values(runtimeSessionPackMcpPayload.sessionPack?.next ?? {}).filter(Boolean).length ||
   runtimeSessionPackMcpPayload.sessionPack?.next?.verifier?.review?.taskId !== "task-2" ||
   runtimeSessionPackMcpPayload.sessionPack?.next?.role?.lane !== "verifier"
 ) {

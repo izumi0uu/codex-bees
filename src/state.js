@@ -1901,6 +1901,12 @@ export function runtimeSessionPack(input = {}) {
     role: input.role,
     workerId: input.workerId
   });
+  const nextEntries = {
+    worker: workerPack?.next ?? null,
+    owner: ownerPack?.next ?? null,
+    verifier: verifierPack?.next ?? null,
+    role: roleEntry?.nextAction ?? null
+  };
 
   return {
     kind: "runtime_session_pack",
@@ -1909,18 +1915,22 @@ export function runtimeSessionPack(input = {}) {
     mode: input.mode ?? "any",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasWorker: Boolean(nextEntries.worker),
+      hasOwner: Boolean(nextEntries.owner),
+      hasVerifier: Boolean(nextEntries.verifier),
+      hasRole: Boolean(nextEntries.role)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       worker: workerPack?.overview ?? null,
       owner: ownerPack?.overview ?? null,
       verifier: verifierPack?.overview ?? null,
       role: roleEntry?.counts ?? null
     },
-    next: {
-      worker: workerPack?.next ?? null,
-      owner: ownerPack?.next ?? null,
-      verifier: verifierPack?.next ?? null,
-      role: roleEntry?.nextAction ?? null
-    },
+    next: nextEntries,
     surfaces: {
       workerPack,
       ownerPack,
