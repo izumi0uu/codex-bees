@@ -378,6 +378,18 @@ if (
   console.error("[smoke:installed-tools] expected installed npx codex-bees tools catalog");
   process.exit(1);
 }
+const installedCliMcpTools = JSON.parse(
+  runInstalled("installed-cli-mcp-tools", "npx", ["codex-bees", "mcp", "--tools"]).stdout
+).tools;
+if (
+  installedCliMcpTools.kind !== "tool_catalog_view" ||
+  installedCliMcpTools.recommendedReason !== "tool_catalog_loaded" ||
+  installedCliMcpTools.counts?.totalTools < 10 ||
+  !installedCliMcpTools.tools?.some((tool) => tool.name === "runtime_contract")
+) {
+  console.error("[smoke:installed-cli-mcp-tools] expected installed codex-bees mcp --tools surface");
+  process.exit(1);
+}
 const installedMcpTools = JSON.parse(
   runInstalled("installed-mcp-tools", "node", ["./node_modules/codex-bees/dist/mcp.js", "--tools"]).stdout
 ).tools;
@@ -429,6 +441,17 @@ if (
   !cliToolsView.tools.some((tool) => tool.name === "runtime_contract")
 ) {
   console.error("[smoke:tools-cli] expected tool catalog view");
+  process.exit(1);
+}
+const cliStatusWithToolsFlag = JSON.parse(
+  run("status-tools-flag", ["./src/index.js", "status", "--tools"]).stdout
+).status;
+if (
+  cliStatusWithToolsFlag.kind !== "runtime_status_view" ||
+  cliStatusWithToolsFlag.recommendedReason !== "runtime_state_visible" ||
+  cliStatusWithToolsFlag.status?.product !== "codex-bees"
+) {
+  console.error("[smoke:cli-flag-isolation] expected non-mcp commands to ignore the MCP --tools flag path");
   process.exit(1);
 }
 const mcpToolsView = JSON.parse(run("tools-mcp-verify", ["./src/mcp.js", "--tools"]).stdout).tools;

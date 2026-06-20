@@ -1,4 +1,5 @@
-import { stdin, stdout, stderr } from "node:process";
+import { argv, stdin, stdout, stderr } from "node:process";
+import { fileURLToPath } from "node:url";
 import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
@@ -2636,8 +2637,17 @@ export async function startMcpServer() {
   });
 }
 
-if (process.argv.includes("--tools")) {
-  stdout.write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
-} else if (process.argv.includes("--stdio")) {
-  await startMcpServer();
+export function runMcpCli(args = []) {
+  if (args.includes("--tools")) {
+    stdout.write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
+    return;
+  }
+
+  if (args.length === 0 || args.includes("--stdio")) {
+    return startMcpServer();
+  }
+}
+
+if (argv[1] && fileURLToPath(import.meta.url) === argv[1]) {
+  await runMcpCli(argv.slice(2));
 }
