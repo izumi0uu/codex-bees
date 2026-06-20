@@ -384,14 +384,39 @@ if (installedManifestMain !== "dist/api.js") {
   console.error("[smoke:installed-manifest] expected installed package main entry to target dist/api.js");
   process.exit(1);
 }
-const installedManifestTypes = JSON.parse(
+const installedManifest = JSON.parse(
   readFileSync(join(packedInstallAppDir, "node_modules", "codex-bees", "package.json"), "utf8")
-).types;
+);
+const installedManifestTypes = installedManifest.types;
 if (installedManifestTypes !== "./dist/api.d.ts") {
   console.error("[smoke:installed-manifest-types] expected installed package types entry to target dist/api.d.ts");
   process.exit(1);
 }
+if (
+  installedManifest.homepage !== "https://github.com/izumi0uu/codex-bees#readme" ||
+  installedManifest.bugs?.url !== "https://github.com/izumi0uu/codex-bees/issues" ||
+  installedManifest.repository?.url !== "https://github.com/izumi0uu/codex-bees.git" ||
+  !Array.isArray(installedManifest.keywords) ||
+  !installedManifest.keywords.includes("codex") ||
+  !installedManifest.keywords.includes("mcp") ||
+  !installedManifest.keywords.includes("orchestration")
+) {
+  console.error("[smoke:installed-manifest-metadata] expected installed package manifest to ship public npm metadata");
+  process.exit(1);
+}
 const packageManifest = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf8"));
+if (
+  packageManifest.homepage !== "https://github.com/izumi0uu/codex-bees#readme" ||
+  packageManifest.bugs?.url !== "https://github.com/izumi0uu/codex-bees/issues" ||
+  packageManifest.repository?.url !== "https://github.com/izumi0uu/codex-bees.git" ||
+  !Array.isArray(packageManifest.keywords) ||
+  !packageManifest.keywords.includes("codex") ||
+  !packageManifest.keywords.includes("mcp") ||
+  !packageManifest.keywords.includes("orchestration")
+) {
+  console.error("[smoke:package-manifest-metadata] expected local package manifest to ship public npm metadata");
+  process.exit(1);
+}
 const documentedSubpaths = Array.from(
   readFileSync(README_PATH, "utf8").matchAll(/- `codex-bees\/([^`]+)`/g),
   (match) => `./${match[1]}`
