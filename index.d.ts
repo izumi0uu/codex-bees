@@ -422,7 +422,7 @@ export interface SwarmLaneSummary {
   owner: string | null;
   verifier: string | null;
   taskId: string | null;
-  queueStatus: string | null;
+  queueStatus: TaskQueueStatus | null;
   claimedBy: string | null;
   status: string | null;
   scope: string[] | null;
