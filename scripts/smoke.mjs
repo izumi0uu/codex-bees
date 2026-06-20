@@ -1156,6 +1156,32 @@ if (
   console.error("[smoke:installed-direct-cli-mcp-capabilities] expected direct packaged CLI mcp capabilities surface");
   process.exit(1);
 }
+const installedDirectCliMcpStdioInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} })
+].join("\n") + "\n";
+const installedDirectCliMcpStdio = spawnSync("node", ["./node_modules/codex-bees/dist/index.js", "mcp", "--stdio"], {
+  cwd: packedInstallAppDir,
+  input: installedDirectCliMcpStdioInput,
+  encoding: "utf8"
+});
+const installedDirectCliMcpStdioLines = installedDirectCliMcpStdio.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const installedDirectCliMcpInitializePayload = JSON.parse(installedDirectCliMcpStdioLines[0]).result;
+const installedDirectCliMcpToolsPayload = JSON.parse(installedDirectCliMcpStdioLines[1]).result;
+if (
+  installedDirectCliMcpStdio.status !== 0 ||
+  installedDirectCliMcpInitializePayload?.serverInfo?.name !== "codex-bees" ||
+  installedDirectCliMcpInitializePayload?.serverInfo?.version !== "0.1.0" ||
+  !Array.isArray(installedDirectCliMcpToolsPayload?.tools) ||
+  !installedDirectCliMcpToolsPayload.tools.some((tool) => tool.name === "runtime_contract")
+) {
+  console.error("[smoke:installed-direct-cli-mcp-stdio] expected direct packaged CLI mcp --stdio to answer tools/list");
+  console.error(installedDirectCliMcpStdio.stderr || installedDirectCliMcpStdio.stdout);
+  process.exit(1);
+}
 const installedMcpTools = JSON.parse(
   runInstalled("installed-mcp-tools", "node", ["./node_modules/codex-bees/dist/mcp.js", "--tools"]).stdout
 ).tools;
