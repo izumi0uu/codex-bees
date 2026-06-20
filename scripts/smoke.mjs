@@ -1157,6 +1157,26 @@ if (
   console.error("[smoke:installed-cli-mcp-capabilities] expected installed codex-bees mcp --capabilities surface");
   process.exit(1);
 }
+const installedCliMcpCapabilitiesContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-status").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getCapabilityCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedCliMcpCapabilities)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCliMcpCapabilitiesContractImport.status !== 0 ||
+  JSON.parse(installedCliMcpCapabilitiesContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-cli-mcp-capabilities-contract] expected installed mcp capabilities output to match the runtime-status api surface");
+  console.error(installedCliMcpCapabilitiesContractImport.stderr || installedCliMcpCapabilitiesContractImport.stdout);
+  process.exit(installedCliMcpCapabilitiesContractImport.status ?? 1);
+}
 const installedCliMcpStdioInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} })
@@ -1347,6 +1367,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-mcp-capabilities] expected direct packaged CLI mcp capabilities surface");
   process.exit(1);
+}
+const installedDirectCliMcpCapabilitiesContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-status").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getCapabilityCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliMcpCapabilities)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliMcpCapabilitiesContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliMcpCapabilitiesContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-mcp-capabilities-contract] expected direct packaged CLI mcp capabilities output to match the runtime-status api surface");
+  console.error(installedDirectCliMcpCapabilitiesContractImport.stderr || installedDirectCliMcpCapabilitiesContractImport.stdout);
+  process.exit(installedDirectCliMcpCapabilitiesContractImport.status ?? 1);
 }
 const installedDirectCliMcpStdioInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
