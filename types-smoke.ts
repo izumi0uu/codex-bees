@@ -1,5 +1,6 @@
 import {
   getCommandCatalogView,
+  getMcpCommandCatalogView,
   getPackageMetadata,
   getRuntimeCatalogView,
   getRuntimeDoctorView,
@@ -18,12 +19,13 @@ import {
   searchMemoriesView,
   stateFilePath,
   storeMemory,
+  renderMcpHelpText,
   validateSwarm,
   validateTask
 } from "codex-bees";
 
 import { renderHelpText } from "codex-bees/commands";
-import { callMcpTool, getMcpCommandCatalogView, handleMcpRequest, renderMcpHelpText } from "codex-bees/mcp";
+import { callMcpTool, handleMcpRequest } from "codex-bees/mcp";
 
 const metadata = getPackageMetadata();
 metadata.product;

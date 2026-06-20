@@ -169,6 +169,8 @@ const importedSourceApi = JSON.parse(
 if (
   !importedSourceApi.includes("getRuntimeCatalogView") ||
   !importedSourceApi.includes("getCommandCatalogView") ||
+  !importedSourceApi.includes("getMcpCommandCatalogView") ||
+  !importedSourceApi.includes("renderMcpHelpText") ||
   !importedSourceApi.includes("getPackageMetadata") ||
   !importedSourceApi.includes("getRuntimeDoctorView") ||
   !importedSourceApi.includes("getRuntimeReadyView") ||
@@ -194,6 +196,8 @@ const importedDistApi = JSON.parse(
 if (
   !importedDistApi.includes("getRuntimeCatalogView") ||
   !importedDistApi.includes("getCommandCatalogView") ||
+  !importedDistApi.includes("getMcpCommandCatalogView") ||
+  !importedDistApi.includes("renderMcpHelpText") ||
   !importedDistApi.includes("getPackageMetadata") ||
   !importedDistApi.includes("getRuntimeDoctorView") ||
   !importedDistApi.includes("getRuntimeReadyView") ||
@@ -482,7 +486,7 @@ const installedImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && Object.keys(m).includes("getToolCatalogView") && Object.keys(m).includes("planTask") && Object.keys(m).includes("addTask") && Object.keys(m).includes("stateFilePath"), keys:Object.keys(m).sort()})))'
+    'import("codex-bees").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && Object.keys(m).includes("getToolCatalogView") && Object.keys(m).includes("getMcpCommandCatalogView") && Object.keys(m).includes("renderMcpHelpText") && Object.keys(m).includes("planTask") && Object.keys(m).includes("addTask") && Object.keys(m).includes("stateFilePath") && m.getMcpCommandCatalogView().counts.totalOptions >= 5 && m.renderMcpHelpText().includes("codex-bees mcp --capabilities"), keys:Object.keys(m).sort()})))'
   ],
   {
     cwd: packedInstallAppDir,

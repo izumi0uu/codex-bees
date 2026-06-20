@@ -32,9 +32,12 @@ export { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 
 export {
   callMcpTool,
+  getMcpCommandCatalog,
+  getMcpCommandCatalogView,
   getToolCatalogView,
   handleMcpRequest,
   listMcpTools,
+  renderMcpHelpText,
   runMcpCli,
   serializeMcpMessage,
   startMcpServer,
