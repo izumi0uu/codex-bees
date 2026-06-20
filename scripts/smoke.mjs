@@ -793,6 +793,19 @@ if (
   console.error("[smoke:installed-catalog] expected installed npx codex-bees to use bundled catalog assets");
   process.exit(1);
 }
+const installedDirectCliCatalog = JSON.parse(
+  runInstalled("installed-direct-cli-catalog", "node", ["./node_modules/codex-bees/dist/index.js", "catalog"]).stdout
+).catalog;
+if (
+  installedDirectCliCatalog.kind !== "runtime_catalog_view" ||
+  installedDirectCliCatalog.catalog?.source !== "bundled" ||
+  installedDirectCliCatalog.counts?.agents !== 4 ||
+  installedDirectCliCatalog.counts?.skills !== 2 ||
+  !installedDirectCliCatalog.catalog?.paths?.codexDir?.startsWith("@bundled/dist/.codex")
+) {
+  console.error("[smoke:installed-direct-cli-catalog] expected direct packaged CLI catalog to use bundled assets");
+  process.exit(1);
+}
 const installedStatus = JSON.parse(
   runInstalled("installed-status", "npx", ["codex-bees", "status"]).stdout
 ).status;
