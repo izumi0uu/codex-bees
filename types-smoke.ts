@@ -1,4 +1,6 @@
 import {
+  PACKAGE_VERSION,
+  PRODUCT_NAME,
   getCommandCatalogView,
   getMcpCommandCatalog,
   getMcpCommandCatalogView,
@@ -139,6 +141,8 @@ stateFilePath();
 const apiMetadataProduct: string = getApiPackageMetadata().product;
 const packageMetadataViewKind: "package_metadata_view" = getPackageMetadataView().kind;
 const packageMetadataViewMode: string = getPackageMetadataView().metadata.mode;
+const productName: string = PRODUCT_NAME;
+const packageVersion: string = PACKAGE_VERSION;
 const runtimeCatalogSource: string = getRuntimeCatalogPaths().source;
 const resolvedSkillPath: string | null = resolveRuntimeCatalogPath("skills");
 const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
