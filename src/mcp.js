@@ -2688,6 +2688,7 @@ function writeMcpHelp() {
   stdout.write("Usage:\n");
   stdout.write("  codex-bees mcp --stdio     Start the local MCP stdio runtime\n");
   stdout.write("  codex-bees mcp --tools     Print the current MCP tool catalog\n");
+  stdout.write("  codex-bees mcp --capabilities Print the shipped runtime capability inventory\n");
   stdout.write("  codex-bees mcp --version   Show MCP subcommand version\n");
   stdout.write("  codex-bees mcp --help      Show MCP subcommand help\n");
 }
@@ -2705,6 +2706,11 @@ export async function runMcpCli(args = []) {
 
   if (args.includes("--tools")) {
     stdout.write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
+    return;
+  }
+
+  if (args.includes("--capabilities")) {
+    stdout.write(JSON.stringify({ capabilities: getCapabilityCatalogView() }, null, 2) + "\n");
     return;
   }
 

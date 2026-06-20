@@ -775,6 +775,7 @@ if (
   !installedMcpHelp.stdout.includes("codex-bees mcp") ||
   !installedMcpHelp.stdout.includes("codex-bees mcp --stdio") ||
   !installedMcpHelp.stdout.includes("codex-bees mcp --tools") ||
+  !installedMcpHelp.stdout.includes("codex-bees mcp --capabilities") ||
   !installedMcpHelp.stdout.includes("codex-bees mcp --version")
 ) {
   console.error("[smoke:installed-mcp-help] expected installed codex-bees mcp help surface");
@@ -938,6 +939,20 @@ if (
   console.error("[smoke:installed-cli-mcp-tools] expected installed codex-bees mcp --tools surface");
   process.exit(1);
 }
+const installedCliMcpCapabilities = JSON.parse(
+  runInstalled("installed-cli-mcp-capabilities", "npx", ["codex-bees", "mcp", "--capabilities"]).stdout
+).capabilities;
+if (
+  installedCliMcpCapabilities.kind !== "runtime_capabilities_view" ||
+  installedCliMcpCapabilities.recommendedReason !== "capabilities_loaded" ||
+  installedCliMcpCapabilities.counts?.totalCapabilities < 6 ||
+  installedCliMcpCapabilities.counts?.categories?.coordination < 1 ||
+  !Array.isArray(installedCliMcpCapabilities.capabilities) ||
+  !installedCliMcpCapabilities.capabilities.some((capability) => capability.id === "swarm_coordination")
+) {
+  console.error("[smoke:installed-cli-mcp-capabilities] expected installed codex-bees mcp --capabilities surface");
+  process.exit(1);
+}
 const installedCliMcpStdioInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} })
@@ -969,6 +984,7 @@ if (
   !installedDirectMcpHelp.stdout.includes("codex-bees mcp") ||
   !installedDirectMcpHelp.stdout.includes("codex-bees mcp --stdio") ||
   !installedDirectMcpHelp.stdout.includes("codex-bees mcp --tools") ||
+  !installedDirectMcpHelp.stdout.includes("codex-bees mcp --capabilities") ||
   !installedDirectMcpHelp.stdout.includes("codex-bees mcp --version")
 ) {
   console.error("[smoke:installed-direct-mcp-help] expected installed packaged MCP entrypoint help surface");
@@ -977,6 +993,20 @@ if (
 const installedDirectMcpVersion = runInstalled("installed-direct-mcp-version", "node", ["./node_modules/codex-bees/dist/mcp.js", "--version"]);
 if (installedDirectMcpVersion.stdout.trim() !== "0.1.0") {
   console.error("[smoke:installed-direct-mcp-version] expected installed packaged MCP entrypoint version output");
+  process.exit(1);
+}
+const installedDirectMcpCapabilities = JSON.parse(
+  runInstalled("installed-direct-mcp-capabilities", "node", ["./node_modules/codex-bees/dist/mcp.js", "--capabilities"]).stdout
+).capabilities;
+if (
+  installedDirectMcpCapabilities.kind !== "runtime_capabilities_view" ||
+  installedDirectMcpCapabilities.recommendedReason !== "capabilities_loaded" ||
+  installedDirectMcpCapabilities.counts?.totalCapabilities < 6 ||
+  installedDirectMcpCapabilities.counts?.categories?.coordination < 1 ||
+  !Array.isArray(installedDirectMcpCapabilities.capabilities) ||
+  !installedDirectMcpCapabilities.capabilities.some((capability) => capability.id === "swarm_coordination")
+) {
+  console.error("[smoke:installed-direct-mcp-capabilities] expected installed packaged MCP entrypoint capabilities surface");
   process.exit(1);
 }
 const installedDirectMcpStdioInput = [
