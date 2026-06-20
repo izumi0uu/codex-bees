@@ -12,6 +12,7 @@ const DIST_DIR = join(REPO_ROOT, "dist");
 const README_PATH = join(REPO_ROOT, "README.md");
 const PACKAGE_JSON_PATH = join(REPO_ROOT, "package.json");
 const README_TEXT = readFileSync(README_PATH, "utf8");
+const NPM_CACHE_DIR = join(tmpdir(), "codex-bees-smoke-npm-cache");
 
 function run(label, args, expectedStatus = 0) {
   const result = spawnSync("node", args, { encoding: "utf8" });
@@ -31,6 +32,18 @@ function runInCwd(label, args, cwd, expectedStatus = 0) {
     process.exit(result.status ?? 1);
   }
   return result;
+}
+
+function runNpm(args, options = {}) {
+  mkdirSync(NPM_CACHE_DIR, { recursive: true });
+  return spawnSync("npm", args, {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      npm_config_cache: NPM_CACHE_DIR
+    },
+    ...options
+  });
 }
 
 run("build-dist", ["./scripts/build.mjs"]);
@@ -363,7 +376,7 @@ if (
   process.exit(1);
 }
 const packDryRun = JSON.parse(
-  spawnSync("npm", ["pack", "--dry-run", "--json"], { encoding: "utf8" }).stdout
+  runNpm(["pack", "--dry-run", "--json"]).stdout
 )[0];
 const packPaths = new Set((packDryRun.files ?? []).map((entry) => entry.path));
 if (
@@ -383,19 +396,18 @@ if (
 const packedInstallDir = mkdtempSync(join(tmpdir(), "codex-bees-packed-install-"));
 const packedInstallAppDir = join(packedInstallDir, "app");
 const packResult = JSON.parse(
-  spawnSync("npm", ["pack", "--json"], { encoding: "utf8" }).stdout
+  runNpm(["pack", "--json"]).stdout
 )[0];
 const packedTarballPath = join(REPO_ROOT, packResult.filename);
 mkdirSync(packedInstallAppDir, { recursive: true });
-const installInit = spawnSync("npm", ["init", "-y"], { cwd: packedInstallAppDir, encoding: "utf8" });
+const installInit = runNpm(["init", "-y"], { cwd: packedInstallAppDir });
 if (installInit.status !== 0) {
   console.error("[smoke:install-init] failed");
   console.error(installInit.stderr || installInit.stdout);
   process.exit(installInit.status ?? 1);
 }
-const installPackage = spawnSync("npm", ["install", packedTarballPath], {
-  cwd: packedInstallAppDir,
-  encoding: "utf8"
+const installPackage = runNpm(["install", packedTarballPath], {
+  cwd: packedInstallAppDir
 });
 if (installPackage.status !== 0) {
   console.error("[smoke:install-package] failed");
@@ -1222,7 +1234,11 @@ writeFileSync(
 );
 const installedTypecheck = spawnSync("npx", ["-y", "-p", "typescript", "tsc", "--noEmit", "./types-smoke.ts"], {
   cwd: packedInstallAppDir,
-  encoding: "utf8"
+  encoding: "utf8",
+  env: {
+    ...process.env,
+    npm_config_cache: NPM_CACHE_DIR
+  }
 });
 if (installedTypecheck.status !== 0) {
   console.error("[smoke:installed-typecheck] expected installed codex-bees typings to compile in a downstream project");
