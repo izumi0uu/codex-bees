@@ -613,7 +613,7 @@ export interface SwarmLaneInput {
 
 export interface SwarmInput {
   objective: string;
-  status?: string;
+  status?: SwarmStatus;
   topology?: string;
   maxWorkers?: number;
   owner?: string | null;
