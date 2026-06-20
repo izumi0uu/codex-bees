@@ -710,6 +710,35 @@ if (
   console.error(installedHelpImport.stderr || installedHelpImport.stdout);
   process.exit(installedHelpImport.status ?? 1);
 }
+const installedDirectCliHelp = runInstalled("installed-direct-cli-help", "node", ["./node_modules/codex-bees/dist/index.js", "--help"]);
+if (
+  !installedDirectCliHelp.stdout.includes("codex-bees") ||
+  !installedDirectCliHelp.stdout.includes("codex-bees catalog") ||
+  !installedDirectCliHelp.stdout.includes("codex-bees mcp")
+) {
+  console.error("[smoke:installed-direct-cli-help] expected direct packaged CLI help surface");
+  process.exit(1);
+}
+const installedDirectCliHelpImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/commands").then((m) => console.log(JSON.stringify({ ok: m.renderHelpText() === process.argv[1] })))',
+    installedDirectCliHelp.stdout
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliHelpImport.status !== 0 ||
+  JSON.parse(installedDirectCliHelpImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-help-contract] expected direct packaged CLI help output to match commands surface");
+  console.error(installedDirectCliHelpImport.stderr || installedDirectCliHelpImport.stdout);
+  process.exit(installedDirectCliHelpImport.status ?? 1);
+}
 const installedDirectCliBad = spawnSync("node", ["./node_modules/codex-bees/dist/index.js", "nope"], {
   cwd: packedInstallAppDir,
   encoding: "utf8"
