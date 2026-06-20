@@ -465,6 +465,47 @@ export interface ValidationView {
   [key: string]: unknown;
 }
 
+export interface ValidationIssue {
+  code: string;
+  message: string;
+  allowed?: string[];
+}
+
+export interface SwarmOverlapIssue extends ValidationIssue {
+  lanes: string[];
+  path: string;
+}
+
+export interface TaskValidationView {
+  kind: "task_validation";
+  recommendedReason: string;
+  task: TaskRecord;
+  ready: boolean;
+  issues: ValidationIssue[];
+  catalog: {
+    agents: string[];
+  };
+}
+
+export interface SwarmLaneValidation {
+  lane: string;
+  ready: boolean;
+  issues: ValidationIssue[];
+}
+
+export interface SwarmValidationView {
+  kind: "swarm_validation";
+  recommendedReason: string;
+  swarm: SwarmRecord;
+  ready: boolean;
+  issues: ValidationIssue[];
+  lanes: SwarmLaneValidation[];
+  overlaps: SwarmOverlapIssue[];
+  catalog: {
+    agents: string[];
+  };
+}
+
 export declare const PRODUCT_NAME: string;
 export declare const PACKAGE_VERSION: string;
 export declare const toolCatalog: ToolCatalogEntry[];
@@ -525,6 +566,6 @@ export declare function listSwarmsView(filters: Record<string, unknown> | undefi
 export declare function listMemoriesView(filters?: Record<string, unknown>): MemoryListView;
 export declare function searchMemoriesView(query: string, filters?: Record<string, unknown>, limit?: number): MemorySearchView;
 export declare function storeMemory(input: Record<string, unknown>): MemoryRecord;
-export declare function validateTask(id: string): ValidationView;
-export declare function validateSwarm(id: string): ValidationView;
+export declare function validateTask(id: string): TaskValidationView;
+export declare function validateSwarm(id: string): SwarmValidationView;
 export declare function stateFilePath(): string;
