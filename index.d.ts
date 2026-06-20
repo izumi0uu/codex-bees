@@ -146,7 +146,7 @@ export interface WorkerGuidelinesView {
 
 export interface RuntimeStatusView {
   kind: "runtime_status_view";
-  recommendedReason: string;
+  recommendedReason: "runtime_state_visible" | "runtime_state_empty";
   counts: RuntimeStatusCounts & {
     trackedStateEntries: number;
   };
