@@ -485,6 +485,13 @@ export interface MemorySearchView {
   results: MemorySearchResult[];
 }
 
+export interface MemoryFilters {
+  namespace?: string;
+  kind?: string;
+  agent?: string;
+  tags?: string[];
+}
+
 export interface MemoryInput {
   content: string;
   namespace?: string;
@@ -644,8 +651,8 @@ export declare function getSwarmView(id: string): SwarmDetailView | null;
 export declare function listTasksView(): TaskListView;
 export declare function listSwarmsView(filters?: Record<string, unknown>, options?: { detailed?: false }): SwarmListView;
 export declare function listSwarmsView(filters: Record<string, unknown> | undefined, options: { detailed: true }): DetailedSwarmListView;
-export declare function listMemoriesView(filters?: Record<string, unknown>): MemoryListView;
-export declare function searchMemoriesView(query: string, filters?: Record<string, unknown>, limit?: number): MemorySearchView;
+export declare function listMemoriesView(filters?: MemoryFilters): MemoryListView;
+export declare function searchMemoriesView(query: string, filters?: MemoryFilters, limit?: number): MemorySearchView;
 export declare function storeMemory(input: MemoryInput): MemoryRecord;
 export declare function validateTask(id: string): TaskValidationView;
 export declare function validateSwarm(id: string): SwarmValidationView;
