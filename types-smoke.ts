@@ -101,6 +101,8 @@ getToolCatalogView().tools[0]?.name;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
 const rootToolSchemaType: string | undefined = getToolCatalogView().tools[0]?.inputSchema.type as string | undefined;
 const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWorkers;
+const rootSwarmPlanTopology: "bounded-local" = planSwarm("typed root swarm").swarm.topology;
+const rootSwarmPlanLaneSource: "planner" = planSwarm("typed root swarm").swarm.laneSource;
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
 const rootStartMcpServer: () => Promise<void> = startMcpServer;
@@ -213,6 +215,8 @@ const statusCliEntry: string | undefined = getStatusSubpathView().status.recomme
 const plannerLane: string | undefined = planTaskSubpath("typed downstream planner").lanes[0]?.lane;
 const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm").swarm.lanes[0]?.lane;
 const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.maxWorkers;
+const plannedSwarmTopology: "bounded-local" = planSwarmSubpath("typed downstream swarm").swarm.topology;
+const plannedSwarmLaneSource: "planner" = planSwarmSubpath("typed downstream swarm").swarm.laneSource;
 const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[]).kind;
 const memorySearchQuery: string = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).query;
 const memorySearchScore: number | undefined = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).results[0]?.score;
