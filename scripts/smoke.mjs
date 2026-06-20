@@ -354,6 +354,13 @@ if (installPackage.status !== 0) {
   console.error(installPackage.stderr || installPackage.stdout);
   process.exit(installPackage.status ?? 1);
 }
+const installedManifestMain = JSON.parse(
+  readFileSync(join(packedInstallAppDir, "node_modules", "codex-bees", "package.json"), "utf8")
+).main;
+if (installedManifestMain !== "dist/api.js") {
+  console.error("[smoke:installed-manifest] expected installed package main entry to target dist/api.js");
+  process.exit(1);
+}
 const installedImport = spawnSync(
   "node",
   [

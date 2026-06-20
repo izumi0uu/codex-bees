@@ -65,6 +65,8 @@ import {
 } from "codex-bees";
 ```
 
+The package manifest now aligns with that contract too: the root export and `main` entry both point at the library surface (`dist/api.js`), while the `codex-bees` bin continues to point at the CLI entrypoint.
+
 Official subpath exports are also available for narrower integrations:
 
 - `codex-bees/api`

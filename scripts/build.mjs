@@ -33,6 +33,15 @@ function verifyDistCommand(label, args) {
   }
 }
 
+function verifyDistScript(label, script) {
+  const result = spawnSync("node", ["-e", script], { encoding: "utf8" });
+  if (result.status !== 0) {
+    console.error(`[build:${label}] failed`);
+    console.error(result.stderr || result.stdout);
+    process.exit(result.status ?? 1);
+  }
+}
+
 rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist", { recursive: true });
 copySourceModules();
@@ -40,5 +49,9 @@ copyTree(".codex", join("dist", ".codex"));
 
 verifyDistCommand("dist-help", ["./dist/index.js", "--help"]);
 verifyDistCommand("dist-tools", ["./dist/mcp.js", "--tools"]);
+verifyDistScript(
+  "dist-api",
+  'import("./dist/api.js").then((m) => { if (!("getRuntimeCatalogView" in m) || !("getToolCatalogView" in m) || !("planTask" in m)) { throw new Error("dist api surface incomplete"); } })'
+);
 
 console.log("built");

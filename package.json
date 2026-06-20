@@ -22,7 +22,7 @@
     "./runtime-status": "./dist/runtime-status.js",
     "./runtime-contract": "./dist/runtime-contract.js"
   },
-  "main": "dist/index.js",
+  "main": "dist/api.js",
   "bin": {
     "codex-bees": "./dist/index.js"
   },
