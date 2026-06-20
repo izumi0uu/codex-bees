@@ -221,7 +221,7 @@ export interface RuntimeContract {
   node: string;
   architecture: string[];
   transport: {
-    cli: string;
+    cli: "stdio";
     mcp: string;
   };
   responsibilities: string[];
