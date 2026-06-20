@@ -199,7 +199,7 @@ export interface TaskPlan {
 
 export interface PlannedSwarm {
   kind: "planned_swarm";
-  recommendedReason: string;
+  recommendedReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready";
   objective: string;
   evidence: PlannerEvidence;
   swarm: PlannedSwarmShape;
