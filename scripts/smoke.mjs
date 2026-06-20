@@ -1062,6 +1062,48 @@ if (
   console.error(installedDirectCliMcpBad.stderr || installedDirectCliMcpBad.stdout);
   process.exit(1);
 }
+const installedDirectCliMcpHelp = runInstalled("installed-direct-cli-mcp-help", "node", ["./node_modules/codex-bees/dist/index.js", "mcp", "--help"]);
+if (
+  !installedDirectCliMcpHelp.stdout.includes("codex-bees mcp") ||
+  !installedDirectCliMcpHelp.stdout.includes("codex-bees mcp --stdio") ||
+  !installedDirectCliMcpHelp.stdout.includes("codex-bees mcp --tools") ||
+  !installedDirectCliMcpHelp.stdout.includes("codex-bees mcp --capabilities") ||
+  !installedDirectCliMcpHelp.stdout.includes("codex-bees mcp --version")
+) {
+  console.error("[smoke:installed-direct-cli-mcp-help] expected direct packaged CLI mcp help surface");
+  process.exit(1);
+}
+const installedDirectCliMcpVersion = runInstalled("installed-direct-cli-mcp-version", "node", ["./node_modules/codex-bees/dist/index.js", "mcp", "--version"]);
+if (installedDirectCliMcpVersion.stdout.trim() !== "0.1.0") {
+  console.error("[smoke:installed-direct-cli-mcp-version] expected direct packaged CLI mcp version output");
+  process.exit(1);
+}
+const installedDirectCliMcpTools = JSON.parse(
+  runInstalled("installed-direct-cli-mcp-tools", "node", ["./node_modules/codex-bees/dist/index.js", "mcp", "--tools"]).stdout
+).tools;
+if (
+  installedDirectCliMcpTools.kind !== "tool_catalog_view" ||
+  installedDirectCliMcpTools.recommendedReason !== "tool_catalog_loaded" ||
+  installedDirectCliMcpTools.counts?.totalTools < 10 ||
+  !installedDirectCliMcpTools.tools?.some((tool) => tool.name === "runtime_contract")
+) {
+  console.error("[smoke:installed-direct-cli-mcp-tools] expected direct packaged CLI mcp tools surface");
+  process.exit(1);
+}
+const installedDirectCliMcpCapabilities = JSON.parse(
+  runInstalled("installed-direct-cli-mcp-capabilities", "node", ["./node_modules/codex-bees/dist/index.js", "mcp", "--capabilities"]).stdout
+).capabilities;
+if (
+  installedDirectCliMcpCapabilities.kind !== "runtime_capabilities_view" ||
+  installedDirectCliMcpCapabilities.recommendedReason !== "capabilities_loaded" ||
+  installedDirectCliMcpCapabilities.counts?.totalCapabilities < 6 ||
+  installedDirectCliMcpCapabilities.counts?.categories?.coordination < 1 ||
+  !Array.isArray(installedDirectCliMcpCapabilities.capabilities) ||
+  !installedDirectCliMcpCapabilities.capabilities.some((capability) => capability.id === "swarm_coordination")
+) {
+  console.error("[smoke:installed-direct-cli-mcp-capabilities] expected direct packaged CLI mcp capabilities surface");
+  process.exit(1);
+}
 const installedMcpTools = JSON.parse(
   runInstalled("installed-mcp-tools", "node", ["./node_modules/codex-bees/dist/mcp.js", "--tools"]).stdout
 ).tools;
