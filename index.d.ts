@@ -374,8 +374,8 @@ export interface TaskRecord {
   reviewOutcome?: string | null;
   reviewNotes?: string | null;
   reviewEvidence?: unknown[] | null;
-  annotations?: TaskAnnotation[];
-  history?: TaskHistoryEntry[];
+  annotations: TaskAnnotation[];
+  history: TaskHistoryEntry[];
   createdAt?: string | null;
   updatedAt?: string | null;
   [key: string]: unknown;
