@@ -52,6 +52,28 @@ The `mcp` subcommand now has its own explicit CLI contract: `codex-bees mcp --st
 
 The package is also safe to import as a module. Importing `codex-bees`, `./src/index.js`, or `./dist/index.js` no longer auto-executes the CLI entrypoint; runtime output only appears when the binary is explicitly invoked.
 
+The root package export now exposes a small official programmatic API as well:
+
+```js
+import {
+  getRuntimeCatalogView,
+  getRuntimeStatusView,
+  getToolCatalogView,
+  getRuntimeContractView,
+  planTask,
+  planSwarm
+} from "codex-bees";
+```
+
+Official subpath exports are also available for narrower integrations:
+
+- `codex-bees/api`
+- `codex-bees/catalog`
+- `codex-bees/mcp`
+- `codex-bees/planner`
+- `codex-bees/runtime-status`
+- `codex-bees/runtime-contract`
+
 ## CLI
 
 ```bash

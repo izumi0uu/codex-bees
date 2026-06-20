@@ -13,6 +13,15 @@
     "type": "git",
     "url": "git@github.com:izumi0uu/codex-bees.git"
   },
+  "exports": {
+    ".": "./dist/api.js",
+    "./api": "./dist/api.js",
+    "./catalog": "./dist/catalog.js",
+    "./mcp": "./dist/mcp.js",
+    "./planner": "./dist/planner.js",
+    "./runtime-status": "./dist/runtime-status.js",
+    "./runtime-contract": "./dist/runtime-contract.js"
+  },
   "main": "dist/index.js",
   "bin": {
     "codex-bees": "./dist/index.js"

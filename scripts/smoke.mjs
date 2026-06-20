@@ -155,6 +155,35 @@ if (importedDistCli !== "DIST_IMPORT_OK") {
   console.error("[smoke:import-dist-index] expected dist index import to stay silent and resolve");
   process.exit(1);
 }
+const importedSourceApi = JSON.parse(
+  run("import-src-api", [
+    "-e",
+    'import("./src/api.js").then((m) => console.log(JSON.stringify(Object.keys(m).sort())))'
+  ]).stdout
+);
+if (
+  !importedSourceApi.includes("getRuntimeCatalogView") ||
+  !importedSourceApi.includes("getToolCatalogView") ||
+  !importedSourceApi.includes("planTask")
+) {
+  console.error("[smoke:import-src-api] expected source api module to export catalog, tool, and planner surfaces");
+  process.exit(1);
+}
+
+const importedDistApi = JSON.parse(
+  run("import-dist-api", [
+    "-e",
+    'import("./dist/api.js").then((m) => console.log(JSON.stringify(Object.keys(m).sort())))'
+  ]).stdout
+);
+if (
+  !importedDistApi.includes("getRuntimeCatalogView") ||
+  !importedDistApi.includes("getToolCatalogView") ||
+  !importedDistApi.includes("planTask")
+) {
+  console.error("[smoke:import-dist-api] expected dist api module to export catalog, tool, and planner surfaces");
+  process.exit(1);
+}
 
 const storedMemoryCli = JSON.parse(
   run("memory-store-cli", [
@@ -327,7 +356,10 @@ if (installPackage.status !== 0) {
 }
 const installedImport = spawnSync(
   "node",
-  ["-e", 'import("codex-bees").then(() => console.log("PKG_IMPORT_OK"))'],
+  [
+    "-e",
+    'import("codex-bees").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && Object.keys(m).includes("getToolCatalogView") && Object.keys(m).includes("planTask"), keys:Object.keys(m).sort()})))'
+  ],
   {
     cwd: packedInstallAppDir,
     encoding: "utf8"
@@ -335,11 +367,49 @@ const installedImport = spawnSync(
 );
 if (
   installedImport.status !== 0 ||
-  installedImport.stdout.trim() !== "PKG_IMPORT_OK"
+  JSON.parse(installedImport.stdout).ok !== true
 ) {
-  console.error("[smoke:installed-import] expected installed codex-bees import to stay silent and resolve");
+  console.error("[smoke:installed-import] expected installed codex-bees root import to expose the public api surface");
   console.error(installedImport.stderr || installedImport.stdout);
   process.exit(installedImport.status ?? 1);
+}
+const installedCatalogImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView")})))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCatalogImport.status !== 0 ||
+  JSON.parse(installedCatalogImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-catalog-import] expected installed codex-bees/catalog subpath export");
+  console.error(installedCatalogImport.stderr || installedCatalogImport.stdout);
+  process.exit(installedCatalogImport.status ?? 1);
+}
+const installedPlannerImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/planner").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("planTask")})))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedPlannerImport.status !== 0 ||
+  JSON.parse(installedPlannerImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-planner-import] expected installed codex-bees/planner subpath export");
+  console.error(installedPlannerImport.stderr || installedPlannerImport.stdout);
+  process.exit(installedPlannerImport.status ?? 1);
 }
 function runInstalled(label, command, args) {
   const result = spawnSync(command, args, {
