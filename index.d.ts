@@ -297,7 +297,7 @@ export interface PlannedSwarmShape {
 export interface ToolCatalogEntry {
   name: string;
   description: string;
-  inputSchema: Record<string, unknown>;
+  inputSchema: JsonObject;
 }
 
 export interface ToolCatalogView {

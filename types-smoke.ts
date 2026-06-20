@@ -95,6 +95,7 @@ getRuntimeReadyView().next[0];
 getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).kind;
 getToolCatalogView().tools[0]?.name;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
+const rootToolSchemaType: string | undefined = getToolCatalogView().tools[0]?.inputSchema.type as string | undefined;
 const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWorkers;
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
