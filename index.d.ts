@@ -349,6 +349,12 @@ export type SwarmStatus =
   | "completed"
   | "cancelled";
 
+export type TaskReviewState =
+  | "pending_verifier"
+  | "approved"
+  | "changes_requested"
+  | "not_started";
+
 export interface TaskHistoryEntry {
   id: string;
   at: string | null;
