@@ -763,6 +763,18 @@ if (
   console.error("[smoke:installed-metadata] expected installed npx codex-bees metadata to expose the package metadata view");
   process.exit(1);
 }
+const installedDirectCliMetadata = JSON.parse(
+  runInstalled("installed-direct-cli-metadata", "node", ["./node_modules/codex-bees/dist/index.js", "metadata"]).stdout
+).metadata;
+if (
+  installedDirectCliMetadata.kind !== "package_metadata_view" ||
+  installedDirectCliMetadata.metadata?.product !== "codex-bees" ||
+  installedDirectCliMetadata.metadata?.version !== "0.1.0" ||
+  installedDirectCliMetadata.metadata?.homepage !== "https://github.com/izumi0uu/codex-bees#readme"
+) {
+  console.error("[smoke:installed-direct-cli-metadata] expected direct packaged CLI metadata output");
+  process.exit(1);
+}
 const installedCatalog = JSON.parse(
   runInstalled("installed-catalog", "npx", ["codex-bees", "catalog"]).stdout
 ).catalog;
