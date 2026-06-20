@@ -277,8 +277,24 @@ export interface RuntimeStatus {
   };
   highlights: string[];
   recommendedEntryPoints: {
-    cli: string[];
-    mcp: string[];
+    cli: Array<
+      | "leader:assignment-launch-plan"
+      | "leader:assignment-dispatch-bundle"
+      | "leader:workspace"
+      | "status"
+      | "capabilities"
+      | "runtime:summary-pack"
+      | "runtime:queue-pack"
+    >;
+    mcp: Array<
+      | "leader_assignment_launch_plan"
+      | "leader_assignment_dispatch_bundle"
+      | "leader_workspace"
+      | "runtime_status"
+      | "runtime_capabilities"
+      | "runtime_summary_pack"
+      | "runtime_queue_pack"
+    >;
   };
   useCases: string[];
   catalog: RuntimeCatalog;
