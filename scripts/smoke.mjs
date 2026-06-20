@@ -1223,6 +1223,26 @@ if (
   console.error("[smoke:installed-cli-mcp-tools] expected installed codex-bees mcp --tools surface");
   process.exit(1);
 }
+const installedCliMcpToolsContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getToolCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedCliMcpTools)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCliMcpToolsContractImport.status !== 0 ||
+  JSON.parse(installedCliMcpToolsContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-cli-mcp-tools-contract] expected installed mcp tools output to match the tool catalog api surface");
+  console.error(installedCliMcpToolsContractImport.stderr || installedCliMcpToolsContractImport.stdout);
+  process.exit(installedCliMcpToolsContractImport.status ?? 1);
+}
 const installedCliMcpCapabilities = JSON.parse(
   runInstalled("installed-cli-mcp-capabilities", "npx", ["codex-bees", "mcp", "--capabilities"]).stdout
 ).capabilities;
@@ -1453,6 +1473,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-mcp-tools] expected direct packaged CLI mcp tools surface");
   process.exit(1);
+}
+const installedDirectCliMcpToolsContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getToolCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliMcpTools)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliMcpToolsContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliMcpToolsContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-mcp-tools-contract] expected direct packaged CLI mcp tools output to match the tool catalog api surface");
+  console.error(installedDirectCliMcpToolsContractImport.stderr || installedDirectCliMcpToolsContractImport.stdout);
+  process.exit(installedDirectCliMcpToolsContractImport.status ?? 1);
 }
 const installedDirectCliMcpCapabilities = JSON.parse(
   runInstalled("installed-direct-cli-mcp-capabilities", "node", ["./node_modules/codex-bees/dist/index.js", "mcp", "--capabilities"]).stdout
