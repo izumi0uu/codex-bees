@@ -802,6 +802,20 @@ if (
   console.error("[smoke:installed-status] expected installed npx codex-bees status to expose bundled runtime catalog");
   process.exit(1);
 }
+const installedDirectCliStatus = JSON.parse(
+  runInstalled("installed-direct-cli-status", "node", ["./node_modules/codex-bees/dist/index.js", "status"]).stdout
+).status;
+if (
+  installedDirectCliStatus.kind !== "runtime_status_view" ||
+  installedDirectCliStatus.status?.catalog?.source !== "bundled" ||
+  installedDirectCliStatus.status?.version !== "0.1.0" ||
+  installedDirectCliStatus.status?.product !== "codex-bees" ||
+  installedDirectCliStatus.counts?.agents !== 4 ||
+  installedDirectCliStatus.counts?.skills !== 2
+) {
+  console.error("[smoke:installed-direct-cli-status] expected direct packaged CLI status to expose bundled runtime catalog");
+  process.exit(1);
+}
 const installedDoctor = JSON.parse(
   runInstalled("installed-doctor", "npx", ["codex-bees", "doctor"]).stdout
 );
