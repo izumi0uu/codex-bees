@@ -119,6 +119,8 @@ task.id;
 const fetchedTaskId: string | undefined = getTask(task.id)?.id;
 const taskOwner: string | null | undefined = task.owner;
 const taskScopePath: string | undefined = task.scope?.[0];
+const taskHistoryType: string | undefined = task.history?.[0]?.type;
+const taskAnnotationKind: string | undefined = task.annotations?.[0]?.kind;
 getTaskView(task.id)?.task.id;
 const taskHasHistory: boolean | undefined = getTaskView(task.id)?.metadata.hasHistory;
 const taskReviewState: string | undefined = getTaskView(task.id)?.metadata.reviewState;

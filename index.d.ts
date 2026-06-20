@@ -327,6 +327,26 @@ export interface McpResponse {
   };
 }
 
+export interface TaskHistoryEntry {
+  id: string;
+  at: string | null;
+  type: string;
+  fromQueueStatus: string | null;
+  toQueueStatus: string | null;
+  actor: string | null;
+  notes: string | null;
+  evidence: unknown[];
+  outcome: string | null;
+}
+
+export interface TaskAnnotation {
+  id: string;
+  at: string | null;
+  actor: string | null;
+  kind: string;
+  content: string;
+}
+
 export interface TaskRecord {
   id: string;
   title?: string;
@@ -347,8 +367,8 @@ export interface TaskRecord {
   reviewOutcome?: string | null;
   reviewNotes?: string | null;
   reviewEvidence?: unknown[] | null;
-  annotations?: unknown[];
-  history?: unknown[];
+  annotations?: TaskAnnotation[];
+  history?: TaskHistoryEntry[];
   createdAt?: string | null;
   updatedAt?: string | null;
   [key: string]: unknown;
