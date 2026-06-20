@@ -52,7 +52,8 @@ import {
   resolveRuntimeCatalogPath,
   validateSwarm,
   validateTask,
-  type TaskReviewState
+  type TaskReviewState,
+  type SwarmStatus
 } from "codex-bees";
 
 import { renderHelpText as renderHelpTextCommands } from "codex-bees/commands";
@@ -158,7 +159,7 @@ const swarmMaxWorkers: number | undefined = swarm.maxWorkers;
 const swarmCreatedAt: string | null | undefined = swarm.createdAt;
 const swarmUpdatedAt: string | null | undefined = swarm.updatedAt;
 getSwarmView(swarm.id)?.swarm.id;
-const swarmDerivedStatus: string | undefined = getSwarmView(swarm.id)?.metadata.derivedStatus;
+const swarmDerivedStatus: SwarmStatus | undefined = getSwarmView(swarm.id)?.metadata.derivedStatus;
 const swarmReadyToComplete: boolean | undefined = getSwarmView(swarm.id)?.metadata.readyToComplete;
 validateSwarm(swarm.id)?.recommendedReason;
 const swarmValidationReady: boolean | undefined = validateSwarm(swarm.id)?.ready;
@@ -179,7 +180,7 @@ const memoryListAgent: string | null | undefined = listMemoriesView({ agent: "te
 listTasksView().counts.totalTasks;
 const filteredSwarmOwner: string | null | undefined = listSwarmsView({ status: "planned", topology: "bounded-local", owner: "leader" }).swarms[0]?.owner;
 const detailedSwarmRecommended: string | undefined = listSwarmsView({ topology: "bounded-local" }, { detailed: true }).swarms[0]?.recommendedReason;
-const detailedSwarmDerivedStatus: string | undefined = listSwarmsView({ owner: "leader" }, { detailed: true }).swarms[0]?.derivedStatus;
+const detailedSwarmDerivedStatus: SwarmStatus | undefined = listSwarmsView({ owner: "leader" }, { detailed: true }).swarms[0]?.derivedStatus;
 listSwarmsView({ status: "planned" }, { detailed: true }).counts.totalSwarms;
 listMemoriesView({ namespace: "types" }).counts.totalMemories;
 searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5);
