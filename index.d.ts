@@ -581,7 +581,7 @@ export interface MemoryInput {
 export interface TaskInput {
   title: string;
   status?: string;
-  queueStatus?: string;
+  queueStatus?: TaskQueueStatus;
   owner?: string | null;
   verifier?: string | null;
   objective?: string | null;
