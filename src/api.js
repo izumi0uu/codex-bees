@@ -17,6 +17,13 @@ export {
 
 export { getRuntimeContractView } from "./runtime-contract.js";
 
+export {
+  getCoordinationOverview,
+  getCoordinationOverviewView,
+  getWorkerGuidelines,
+  getWorkerGuidelinesView
+} from "./runtime-guidance.js";
+
 export { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 
 export {

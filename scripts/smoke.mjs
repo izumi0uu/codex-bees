@@ -164,6 +164,8 @@ const importedSourceApi = JSON.parse(
 if (
   !importedSourceApi.includes("getRuntimeCatalogView") ||
   !importedSourceApi.includes("getToolCatalogView") ||
+  !importedSourceApi.includes("getCoordinationOverviewView") ||
+  !importedSourceApi.includes("getWorkerGuidelinesView") ||
   !importedSourceApi.includes("handleMcpRequest") ||
   !importedSourceApi.includes("callMcpTool") ||
   !importedSourceApi.includes("planTask") ||
@@ -183,6 +185,8 @@ const importedDistApi = JSON.parse(
 if (
   !importedDistApi.includes("getRuntimeCatalogView") ||
   !importedDistApi.includes("getToolCatalogView") ||
+  !importedDistApi.includes("getCoordinationOverviewView") ||
+  !importedDistApi.includes("getWorkerGuidelinesView") ||
   !importedDistApi.includes("handleMcpRequest") ||
   !importedDistApi.includes("callMcpTool") ||
   !importedDistApi.includes("planTask") ||
@@ -425,6 +429,25 @@ if (
   console.error("[smoke:installed-catalog-import] expected installed codex-bees/catalog subpath export");
   console.error(installedCatalogImport.stderr || installedCatalogImport.stdout);
   process.exit(installedCatalogImport.status ?? 1);
+}
+const installedRuntimeGuidanceImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-guidance").then((m) => console.log(JSON.stringify({ ok: m.getCoordinationOverviewView().overview.deliveryBoundary === "codex-only runtime" && m.getWorkerGuidelinesView().guidelines.fileOwnership === "one active writer per file" })))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRuntimeGuidanceImport.status !== 0 ||
+  JSON.parse(installedRuntimeGuidanceImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-runtime-guidance-import] expected installed codex-bees/runtime-guidance subpath export");
+  console.error(installedRuntimeGuidanceImport.stderr || installedRuntimeGuidanceImport.stdout);
+  process.exit(installedRuntimeGuidanceImport.status ?? 1);
 }
 const installedPlannerImport = spawnSync(
   "node",

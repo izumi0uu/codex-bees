@@ -77,6 +77,7 @@ Official subpath exports are also available for narrower integrations:
 - `codex-bees/mcp`
 - `codex-bees/planner`
 - `codex-bees/state`
+- `codex-bees/runtime-guidance`
 - `codex-bees/runtime-status`
 - `codex-bees/runtime-contract`
 
@@ -99,6 +100,13 @@ const tools = listMcpTools();
 const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const contract = callMcpTool("runtime_contract");
 ```
+
+The `codex-bees/runtime-guidance` subpath exposes the same coordination primitives that the MCP tools return, but as direct library calls:
+
+- `getCoordinationOverview()`
+- `getCoordinationOverviewView()`
+- `getWorkerGuidelines()`
+- `getWorkerGuidelinesView()`
 
 ## CLI
 
