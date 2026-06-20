@@ -383,7 +383,7 @@ export interface TaskRecord {
 
 export interface SwarmRecord {
   id: string;
-  objective?: string;
+  objective: string;
   status: string;
   topology: string;
   maxWorkers: number;
