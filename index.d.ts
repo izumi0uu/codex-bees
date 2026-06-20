@@ -155,7 +155,7 @@ export interface RuntimeStatusView {
 
 export interface RuntimeCapabilitiesView {
   kind: "runtime_capabilities_view";
-  recommendedReason: string;
+  recommendedReason: "capabilities_loaded" | "capabilities_empty";
   counts: {
     totalCapabilities: number;
     categories: Record<string, number>;
