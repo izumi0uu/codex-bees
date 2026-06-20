@@ -101,7 +101,11 @@ const swarmReadyToComplete: boolean | undefined = getSwarmView(swarm.id)?.metada
 validateSwarm(swarm.id).recommendedReason;
 
 storeMemory({ content: "typed memory", namespace: "types", kind: "note" }).id;
+const memoryListNamespace: string | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.namespace;
+const memoryListTitle: string | null | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.title;
 listTasksView().counts.totalTasks;
+const detailedSwarmRecommended: string | undefined = listSwarmsView({}, { detailed: true }).swarms[0]?.recommendedReason;
+const detailedSwarmDerivedStatus: string | undefined = listSwarmsView({}, { detailed: true }).swarms[0]?.derivedStatus;
 listSwarmsView({}, { detailed: true }).counts.totalSwarms;
 listMemoriesView({ namespace: "types" }).counts.totalMemories;
 searchMemoriesView("typed", {}, 5);

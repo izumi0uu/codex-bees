@@ -328,6 +328,45 @@ export interface SwarmRecord {
   [key: string]: unknown;
 }
 
+export interface SwarmLaneSummary {
+  lane: string;
+  summary: string;
+  owner: string | null;
+  verifier: string | null;
+  taskId: string | null;
+  queueStatus: string | null;
+  claimedBy: string | null;
+  status: string | null;
+  scope: string[] | null;
+  ready: boolean;
+  done: boolean;
+}
+
+export interface SwarmOverviewCounts {
+  totalLanes: number;
+  queued: number;
+  claimed: number;
+  blocked: number;
+  readyForReview: number;
+  released: number;
+  done: number;
+  unqueued: number;
+}
+
+export interface SwarmOverview {
+  kind: "swarm_overview";
+  recommendedReason: string;
+  swarm: SwarmRecord;
+  counts: SwarmOverviewCounts;
+  lanes: SwarmLaneSummary[];
+  tasks: TaskRecord[];
+  nextLane: SwarmLaneSummary | null;
+  derivedStatus: string;
+  statusAligned: boolean;
+  readyToComplete: boolean;
+  dispatchableCount: number;
+}
+
 export interface MemoryRecord {
   id: string;
   title?: string | null;
@@ -360,11 +399,21 @@ export interface TaskDetailView {
 export interface SwarmListView {
   kind: "swarm_view";
   recommendedReason: string;
-  detailed?: boolean;
+  detailed?: false;
   counts: {
     totalSwarms: number;
   };
   swarms: SwarmRecord[];
+}
+
+export interface DetailedSwarmListView {
+  kind: "swarm_view";
+  recommendedReason: string;
+  detailed: true;
+  counts: {
+    totalSwarms: number;
+  };
+  swarms: SwarmOverview[];
 }
 
 export interface SwarmDetailView {
@@ -471,7 +520,8 @@ export declare function initSwarm(input: Record<string, unknown>): SwarmRecord;
 export declare function getSwarm(id: string): SwarmRecord | null;
 export declare function getSwarmView(id: string): SwarmDetailView | null;
 export declare function listTasksView(): TaskListView;
-export declare function listSwarmsView(filters?: Record<string, unknown>, options?: Record<string, unknown>): SwarmListView;
+export declare function listSwarmsView(filters?: Record<string, unknown>, options?: { detailed?: false }): SwarmListView;
+export declare function listSwarmsView(filters: Record<string, unknown> | undefined, options: { detailed: true }): DetailedSwarmListView;
 export declare function listMemoriesView(filters?: Record<string, unknown>): MemoryListView;
 export declare function searchMemoriesView(query: string, filters?: Record<string, unknown>, limit?: number): MemorySearchView;
 export declare function storeMemory(input: Record<string, unknown>): MemoryRecord;
