@@ -347,7 +347,7 @@ export interface TaskHistoryEntry {
   at: string | null;
   type: string;
   fromQueueStatus: string | null;
-  toQueueStatus: string | null;
+  toQueueStatus: TaskQueueStatus | null;
   actor: string | null;
   notes: string | null;
   evidence: unknown[];
