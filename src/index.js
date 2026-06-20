@@ -10,7 +10,7 @@ import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
 import { getRuntimeDoctorView } from "./doctor.js";
-import { PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
+import { getPackageMetadataView, PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
 import {
   activateSwarm,
@@ -141,6 +141,10 @@ function printDoctor() {
 
 function printCatalog() {
   write(JSON.stringify({ catalog: getRuntimeCatalogView() }, null, 2) + "\n");
+}
+
+function printMetadata() {
+  write(JSON.stringify({ metadata: getPackageMetadataView() }, null, 2) + "\n");
 }
 
 function printStatus() {
@@ -1283,6 +1287,9 @@ async function runCommand(command) {
       return;
     case "catalog":
       printCatalog();
+      return;
+    case "metadata":
+      printMetadata();
       return;
     case "status":
       printStatus();

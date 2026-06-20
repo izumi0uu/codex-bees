@@ -133,6 +133,7 @@ node ./src/index.js run
 node ./src/index.js tools
 node ./src/index.js catalog
 node ./src/index.js doctor
+node ./src/index.js metadata
 node ./src/index.js status
 node ./src/index.js capabilities
 node ./src/index.js runtime:activity

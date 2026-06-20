@@ -7,6 +7,7 @@ export function getCommandCatalog() {
     { command: "tools", description: "Print the current MCP tool catalog" },
     { command: "catalog", description: "Print the shipped local agent and skill catalog" },
     { command: "doctor", description: "Print runtime contract diagnostics" },
+    { command: "metadata", description: "Print package identity metadata" },
     { command: "status", description: "Print runtime state and surface summary" },
     { command: "capabilities", description: "Print the shipped runtime capability inventory" },
     { command: "runtime:alerts", description: "Build the top-level orchestration alert stream" },

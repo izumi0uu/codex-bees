@@ -40,6 +40,7 @@ const checks = [
   ["version", ["./src/index.js", "--version"]],
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
   ["catalog", ["./src/index.js", "catalog"]],
+  ["metadata", ["./src/index.js", "metadata"]],
   ["status", ["./src/index.js", "status"]],
   ["capabilities", ["./src/index.js", "capabilities"]],
   ["cli-tools", ["./src/index.js", "tools"]],
@@ -205,6 +206,16 @@ if (
   !importedDistApi.includes("stateFilePath")
 ) {
   console.error("[smoke:import-dist-api] expected dist api module to export catalog, mcp, planner, and state surfaces");
+  process.exit(1);
+}
+
+const metadataCli = JSON.parse(run("metadata-cli", ["./src/index.js", "metadata"]).stdout).metadata;
+if (
+  metadataCli.kind !== "package_metadata_view" ||
+  metadataCli.metadata?.product !== "codex-bees" ||
+  metadataCli.metadata?.homepage !== "https://github.com/izumi0uu/codex-bees#readme"
+) {
+  console.error("[smoke:metadata-cli] expected metadata command to expose the package metadata view");
   process.exit(1);
 }
 
@@ -521,7 +532,7 @@ const installedCommandsImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/commands").then((m) => console.log(JSON.stringify({ ok: m.getCommandCatalogView().kind === "command_catalog_view" && m.getCommandCatalogView().counts.totalCommands > 10 && m.renderHelpText().includes("codex-bees run") })))'
+    'import("codex-bees/commands").then((m) => console.log(JSON.stringify({ ok: m.getCommandCatalogView().kind === "command_catalog_view" && m.getCommandCatalogView().counts.totalCommands > 10 && m.renderHelpText().includes("codex-bees run") && m.renderHelpText().includes("codex-bees metadata") })))'
   ],
   {
     cwd: packedInstallAppDir,
