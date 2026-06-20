@@ -16,6 +16,7 @@ import {
   getToolCatalogView,
   planTask,
   queueTasksFromPlan,
+  renderHelpText as renderRootHelpText,
   listMcpTools,
   addTask,
   getTask,
@@ -60,6 +61,7 @@ metadata.keywords[0];
 getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
+const rootHelpText: string = renderRootHelpText();
 renderHelpText();
 getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
