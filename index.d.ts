@@ -12,7 +12,7 @@ export interface PackageMetadata {
 
 export interface PackageMetadataView {
   kind: "package_metadata_view";
-  recommendedReason: string;
+  recommendedReason: "package_metadata_loaded";
   metadata: PackageMetadata;
 }
 
