@@ -77,7 +77,7 @@
     "build": "node ./scripts/build.mjs",
     "check": "node --check ./src/index.js && node --check ./src/mcp.js && node --check ./scripts/build.mjs && node --check ./scripts/smoke.mjs && npm run typecheck:types",
     "smoke": "node ./scripts/smoke.mjs",
-    "typecheck:types": "npx -y -p typescript tsc --noEmit -p ./tsconfig.types.json"
+    "typecheck:types": "node ./scripts/typecheck-types.mjs --noEmit -p ./tsconfig.types.json"
   },
   "homepage": "https://github.com/izumi0uu/codex-bees#readme",
   "bugs": {
