@@ -815,6 +815,19 @@ if (
   console.error("[smoke:installed-doctor] expected installed npx codex-bees doctor view to expose bundled diagnostics");
   process.exit(1);
 }
+const installedDirectCliDoctor = JSON.parse(
+  runInstalled("installed-direct-cli-doctor", "node", ["./node_modules/codex-bees/dist/index.js", "doctor"]).stdout
+);
+if (
+  installedDirectCliDoctor.kind !== "runtime_doctor_view" ||
+  installedDirectCliDoctor.recommendedReason !== "doctor_ready" ||
+  installedDirectCliDoctor.catalog?.catalog?.source !== "bundled" ||
+  installedDirectCliDoctor.contract?.kind !== "runtime_contract_view" ||
+  !installedDirectCliDoctor.catalog?.catalog?.paths?.codexDir?.startsWith("@bundled/dist/.codex")
+) {
+  console.error("[smoke:installed-direct-cli-doctor] expected direct packaged CLI doctor to expose bundled diagnostics");
+  process.exit(1);
+}
 const installedCliTools = JSON.parse(
   runInstalled("installed-tools", "npx", ["codex-bees", "tools"]).stdout
 ).tools;
