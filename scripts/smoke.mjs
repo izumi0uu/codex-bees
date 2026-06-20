@@ -164,6 +164,7 @@ const importedSourceApi = JSON.parse(
 if (
   !importedSourceApi.includes("getRuntimeCatalogView") ||
   !importedSourceApi.includes("getRuntimeDoctorView") ||
+  !importedSourceApi.includes("getRuntimeReadyView") ||
   !importedSourceApi.includes("getToolCatalogView") ||
   !importedSourceApi.includes("getCoordinationOverviewView") ||
   !importedSourceApi.includes("getWorkerGuidelinesView") ||
@@ -186,6 +187,7 @@ const importedDistApi = JSON.parse(
 if (
   !importedDistApi.includes("getRuntimeCatalogView") ||
   !importedDistApi.includes("getRuntimeDoctorView") ||
+  !importedDistApi.includes("getRuntimeReadyView") ||
   !importedDistApi.includes("getToolCatalogView") ||
   !importedDistApi.includes("getCoordinationOverviewView") ||
   !importedDistApi.includes("getWorkerGuidelinesView") ||
@@ -450,6 +452,25 @@ if (
   console.error("[smoke:installed-doctor-import] expected installed codex-bees/doctor subpath export");
   console.error(installedDoctorImport.stderr || installedDoctorImport.stdout);
   process.exit(installedDoctorImport.status ?? 1);
+}
+const installedRuntimeReadyImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-ready").then((m) => console.log(JSON.stringify({ ok: m.getRuntimeReadyView().kind === "runtime_ready_view" && m.getRuntimeReadyView().next?.[0] === "use `codex-bees doctor` to inspect runtime boundaries" })))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRuntimeReadyImport.status !== 0 ||
+  JSON.parse(installedRuntimeReadyImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-runtime-ready-import] expected installed codex-bees/runtime-ready subpath export");
+  console.error(installedRuntimeReadyImport.stderr || installedRuntimeReadyImport.stdout);
+  process.exit(installedRuntimeReadyImport.status ?? 1);
 }
 const installedRuntimeGuidanceImport = spawnSync(
   "node",

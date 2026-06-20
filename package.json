@@ -20,6 +20,7 @@
     "./doctor": "./dist/doctor.js",
     "./mcp": "./dist/mcp.js",
     "./planner": "./dist/planner.js",
+    "./runtime-ready": "./dist/runtime-ready.js",
     "./state": "./dist/state.js",
     "./runtime-guidance": "./dist/runtime-guidance.js",
     "./runtime-status": "./dist/runtime-status.js",

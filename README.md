@@ -59,6 +59,7 @@ import {
   addTask,
   getRuntimeCatalogView,
   getRuntimeDoctorView,
+  getRuntimeReadyView,
   getRuntimeStatusView,
   getToolCatalogView,
   getRuntimeContractView,
@@ -78,6 +79,7 @@ Official subpath exports are also available for narrower integrations:
 - `codex-bees/doctor`
 - `codex-bees/mcp`
 - `codex-bees/planner`
+- `codex-bees/runtime-ready`
 - `codex-bees/state`
 - `codex-bees/runtime-guidance`
 - `codex-bees/runtime-status`
@@ -111,6 +113,8 @@ The `codex-bees/runtime-guidance` subpath exposes the same coordination primitiv
 - `getWorkerGuidelinesView()`
 
 The `codex-bees/doctor` subpath exposes the same diagnostic view that the CLI prints for `codex-bees doctor`, so integrations can inspect entrypoint health, state-file location, runtime catalog, and contract details without shelling out.
+
+The `codex-bees/runtime-ready` subpath exposes the default `run` readiness view as a library call, so tools can read the startup contract and recommended next steps without scraping CLI output.
 
 ## CLI
 
