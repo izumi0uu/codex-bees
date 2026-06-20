@@ -3704,6 +3704,11 @@ const runtimeControlPackCli = JSON.parse(
 if (
   runtimeControlPackCli.recommendedSurface !== "runtime:summary-pack" ||
   runtimeControlPackCli.recommendedReason !== "summary_priority" ||
+  runtimeControlPackCli.metadata?.hasSummary !== true ||
+  runtimeControlPackCli.metadata?.hasWorkspace !== true ||
+  runtimeControlPackCli.metadata?.hasOperator !== true ||
+  runtimeControlPackCli.metadata?.hasLeader !== true ||
+  runtimeControlPackCli.counts?.surfacedNextEntries !== Object.values(runtimeControlPackCli.next ?? {}).filter(Boolean).length ||
   runtimeControlPackCli.next?.summary?.taskId !== "task-1" ||
   runtimeControlPackCli.next?.workspace?.recovery?.taskId !== "task-1" ||
   runtimeControlPackCli.next?.operator?.handoff?.taskId !== "task-2" ||
@@ -4470,6 +4475,12 @@ if (
   runtimeControlPackMcp.status !== 0 ||
   runtimeControlPackMcpPayload.controlPack?.recommendedSurface !== "runtime:summary-pack" ||
   runtimeControlPackMcpPayload.controlPack?.recommendedReason !== "summary_priority" ||
+  runtimeControlPackMcpPayload.controlPack?.metadata?.hasSummary !== true ||
+  runtimeControlPackMcpPayload.controlPack?.metadata?.hasWorkspace !== true ||
+  runtimeControlPackMcpPayload.controlPack?.metadata?.hasOperator !== true ||
+  runtimeControlPackMcpPayload.controlPack?.metadata?.hasLeader !== true ||
+  runtimeControlPackMcpPayload.controlPack?.counts?.surfacedNextEntries !==
+    Object.values(runtimeControlPackMcpPayload.controlPack?.next ?? {}).filter(Boolean).length ||
   runtimeControlPackMcpPayload.controlPack?.next?.summary?.taskId !== "task-1" ||
   runtimeControlPackMcpPayload.controlPack?.next?.leader?.dispatch?.lane !== "lane-dashboard"
 ) {
