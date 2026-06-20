@@ -93,7 +93,7 @@ export interface RuntimeContractView {
 
 export interface RuntimeDoctorView {
   kind: "runtime_doctor_view";
-  recommendedReason: string;
+  recommendedReason: "doctor_ready" | "doctor_entry_missing";
   status: "ok";
   executable: boolean;
   entry: string;
