@@ -165,6 +165,7 @@ const importedSourceApi = JSON.parse(
 );
 if (
   !importedSourceApi.includes("getRuntimeCatalogView") ||
+  !importedSourceApi.includes("getCommandCatalogView") ||
   !importedSourceApi.includes("getPackageMetadata") ||
   !importedSourceApi.includes("getRuntimeDoctorView") ||
   !importedSourceApi.includes("getRuntimeReadyView") ||
@@ -189,6 +190,7 @@ const importedDistApi = JSON.parse(
 );
 if (
   !importedDistApi.includes("getRuntimeCatalogView") ||
+  !importedDistApi.includes("getCommandCatalogView") ||
   !importedDistApi.includes("getPackageMetadata") ||
   !importedDistApi.includes("getRuntimeDoctorView") ||
   !importedDistApi.includes("getRuntimeReadyView") ||
@@ -470,6 +472,25 @@ if (
   console.error(installedCatalogImport.stderr || installedCatalogImport.stdout);
   process.exit(installedCatalogImport.status ?? 1);
 }
+const installedCommandsImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/commands").then((m) => console.log(JSON.stringify({ ok: m.getCommandCatalogView().kind === "command_catalog_view" && m.getCommandCatalogView().counts.totalCommands > 10 && m.renderHelpText().includes("codex-bees run") })))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCommandsImport.status !== 0 ||
+  JSON.parse(installedCommandsImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-commands-import] expected installed codex-bees/commands subpath export");
+  console.error(installedCommandsImport.stderr || installedCommandsImport.stdout);
+  process.exit(installedCommandsImport.status ?? 1);
+}
 const installedDoctorImport = spawnSync(
   "node",
   [
@@ -605,6 +626,26 @@ if (
 ) {
   console.error("[smoke:installed-help] expected installed npx codex-bees help surface");
   process.exit(1);
+}
+const installedHelpImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/commands").then((m) => console.log(JSON.stringify({ ok: m.renderHelpText() === process.argv[1] })))',
+    installedHelp.stdout
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedHelpImport.status !== 0 ||
+  JSON.parse(installedHelpImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-help-contract] expected installed help output to match commands surface");
+  console.error(installedHelpImport.stderr || installedHelpImport.stdout);
+  process.exit(installedHelpImport.status ?? 1);
 }
 const installedVersion = runInstalled("installed-version", "npx", ["codex-bees", "--version"]);
 if (installedVersion.stdout.trim() !== "0.1.0") {

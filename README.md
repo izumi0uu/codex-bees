@@ -56,6 +56,7 @@ The root package export now exposes a small official programmatic API as well:
 
 ```js
 import {
+  getCommandCatalogView,
   addTask,
   getPackageMetadata,
   getRuntimeCatalogView,
@@ -77,6 +78,7 @@ Official subpath exports are also available for narrower integrations:
 
 - `codex-bees/api`
 - `codex-bees/catalog`
+- `codex-bees/commands`
 - `codex-bees/doctor`
 - `codex-bees/metadata`
 - `codex-bees/mcp`
@@ -119,6 +121,8 @@ The `codex-bees/doctor` subpath exposes the same diagnostic view that the CLI pr
 The `codex-bees/runtime-ready` subpath exposes the default `run` readiness view as a library call, so tools can read the startup contract and recommended next steps without scraping CLI output.
 
 The `codex-bees/metadata` subpath exposes the package identity and version contract directly, so CLI, MCP, and library consumers can all read the same product/version surface from one source.
+
+The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs.
 
 ## CLI
 
