@@ -330,9 +330,14 @@ export interface SwarmRecord {
 
 export interface MemoryRecord {
   id: string;
+  title?: string | null;
   content?: string;
   namespace?: string;
   kind?: string;
+  agent?: string | null;
+  tags?: string[];
+  notes?: string | null;
+  updatedAt?: string | null;
   [key: string]: unknown;
 }
 
@@ -376,6 +381,20 @@ export interface MemoryListView {
     totalMemories: number;
   };
   memories: MemoryRecord[];
+}
+
+export interface MemorySearchResult extends MemoryRecord {
+  score: number;
+}
+
+export interface MemorySearchView {
+  kind: "memory_search_view";
+  recommendedReason: string;
+  counts: {
+    totalResults: number;
+  };
+  query: string;
+  results: MemorySearchResult[];
 }
 
 export interface ValidationView {
@@ -441,7 +460,7 @@ export declare function getSwarmView(id: string): SwarmDetailView | null;
 export declare function listTasksView(): TaskListView;
 export declare function listSwarmsView(filters?: Record<string, unknown>, options?: Record<string, unknown>): SwarmListView;
 export declare function listMemoriesView(filters?: Record<string, unknown>): MemoryListView;
-export declare function searchMemoriesView(query: string, filters?: Record<string, unknown>, limit?: number): Record<string, unknown>;
+export declare function searchMemoriesView(query: string, filters?: Record<string, unknown>, limit?: number): MemorySearchView;
 export declare function storeMemory(input: Record<string, unknown>): MemoryRecord;
 export declare function validateTask(id: string): ValidationView;
 export declare function validateSwarm(id: string): ValidationView;

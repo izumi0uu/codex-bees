@@ -115,3 +115,6 @@ const plannerLane: string | undefined = planTaskSubpath("typed downstream planne
 const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm").swarm.lanes[0]?.lane;
 const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.maxWorkers;
 const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks: unknown[]) => tasks as any).kind;
+const memorySearchQuery: string = searchMemoriesView("typed", {}, 5).query;
+const memorySearchScore: number | undefined = searchMemoriesView("typed", {}, 5).results[0]?.score;
+const memorySearchNamespace: string | undefined = searchMemoriesView("typed", {}, 5).results[0]?.namespace;
