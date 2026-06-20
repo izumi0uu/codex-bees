@@ -480,7 +480,7 @@ export interface TaskDetailView {
 export interface SwarmListView {
   kind: "swarm_view";
   recommendedReason: string;
-  detailed?: false;
+  detailed: false;
   counts: {
     totalSwarms: number;
   };
