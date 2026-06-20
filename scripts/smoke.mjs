@@ -939,6 +939,20 @@ if (
   console.error("[smoke:installed-tools] expected installed npx codex-bees tools catalog");
   process.exit(1);
 }
+const installedCliCapabilities = JSON.parse(
+  runInstalled("installed-capabilities", "npx", ["codex-bees", "capabilities"]).stdout
+).capabilities;
+if (
+  installedCliCapabilities.kind !== "runtime_capabilities_view" ||
+  installedCliCapabilities.recommendedReason !== "capabilities_loaded" ||
+  installedCliCapabilities.counts?.totalCapabilities < 6 ||
+  installedCliCapabilities.counts?.categories?.coordination < 1 ||
+  !Array.isArray(installedCliCapabilities.capabilities) ||
+  !installedCliCapabilities.capabilities.some((capability) => capability.id === "swarm_coordination")
+) {
+  console.error("[smoke:installed-capabilities] expected installed npx codex-bees capabilities surface");
+  process.exit(1);
+}
 const installedDirectCliTools = JSON.parse(
   runInstalled("installed-direct-cli-tools", "node", ["./node_modules/codex-bees/dist/index.js", "tools"]).stdout
 ).tools;
