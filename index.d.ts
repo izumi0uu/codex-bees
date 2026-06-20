@@ -369,10 +369,10 @@ export interface TaskRecord {
   verification: string[] | null;
   claimedBy: string | null;
   notes: string | null;
-  reviewedBy?: string | null;
-  reviewedAt?: string | null;
-  reviewOutcome?: string | null;
-  reviewNotes?: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewOutcome: string | null;
+  reviewNotes: string | null;
   reviewEvidence?: unknown[] | null;
   annotations: TaskAnnotation[];
   history: TaskHistoryEntry[];
