@@ -251,6 +251,7 @@ const runtimeCatalogSource: "workspace" | "bundled" | "missing" = getRuntimeCata
 const resolvedSkillPath: string | null = resolveRuntimeCatalogPath("skills");
 const rootRuntimeContractKind: "runtime_contract_view" = getRuntimeContractView().kind;
 const runtimeContractReason: "contract_loaded" = getRuntimeContractView().recommendedReason;
+const rootRuntimeContractProduct: "codex-bees" = getRuntimeContractView().contract.product;
 const rootRuntimeContractMode: "codex-only" = getRuntimeContractView().contract.mode;
 const rootRuntimeContractBoundary: "codex-only runtime" = getRuntimeContractView().contract.deliveryBoundary;
 const rootRuntimeContractCliTransport: "stdio" = getRuntimeContractView().contract.transport.cli;
