@@ -342,6 +342,13 @@ export type TaskQueueStatus =
   | "released"
   | "done";
 
+export type SwarmStatus =
+  | "planned"
+  | "active"
+  | "blocked"
+  | "completed"
+  | "cancelled";
+
 export interface TaskHistoryEntry {
   id: string;
   at: string | null;
