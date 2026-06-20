@@ -41,6 +41,7 @@ import {
   searchMemoriesView,
   stateFilePath,
   storeMemory,
+  toolCatalog,
   renderMcpHelpText,
   resolveRuntimeCatalogPath,
   validateSwarm,
@@ -86,6 +87,7 @@ getRuntimeDoctorView().contract.kind;
 getRuntimeReadyView().next[0];
 getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).kind;
 getToolCatalogView().tools[0]?.name;
+const rootToolName: string | undefined = toolCatalog[0]?.name;
 planTask("typed smoke").lanes[0]?.owner;
 
 handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
