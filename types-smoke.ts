@@ -90,6 +90,7 @@ const rootChangeModel: "small reversible steps" = getCoordinationOverview().chan
 const rootCoordinationViewKind: "coordination_overview_view" = getCoordinationOverviewView().kind;
 const coordinationViewReason: "coordination_model_loaded" = getCoordinationOverviewView().recommendedReason;
 const rootWorkerGuideline: "one active writer per file" = getWorkerGuidelines().fileOwnership;
+const rootWorkerParallelism: "parallelize only with disjoint ownership" = getWorkerGuidelines().parallelism;
 const rootWorkerGuidelinesKind: "worker_guidelines_view" = getWorkerGuidelinesView().kind;
 const workerGuidelinesReason: "worker_guidelines_loaded" = getWorkerGuidelinesView().recommendedReason;
 renderHelpTextCommands();
