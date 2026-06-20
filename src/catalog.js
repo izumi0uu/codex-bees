@@ -3,6 +3,7 @@ import { dirname, join, relative } from "node:path";
 import { cwd } from "node:process";
 import { fileURLToPath } from "node:url";
 
+const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const BUNDLED_PREFIX = "@bundled";
 
@@ -26,6 +27,10 @@ function bundledCodexDir() {
   return join(PACKAGE_ROOT, ".codex");
 }
 
+function bundledDistCodexDir() {
+  return join(MODULE_DIR, ".codex");
+}
+
 function toDisplayPath(path) {
   const currentWorkingDirectory = cwd();
   if (path.startsWith(`${currentWorkingDirectory}/`)) {
@@ -42,8 +47,20 @@ function toDisplayPath(path) {
 export function getRuntimeCatalogPaths() {
   const workspacePath = workspaceCodexDir();
   const bundledPath = bundledCodexDir();
-  const source = isDirectory(workspacePath) ? "workspace" : isDirectory(bundledPath) ? "bundled" : "missing";
-  const codexDir = source === "workspace" ? workspacePath : source === "bundled" ? bundledPath : workspacePath;
+  const bundledDistPath = bundledDistCodexDir();
+  const source = isDirectory(workspacePath)
+    ? "workspace"
+    : isDirectory(bundledPath) || isDirectory(bundledDistPath)
+      ? "bundled"
+      : "missing";
+  const codexDir =
+    source === "workspace"
+      ? workspacePath
+      : isDirectory(bundledPath)
+        ? bundledPath
+        : source === "bundled"
+          ? bundledDistPath
+          : workspacePath;
 
   return {
     source,

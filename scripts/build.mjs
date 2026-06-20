@@ -37,7 +37,6 @@ rmSync("dist", { recursive: true, force: true });
 mkdirSync("dist", { recursive: true });
 copySourceModules();
 copyTree(".codex", join("dist", ".codex"));
-copyFileSync("scripts/smoke.mjs", "dist/smoke.mjs");
 
 verifyDistCommand("dist-help", ["./dist/index.js", "--help"]);
 verifyDistCommand("dist-tools", ["./dist/mcp.js", "--tools"]);

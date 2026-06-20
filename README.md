@@ -42,7 +42,9 @@ npm run smoke
 
 `npm run build` now rebuilds `dist/` from the shipped source modules and immediately verifies that the packaged CLI (`dist/index.js`) and MCP entrypoint (`dist/mcp.js`) both boot successfully, so the distributable surface cannot silently drift behind `src/`.
 
-When the current working directory does not provide its own `.codex/agents` or `.codex/skills`, the packaged CLI and MCP server now fall back to the bundled `.codex` assets that ship with Codex Bees. That keeps installed builds usable outside the source repo instead of degrading into an empty agent/skill catalog.
+When the current working directory does not provide its own `.codex/agents` or `.codex/skills`, the packaged CLI and MCP server now fall back to the bundled `.codex` assets that ship inside `dist/`. That keeps installed builds usable outside the source repo instead of degrading into an empty agent/skill catalog.
+
+The npm package is also trimmed to distributable runtime content only: `dist/`, `README.md`, and `LICENSE`. Development-only source files, smoke scripts, and repo-local orchestration docs are excluded from the published tarball.
 
 ## CLI
 

@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -216,6 +216,22 @@ if (
   console.error("[smoke:catalog] expected packaged dist catalog to fall back to bundled .codex assets");
   process.exit(1);
 }
+const standaloneDistDir = mkdtempSync(join(tmpdir(), "codex-bees-standalone-dist-"));
+cpSync("/Users/idah/Projects-combined/codex-bees/dist", join(standaloneDistDir, "dist"), { recursive: true });
+const standaloneDistCatalog = JSON.parse(
+  runInCwd("catalog-standalone-dist", [join(standaloneDistDir, "dist", "index.js"), "catalog"], bundledRuntimeDir).stdout
+).catalog;
+if (
+  standaloneDistCatalog.kind !== "runtime_catalog_view" ||
+  standaloneDistCatalog.recommendedReason !== "catalog_entries_loaded" ||
+  standaloneDistCatalog.catalog?.source !== "bundled" ||
+  standaloneDistCatalog.counts?.agents !== 4 ||
+  standaloneDistCatalog.counts?.skills !== 2 ||
+  !standaloneDistCatalog.catalog?.paths?.codexDir?.startsWith("@bundled/dist/.codex")
+) {
+  console.error("[smoke:catalog] expected standalone dist runtime to self-contain bundled .codex assets");
+  process.exit(1);
+}
 const bundledRuntimeStatus = JSON.parse(
   runInCwd("status-bundled-dist", ["/Users/idah/Projects-combined/codex-bees/dist/index.js", "status"], bundledRuntimeDir).stdout
 ).status;
@@ -242,6 +258,24 @@ if (
   bundledPlan.evidence?.roleFiles?.length !== 4
 ) {
   console.error("[smoke:plan] expected packaged dist planner to discover bundled role assets");
+  process.exit(1);
+}
+const packDryRun = JSON.parse(
+  spawnSync("npm", ["pack", "--dry-run", "--json"], { encoding: "utf8" }).stdout
+)[0];
+const packPaths = new Set((packDryRun.files ?? []).map((entry) => entry.path));
+if (
+  !packPaths.has("dist/index.js") ||
+  !packPaths.has("dist/mcp.js") ||
+  !packPaths.has("dist/.codex/agents/executor.md") ||
+  !packPaths.has("README.md") ||
+  !packPaths.has("LICENSE") ||
+  Array.from(packPaths).some((path) => path.startsWith("src/")) ||
+  Array.from(packPaths).some((path) => path.startsWith("scripts/")) ||
+  packPaths.has("AGENTS.md") ||
+  Array.from(packPaths).some((path) => path.startsWith(".codex/"))
+) {
+  console.error("[smoke:pack] expected npm package to ship only distributable runtime assets");
   process.exit(1);
 }
 const doctorView = JSON.parse(run("doctor-verify", ["./src/index.js", "doctor"]).stdout);
