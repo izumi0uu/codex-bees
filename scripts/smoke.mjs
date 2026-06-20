@@ -11,6 +11,7 @@ const DIST_INDEX = join(REPO_ROOT, "dist", "index.js");
 const DIST_DIR = join(REPO_ROOT, "dist");
 const README_PATH = join(REPO_ROOT, "README.md");
 const PACKAGE_JSON_PATH = join(REPO_ROOT, "package.json");
+const README_TEXT = readFileSync(README_PATH, "utf8");
 
 function run(label, args, expectedStatus = 0) {
   const result = spawnSync("node", args, { encoding: "utf8" });
@@ -442,9 +443,19 @@ if (
   process.exit(1);
 }
 const documentedSubpaths = Array.from(
-  readFileSync(README_PATH, "utf8").matchAll(/- `codex-bees\/([^`]+)`/g),
+  README_TEXT.matchAll(/- `codex-bees\/([^`]+)`/g),
   (match) => `./${match[1]}`
 ).sort();
+const documentedRootImportExampleMatch = README_TEXT.match(/The root package export now exposes a small official programmatic API as well:\n\n```js\nimport\s*{\n([\s\S]*?)\n}\sfrom\s"codex-bees";\n```/);
+if (!documentedRootImportExampleMatch) {
+  console.error("[smoke:readme-root-import] expected README to document the root package import example");
+  process.exit(1);
+}
+const documentedRootImportExports = documentedRootImportExampleMatch[1]
+  .split("\n")
+  .map((line) => line.trim().replace(/,$/, ""))
+  .filter(Boolean)
+  .sort();
 const exportedSubpaths = Object.keys(packageManifest.exports)
   .filter((key) => key !== ".")
   .sort();
@@ -495,13 +506,22 @@ const installedImport = spawnSync(
     encoding: "utf8"
   }
 );
+const installedImportPayload = JSON.parse(installedImport.stdout);
 if (
   installedImport.status !== 0 ||
-  JSON.parse(installedImport.stdout).ok !== true
+  installedImportPayload.ok !== true
 ) {
   console.error("[smoke:installed-import] expected installed codex-bees root import to expose the public api surface");
   console.error(installedImport.stderr || installedImport.stdout);
   process.exit(installedImport.status ?? 1);
+}
+const missingDocumentedRootImports = documentedRootImportExports.filter(
+  (name) => !installedImportPayload.keys.includes(name)
+);
+if (missingDocumentedRootImports.length > 0) {
+  console.error("[smoke:readme-root-import-contract] expected README root import example to match installed root exports");
+  console.error(JSON.stringify({ missingDocumentedRootImports, documentedRootImportExports, installedRootExports: installedImportPayload.keys }, null, 2));
+  process.exit(1);
 }
 const installedMcpImport = spawnSync(
   "node",
