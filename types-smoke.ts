@@ -103,6 +103,7 @@ const runtimeReadyStatus: "ready" = getRuntimeReadyView().status;
 getRuntimeReadyView().next[0];
 getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).kind;
 getToolCatalogView().tools[0]?.name;
+const toolCatalogReason: "tool_catalog_loaded" | "tool_catalog_empty" = getToolCatalogView().recommendedReason;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
 const rootToolSchemaType: string | undefined = getToolCatalogView().tools[0]?.inputSchema.type as string | undefined;
 const plannedSwarmReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready" = planSwarm("typed root swarm").recommendedReason;
