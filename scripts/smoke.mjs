@@ -164,11 +164,13 @@ const importedSourceApi = JSON.parse(
 if (
   !importedSourceApi.includes("getRuntimeCatalogView") ||
   !importedSourceApi.includes("getToolCatalogView") ||
+  !importedSourceApi.includes("handleMcpRequest") ||
+  !importedSourceApi.includes("callMcpTool") ||
   !importedSourceApi.includes("planTask") ||
   !importedSourceApi.includes("addTask") ||
   !importedSourceApi.includes("stateFilePath")
 ) {
-  console.error("[smoke:import-src-api] expected source api module to export catalog, tool, planner, and state surfaces");
+  console.error("[smoke:import-src-api] expected source api module to export catalog, mcp, planner, and state surfaces");
   process.exit(1);
 }
 
@@ -181,11 +183,13 @@ const importedDistApi = JSON.parse(
 if (
   !importedDistApi.includes("getRuntimeCatalogView") ||
   !importedDistApi.includes("getToolCatalogView") ||
+  !importedDistApi.includes("handleMcpRequest") ||
+  !importedDistApi.includes("callMcpTool") ||
   !importedDistApi.includes("planTask") ||
   !importedDistApi.includes("addTask") ||
   !importedDistApi.includes("stateFilePath")
 ) {
-  console.error("[smoke:import-dist-api] expected dist api module to export catalog, tool, planner, and state surfaces");
+  console.error("[smoke:import-dist-api] expected dist api module to export catalog, mcp, planner, and state surfaces");
   process.exit(1);
 }
 
@@ -383,6 +387,25 @@ if (
   console.error("[smoke:installed-import] expected installed codex-bees root import to expose the public api surface");
   console.error(installedImport.stderr || installedImport.stdout);
   process.exit(installedImport.status ?? 1);
+}
+const installedMcpImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") })); })'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedMcpImport.status !== 0 ||
+  JSON.parse(installedMcpImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-mcp-import] expected installed codex-bees/mcp subpath to expose working programmatic helpers");
+  console.error(installedMcpImport.stderr || installedMcpImport.stdout);
+  process.exit(installedMcpImport.status ?? 1);
 }
 const installedCatalogImport = spawnSync(
   "node",

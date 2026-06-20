@@ -1298,6 +1298,10 @@ function toolByName(name) {
   return toolCatalog.find((tool) => tool.name === name);
 }
 
+export function listMcpTools() {
+  return JSON.parse(JSON.stringify(toolCatalog));
+}
+
 function createSuccess(id, result) {
   return JSON.stringify({ jsonrpc: "2.0", id, result }) + "\n";
 }
@@ -1317,7 +1321,7 @@ function createTextPayload(value) {
 }
 
 function handleRequest(message) {
-  const { id = null, method, params = {} } = message;
+  const { id = null, method, params = {} } = message ?? {};
 
   if (method === "initialize") {
     return createSuccess(id, {
@@ -2602,6 +2606,34 @@ function handleRequest(message) {
   }
 
   return createError(id, -32601, `Unsupported method: ${method}`);
+}
+
+export function handleMcpRequest(message) {
+  return JSON.parse(handleRequest(message));
+}
+
+export function callMcpTool(name, args = {}) {
+  const response = handleMcpRequest({
+    jsonrpc: "2.0",
+    id: null,
+    method: "tools/call",
+    params: {
+      name,
+      arguments: args
+    }
+  });
+
+  if (response.error) {
+    const error = new Error(response.error.message);
+    error.code = response.error.code;
+    throw error;
+  }
+
+  return response.result;
+}
+
+export function serializeMcpMessage(message) {
+  return JSON.stringify(message) + "\n";
 }
 
 export async function startMcpServer() {

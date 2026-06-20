@@ -19,7 +19,16 @@ export { getRuntimeContractView } from "./runtime-contract.js";
 
 export { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 
-export { getToolCatalogView, runMcpCli, startMcpServer, toolCatalog } from "./mcp.js";
+export {
+  callMcpTool,
+  getToolCatalogView,
+  handleMcpRequest,
+  listMcpTools,
+  runMcpCli,
+  serializeMcpMessage,
+  startMcpServer,
+  toolCatalog
+} from "./mcp.js";
 
 export {
   addTask,

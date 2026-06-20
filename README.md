@@ -82,6 +82,24 @@ Official subpath exports are also available for narrower integrations:
 
 The `codex-bees/state` subpath is the smallest official programmatic bridge into persisted local coordination state. It exposes helpers such as `addTask`, `getTaskView`, `listTasksView`, `initSwarm`, `listSwarmsView`, `storeMemory`, `listMemoriesView`, `validateTask`, `validateSwarm`, and `stateFilePath`.
 
+The `codex-bees/mcp` subpath is also usable as a small programmatic adapter layer when you want the same local MCP behavior without spawning the stdio server first. It exposes:
+
+- `listMcpTools()` for the raw tool inventory
+- `getToolCatalogView()` for the grouped catalog view
+- `handleMcpRequest(message)` for one-shot JSON-RPC request handling
+- `callMcpTool(name, args)` for direct tool execution
+- `serializeMcpMessage(message)` for newline-delimited stdio framing
+
+Example:
+
+```js
+import { callMcpTool, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
+
+const tools = listMcpTools();
+const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" });
+const contract = callMcpTool("runtime_contract");
+```
+
 ## CLI
 
 ```bash
