@@ -35,6 +35,7 @@ rmSync(".codex-bees", { recursive: true, force: true });
 const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
+  ["mcp-help", ["./src/index.js", "mcp", "--help"]],
   ["catalog", ["./src/index.js", "catalog"]],
   ["status", ["./src/index.js", "status"]],
   ["capabilities", ["./src/index.js", "capabilities"]],
@@ -326,6 +327,27 @@ if (
   !installedHelp.stdout.includes("codex-bees mcp")
 ) {
   console.error("[smoke:installed-help] expected installed npx codex-bees help surface");
+  process.exit(1);
+}
+const installedMcpHelp = runInstalled("installed-mcp-help", "npx", ["codex-bees", "mcp", "--help"]);
+if (
+  !installedMcpHelp.stdout.includes("codex-bees mcp") ||
+  !installedMcpHelp.stdout.includes("codex-bees mcp --stdio") ||
+  !installedMcpHelp.stdout.includes("codex-bees mcp --tools")
+) {
+  console.error("[smoke:installed-mcp-help] expected installed codex-bees mcp help surface");
+  process.exit(1);
+}
+const installedMcpBad = spawnSync("npx", ["codex-bees", "mcp", "nope"], {
+  cwd: packedInstallAppDir,
+  encoding: "utf8"
+});
+if (
+  installedMcpBad.status === 0 ||
+  !installedMcpBad.stderr.includes("Unknown mcp option: nope")
+) {
+  console.error("[smoke:installed-mcp-bad] expected installed codex-bees mcp to reject unknown options");
+  console.error(installedMcpBad.stderr || installedMcpBad.stdout);
   process.exit(1);
 }
 const installedCatalog = JSON.parse(

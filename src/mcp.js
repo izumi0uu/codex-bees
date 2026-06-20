@@ -2637,7 +2637,20 @@ export async function startMcpServer() {
   });
 }
 
-export function runMcpCli(args = []) {
+function writeMcpHelp() {
+  stdout.write("codex-bees mcp\n\n");
+  stdout.write("Usage:\n");
+  stdout.write("  codex-bees mcp --stdio     Start the local MCP stdio runtime\n");
+  stdout.write("  codex-bees mcp --tools     Print the current MCP tool catalog\n");
+  stdout.write("  codex-bees mcp --help      Show MCP subcommand help\n");
+}
+
+export async function runMcpCli(args = []) {
+  if (args.includes("--help") || args.includes("help")) {
+    writeMcpHelp();
+    return;
+  }
+
   if (args.includes("--tools")) {
     stdout.write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
     return;
@@ -2646,6 +2659,8 @@ export function runMcpCli(args = []) {
   if (args.length === 0 || args.includes("--stdio")) {
     return startMcpServer();
   }
+
+  throw new Error(`Unknown mcp option: ${args.join(" ")}`);
 }
 
 if (argv[1] && fileURLToPath(import.meta.url) === argv[1]) {

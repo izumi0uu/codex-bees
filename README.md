@@ -48,6 +48,8 @@ The npm package is also trimmed to distributable runtime content only: `dist/`, 
 
 Installed package entrypoints are part of the tested product surface too. A packed install can be exercised directly with `npx codex-bees --help`, `npx codex-bees catalog`, `npx codex-bees status`, `npx codex-bees doctor`, `npx codex-bees tools`, and `npx codex-bees mcp --tools`, and the smoke suite now verifies that those installed commands still resolve the bundled runtime catalog from `dist/.codex`. It also verifies the packaged MCP entrypoint through both `npx codex-bees mcp --tools`, `npx codex-bees mcp --stdio` JSON-RPC handshake coverage, and `node ./node_modules/codex-bees/dist/mcp.js --tools`, so the published tarball keeps both the CLI-routed and direct MCP introspection surfaces alive after install.
 
+The `mcp` subcommand now has its own explicit CLI contract: `codex-bees mcp --stdio` starts the stdio runtime, `codex-bees mcp --tools` prints the tool catalog, and `codex-bees mcp --help` prints subcommand help. Unknown `mcp` options fail fast instead of silently doing nothing.
+
 ## CLI
 
 ```bash

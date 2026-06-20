@@ -131,7 +131,7 @@ function printHelp() {
   write(`codex-bees\n\n`);
   write(`Usage:\n`);
   write(`  codex-bees run             Start the local Codex runtime shell contract\n`);
-  write(`  codex-bees mcp             Start the local Codex MCP stdio runtime\n`);
+  write(`  codex-bees mcp             Start the local Codex MCP stdio runtime or inspect its subcommands\n`);
   write(`  codex-bees tools           Print the current MCP tool catalog\n`);
   write(`  codex-bees catalog         Print the shipped local agent and skill catalog\n`);
   write(`  codex-bees doctor          Print runtime contract diagnostics\n`);
