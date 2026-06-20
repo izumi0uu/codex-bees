@@ -1091,6 +1091,26 @@ if (
   console.error("[smoke:installed-tools] expected installed npx codex-bees tools catalog");
   process.exit(1);
 }
+const installedCliToolsContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getToolCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedCliTools)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCliToolsContractImport.status !== 0 ||
+  JSON.parse(installedCliToolsContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-tools-contract] expected installed tools output to match the tool catalog api surface");
+  console.error(installedCliToolsContractImport.stderr || installedCliToolsContractImport.stdout);
+  process.exit(installedCliToolsContractImport.status ?? 1);
+}
 const installedCliCapabilities = JSON.parse(
   runInstalled("installed-capabilities", "npx", ["codex-bees", "capabilities"]).stdout
 ).capabilities;
@@ -1136,6 +1156,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-tools] expected direct packaged CLI tools catalog");
   process.exit(1);
+}
+const installedDirectCliToolsContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getToolCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliTools)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliToolsContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliToolsContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-tools-contract] expected direct packaged CLI tools output to match the tool catalog api surface");
+  console.error(installedDirectCliToolsContractImport.stderr || installedDirectCliToolsContractImport.stdout);
+  process.exit(installedDirectCliToolsContractImport.status ?? 1);
 }
 const installedDirectCliCapabilities = JSON.parse(
   runInstalled("installed-direct-cli-capabilities", "node", ["./node_modules/codex-bees/dist/index.js", "capabilities"]).stdout
