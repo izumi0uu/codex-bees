@@ -608,12 +608,6 @@ export interface SwarmInput {
   notes?: string | null;
 }
 
-export interface ValidationView {
-  ready?: boolean;
-  recommendedReason?: string;
-  [key: string]: unknown;
-}
-
 export interface ValidationIssue {
   code: string;
   message: string;
