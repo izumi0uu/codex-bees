@@ -217,6 +217,17 @@ const metadata = getPackageMetadata();
 const view = getPackageMetadataView();
 ```
 
+The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI.
+
+Example:
+
+```js
+import { planSwarm, planTask } from "codex-bees/planner";
+
+const taskPlan = planTask("document a planner example");
+const swarmPlan = planSwarm("stage a planner example");
+```
+
 The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` command entry also carries the structured MCP subcommand option list, so one command-catalog read is enough to discover both the top-level `mcp` command and its shipped flags.
 
 Example:

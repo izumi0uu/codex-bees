@@ -514,6 +514,12 @@ if (!documentedMetadataExampleBlockMatch) {
   process.exit(1);
 }
 const documentedMetadataExampleScript = documentedMetadataExampleBlockMatch[1];
+const documentedPlannerExampleBlockMatch = README_TEXT.match(/The `codex-bees\/planner` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedPlannerExampleBlockMatch) {
+  console.error("[smoke:readme-planner-example] expected README to document a runnable planner example block");
+  process.exit(1);
+}
+const documentedPlannerExampleScript = documentedPlannerExampleBlockMatch[1];
 const documentedCommandsExampleBlockMatch = README_TEXT.match(/The `codex-bees\/commands` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedCommandsExampleBlockMatch) {
   console.error("[smoke:readme-commands-example] expected README to document a runnable commands example block");
@@ -758,6 +764,26 @@ if (
   console.error("[smoke:readme-metadata-example-contract] expected README metadata example to execute successfully against the installed package");
   console.error(installedMetadataExample.stderr || installedMetadataExample.stdout);
   process.exit(installedMetadataExample.status ?? 1);
+}
+const installedPlannerExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: taskPlan.kind === "task_plan" && taskPlan.objective === "document a planner example" && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "stage a planner example" && swarmPlan.swarm?.topology === "bounded-local" && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 1 }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedPlannerExample.status !== 0 ||
+  JSON.parse(installedPlannerExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-planner-example-contract] expected README planner example to execute successfully against the installed package");
+  console.error(installedPlannerExample.stderr || installedPlannerExample.stdout);
+  process.exit(installedPlannerExample.status ?? 1);
 }
 const installedCommandsExample = spawnSync(
   "node",
