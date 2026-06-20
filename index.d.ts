@@ -376,8 +376,8 @@ export interface TaskRecord {
   reviewEvidence?: unknown[] | null;
   annotations: TaskAnnotation[];
   history: TaskHistoryEntry[];
-  createdAt?: string | null;
-  updatedAt?: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
   [key: string]: unknown;
 }
 
@@ -392,8 +392,8 @@ export interface SwarmRecord {
   lanes: SwarmLaneRecord[];
   queuedAt: string | null;
   notes: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
   [key: string]: unknown;
 }
 
