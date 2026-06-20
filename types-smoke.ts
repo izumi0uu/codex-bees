@@ -8,16 +8,20 @@ import {
   getPackageMetadata,
   getPackageMetadataView,
   getCapabilityCatalog,
+  getRuntimeCatalog,
   getRuntimeCatalogPaths,
   getRuntimeCatalogView,
   getRuntimeDoctorView,
   getRuntimeReadyView,
   getRuntimeStatusView,
   getToolCatalogView,
+  listAgentCatalog,
   planTask,
   queueTasksFromPlan,
   renderHelpText as renderRootHelpText,
+  listAgentRoleIds,
   listMcpTools,
+  listSkillCatalog,
   addTask,
   getTask,
   getTaskView,
@@ -147,6 +151,10 @@ const packageMetadataViewKind: "package_metadata_view" = getPackageMetadataView(
 const packageMetadataViewMode: string = getPackageMetadataView().metadata.mode;
 const productName: string = PRODUCT_NAME;
 const packageVersion: string = PACKAGE_VERSION;
+const rootAgentId: string | undefined = listAgentCatalog()[0]?.id;
+const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
+const rootSkillId: string | undefined = listSkillCatalog()[0]?.id;
+const rootCatalogSource: string = getRuntimeCatalog().source;
 const runtimeCatalogSource: string = getRuntimeCatalogPaths().source;
 const resolvedSkillPath: string | null = resolveRuntimeCatalogPath("skills");
 const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
