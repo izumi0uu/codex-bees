@@ -2193,6 +2193,12 @@ export function runtimeAssignmentPack(input = {}) {
     mode
   });
   const recommendedReason = deriveRuntimeAssignmentPackReason({ assignment, session, next, pickup, roleEntry });
+  const nextEntries = {
+    assignment,
+    pickup,
+    candidate: next?.candidate ?? null,
+    focus: session?.focus ?? null
+  };
 
   return {
     kind: "runtime_assignment_pack",
@@ -2201,6 +2207,15 @@ export function runtimeAssignmentPack(input = {}) {
     mode,
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasAssignment: Boolean(nextEntries.assignment),
+      hasPickup: Boolean(nextEntries.pickup),
+      hasCandidate: Boolean(nextEntries.candidate),
+      hasFocus: Boolean(nextEntries.focus)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       assignments: {
         count: roleAssignments?.count ?? 0,
@@ -2216,12 +2231,7 @@ export function runtimeAssignmentPack(input = {}) {
       role: roleEntry?.counts ?? null,
       session: session?.counts ?? null
     },
-    next: {
-      assignment,
-      pickup,
-      candidate: next?.candidate ?? null,
-      focus: session?.focus ?? null
-    },
+    next: nextEntries,
     surfaces: {
       roleAssignments,
       session,

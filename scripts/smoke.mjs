@@ -4829,6 +4829,12 @@ if (
   runtimeAssignmentPackMcp.status !== 0 ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.recommendedSurface !== "worker:closeout" ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.recommendedReason !== "review_task_priority" ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.metadata?.hasAssignment !== false ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.metadata?.hasPickup !== true ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.metadata?.hasCandidate !== true ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.metadata?.hasFocus !== true ||
+  runtimeAssignmentPackMcpPayload.assignmentPack?.counts?.surfacedNextEntries !==
+    Object.values(runtimeAssignmentPackMcpPayload.assignmentPack?.next ?? {}).filter(Boolean).length ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.kind !== "task_assignment_preview" ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.outcome !== "none" ||
   runtimeAssignmentPackMcpPayload.assignmentPack?.next?.pickup?.candidate !== null ||
@@ -5878,6 +5884,11 @@ const runtimeAssignmentPackVerifier = JSON.parse(
 if (
   runtimeAssignmentPackVerifier.recommendedSurface !== "worker:closeout" ||
   runtimeAssignmentPackVerifier.recommendedReason !== "review_task_priority" ||
+  runtimeAssignmentPackVerifier.metadata?.hasAssignment !== false ||
+  runtimeAssignmentPackVerifier.metadata?.hasPickup !== true ||
+  runtimeAssignmentPackVerifier.metadata?.hasCandidate !== true ||
+  runtimeAssignmentPackVerifier.metadata?.hasFocus !== true ||
+  runtimeAssignmentPackVerifier.counts?.surfacedNextEntries !== Object.values(runtimeAssignmentPackVerifier.next ?? {}).filter(Boolean).length ||
   runtimeAssignmentPackVerifier.next?.pickup?.kind !== "task_assignment_preview" ||
   runtimeAssignmentPackVerifier.next?.pickup?.outcome !== "none" ||
   runtimeAssignmentPackVerifier.next?.pickup?.candidate !== null ||
@@ -5924,6 +5935,11 @@ const runtimeAssignmentPackOwner = JSON.parse(
 if (
   runtimeAssignmentPackOwner.recommendedSurface !== "task:next" ||
   runtimeAssignmentPackOwner.recommendedReason !== "next_candidate_visible" ||
+  runtimeAssignmentPackOwner.metadata?.hasAssignment !== false ||
+  runtimeAssignmentPackOwner.metadata?.hasPickup !== true ||
+  runtimeAssignmentPackOwner.metadata?.hasCandidate !== true ||
+  runtimeAssignmentPackOwner.metadata?.hasFocus !== true ||
+  runtimeAssignmentPackOwner.counts?.surfacedNextEntries !== Object.values(runtimeAssignmentPackOwner.next ?? {}).filter(Boolean).length ||
   runtimeAssignmentPackOwner.next?.pickup?.kind !== "task_assignment_preview" ||
   runtimeAssignmentPackOwner.next?.pickup?.outcome !== "none" ||
   runtimeAssignmentPackOwner.next?.pickup?.candidate !== null ||
