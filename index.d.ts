@@ -215,7 +215,7 @@ export interface QueuedPlan {
 
 export interface RuntimeContract {
   product: string;
-  mode: string;
+  mode: "codex-only";
   deliveryBoundary: string;
   workingDirectory: string;
   node: string;
