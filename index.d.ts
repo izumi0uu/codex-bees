@@ -266,7 +266,7 @@ export interface RuntimeStatusCounts {
 }
 
 export interface RuntimeStatus {
-  product: string;
+  product: "codex-bees";
   version: string;
   mode: "codex-only";
   counts: RuntimeStatusCounts;
