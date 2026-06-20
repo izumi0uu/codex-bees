@@ -364,9 +364,9 @@ export interface TaskRecord {
   objective?: string | null;
   lane?: string | null;
   swarmId?: string | null;
-  scope?: string[] | null;
-  acceptance?: string[] | null;
-  verification?: string[] | null;
+  scope: string[] | null;
+  acceptance: string[] | null;
+  verification: string[] | null;
   claimedBy?: string | null;
   notes?: string | null;
   reviewedBy?: string | null;
