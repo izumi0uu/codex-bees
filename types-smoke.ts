@@ -27,6 +27,15 @@ import {
 
 import { renderHelpText } from "codex-bees/commands";
 import { callMcpTool, handleMcpRequest } from "codex-bees/mcp";
+import {
+  getPackageMetadata as getApiPackageMetadata,
+  getRuntimeReadyView as getApiRuntimeReadyView,
+  getToolCatalogView as getApiToolCatalogView
+} from "codex-bees/api";
+import { getRuntimeCatalogView as getCatalogSubpathView } from "codex-bees/catalog";
+import { getRuntimeContractView as getContractSubpathView } from "codex-bees/runtime-contract";
+import { planSwarm as planSwarmSubpath, planTask as planTaskSubpath } from "codex-bees/planner";
+import { getRuntimeStatusView as getStatusSubpathView } from "codex-bees/runtime-status";
 
 const metadata = getPackageMetadata();
 metadata.product;
@@ -91,3 +100,13 @@ listSwarmsView({}, { detailed: true }).counts.totalSwarms;
 listMemoriesView({ namespace: "types" }).counts.totalMemories;
 searchMemoriesView("typed", {}, 5);
 stateFilePath();
+
+const apiMetadataProduct: string = getApiPackageMetadata().product;
+const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
+const apiToolName: string | undefined = getApiToolCatalogView().tools[0]?.name;
+const catalogSource: string = getCatalogSubpathView().catalog.source;
+const contractMode: string = getContractSubpathView().contract.mode;
+const statusProduct: string = getStatusSubpathView().status.product;
+const statusCliEntry: string | undefined = getStatusSubpathView().status.recommendedEntryPoints.cli[0];
+const plannerLane: string | undefined = planTaskSubpath("typed downstream planner").lanes[0]?.lane;
+const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm").swarm.lanes[0]?.lane;

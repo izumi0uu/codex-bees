@@ -88,7 +88,7 @@ export interface RuntimeContractView {
   kind: "runtime_contract_view";
   recommendedReason: string;
   counts: Record<string, number>;
-  contract: Record<string, unknown>;
+  contract: RuntimeContract;
 }
 
 export interface RuntimeDoctorView {
@@ -147,8 +147,10 @@ export interface WorkerGuidelinesView {
 export interface RuntimeStatusView {
   kind: "runtime_status_view";
   recommendedReason: string;
-  counts: Record<string, number>;
-  status: Record<string, unknown>;
+  counts: RuntimeStatusCounts & {
+    trackedStateEntries: number;
+  };
+  status: RuntimeStatus;
 }
 
 export interface RuntimeCapabilitiesView {
@@ -184,8 +186,74 @@ export interface PlannedSwarm {
   recommendedReason: string;
   objective: string;
   evidence: Record<string, unknown>;
-  swarm: Record<string, unknown>;
+  swarm: PlannedSwarmShape;
+}
+
+export interface RuntimeContract {
+  product: string;
+  mode: string;
+  deliveryBoundary: string;
+  workingDirectory: string;
+  node: string;
+  architecture: string[];
+  transport: {
+    cli: string;
+    mcp: string;
+  };
+  responsibilities: string[];
+  exclusions: string[];
+}
+
+export interface RuntimeCapabilitySummary {
+  id: string;
+  category: string;
+  cliCommandCount: number;
+  mcpToolCount: number;
+  highlights: string[];
+  preferredEntryPoints: {
+    cli: string[];
+    mcp: string[];
+  };
+  useCases: string[];
+}
+
+export interface RuntimeStatusCounts {
+  tools: number;
+  agents: number;
+  skills: number;
+  capabilities: number;
+  tasks: number;
+  swarms: number;
+  memories: number;
+}
+
+export interface RuntimeStatus {
+  product: string;
+  version: string;
+  mode: string;
+  counts: RuntimeStatusCounts;
+  state: {
+    taskQueueStatuses: Record<string, number>;
+    swarmStatuses: Record<string, number>;
+    memoryNamespaces: Record<string, number>;
+  };
+  highlights: string[];
+  recommendedEntryPoints: {
+    cli: string[];
+    mcp: string[];
+  };
+  useCases: string[];
+  catalog: RuntimeCatalog;
+  capabilities: RuntimeCapabilitySummary[];
+}
+
+export interface PlannedSwarmShape {
+  objective: string;
+  topology: string;
+  maxWorkers: number;
+  laneSource: string;
   lanes: TaskPlanLane[];
+  notes: string;
 }
 
 export interface ToolCatalogEntry {

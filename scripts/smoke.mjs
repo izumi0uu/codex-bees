@@ -1214,7 +1214,13 @@ if (
   console.error(installedDirectCliRunImport.stderr || installedDirectCliRunImport.stdout);
   process.exit(installedDirectCliRunImport.status ?? 1);
 }
-const installedTypecheck = spawnSync("npx", ["-y", "-p", "typescript", "tsc", "--noEmit", "/Users/idah/Projects-combined/codex-bees/types-smoke.ts"], {
+const downstreamTypesSmokePath = join(packedInstallAppDir, "types-smoke.ts");
+writeFileSync(
+  downstreamTypesSmokePath,
+  readFileSync(join(REPO_ROOT, "types-smoke.ts"), "utf8"),
+  "utf8"
+);
+const installedTypecheck = spawnSync("npx", ["-y", "-p", "typescript", "tsc", "--noEmit", "./types-smoke.ts"], {
   cwd: packedInstallAppDir,
   encoding: "utf8"
 });
