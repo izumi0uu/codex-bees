@@ -129,7 +129,7 @@ export interface CoordinationOverviewView {
 }
 
 export interface WorkerGuidelines {
-  fileOwnership: string;
+  fileOwnership: "one active writer per file";
   parallelism: string;
   validation: string[];
 }
