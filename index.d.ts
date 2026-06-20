@@ -513,7 +513,7 @@ export interface DetailedSwarmListView {
 }
 
 export interface SwarmFilters {
-  status?: string;
+  status?: SwarmStatus;
   topology?: string;
   owner?: string;
 }
