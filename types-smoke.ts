@@ -193,6 +193,7 @@ stateFilePath();
 
 const apiMetadataProduct: string = getApiPackageMetadata().product;
 const packageMetadataViewKind: "package_metadata_view" = getPackageMetadataView().kind;
+const packageMetadataReason: "package_metadata_loaded" = getPackageMetadataView().recommendedReason;
 const packageMetadataViewMode: string = getPackageMetadataView().metadata.mode;
 const productName: string = PRODUCT_NAME;
 const packageVersion: string = PACKAGE_VERSION;
