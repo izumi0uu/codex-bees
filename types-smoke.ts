@@ -264,7 +264,15 @@ const catalogSource: "workspace" | "bundled" | "missing" = getCatalogSubpathView
 const contractMode: "codex-only" = getContractSubpathView().contract.mode;
 const capabilityCategory: "runtime" | "planning" | "coordination" | "memory" | "introspection" = getCapabilityCatalog()[0]?.category ?? "runtime";
 const statusProduct: "codex-bees" = getStatusSubpathView().status.product;
-const statusCliEntry: string | undefined = getStatusSubpathView().status.recommendedEntryPoints.cli[0];
+const statusCliEntry:
+  | "leader:assignment-launch-plan"
+  | "leader:assignment-dispatch-bundle"
+  | "leader:workspace"
+  | "status"
+  | "capabilities"
+  | "runtime:summary-pack"
+  | "runtime:queue-pack"
+  | undefined = getStatusSubpathView().status.recommendedEntryPoints.cli[0];
 const plannerLane: string | undefined = planTaskSubpath("typed downstream planner").lanes[0]?.lane;
 const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm").swarm.lanes[0]?.lane;
 const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.maxWorkers;
