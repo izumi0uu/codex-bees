@@ -894,6 +894,18 @@ if (
   console.error(installedDirectMcpStdio.stderr || installedDirectMcpStdio.stdout);
   process.exit(1);
 }
+const installedDirectMcpBad = spawnSync("node", ["./node_modules/codex-bees/dist/mcp.js", "nope"], {
+  cwd: packedInstallAppDir,
+  encoding: "utf8"
+});
+if (
+  installedDirectMcpBad.status === 0 ||
+  !installedDirectMcpBad.stderr.includes("Unknown mcp option: nope")
+) {
+  console.error("[smoke:installed-direct-mcp-bad] expected installed packaged MCP entrypoint to reject unknown options");
+  console.error(installedDirectMcpBad.stderr || installedDirectMcpBad.stdout);
+  process.exit(1);
+}
 const installedMcpTools = JSON.parse(
   runInstalled("installed-mcp-tools", "node", ["./node_modules/codex-bees/dist/mcp.js", "--tools"]).stdout
 ).tools;
