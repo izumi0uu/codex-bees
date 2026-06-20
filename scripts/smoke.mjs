@@ -484,6 +484,12 @@ if (!documentedRuntimeGuidanceExampleBlockMatch) {
   process.exit(1);
 }
 const documentedRuntimeGuidanceExampleScript = documentedRuntimeGuidanceExampleBlockMatch[1];
+const documentedCommandsExampleBlockMatch = README_TEXT.match(/The `codex-bees\/commands` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedCommandsExampleBlockMatch) {
+  console.error("[smoke:readme-commands-example] expected README to document a runnable commands example block");
+  process.exit(1);
+}
+const documentedCommandsExampleScript = documentedCommandsExampleBlockMatch[1];
 const documentedMcpExampleBlockMatch = README_TEXT.match(/The `codex-bees\/mcp` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedMcpExampleBlockMatch) {
   console.error("[smoke:readme-mcp-example] expected README to document a runnable mcp example block");
@@ -616,6 +622,26 @@ if (
   console.error("[smoke:readme-runtime-guidance-example-contract] expected README runtime-guidance example to execute successfully against the installed package");
   console.error(installedRuntimeGuidanceExample.stderr || installedRuntimeGuidanceExample.stdout);
   process.exit(installedRuntimeGuidanceExample.status ?? 1);
+}
+const installedCommandsExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedCommandsExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "command_catalog_view" && catalog.commands.some((entry) => entry.command === "mcp") && help.includes("codex-bees run") && help.includes("codex-bees mcp") }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCommandsExample.status !== 0 ||
+  JSON.parse(installedCommandsExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-commands-example-contract] expected README commands example to execute successfully against the installed package");
+  console.error(installedCommandsExample.stderr || installedCommandsExample.stdout);
+  process.exit(installedCommandsExample.status ?? 1);
 }
 const installedMcpImport = spawnSync(
   "node",

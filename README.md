@@ -164,6 +164,15 @@ The `codex-bees/metadata` subpath exposes the package identity contract directly
 
 The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` command entry also carries the structured MCP subcommand option list, so one command-catalog read is enough to discover both the top-level `mcp` command and its shipped flags.
 
+Example:
+
+```js
+import { getCommandCatalogView, renderHelpText } from "codex-bees/commands";
+
+const catalog = getCommandCatalogView();
+const help = renderHelpText();
+```
+
 The package now also ships lightweight TypeScript declarations for the public API surface. They are intentionally minimal, but they cover the documented root export and subpath imports well enough for editor completion, typed imports, and smoke-level compile checks in downstream projects.
 
 ## CLI
