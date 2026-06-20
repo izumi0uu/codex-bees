@@ -559,7 +559,7 @@ const installedMetadataImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/metadata").then((m) => console.log(JSON.stringify({ ok: m.getPackageMetadata().product === "codex-bees" && m.getPackageMetadata().version === "0.1.0" && m.getPackageMetadataView().kind === "package_metadata_view" })))'
+    'import("codex-bees/metadata").then((m) => { const metadata = m.getPackageMetadata(); console.log(JSON.stringify({ ok: metadata.product === "codex-bees" && metadata.version === "0.1.0" && metadata.description === "Codex-native multi-agent runtime for explicit local orchestration." && metadata.license === "MIT" && metadata.homepage === "https://github.com/izumi0uu/codex-bees#readme" && metadata.bugsUrl === "https://github.com/izumi0uu/codex-bees/issues" && metadata.repositoryUrl === "https://github.com/izumi0uu/codex-bees.git" && Array.isArray(metadata.keywords) && metadata.keywords.includes("codex") && metadata.keywords.includes("orchestration") && m.getPackageMetadataView().kind === "package_metadata_view" })); })'
   ],
   {
     cwd: packedInstallAppDir,

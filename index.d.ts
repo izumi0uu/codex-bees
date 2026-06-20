@@ -1,6 +1,12 @@
 export interface PackageMetadata {
   product: string;
   version: string;
+  description: string;
+  license: string;
+  homepage: string | null;
+  bugsUrl: string | null;
+  repositoryUrl: string | null;
+  keywords: string[];
   mode: string;
 }
 

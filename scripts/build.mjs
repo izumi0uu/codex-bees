@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { PUBLIC_TYPE_ENTRYPOINTS } from "../src/typings.js";
@@ -23,6 +23,23 @@ function copyTree(source, target) {
   }
 
   copyFileSync(source, target);
+}
+
+function writeDistPackageMetadata() {
+  const packageManifest = JSON.parse(readFileSync("package.json", "utf8"));
+  writeFileSync(
+    join("dist", "package-metadata.json"),
+    JSON.stringify({
+      name: packageManifest.name,
+      version: packageManifest.version,
+      description: packageManifest.description,
+      license: packageManifest.license,
+      homepage: packageManifest.homepage ?? null,
+      bugs: packageManifest.bugs ?? null,
+      repository: packageManifest.repository ?? null,
+      keywords: Array.isArray(packageManifest.keywords) ? packageManifest.keywords : []
+    }, null, 2) + "\n"
+  );
 }
 
 function verifyDistCommand(label, args) {
@@ -51,6 +68,7 @@ for (const entrypoint of PUBLIC_TYPE_ENTRYPOINTS) {
   copyFileSync("index.d.ts", join("dist", `${entrypoint}.d.ts`));
 }
 copyTree(".codex", join("dist", ".codex"));
+writeDistPackageMetadata();
 
 verifyDistCommand("dist-help", ["./dist/index.js", "--help"]);
 verifyDistCommand("dist-tools", ["./dist/mcp.js", "--tools"]);

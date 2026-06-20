@@ -28,6 +28,12 @@ import { callMcpTool, handleMcpRequest } from "codex-bees/mcp";
 const metadata = getPackageMetadata();
 metadata.product;
 metadata.version;
+metadata.description;
+metadata.license;
+metadata.homepage;
+metadata.bugsUrl;
+metadata.repositoryUrl;
+metadata.keywords[0];
 
 getCommandCatalogView().commands[0]?.command;
 renderHelpText();
