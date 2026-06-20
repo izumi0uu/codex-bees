@@ -197,7 +197,7 @@ const statusCliEntry: string | undefined = getStatusSubpathView().status.recomme
 const plannerLane: string | undefined = planTaskSubpath("typed downstream planner").lanes[0]?.lane;
 const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm").swarm.lanes[0]?.lane;
 const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.maxWorkers;
-const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks: unknown[]) => tasks as any).kind;
+const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[]).kind;
 const memorySearchQuery: string = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).query;
 const memorySearchScore: number | undefined = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).results[0]?.score;
 const memorySearchNamespace: string | undefined = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).results[0]?.namespace;

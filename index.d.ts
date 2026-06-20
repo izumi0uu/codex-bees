@@ -654,7 +654,7 @@ export declare function getRuntimeStatusView(input?: { version?: string; toolCou
 
 export declare function planTask(task: string): TaskPlan;
 export declare function planSwarm(task: string): PlannedSwarm;
-export declare function queueTasksFromPlan(task: string, addTasksFn?: (...args: any[]) => any): QueuedPlan;
+export declare function queueTasksFromPlan(task: string, addTasksFn?: (tasks: TaskInput[]) => TaskRecord[]): QueuedPlan;
 
 export declare function listMcpTools(): ToolCatalogEntry[];
 export declare function getToolCatalogView(): ToolCatalogView;
