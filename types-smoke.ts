@@ -93,6 +93,7 @@ getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
 renderMcpHelpText();
 getRuntimeCatalogView().catalog.paths.codexDir;
+const runtimeCatalogReason: "catalog_entries_loaded" | "catalog_empty" = getRuntimeCatalogView().recommendedReason;
 getRuntimeDoctorView().contract.kind;
 const runtimeDoctorStatus: "ok" = getRuntimeDoctorView().status;
 const runtimeReadyStatus: "ready" = getRuntimeReadyView().status;
