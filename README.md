@@ -40,6 +40,8 @@ npm run build
 npm run smoke
 ```
 
+`npm run build` now rebuilds `dist/` from the shipped source modules and immediately verifies that the packaged CLI (`dist/index.js`) and MCP entrypoint (`dist/mcp.js`) both boot successfully, so the distributable surface cannot silently drift behind `src/`.
+
 ## CLI
 
 ```bash

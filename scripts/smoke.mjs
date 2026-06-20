@@ -21,6 +21,8 @@ const checks = [
   ["capabilities", ["./src/index.js", "capabilities"]],
   ["cli-tools", ["./src/index.js", "tools"]],
   ["tools", ["./src/mcp.js", "--tools"]],
+  ["dist-help", ["./dist/index.js", "--help"]],
+  ["dist-tools", ["./dist/mcp.js", "--tools"]],
   [
     "memory-store",
     [
