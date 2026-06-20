@@ -526,7 +526,7 @@ export interface SwarmFilters {
 
 export interface SwarmDetailView {
   kind: "swarm_detail";
-  recommendedReason: string;
+  recommendedReason: "swarm_detail_loaded";
   metadata: SwarmDetailMetadata;
   swarm: SwarmRecord;
 }
