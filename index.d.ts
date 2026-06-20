@@ -302,7 +302,7 @@ export interface ToolCatalogEntry {
 
 export interface ToolCatalogView {
   kind: "tool_catalog_view";
-  recommendedReason: string;
+  recommendedReason: "tool_catalog_loaded" | "tool_catalog_empty";
   counts: {
     totalTools: number;
     groups: Record<string, number>;
