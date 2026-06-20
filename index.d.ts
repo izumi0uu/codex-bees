@@ -389,12 +389,23 @@ export interface SwarmRecord {
   maxWorkers?: number;
   owner?: string | null;
   laneSource?: string;
-  lanes?: SwarmLaneInput[];
+  lanes?: SwarmLaneRecord[];
   queuedAt?: string | null;
   notes?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   [key: string]: unknown;
+}
+
+export interface SwarmLaneRecord {
+  lane: string;
+  summary: string;
+  owner: string | null;
+  verifier: string | null;
+  scope: string[] | null;
+  acceptance: string[] | null;
+  verification: string[] | null;
+  taskId: string | null;
 }
 
 export interface SwarmLaneSummary {
