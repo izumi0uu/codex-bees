@@ -207,6 +207,7 @@ const packageMetadataViewMode: string = getPackageMetadataView().metadata.mode;
 const productName: string = PRODUCT_NAME;
 const packageVersion: string = PACKAGE_VERSION;
 const rootCapabilityCatalogViewKind: "runtime_capabilities_view" = getCapabilityCatalogView().kind;
+const runtimeCapabilitiesReason: "capabilities_loaded" | "capabilities_empty" = getCapabilityCatalogView().recommendedReason;
 const rootAgentId: string | undefined = listAgentCatalog()[0]?.id;
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
 const rootSkillId: string | undefined = listSkillCatalog()[0]?.id;
