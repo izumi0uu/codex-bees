@@ -106,6 +106,7 @@ const rootSwarmPlanLaneSource: "planner" = planSwarm("typed root swarm").swarm.l
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
 const rootStartMcpServer: () => Promise<void> = startMcpServer;
+const taskPlanReason: "multi_lane_plan_ready" | "single_lane_plan_ready" = planTask("typed smoke").recommendedReason;
 const plannerHasSrc: boolean = planTask("typed smoke").evidence.repoSignals.hasSrc;
 const plannerRolePath: string | undefined = planTask("typed smoke").evidence.roleFiles[0]?.path;
 
