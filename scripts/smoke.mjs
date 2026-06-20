@@ -478,6 +478,12 @@ if (!documentedStateExampleBlockMatch) {
   process.exit(1);
 }
 const documentedStateExampleScript = documentedStateExampleBlockMatch[1];
+const documentedRuntimeGuidanceExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-guidance` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedRuntimeGuidanceExampleBlockMatch) {
+  console.error("[smoke:readme-runtime-guidance-example] expected README to document a runnable runtime-guidance example block");
+  process.exit(1);
+}
+const documentedRuntimeGuidanceExampleScript = documentedRuntimeGuidanceExampleBlockMatch[1];
 const documentedMcpExampleBlockMatch = README_TEXT.match(/The `codex-bees\/mcp` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedMcpExampleBlockMatch) {
   console.error("[smoke:readme-mcp-example] expected README to document a runnable mcp example block");
@@ -590,6 +596,26 @@ if (
   console.error("[smoke:readme-state-example-contract] expected README state example to execute successfully against the installed package");
   console.error(installedStateExample.stderr || installedStateExample.stdout);
   process.exit(installedStateExample.status ?? 1);
+}
+const installedRuntimeGuidanceExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedRuntimeGuidanceExampleScript}\nconsole.log(JSON.stringify({ ok: overview.kind === "coordination_overview_view" && overview.overview.deliveryBoundary === "codex-only runtime" && guidelines.kind === "worker_guidelines_view" && guidelines.guidelines.fileOwnership === "one active writer per file" }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRuntimeGuidanceExample.status !== 0 ||
+  JSON.parse(installedRuntimeGuidanceExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-runtime-guidance-example-contract] expected README runtime-guidance example to execute successfully against the installed package");
+  console.error(installedRuntimeGuidanceExample.stderr || installedRuntimeGuidanceExample.stdout);
+  process.exit(installedRuntimeGuidanceExample.status ?? 1);
 }
 const installedMcpImport = spawnSync(
   "node",
