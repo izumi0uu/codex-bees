@@ -334,6 +334,14 @@ export interface McpResponse {
   };
 }
 
+export type TaskQueueStatus =
+  | "queued"
+  | "claimed"
+  | "blocked"
+  | "ready_for_review"
+  | "released"
+  | "done";
+
 export interface TaskHistoryEntry {
   id: string;
   at: string | null;
