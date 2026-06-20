@@ -169,6 +169,7 @@ const typedMemoryTitle: string | null | undefined = typedMemory.title;
 const typedMemoryAgent: string | null | undefined = typedMemory.agent;
 const typedMemoryTag: string | undefined = typedMemory.tags?.[0];
 const typedMemoryCreatedAt: string | null | undefined = typedMemory.createdAt;
+const typedMemoryUpdatedAt: string | null | undefined = typedMemory.updatedAt;
 const memoryListNamespace: string | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.namespace;
 const memoryListTitle: string | null | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.title;
 const memoryListAgent: string | null | undefined = listMemoriesView({ agent: "tester", tags: ["types"] }).memories[0]?.agent;
