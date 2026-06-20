@@ -104,7 +104,7 @@ export interface RuntimeDoctorView {
 
 export interface RuntimeReadyView {
   kind: "runtime_ready_view";
-  recommendedReason: string;
+  recommendedReason: "runtime_entry_ready";
   status: "ready";
   counts: {
     nextSteps: number;
