@@ -2349,6 +2349,12 @@ export function runtimeVerifierPack(input = {}) {
   });
   const recommendedSurface = deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role: input.role });
   const recommendedReason = deriveRuntimeVerifierPackReason({ review, bundle, closeout, next });
+  const nextEntries = {
+    review: review?.next ?? null,
+    candidate: next?.candidate ?? null,
+    decision: bundle?.currentTask ?? null,
+    closeout: closeout?.report?.task ?? null
+  };
 
   return {
     kind: "runtime_verifier_pack",
@@ -2357,16 +2363,20 @@ export function runtimeVerifierPack(input = {}) {
     mode: "verifier",
     recommendedSurface,
     recommendedReason,
+    metadata: {
+      hasReview: Boolean(nextEntries.review),
+      hasCandidate: Boolean(nextEntries.candidate),
+      hasDecision: Boolean(nextEntries.decision),
+      hasCloseout: Boolean(nextEntries.closeout)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
     overview: {
       review: review?.counts ?? null,
       bundle: bundle?.currentTask ? { currentTask: bundle.currentTask.id } : { currentTask: null }
     },
-    next: {
-      review: review?.next ?? null,
-      candidate: next?.candidate ?? null,
-      decision: bundle?.currentTask ?? null,
-      closeout: closeout?.report?.task ?? null
-    },
+    next: nextEntries,
     surfaces: {
       review,
       bundle,

@@ -5684,6 +5684,11 @@ if (
   verifierPackCli.kind !== "runtime_verifier_pack" ||
   verifierPackCli.recommendedSurface !== "worker:closeout" ||
   verifierPackCli.recommendedReason !== "decision_bundle_ready" ||
+  verifierPackCli.metadata?.hasReview !== true ||
+  verifierPackCli.metadata?.hasCandidate !== true ||
+  verifierPackCli.metadata?.hasDecision !== true ||
+  verifierPackCli.metadata?.hasCloseout !== true ||
+  verifierPackCli.counts?.surfacedNextEntries !== Object.values(verifierPackCli.next ?? {}).filter(Boolean).length ||
   verifierPackCli.next?.decision?.id !== "task-2" ||
   verifierPackCli.surfaces?.review?.counts?.totalPendingReview !== 1 ||
   verifierPackCli.surfaces?.closeout?.report?.task?.id !== "task-2"
@@ -6139,6 +6144,12 @@ if (
   verifierPackMcp.status !== 0 ||
   verifierPackMcpPayload.verifierPack?.recommendedSurface !== "worker:closeout" ||
   verifierPackMcpPayload.verifierPack?.recommendedReason !== "decision_bundle_ready" ||
+  verifierPackMcpPayload.verifierPack?.metadata?.hasReview !== true ||
+  verifierPackMcpPayload.verifierPack?.metadata?.hasCandidate !== true ||
+  verifierPackMcpPayload.verifierPack?.metadata?.hasDecision !== true ||
+  verifierPackMcpPayload.verifierPack?.metadata?.hasCloseout !== true ||
+  verifierPackMcpPayload.verifierPack?.counts?.surfacedNextEntries !==
+    Object.values(verifierPackMcpPayload.verifierPack?.next ?? {}).filter(Boolean).length ||
   verifierPackMcpPayload.verifierPack?.next?.decision?.id !== "task-2" ||
   verifierPackMcpPayload.verifierPack?.surfaces?.closeout?.report?.task?.id !== "task-2"
 ) {
