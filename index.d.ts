@@ -697,7 +697,7 @@ export declare function queueTasksFromPlan(task: string, addTasksFn?: (tasks: Ta
 export declare function listMcpTools(): ToolCatalogEntry[];
 export declare function getToolCatalogView(): ToolCatalogView;
 export declare function handleMcpRequest(message: McpMessage): McpResponse;
-export declare function callMcpTool(name: string, args?: Record<string, unknown>): unknown;
+export declare function callMcpTool(name: string, args?: JsonObject): unknown;
 export declare function serializeMcpMessage(message: McpMessage): string;
 export declare function runMcpCli(args?: string[]): Promise<void>;
 export declare function startMcpServer(): Promise<void>;
