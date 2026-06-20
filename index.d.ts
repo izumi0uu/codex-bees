@@ -289,7 +289,7 @@ export interface PlannedSwarmShape {
   objective: string;
   topology: "bounded-local";
   maxWorkers: number;
-  laneSource: string;
+  laneSource: "planner";
   lanes: TaskPlanLane[];
   notes: string;
 }
