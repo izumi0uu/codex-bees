@@ -1065,6 +1065,26 @@ if (
   console.error("[smoke:installed-capabilities] expected installed npx codex-bees capabilities surface");
   process.exit(1);
 }
+const installedCliCapabilitiesContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-status").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getCapabilityCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedCliCapabilities)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCliCapabilitiesContractImport.status !== 0 ||
+  JSON.parse(installedCliCapabilitiesContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-capabilities-contract] expected installed capabilities output to match the runtime-status api surface");
+  console.error(installedCliCapabilitiesContractImport.stderr || installedCliCapabilitiesContractImport.stdout);
+  process.exit(installedCliCapabilitiesContractImport.status ?? 1);
+}
 const installedDirectCliTools = JSON.parse(
   runInstalled("installed-direct-cli-tools", "node", ["./node_modules/codex-bees/dist/index.js", "tools"]).stdout
 ).tools;
@@ -1090,6 +1110,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-capabilities] expected direct packaged CLI capabilities surface");
   process.exit(1);
+}
+const installedDirectCliCapabilitiesContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-status").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getCapabilityCatalogView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliCapabilities)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliCapabilitiesContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliCapabilitiesContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-capabilities-contract] expected direct packaged CLI capabilities output to match the runtime-status api surface");
+  console.error(installedDirectCliCapabilitiesContractImport.stderr || installedDirectCliCapabilitiesContractImport.stdout);
+  process.exit(installedDirectCliCapabilitiesContractImport.status ?? 1);
 }
 const installedCliMcpTools = JSON.parse(
   runInstalled("installed-cli-mcp-tools", "npx", ["codex-bees", "mcp", "--tools"]).stdout
