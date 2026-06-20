@@ -1,7 +1,7 @@
 import { argv, stdin, stdout, stderr } from "node:process";
 import { fileURLToPath } from "node:url";
 import { getRuntimeCatalogView } from "./catalog.js";
-import { getPackageMetadata } from "./metadata.js";
+import { getPackageMetadata, PACKAGE_VERSION } from "./metadata.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
@@ -2676,12 +2676,18 @@ function writeMcpHelp() {
   stdout.write("Usage:\n");
   stdout.write("  codex-bees mcp --stdio     Start the local MCP stdio runtime\n");
   stdout.write("  codex-bees mcp --tools     Print the current MCP tool catalog\n");
+  stdout.write("  codex-bees mcp --version   Show MCP subcommand version\n");
   stdout.write("  codex-bees mcp --help      Show MCP subcommand help\n");
 }
 
 export async function runMcpCli(args = []) {
   if (args.includes("--help") || args.includes("help")) {
     writeMcpHelp();
+    return;
+  }
+
+  if (args.includes("--version") || args.includes("version")) {
+    stdout.write(`${PACKAGE_VERSION}\n`);
     return;
   }
 

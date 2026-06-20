@@ -39,6 +39,7 @@ const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
+  ["mcp-version", ["./src/index.js", "mcp", "--version"]],
   ["catalog", ["./src/index.js", "catalog"]],
   ["metadata", ["./src/index.js", "metadata"]],
   ["status", ["./src/index.js", "status"]],
@@ -216,6 +217,12 @@ if (
   metadataCli.metadata?.homepage !== "https://github.com/izumi0uu/codex-bees#readme"
 ) {
   console.error("[smoke:metadata-cli] expected metadata command to expose the package metadata view");
+  process.exit(1);
+}
+
+const mcpVersionCli = run("mcp-version-cli", ["./src/index.js", "mcp", "--version"]).stdout.trim();
+if (mcpVersionCli !== "0.1.0") {
+  console.error("[smoke:mcp-version-cli] expected mcp subcommand version output");
   process.exit(1);
 }
 
@@ -721,9 +728,15 @@ const installedMcpHelp = runInstalled("installed-mcp-help", "npx", ["codex-bees"
 if (
   !installedMcpHelp.stdout.includes("codex-bees mcp") ||
   !installedMcpHelp.stdout.includes("codex-bees mcp --stdio") ||
-  !installedMcpHelp.stdout.includes("codex-bees mcp --tools")
+  !installedMcpHelp.stdout.includes("codex-bees mcp --tools") ||
+  !installedMcpHelp.stdout.includes("codex-bees mcp --version")
 ) {
   console.error("[smoke:installed-mcp-help] expected installed codex-bees mcp help surface");
+  process.exit(1);
+}
+const installedMcpVersion = runInstalled("installed-mcp-version", "npx", ["codex-bees", "mcp", "--version"]);
+if (installedMcpVersion.stdout.trim() !== "0.1.0") {
+  console.error("[smoke:installed-mcp-version] expected installed codex-bees mcp --version output");
   process.exit(1);
 }
 const installedMcpBad = spawnSync("npx", ["codex-bees", "mcp", "nope"], {
