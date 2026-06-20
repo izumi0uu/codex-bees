@@ -51,7 +51,8 @@ import {
   renderMcpHelpText,
   resolveRuntimeCatalogPath,
   validateSwarm,
-  validateTask
+  validateTask,
+  type TaskReviewState
 } from "codex-bees";
 
 import { renderHelpText as renderHelpTextCommands } from "codex-bees/commands";
@@ -127,7 +128,7 @@ const taskHistoryType: string | undefined = task.history?.[0]?.type;
 const taskAnnotationKind: string | undefined = task.annotations?.[0]?.kind;
 getTaskView(task.id)?.task.id;
 const taskHasHistory: boolean | undefined = getTaskView(task.id)?.metadata.hasHistory;
-const taskReviewState: string | undefined = getTaskView(task.id)?.metadata.reviewState;
+const taskReviewState: TaskReviewState | undefined = getTaskView(task.id)?.metadata.reviewState;
 validateTask(task.id)?.recommendedReason;
 const taskValidationReady: boolean | undefined = validateTask(task.id)?.ready;
 const taskValidationIssueCode: string | undefined = validateTask(task.id)?.issues[0]?.code;
