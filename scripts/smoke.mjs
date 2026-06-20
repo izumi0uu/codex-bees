@@ -502,6 +502,12 @@ if (!documentedRuntimeStatusExampleBlockMatch) {
   process.exit(1);
 }
 const documentedRuntimeStatusExampleScript = documentedRuntimeStatusExampleBlockMatch[1];
+const documentedRuntimeContractExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-contract` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedRuntimeContractExampleBlockMatch) {
+  console.error("[smoke:readme-runtime-contract-example] expected README to document a runnable runtime-contract example block");
+  process.exit(1);
+}
+const documentedRuntimeContractExampleScript = documentedRuntimeContractExampleBlockMatch[1];
 const documentedMetadataExampleBlockMatch = README_TEXT.match(/The `codex-bees\/metadata` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedMetadataExampleBlockMatch) {
   console.error("[smoke:readme-metadata-example] expected README to document a runnable metadata example block");
@@ -706,6 +712,26 @@ if (
   console.error("[smoke:readme-runtime-status-example-contract] expected README runtime-status example to execute successfully against the installed package");
   console.error(installedRuntimeStatusExample.stderr || installedRuntimeStatusExample.stdout);
   process.exit(installedRuntimeStatusExample.status ?? 1);
+}
+const installedRuntimeContractExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedRuntimeContractExampleScript}\nconsole.log(JSON.stringify({ ok: contract.kind === "runtime_contract_view" && contract.contract.product === "codex-bees" && contract.contract.mode === "codex-only" && contract.contract.deliveryBoundary === "codex-only runtime" && contract.contract.transport?.mcp === "stdio-jsonrpc" && Array.isArray(contract.contract.responsibilities) && contract.contract.responsibilities.length > 0 && Array.isArray(contract.contract.exclusions) && contract.contract.exclusions.includes("hosted backend control plane") }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRuntimeContractExample.status !== 0 ||
+  JSON.parse(installedRuntimeContractExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-runtime-contract-example-contract] expected README runtime-contract example to execute successfully against the installed package");
+  console.error(installedRuntimeContractExample.stderr || installedRuntimeContractExample.stdout);
+  process.exit(installedRuntimeContractExample.status ?? 1);
 }
 const installedMetadataExample = spawnSync(
   "node",

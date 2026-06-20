@@ -186,6 +186,16 @@ import { getRuntimeStatusView } from "codex-bees/runtime-status";
 const status = getRuntimeStatusView();
 ```
 
+The `codex-bees/runtime-contract` subpath exposes the stable runtime boundary directly, so tooling can read delivery mode, transport shape, responsibilities, and exclusions without scraping CLI or MCP output.
+
+Example:
+
+```js
+import { getRuntimeContractView } from "codex-bees/runtime-contract";
+
+const contract = getRuntimeContractView();
+```
+
 The `codex-bees/metadata` subpath exposes the package identity contract directly, so CLI, MCP, and library consumers can all read the same name, version, description, license, homepage, issue tracker, repository URL, keyword tags, and Codex-only mode surface from one source.
 
 Example:
