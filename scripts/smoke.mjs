@@ -715,6 +715,11 @@ if (installedVersion.stdout.trim() !== "0.1.0") {
   console.error("[smoke:installed-version] expected installed npx codex-bees --version output");
   process.exit(1);
 }
+const installedDirectCliVersion = runInstalled("installed-direct-cli-version", "node", ["./node_modules/codex-bees/dist/index.js", "--version"]);
+if (installedDirectCliVersion.stdout.trim() !== "0.1.0") {
+  console.error("[smoke:installed-direct-cli-version] expected direct packaged CLI version output");
+  process.exit(1);
+}
 const installedTypecheck = spawnSync("npx", ["-y", "-p", "typescript", "tsc", "--noEmit", "/Users/idah/Projects-combined/codex-bees/types-smoke.ts"], {
   cwd: packedInstallAppDir,
   encoding: "utf8"
