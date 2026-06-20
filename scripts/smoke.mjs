@@ -456,6 +456,16 @@ const documentedRootImportExports = documentedRootImportExampleMatch[1]
   .map((line) => line.trim().replace(/,$/, ""))
   .filter(Boolean)
   .sort();
+const documentedMcpImportExampleMatch = README_TEXT.match(/Example:\n\n```js\nimport\s*{\s*([^}]+?)\s*}\sfrom\s"codex-bees\/mcp";/);
+if (!documentedMcpImportExampleMatch) {
+  console.error("[smoke:readme-mcp-import] expected README to document the mcp subpath import example");
+  process.exit(1);
+}
+const documentedMcpImportExports = documentedMcpImportExampleMatch[1]
+  .split(",")
+  .map((name) => name.trim())
+  .filter(Boolean)
+  .sort();
 const exportedSubpaths = Object.keys(packageManifest.exports)
   .filter((key) => key !== ".")
   .sort();
@@ -527,20 +537,29 @@ const installedMcpImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); const mcpOptions = m.getMcpCommandCatalog(); const mcpCatalog = m.getMcpCommandCatalogView(); const mcpHelp = m.renderMcpHelpText(); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") && Array.isArray(mcpOptions) && mcpOptions.some((option) => option.option === "--capabilities") && mcpCatalog.kind === "mcp_command_catalog_view" && mcpCatalog.counts.totalOptions >= 5 && mcpCatalog.options.some((option) => option.option === "--capabilities") && mcpHelp.includes("codex-bees mcp --tools") && mcpHelp.includes("codex-bees mcp --capabilities") })); })'
+    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); const mcpOptions = m.getMcpCommandCatalog(); const mcpCatalog = m.getMcpCommandCatalogView(); const mcpHelp = m.renderMcpHelpText(); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") && Array.isArray(mcpOptions) && mcpOptions.some((option) => option.option === "--capabilities") && mcpCatalog.kind === "mcp_command_catalog_view" && mcpCatalog.counts.totalOptions >= 5 && mcpCatalog.options.some((option) => option.option === "--capabilities") && mcpHelp.includes("codex-bees mcp --tools") && mcpHelp.includes("codex-bees mcp --capabilities"), keys: Object.keys(m).sort() })); })'
   ],
   {
     cwd: packedInstallAppDir,
     encoding: "utf8"
   }
 );
+const installedMcpImportPayload = JSON.parse(installedMcpImport.stdout);
 if (
   installedMcpImport.status !== 0 ||
-  JSON.parse(installedMcpImport.stdout).ok !== true
+  installedMcpImportPayload.ok !== true
 ) {
   console.error("[smoke:installed-mcp-import] expected installed codex-bees/mcp subpath to expose working programmatic helpers");
   console.error(installedMcpImport.stderr || installedMcpImport.stdout);
   process.exit(installedMcpImport.status ?? 1);
+}
+const missingDocumentedMcpImports = documentedMcpImportExports.filter(
+  (name) => !installedMcpImportPayload.keys.includes(name)
+);
+if (missingDocumentedMcpImports.length > 0) {
+  console.error("[smoke:readme-mcp-import-contract] expected README mcp import example to match documented installed mcp exports");
+  console.error(JSON.stringify({ missingDocumentedMcpImports, documentedMcpImportExports, installedMcpExports: installedMcpImportPayload.keys }, null, 2));
+  process.exit(1);
 }
 const installedCatalogImport = spawnSync(
   "node",
