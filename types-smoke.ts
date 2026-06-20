@@ -252,6 +252,7 @@ const resolvedSkillPath: string | null = resolveRuntimeCatalogPath("skills");
 const rootRuntimeContractKind: "runtime_contract_view" = getRuntimeContractView().kind;
 const runtimeContractReason: "contract_loaded" = getRuntimeContractView().recommendedReason;
 const rootRuntimeContractMode: "codex-only" = getRuntimeContractView().contract.mode;
+const rootRuntimeContractBoundary: "codex-only runtime" = getRuntimeContractView().contract.deliveryBoundary;
 const rootRuntimeStatusProduct: string = getRuntimeStatus({ version: metadata.version, toolCount: listMcpTools().length }).product;
 const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
 const apiToolName: string | undefined = getApiToolCatalogView().tools[0]?.name;
