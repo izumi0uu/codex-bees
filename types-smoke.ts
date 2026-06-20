@@ -3,6 +3,7 @@ import {
   getMcpCommandCatalog,
   getMcpCommandCatalogView,
   getPackageMetadata,
+  getPackageMetadataView,
   getCapabilityCatalog,
   getRuntimeCatalogView,
   getRuntimeDoctorView,
@@ -130,6 +131,8 @@ searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types
 stateFilePath();
 
 const apiMetadataProduct: string = getApiPackageMetadata().product;
+const packageMetadataViewKind: "package_metadata_view" = getPackageMetadataView().kind;
+const packageMetadataViewMode: string = getPackageMetadataView().metadata.mode;
 const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
 const apiToolName: string | undefined = getApiToolCatalogView().tools[0]?.name;
 const catalogSource: string = getCatalogSubpathView().catalog.source;
