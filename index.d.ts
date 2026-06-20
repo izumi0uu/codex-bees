@@ -362,7 +362,7 @@ export interface TaskRecord {
   status?: string;
   queueStatus?: string;
   objective: string | null;
-  lane?: string | null;
+  lane: string | null;
   swarmId?: string | null;
   scope: string[] | null;
   acceptance: string[] | null;
