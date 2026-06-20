@@ -121,7 +121,7 @@ export interface CoordinationOverview {
 
 export interface CoordinationOverviewView {
   kind: "coordination_overview_view";
-  recommendedReason: string;
+  recommendedReason: "coordination_model_loaded";
   counts: {
     facets: number;
   };
