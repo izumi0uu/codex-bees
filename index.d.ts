@@ -38,7 +38,7 @@ export interface CommandCatalogView {
 
 export interface McpCommandCatalogView {
   kind: "mcp_command_catalog_view";
-  recommendedReason: string;
+  recommendedReason: "mcp_command_catalog_loaded" | "mcp_command_catalog_empty";
   counts: {
     totalOptions: number;
   };
