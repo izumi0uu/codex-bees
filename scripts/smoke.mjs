@@ -472,6 +472,12 @@ const documentedMcpImportExports = documentedMcpImportExampleMatch[1]
   .map((name) => name.trim())
   .filter(Boolean)
   .sort();
+const documentedApiExampleBlockMatch = README_TEXT.match(/The `codex-bees\/api` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedApiExampleBlockMatch) {
+  console.error("[smoke:readme-api-example] expected README to document a runnable api example block");
+  process.exit(1);
+}
+const documentedApiExampleScript = documentedApiExampleBlockMatch[1];
 const documentedStateExampleBlockMatch = README_TEXT.match(/The `codex-bees\/state` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedStateExampleBlockMatch) {
   console.error("[smoke:readme-state-example] expected README to document a runnable state subpath example block");
@@ -624,6 +630,26 @@ if (
   console.error("[smoke:readme-root-example-contract] expected README root example to execute successfully against the installed package");
   console.error(installedRootExample.stderr || installedRootExample.stdout);
   process.exit(installedRootExample.status ?? 1);
+}
+const installedApiExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedApiExampleScript}\nconsole.log(JSON.stringify({ ok: metadata.product === "codex-bees" && ready.kind === "runtime_ready_view" && tools.kind === "tool_catalog_view" && Array.isArray(tools.tools) && tools.tools.length > 0 }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedApiExample.status !== 0 ||
+  JSON.parse(installedApiExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-api-example-contract] expected README api example to execute successfully against the installed package");
+  console.error(installedApiExample.stderr || installedApiExample.stdout);
+  process.exit(installedApiExample.status ?? 1);
 }
 const installedStateExample = spawnSync(
   "node",

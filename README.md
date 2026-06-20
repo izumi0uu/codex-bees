@@ -98,6 +98,18 @@ Official subpath exports are also available for narrower integrations:
 - `codex-bees/runtime-status`
 - `codex-bees/runtime-contract`
 
+The `codex-bees/api` subpath mirrors the root library surface explicitly, so tools that prefer a stable named subpath can import the same public helpers without relying on the package root entry.
+
+Example:
+
+```js
+import { getPackageMetadata, getRuntimeReadyView, getToolCatalogView } from "codex-bees/api";
+
+const metadata = getPackageMetadata();
+const ready = getRuntimeReadyView();
+const tools = getToolCatalogView();
+```
+
 The `codex-bees/state` subpath is the smallest official programmatic bridge into persisted local coordination state. It exposes helpers such as `addTask`, `getTaskView`, `listTasksView`, `initSwarm`, `listSwarmsView`, `storeMemory`, `listMemoriesView`, `validateTask`, `validateSwarm`, and `stateFilePath`.
 
 Example:
