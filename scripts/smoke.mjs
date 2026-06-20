@@ -3812,6 +3812,11 @@ const runtimeTriagePackCli = JSON.parse(
 if (
   runtimeTriagePackCli.recommendedSurface !== "runtime:focus" ||
   runtimeTriagePackCli.recommendedReason !== "blocked_focus_priority" ||
+  runtimeTriagePackCli.metadata?.hasFocus !== true ||
+  runtimeTriagePackCli.metadata?.hasAlert !== true ||
+  runtimeTriagePackCli.metadata?.hasReview !== true ||
+  runtimeTriagePackCli.metadata?.hasRecovery !== true ||
+  runtimeTriagePackCli.counts?.surfacedNextEntries !== Object.values(runtimeTriagePackCli.next ?? {}).filter(Boolean).length ||
   runtimeTriagePackCli.next?.focus?.taskId !== "task-1" ||
   runtimeTriagePackCli.next?.alert?.taskId !== "task-1" ||
   runtimeTriagePackCli.next?.review?.taskId !== "task-2" ||
@@ -4609,6 +4614,12 @@ if (
   runtimeTriagePackMcp.status !== 0 ||
   runtimeTriagePackMcpPayload.triagePack?.recommendedSurface !== "runtime:focus" ||
   runtimeTriagePackMcpPayload.triagePack?.recommendedReason !== "blocked_focus_priority" ||
+  runtimeTriagePackMcpPayload.triagePack?.metadata?.hasFocus !== true ||
+  runtimeTriagePackMcpPayload.triagePack?.metadata?.hasAlert !== true ||
+  runtimeTriagePackMcpPayload.triagePack?.metadata?.hasReview !== true ||
+  runtimeTriagePackMcpPayload.triagePack?.metadata?.hasRecovery !== true ||
+  runtimeTriagePackMcpPayload.triagePack?.counts?.surfacedNextEntries !==
+    Object.values(runtimeTriagePackMcpPayload.triagePack?.next ?? {}).filter(Boolean).length ||
   runtimeTriagePackMcpPayload.triagePack?.next?.focus?.taskId !== "task-1" ||
   runtimeTriagePackMcpPayload.triagePack?.next?.review?.taskId !== "task-2"
 ) {
