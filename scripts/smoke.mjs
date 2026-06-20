@@ -907,6 +907,26 @@ if (
   console.error("[smoke:installed-metadata] expected installed npx codex-bees metadata to expose the package metadata view");
   process.exit(1);
 }
+const installedMetadataContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getPackageMetadataView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedMetadata)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedMetadataContractImport.status !== 0 ||
+  JSON.parse(installedMetadataContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-metadata-contract] expected installed metadata output to match the package metadata api surface");
+  console.error(installedMetadataContractImport.stderr || installedMetadataContractImport.stdout);
+  process.exit(installedMetadataContractImport.status ?? 1);
+}
 const installedDirectCliMetadata = JSON.parse(
   runInstalled("installed-direct-cli-metadata", "node", ["./node_modules/codex-bees/dist/index.js", "metadata"]).stdout
 ).metadata;
@@ -918,6 +938,26 @@ if (
 ) {
   console.error("[smoke:installed-direct-cli-metadata] expected direct packaged CLI metadata output");
   process.exit(1);
+}
+const installedDirectCliMetadataContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getPackageMetadataView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliMetadata)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliMetadataContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliMetadataContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-metadata-contract] expected direct packaged CLI metadata output to match the package metadata api surface");
+  console.error(installedDirectCliMetadataContractImport.stderr || installedDirectCliMetadataContractImport.stdout);
+  process.exit(installedDirectCliMetadataContractImport.status ?? 1);
 }
 const installedCatalog = JSON.parse(
   runInstalled("installed-catalog", "npx", ["codex-bees", "catalog"]).stdout
