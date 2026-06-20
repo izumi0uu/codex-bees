@@ -526,6 +526,12 @@ if (!documentedMcpExampleBlockMatch) {
   process.exit(1);
 }
 const documentedMcpExampleScript = documentedMcpExampleBlockMatch[1];
+const documentedCatalogExampleBlockMatch = README_TEXT.match(/The `codex-bees\/catalog` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedCatalogExampleBlockMatch) {
+  console.error("[smoke:readme-catalog-example] expected README to document a runnable catalog example block");
+  process.exit(1);
+}
+const documentedCatalogExampleScript = documentedCatalogExampleBlockMatch[1];
 const exportedSubpaths = Object.keys(packageManifest.exports)
   .filter((key) => key !== ".")
   .sort();
@@ -820,6 +826,26 @@ if (
   console.error("[smoke:readme-mcp-example-contract] expected README mcp example to execute successfully against the installed package");
   console.error(installedMcpExample.stderr || installedMcpExample.stdout);
   process.exit(installedMcpExample.status ?? 1);
+}
+const installedCatalogExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedCatalogExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "runtime_catalog_view" && typeof catalog.counts?.agents === "number" && catalog.counts.agents > 0 && typeof catalog.counts?.skills === "number" && catalog.counts.skills > 0 && typeof catalog.catalog?.paths?.codexDir === "string" && catalog.catalog.paths.codexDir.length > 0 && ["workspace", "bundled"].includes(catalog.catalog?.source) }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedCatalogExample.status !== 0 ||
+  JSON.parse(installedCatalogExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-catalog-example-contract] expected README catalog example to execute successfully against the installed package");
+  console.error(installedCatalogExample.stderr || installedCatalogExample.stdout);
+  process.exit(installedCatalogExample.status ?? 1);
 }
 const installedCatalogImport = spawnSync(
   "node",

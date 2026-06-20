@@ -140,6 +140,16 @@ const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" })
 const contract = callMcpTool("runtime_contract");
 ```
 
+The `codex-bees/catalog` subpath exposes the same runtime catalog view that powers `codex-bees catalog`, so tooling can inspect shipped agents, skills, asset source selection, and effective `.codex` paths without scraping CLI output.
+
+Example:
+
+```js
+import { getRuntimeCatalogView } from "codex-bees/catalog";
+
+const catalog = getRuntimeCatalogView();
+```
+
 The `codex-bees/runtime-guidance` subpath exposes the same coordination primitives that the MCP tools return, but as direct library calls:
 
 - `getCoordinationOverview()`
