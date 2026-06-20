@@ -254,6 +254,7 @@ const runtimeContractReason: "contract_loaded" = getRuntimeContractView().recomm
 const rootRuntimeContractMode: "codex-only" = getRuntimeContractView().contract.mode;
 const rootRuntimeContractBoundary: "codex-only runtime" = getRuntimeContractView().contract.deliveryBoundary;
 const rootRuntimeContractCliTransport: "stdio" = getRuntimeContractView().contract.transport.cli;
+const rootRuntimeContractMcpTransport: "stdio-jsonrpc" = getRuntimeContractView().contract.transport.mcp;
 const rootRuntimeStatusProduct: string = getRuntimeStatus({ version: metadata.version, toolCount: listMcpTools().length }).product;
 const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
 const apiToolName: string | undefined = getApiToolCatalogView().tools[0]?.name;
