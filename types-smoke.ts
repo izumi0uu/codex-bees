@@ -236,6 +236,7 @@ const plannedSwarmTopology: "bounded-local" = planSwarmSubpath("typed downstream
 const plannedSwarmLaneSource: "planner" = planSwarmSubpath("typed downstream swarm").swarm.laneSource;
 const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[]).kind;
 const queuedPlanReason: "multiple_plan_tasks_queued" | "single_plan_task_queued" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[]).recommendedReason;
+const memorySearchReason: "memory_search_has_results" | "memory_search_empty" = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).recommendedReason;
 const memorySearchQuery: string = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).query;
 const memorySearchScore: number | undefined = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).results[0]?.score;
 const memorySearchNamespace: string | undefined = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).results[0]?.namespace;
