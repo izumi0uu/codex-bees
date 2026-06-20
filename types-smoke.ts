@@ -26,8 +26,8 @@ import {
   listAgentCatalog,
   planSwarm,
   planTask,
+  renderHelpText as renderHelpTextRoot,
   queueTasksFromPlan,
-  renderHelpText as renderRootHelpText,
   listAgentRoleIds,
   listMcpTools,
   listSkillCatalog,
@@ -54,7 +54,7 @@ import {
   validateTask
 } from "codex-bees";
 
-import { renderHelpText } from "codex-bees/commands";
+import { renderHelpText as renderHelpTextCommands } from "codex-bees/commands";
 import { callMcpTool as callMcpToolSubpath, handleMcpRequest as handleMcpRequestSubpath } from "codex-bees/mcp";
 import {
   getPackageMetadata as getApiPackageMetadata,
@@ -79,12 +79,13 @@ metadata.keywords[0];
 getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
-const rootHelpText: string = renderRootHelpText();
+const rootHelpTextDirect: string = renderHelpTextRoot();
+const rootHelpText: string = renderHelpTextCommands();
 const rootExecutionModel: string = getCoordinationOverview().executionModel;
 const rootCoordinationViewKind: "coordination_overview_view" = getCoordinationOverviewView().kind;
 const rootWorkerGuideline: string = getWorkerGuidelines().fileOwnership;
 const rootWorkerGuidelinesKind: "worker_guidelines_view" = getWorkerGuidelinesView().kind;
-renderHelpText();
+renderHelpTextCommands();
 getMcpCommandCatalog()[0]?.option;
 getMcpCommandCatalogView().options[0]?.option;
 renderMcpHelpText();
