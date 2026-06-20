@@ -534,7 +534,7 @@ export interface SwarmDetailView {
 export interface TaskDetailMetadata {
   hasHistory: boolean;
   hasAnnotations: boolean;
-  reviewState: string;
+  reviewState: TaskReviewState;
 }
 
 export interface SwarmDetailMetadata {
