@@ -1,7 +1,13 @@
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(SCRIPT_DIR, "..");
+const DIST_INDEX = join(REPO_ROOT, "dist", "index.js");
+const DIST_DIR = join(REPO_ROOT, "dist");
 
 function run(label, args, expectedStatus = 0) {
   const result = spawnSync("node", args, { encoding: "utf8" });
@@ -202,7 +208,7 @@ if (
 }
 const bundledRuntimeDir = mkdtempSync(join(tmpdir(), "codex-bees-bundled-"));
 const bundledRuntimeCatalog = JSON.parse(
-  runInCwd("catalog-bundled-dist", ["/Users/idah/Projects-combined/codex-bees/dist/index.js", "catalog"], bundledRuntimeDir).stdout
+  runInCwd("catalog-bundled-dist", [DIST_INDEX, "catalog"], bundledRuntimeDir).stdout
 ).catalog;
 if (
   bundledRuntimeCatalog.kind !== "runtime_catalog_view" ||
@@ -211,13 +217,13 @@ if (
   bundledRuntimeCatalog.counts?.skills !== 2 ||
   bundledRuntimeCatalog.catalog?.source !== "bundled" ||
   !bundledRuntimeCatalog.catalog?.agents?.every((agent) => agent.source === "bundled") ||
-  !bundledRuntimeCatalog.catalog?.paths?.codexDir?.startsWith("@bundled/.codex")
+  !bundledRuntimeCatalog.catalog?.paths?.codexDir?.startsWith("@bundled/dist/.codex")
 ) {
   console.error("[smoke:catalog] expected packaged dist catalog to fall back to bundled .codex assets");
   process.exit(1);
 }
 const standaloneDistDir = mkdtempSync(join(tmpdir(), "codex-bees-standalone-dist-"));
-cpSync("/Users/idah/Projects-combined/codex-bees/dist", join(standaloneDistDir, "dist"), { recursive: true });
+cpSync(DIST_DIR, join(standaloneDistDir, "dist"), { recursive: true });
 const standaloneDistCatalog = JSON.parse(
   runInCwd("catalog-standalone-dist", [join(standaloneDistDir, "dist", "index.js"), "catalog"], bundledRuntimeDir).stdout
 ).catalog;
@@ -233,7 +239,7 @@ if (
   process.exit(1);
 }
 const bundledRuntimeStatus = JSON.parse(
-  runInCwd("status-bundled-dist", ["/Users/idah/Projects-combined/codex-bees/dist/index.js", "status"], bundledRuntimeDir).stdout
+  runInCwd("status-bundled-dist", [DIST_INDEX, "status"], bundledRuntimeDir).stdout
 ).status;
 if (
   bundledRuntimeStatus.kind !== "runtime_status_view" ||
@@ -247,7 +253,7 @@ if (
 const bundledPlan = JSON.parse(
   runInCwd(
     "plan-bundled-dist",
-    ["/Users/idah/Projects-combined/codex-bees/dist/index.js", "plan", "--task", "agent skill runtime"],
+    [DIST_INDEX, "plan", "--task", "agent skill runtime"],
     bundledRuntimeDir
   ).stdout
 );
@@ -278,6 +284,73 @@ if (
   console.error("[smoke:pack] expected npm package to ship only distributable runtime assets");
   process.exit(1);
 }
+const packedInstallDir = mkdtempSync(join(tmpdir(), "codex-bees-packed-install-"));
+const packedInstallAppDir = join(packedInstallDir, "app");
+const packResult = JSON.parse(
+  spawnSync("npm", ["pack", "--json"], { encoding: "utf8" }).stdout
+)[0];
+const packedTarballPath = join(REPO_ROOT, packResult.filename);
+mkdirSync(packedInstallAppDir, { recursive: true });
+const installInit = spawnSync("npm", ["init", "-y"], { cwd: packedInstallAppDir, encoding: "utf8" });
+if (installInit.status !== 0) {
+  console.error("[smoke:install-init] failed");
+  console.error(installInit.stderr || installInit.stdout);
+  process.exit(installInit.status ?? 1);
+}
+const installPackage = spawnSync("npm", ["install", packedTarballPath], {
+  cwd: packedInstallAppDir,
+  encoding: "utf8"
+});
+if (installPackage.status !== 0) {
+  console.error("[smoke:install-package] failed");
+  console.error(installPackage.stderr || installPackage.stdout);
+  process.exit(installPackage.status ?? 1);
+}
+const installedHelp = spawnSync("npx", ["codex-bees", "--help"], {
+  cwd: packedInstallAppDir,
+  encoding: "utf8"
+});
+if (
+  installedHelp.status !== 0 ||
+  !installedHelp.stdout.includes("codex-bees") ||
+  !installedHelp.stdout.includes("codex-bees catalog")
+) {
+  console.error("[smoke:installed-help] expected installed npx codex-bees help surface");
+  console.error(installedHelp.stderr || installedHelp.stdout);
+  process.exit(installedHelp.status ?? 1);
+}
+const installedCatalog = JSON.parse(
+  spawnSync("npx", ["codex-bees", "catalog"], {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }).stdout
+).catalog;
+if (
+  installedCatalog.kind !== "runtime_catalog_view" ||
+  installedCatalog.catalog?.source !== "bundled" ||
+  installedCatalog.counts?.agents !== 4 ||
+  installedCatalog.counts?.skills !== 2 ||
+  !installedCatalog.catalog?.paths?.codexDir?.startsWith("@bundled/dist/.codex")
+) {
+  console.error("[smoke:installed-catalog] expected installed npx codex-bees to use bundled catalog assets");
+  process.exit(1);
+}
+const installedStatus = JSON.parse(
+  spawnSync("npx", ["codex-bees", "status"], {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }).stdout
+).status;
+if (
+  installedStatus.kind !== "runtime_status_view" ||
+  installedStatus.status?.catalog?.source !== "bundled" ||
+  installedStatus.counts?.agents !== 4 ||
+  installedStatus.counts?.skills !== 2
+) {
+  console.error("[smoke:installed-status] expected installed npx codex-bees status to expose bundled runtime catalog");
+  process.exit(1);
+}
+rmSync(packedTarballPath, { force: true });
 const doctorView = JSON.parse(run("doctor-verify", ["./src/index.js", "doctor"]).stdout);
 if (
   doctorView.kind !== "runtime_doctor_view" ||

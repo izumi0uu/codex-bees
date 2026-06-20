@@ -31,14 +31,26 @@ function bundledDistCodexDir() {
   return join(MODULE_DIR, ".codex");
 }
 
-function toDisplayPath(path) {
+function hasPathPrefix(path, prefix) {
+  return path === prefix || path.startsWith(`${prefix}/`);
+}
+
+function toDisplayPath(path, { preferBundled = false } = {}) {
   const currentWorkingDirectory = cwd();
-  if (path.startsWith(`${currentWorkingDirectory}/`)) {
+  const bundledPackagePath = hasPathPrefix(path, PACKAGE_ROOT)
+    ? `${BUNDLED_PREFIX}/${relative(PACKAGE_ROOT, path)}`
+    : null;
+
+  if (preferBundled && bundledPackagePath) {
+    return bundledPackagePath;
+  }
+
+  if (hasPathPrefix(path, currentWorkingDirectory)) {
     return path.slice(currentWorkingDirectory.length + 1);
   }
 
-  if (path.startsWith(`${PACKAGE_ROOT}/`)) {
-    return `${BUNDLED_PREFIX}/${relative(PACKAGE_ROOT, path)}`;
+  if (bundledPackagePath) {
+    return bundledPackagePath;
   }
 
   return path;
@@ -56,11 +68,13 @@ export function getRuntimeCatalogPaths() {
   const codexDir =
     source === "workspace"
       ? workspacePath
-      : isDirectory(bundledPath)
-        ? bundledPath
-        : source === "bundled"
-          ? bundledDistPath
-          : workspacePath;
+      : isDirectory(bundledDistPath)
+        ? bundledDistPath
+        : isDirectory(bundledPath)
+          ? bundledPath
+          : source === "bundled"
+            ? bundledDistPath
+            : workspacePath;
 
   return {
     source,
@@ -160,15 +174,28 @@ export function listAgentRoleIds() {
 
 export function getRuntimeCatalog() {
   const paths = getRuntimeCatalogPaths();
+  const preferBundled = paths.source === "bundled";
   return {
     source: paths.source,
     paths: {
-      codexDir: toDisplayPath(paths.codexDir),
-      agentDir: toDisplayPath(paths.agentDir),
-      skillDir: toDisplayPath(paths.skillDir)
+      codexDir: toDisplayPath(paths.codexDir, { preferBundled }),
+      agentDir: toDisplayPath(paths.agentDir, { preferBundled }),
+      skillDir: toDisplayPath(paths.skillDir, { preferBundled })
     },
-    agents: listAgentCatalog(),
-    skills: listSkillCatalog()
+    agents: listAgentCatalog().map((agent) => ({
+      ...agent,
+      path: toDisplayPath(resolveRuntimeCatalogPath(`agents/${agent.id}.md`) ?? agent.path, { preferBundled })
+    })),
+    skills: listSkillCatalog().map((skill) => {
+      const resolvedSkillPath =
+        resolveRuntimeCatalogPath(`skills/${skill.id}/SKILL.md`) ??
+        resolveRuntimeCatalogPath(`skills/${skill.id}.md`) ??
+        skill.path;
+      return {
+        ...skill,
+        path: toDisplayPath(resolvedSkillPath, { preferBundled })
+      };
+    })
   };
 }
 
