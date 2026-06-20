@@ -353,7 +353,7 @@ export interface TaskListView {
 export interface TaskDetailView {
   kind: "task_detail";
   recommendedReason: string;
-  metadata: Record<string, unknown>;
+  metadata: TaskDetailMetadata;
   task: TaskRecord;
 }
 
@@ -370,8 +370,21 @@ export interface SwarmListView {
 export interface SwarmDetailView {
   kind: "swarm_detail";
   recommendedReason: string;
-  metadata: Record<string, unknown>;
+  metadata: SwarmDetailMetadata;
   swarm: SwarmRecord;
+}
+
+export interface TaskDetailMetadata {
+  hasHistory: boolean;
+  hasAnnotations: boolean;
+  reviewState: string;
+}
+
+export interface SwarmDetailMetadata {
+  derivedStatus: string;
+  statusAligned: boolean;
+  readyToComplete: boolean;
+  dispatchableCount: number;
 }
 
 export interface MemoryListView {

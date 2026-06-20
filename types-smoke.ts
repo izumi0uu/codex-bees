@@ -75,6 +75,8 @@ const task = addTask({
 });
 task.id;
 getTaskView(task.id)?.task.id;
+const taskHasHistory: boolean | undefined = getTaskView(task.id)?.metadata.hasHistory;
+const taskReviewState: string | undefined = getTaskView(task.id)?.metadata.reviewState;
 validateTask(task.id).recommendedReason;
 
 const swarm = initSwarm({
@@ -94,6 +96,8 @@ const swarm = initSwarm({
 });
 swarm.id;
 getSwarmView(swarm.id)?.swarm.id;
+const swarmDerivedStatus: string | undefined = getSwarmView(swarm.id)?.metadata.derivedStatus;
+const swarmReadyToComplete: boolean | undefined = getSwarmView(swarm.id)?.metadata.readyToComplete;
 validateSwarm(swarm.id).recommendedReason;
 
 storeMemory({ content: "typed memory", namespace: "types", kind: "note" }).id;
