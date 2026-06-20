@@ -126,9 +126,9 @@ const taskAnnotationKind: string | undefined = task.annotations?.[0]?.kind;
 getTaskView(task.id)?.task.id;
 const taskHasHistory: boolean | undefined = getTaskView(task.id)?.metadata.hasHistory;
 const taskReviewState: string | undefined = getTaskView(task.id)?.metadata.reviewState;
-validateTask(task.id).recommendedReason;
-const taskValidationReady: boolean = validateTask(task.id).ready;
-const taskValidationIssueCode: string | undefined = validateTask(task.id).issues[0]?.code;
+validateTask(task.id)?.recommendedReason;
+const taskValidationReady: boolean | undefined = validateTask(task.id)?.ready;
+const taskValidationIssueCode: string | undefined = validateTask(task.id)?.issues[0]?.code;
 
 const swarm = initSwarm({
   objective: "typed swarm",
@@ -157,10 +157,10 @@ const swarmUpdatedAt: string | null | undefined = swarm.updatedAt;
 getSwarmView(swarm.id)?.swarm.id;
 const swarmDerivedStatus: string | undefined = getSwarmView(swarm.id)?.metadata.derivedStatus;
 const swarmReadyToComplete: boolean | undefined = getSwarmView(swarm.id)?.metadata.readyToComplete;
-validateSwarm(swarm.id).recommendedReason;
-const swarmValidationReady: boolean = validateSwarm(swarm.id).ready;
-const swarmValidationLane: string | undefined = validateSwarm(swarm.id).lanes[0]?.lane;
-const swarmValidationOverlapPath: string | undefined = validateSwarm(swarm.id).overlaps[0]?.path;
+validateSwarm(swarm.id)?.recommendedReason;
+const swarmValidationReady: boolean | undefined = validateSwarm(swarm.id)?.ready;
+const swarmValidationLane: string | undefined = validateSwarm(swarm.id)?.lanes[0]?.lane;
+const swarmValidationOverlapPath: string | undefined = validateSwarm(swarm.id)?.overlaps[0]?.path;
 
 const typedMemory = storeMemory({ content: "typed memory", namespace: "types", kind: "note", title: "typed", tags: ["types"], agent: "tester" });
 typedMemory.id;

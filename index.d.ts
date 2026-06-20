@@ -709,6 +709,6 @@ export declare function listSwarmsView(filters: SwarmFilters | undefined, option
 export declare function listMemoriesView(filters?: MemoryFilters): MemoryListView;
 export declare function searchMemoriesView(query: string, filters?: MemoryFilters, limit?: number): MemorySearchView;
 export declare function storeMemory(input: MemoryInput): MemoryRecord;
-export declare function validateTask(id: string): TaskValidationView;
-export declare function validateSwarm(id: string): SwarmValidationView;
+export declare function validateTask(id: string): TaskValidationView | null;
+export declare function validateSwarm(id: string): SwarmValidationView | null;
 export declare function stateFilePath(): string;
