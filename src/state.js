@@ -39,6 +39,12 @@ import {
   summarizeInboxTask
 } from "./state-queue-views.js";
 import {
+  filterMemories,
+  filterSwarms,
+  scoreMemory,
+  tokenize
+} from "./state-query.js";
+import {
   VALID_QUEUE_STATUSES,
   VALID_SWARM_STATUSES,
   canTransitionSwarm,
@@ -6942,67 +6948,6 @@ function transitionSwarm(input) {
   state.swarms[index] = next;
   saveState(state);
   return next;
-}
-
-function filterMemories(memories, filters = {}) {
-  return memories.filter((memory) => {
-    if (filters.namespace && memory.namespace !== filters.namespace) {
-      return false;
-    }
-    if (filters.kind && memory.kind !== filters.kind) {
-      return false;
-    }
-    if (filters.agent && memory.agent !== filters.agent) {
-      return false;
-    }
-    if (Array.isArray(filters.tags) && filters.tags.length > 0) {
-      const tagSet = new Set(memory.tags);
-      for (const tag of filters.tags) {
-        if (!tagSet.has(tag)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  });
-}
-
-function filterSwarms(swarms, filters = {}) {
-  return swarms.filter((swarm) => {
-    if (filters.status && swarm.status !== filters.status) {
-      return false;
-    }
-    if (filters.topology && swarm.topology !== filters.topology) {
-      return false;
-    }
-    if (filters.owner && swarm.owner !== filters.owner) {
-      return false;
-    }
-    return true;
-  });
-}
-
-function tokenize(value) {
-  return value
-    .toLowerCase()
-    .split(/[^a-z0-9_-]+/i)
-    .map((token) => token.trim())
-    .filter(Boolean);
-}
-
-function scoreMemory(memory, tokens) {
-  const haystack = [
-    memory.title ?? "",
-    memory.content ?? "",
-    memory.namespace ?? "",
-    memory.kind ?? "",
-    memory.agent ?? "",
-    ...(memory.tags ?? [])
-  ]
-    .join(" \n")
-    .toLowerCase();
-
-  return tokens.reduce((score, token) => score + (haystack.includes(token) ? 1 : 0), 0);
 }
 
 function writeStateFile(state) {
