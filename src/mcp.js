@@ -9,7 +9,7 @@ import { getRuntimeContractView } from "./runtime-contract.js";
 import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
 import { getRuntimeDoctorView } from "./doctor.js";
-import { getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalogView } from "./commands.js";
+import { getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalogEntryView, getInitCommandCatalogView } from "./commands.js";
 import {
   activateSwarm,
   addTask,
@@ -172,6 +172,17 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "init_command_option",
+    description: "Return one shipped init command option view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        option: { type: "string" }
+      },
+      required: ["option"]
     }
   },
   {
@@ -1540,6 +1551,13 @@ function handleRequest(message) {
 
     if (name === "init_command_catalog") {
       return createSuccess(id, createTextPayload({ options: getInitCommandCatalogView() }));
+    }
+
+    if (name === "init_command_option") {
+      if (!params.arguments?.option) {
+        return createError(id, -32602, "init_command_option requires arguments.option");
+      }
+      return createSuccess(id, createTextPayload({ option: getInitCommandCatalogEntryView(params.arguments.option) }));
     }
 
     if (name === "worker_guidelines") {
