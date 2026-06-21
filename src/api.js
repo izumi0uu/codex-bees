@@ -12,6 +12,7 @@ export {
 
 export {
   getCapabilityCatalogEntry,
+  getCapabilityCatalogEntryView,
   getCapabilityCatalog,
   getCapabilityCatalogView,
   getRuntimeStatus,

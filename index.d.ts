@@ -258,6 +258,14 @@ export interface RuntimeCapabilitiesView {
   capabilities: RuntimeCapabilitySummary[];
 }
 
+export interface RuntimeCapabilityView {
+  kind: "runtime_capability_view";
+  recommendedReason: "runtime_capability_loaded" | "runtime_capability_missing";
+  id: string | null;
+  matchedCapability: string | null;
+  capability: RuntimeCapability | null;
+}
+
 export interface TaskPlanLane {
   lane: string;
   owner: string;
@@ -888,6 +896,7 @@ export declare function getWorkerGuidelinesView(): WorkerGuidelinesView;
 
 export declare function getCapabilityCatalog(): RuntimeCapability[];
 export declare function getCapabilityCatalogEntry(id: string): RuntimeCapability | undefined;
+export declare function getCapabilityCatalogEntryView(id?: string): RuntimeCapabilityView;
 export declare function getCapabilityCatalogView(): RuntimeCapabilitiesView;
 export declare function getRuntimeStatus(input?: { version?: string; toolCount?: number }): RuntimeStatus;
 export declare function getRuntimeStatusView(input?: { version?: string; toolCount?: number }): RuntimeStatusView;

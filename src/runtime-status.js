@@ -153,6 +153,18 @@ export function getCapabilityCatalogEntry(id) {
   return getCapabilityCatalog().find((entry) => entry.id === id);
 }
 
+export function getCapabilityCatalogEntryView(id) {
+  const capability = getCapabilityCatalogEntry(id);
+
+  return {
+    kind: "runtime_capability_view",
+    recommendedReason: capability ? "runtime_capability_loaded" : "runtime_capability_missing",
+    id: id ?? null,
+    matchedCapability: capability?.id ?? null,
+    capability: capability ?? null
+  };
+}
+
 export function getCapabilityCatalogView() {
   const capabilities = getCapabilityCatalog();
   const categoryCounts = countBy(capabilities, (capability) => capability.category);
