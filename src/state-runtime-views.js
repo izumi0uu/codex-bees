@@ -983,6 +983,66 @@ export function buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, d
   return `Runtime queue pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
+export function buildRuntimeQueuePackView(
+  input,
+  {
+    leaderQueue,
+    runtimeDashboard,
+    runtimeFocus,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  },
+  {
+    deriveRuntimeQueuePackSurface,
+    deriveRuntimeQueuePackReason,
+    buildRuntimeQueuePackSummary
+  }
+) {
+  const queue = leaderQueue();
+  const dashboard = runtimeDashboard();
+  const focus = runtimeFocus();
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
+  const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
+  const recommendedSurface = deriveRuntimeQueuePackSurface({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan });
+  const recommendedReason = deriveRuntimeQueuePackReason({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan });
+  const nextEntries = {
+    queue: queue?.next ?? null,
+    focus: focus?.focus ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
+  };
+
+  return {
+    kind: "runtime_queue_pack",
+    recommendedSurface,
+    recommendedReason,
+    metadata: {
+      hasQueue: Boolean(queue?.next),
+      hasFocus: Boolean(focus?.focus),
+      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
+      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
+    overview: {
+      queue: queue?.counts ?? null,
+      dashboard: dashboard?.counts ?? null,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
+      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
+    },
+    next: nextEntries,
+    surfaces: {
+      queue,
+      dashboard,
+      focus,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan
+    },
+    summary: buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard, assignmentDispatchBundle, assignmentLaunchPlan)
+  };
+}
+
 export function deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";
