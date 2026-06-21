@@ -62,6 +62,7 @@ const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
   ["command-get", ["./src/index.js", "command:get", "--name", "init"]],
+  ["command-help", ["./src/index.js", "command:help", "--name", "init"]],
   ["init-preview", ["./src/index.js", "init", "--preview"]],
 ["init-help", ["./src/index.js", "init", "--help"]],
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
@@ -2299,6 +2300,18 @@ if (
   cliCommandView.entry?.command !== "init"
 ) {
   console.error("[smoke:command-get] expected single CLI command view");
+  process.exit(1);
+}
+const cliCommandHelpView = JSON.parse(
+  run("command-help-verify", ["./src/index.js", "command:help", "--name", "init"]).stdout
+).help;
+if (
+  cliCommandHelpView.kind !== "command_help_view" ||
+  cliCommandHelpView.recommendedReason !== "command_help_loaded" ||
+  cliCommandHelpView.matchedCommand !== "init" ||
+  !cliCommandHelpView.text?.includes("codex-bees init")
+) {
+  console.error("[smoke:command-help] expected single CLI command help view");
   process.exit(1);
 }
 const cliToolsView = JSON.parse(run("tools-cli-verify", ["./src/index.js", "tools"]).stdout).tools;
