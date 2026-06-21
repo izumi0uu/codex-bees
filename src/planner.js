@@ -2,6 +2,7 @@ import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getRuntimeCatalogPaths, resolveRuntimeCatalogPath } from "./catalog.js";
 
+const DEFAULT_PLANNER_PROFILE_ID = "bounded-local";
 const ROLE_FILES = {
   explore: "agents/explore.md",
   executor: "agents/executor.md",
@@ -159,37 +160,101 @@ function plannerEvidence(task) {
   };
 }
 
-function buildPlanLanes(task) {
+function buildDiscoveryLane(task, discoveryScope) {
+  return {
+    lane: "lane-1",
+    owner: "explore",
+    verifier: "reviewer",
+    summary: `Map scope and verification for: ${task}`,
+    scope: discoveryScope,
+    acceptance: [
+      "scope paths exist in the repository",
+      "the plan maps the task brief to concrete files",
+      "follow-up implementation can claim files without overlap"
+    ],
+    verification: ["inspect scope paths", "confirm role files exist"]
+  };
+}
+
+function buildExecutionLane(task, implementationScope) {
+  return {
+    lane: "lane-2",
+    owner: "executor",
+    verifier: "tester",
+    summary: `Implement the bounded repo change for: ${task}`,
+    scope: implementationScope,
+    acceptance: [
+      "the targeted files can be updated without crossing unrelated surfaces",
+      "the change remains bounded to the selected scope",
+      "the resulting behavior is verifiable from CLI, MCP, or file output"
+    ],
+    verification: ["targeted command check", "smoke check when applicable"]
+  };
+}
+
+function buildBoundedLocalPlanLanes(task) {
   const implementationScope = choosePrimaryScope(task);
   const discoveryScope = chooseDiscoveryScope(implementationScope);
   return [
-    {
-      lane: "lane-1",
-      owner: "explore",
-      verifier: "reviewer",
-      summary: `Map scope and verification for: ${task}`,
-      scope: discoveryScope,
-      acceptance: [
-        "scope paths exist in the repository",
-        "the plan maps the task brief to concrete files",
-        "follow-up implementation can claim files without overlap"
-      ],
-      verification: ["inspect scope paths", "confirm role files exist"]
-    },
-    {
-      lane: "lane-2",
-      owner: "executor",
-      verifier: "tester",
-      summary: `Implement the bounded repo change for: ${task}`,
-      scope: implementationScope,
-      acceptance: [
-        "the targeted files can be updated without crossing unrelated surfaces",
-        "the change remains bounded to the selected scope",
-        "the resulting behavior is verifiable from CLI, MCP, or file output"
-      ],
-      verification: ["targeted command check", "smoke check when applicable"]
-    }
+    buildDiscoveryLane(task, discoveryScope),
+    buildExecutionLane(task, implementationScope)
   ];
+}
+
+const PLANNER_PROFILES = {
+  [DEFAULT_PLANNER_PROFILE_ID]: {
+    id: DEFAULT_PLANNER_PROFILE_ID,
+    description: "Default local bounded planner for Codex-only execution.",
+    topology: "bounded-local",
+    laneSource: "planner",
+    adaptive: false,
+    laneModel: "discovery-then-execution",
+    roles: ["explore", "reviewer", "executor", "tester"],
+    constraints: [
+      "codex-only runtime boundary",
+      "disjoint lane ownership",
+      "local state-backed task queue"
+    ],
+    buildLanes: buildBoundedLocalPlanLanes
+  }
+};
+
+function toPlannerProfile(profile) {
+  return {
+    id: profile.id,
+    description: profile.description,
+    topology: profile.topology,
+    laneSource: profile.laneSource,
+    adaptive: profile.adaptive,
+    laneModel: profile.laneModel,
+    roles: [...profile.roles],
+    constraints: [...profile.constraints]
+  };
+}
+
+function getPlannerProfileRecord(id = DEFAULT_PLANNER_PROFILE_ID) {
+  const profile = PLANNER_PROFILES[id];
+  return profile ?? PLANNER_PROFILES[DEFAULT_PLANNER_PROFILE_ID];
+}
+
+export function getPlannerProfiles() {
+  return Object.values(PLANNER_PROFILES).map(toPlannerProfile);
+}
+
+export function getPlannerProfile(id = DEFAULT_PLANNER_PROFILE_ID) {
+  const profile = PLANNER_PROFILES[id];
+  return profile ? toPlannerProfile(profile) : undefined;
+}
+
+export function getPlannerProfileView(id = DEFAULT_PLANNER_PROFILE_ID) {
+  const profile = getPlannerProfile(id);
+  return {
+    kind: "planner_profile_view",
+    recommendedReason: profile ? "planner_profile_loaded" : "planner_profile_missing",
+    id: id ?? null,
+    matchedProfile: profile?.id ?? null,
+    profile: profile ?? null
+  };
 }
 
 function laneCountToWorkers(lanes) {
@@ -198,13 +263,15 @@ function laneCountToWorkers(lanes) {
 }
 
 export function planTask(task) {
-  const lanes = buildPlanLanes(task);
+  const planner = toPlannerProfile(getPlannerProfileRecord());
+  const lanes = getPlannerProfileRecord().buildLanes(task);
   const recommendedReason = lanes.length > 1 ? "multi_lane_plan_ready" : "single_lane_plan_ready";
 
   return {
     kind: "task_plan",
     recommendedReason,
     objective: task,
+    planner,
     evidence: plannerEvidence(task),
     lanes
   };
@@ -217,12 +284,13 @@ export function planSwarm(task) {
     kind: "planned_swarm",
     recommendedReason,
     objective: task,
+    planner: plan.planner,
     evidence: plan.evidence,
     swarm: {
       objective: task,
-      topology: "bounded-local",
+      topology: plan.planner.topology,
       maxWorkers: laneCountToWorkers(plan.lanes),
-      laneSource: "planner",
+      laneSource: plan.planner.laneSource,
       lanes: plan.lanes,
       notes: `Generated from plan for: ${task}`
     }
@@ -251,6 +319,7 @@ export function queueTasksFromPlan(task, addTasks) {
     kind: "queued_plan",
     recommendedReason,
     objective: task,
+    planner: plan.planner,
     lanes: plan.lanes,
     created
   };

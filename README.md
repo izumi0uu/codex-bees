@@ -1,6 +1,6 @@
 # Codex Bees
 
-Codex-native multi-agent runtime for explicit local orchestration.
+Codex-native local bounded orchestration kernel for explicit multi-agent work.
 
 Codex Bees packages a small command surface, a local MCP server, reusable skills, and narrow agent roles so complex work can be split into bounded lanes without turning the project into a black box.
 
@@ -15,6 +15,7 @@ Codex Bees packages a small command surface, a local MCP server, reusable skills
 - keeps a small local task queue with explicit lifecycle states, single-owner transitions, and local state recovery
 - keeps agent roles narrow, explicit, and reviewable
 - favors small, observable coordination steps over opaque automation
+- keeps the core runtime positioned as a local bounded kernel instead of a hosted meta-harness
 
 ## Project principles
 
@@ -65,6 +66,7 @@ import {
   getMcpCommandCatalogView,
   addTask,
   getPackageMetadata,
+  getPlannerProfile,
   getRuntimeCatalogView,
   getRuntimeDoctorView,
   getRuntimeReadyView,
@@ -82,6 +84,7 @@ import {
 } from "codex-bees";
 
 const metadata = getPackageMetadata();
+const planner = getPlannerProfile();
 const releaseTask = addTask({
   title: "Ship the public root contract",
   owner: "executor",
@@ -365,13 +368,14 @@ const metadata = getPackageMetadata();
 const view = getPackageMetadataView();
 ```
 
-The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI.
+The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI. The default exported planner profile is intentionally explicit: it uses a local `bounded-local` topology, a shipped `planner` lane source, and a non-adaptive discovery-then-execution lane model.
 
 Example:
 
 ```js
-import { planSwarm, planTask } from "codex-bees/planner";
+import { getPlannerProfile, planSwarm, planTask } from "codex-bees/planner";
 
+const planner = getPlannerProfile();
 const taskPlan = planTask("document a planner example");
 const swarmPlan = planSwarm("stage a planner example");
 ```

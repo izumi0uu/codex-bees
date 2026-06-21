@@ -1,1 +1,8 @@
-export { planSwarm, planTask, queueTasksFromPlan } from "./api.js";
+export {
+  getPlannerProfile,
+  getPlannerProfiles,
+  getPlannerProfileView,
+  planSwarm,
+  planTask,
+  queueTasksFromPlan
+} from "./api.js";

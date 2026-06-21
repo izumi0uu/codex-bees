@@ -1,7 +1,7 @@
 export interface PackageMetadata {
   product: "codex-bees";
   version: "0.1.0";
-  description: "Codex-native multi-agent runtime for explicit local orchestration.";
+  description: "Codex-native local bounded orchestration kernel for explicit multi-agent work.";
   license: "MIT";
   homepage: "https://github.com/izumi0uu/codex-bees#readme";
   bugsUrl: "https://github.com/izumi0uu/codex-bees/issues";
@@ -347,10 +347,30 @@ export interface PlannerEvidence {
   roleFiles: PlannerRoleFileEvidence[];
 }
 
+export interface PlannerProfile {
+  id: string;
+  description: string;
+  topology: "bounded-local";
+  laneSource: "planner";
+  adaptive: boolean;
+  laneModel: "discovery-then-execution";
+  roles: string[];
+  constraints: string[];
+}
+
+export interface PlannerProfileView {
+  kind: "planner_profile_view";
+  recommendedReason: "planner_profile_loaded" | "planner_profile_missing";
+  id: string | null;
+  matchedProfile: string | null;
+  profile: PlannerProfile | null;
+}
+
 export interface TaskPlan {
   kind: "task_plan";
   recommendedReason: "multi_lane_plan_ready" | "single_lane_plan_ready";
   objective: string;
+  planner: PlannerProfile;
   evidence: PlannerEvidence;
   lanes: TaskPlanLane[];
 }
@@ -359,6 +379,7 @@ export interface PlannedSwarm {
   kind: "planned_swarm";
   recommendedReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready";
   objective: string;
+  planner: PlannerProfile;
   evidence: PlannerEvidence;
   swarm: PlannedSwarmShape;
 }
@@ -367,6 +388,7 @@ export interface QueuedPlan {
   kind: "queued_plan";
   recommendedReason: "multiple_plan_tasks_queued" | "single_plan_task_queued";
   objective: string;
+  planner: PlannerProfile;
   lanes: TaskPlanLane[];
   created: TaskRecord[];
 }
@@ -1108,6 +1130,9 @@ export declare function getCapabilityCatalogView(): RuntimeCapabilitiesView;
 export declare function getRuntimeStatus(input?: { version?: string; toolCount?: number }): RuntimeStatus;
 export declare function getRuntimeStatusView(input?: { version?: string; toolCount?: number }): RuntimeStatusView;
 
+export declare function getPlannerProfiles(): PlannerProfile[];
+export declare function getPlannerProfile(id?: string): PlannerProfile | undefined;
+export declare function getPlannerProfileView(id?: string): PlannerProfileView;
 export declare function planTask(task: string): TaskPlan;
 export declare function planSwarm(task: string): PlannedSwarm;
 export declare function queueTasksFromPlan(task: string, addTasksFn?: (tasks: TaskInput[]) => TaskRecord[]): QueuedPlan;

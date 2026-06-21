@@ -52,7 +52,14 @@ export {
   getWorkerGuidelinesView
 } from "./runtime-guidance.js";
 
-export { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
+export {
+  getPlannerProfile,
+  getPlannerProfiles,
+  getPlannerProfileView,
+  planSwarm,
+  planTask,
+  queueTasksFromPlan
+} from "./planner.js";
 
 export {
   callMcpTool,

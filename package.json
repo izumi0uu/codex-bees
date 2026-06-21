@@ -2,7 +2,7 @@
   "name": "codex-bees",
   "version": "0.1.0",
   "type": "module",
-  "description": "Codex-native multi-agent runtime for explicit local orchestration.",
+  "description": "Codex-native local bounded orchestration kernel for explicit multi-agent work.",
   "license": "MIT",
   "types": "./dist/api.d.ts",
   "files": [

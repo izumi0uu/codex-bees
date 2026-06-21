@@ -1074,7 +1074,7 @@ const installedPlannerExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: taskPlan.kind === "task_plan" && taskPlan.objective === "document a planner example" && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "stage a planner example" && swarmPlan.swarm?.topology === "bounded-local" && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 1 }));`
+    `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: planner?.id === "bounded-local" && taskPlan.kind === "task_plan" && taskPlan.objective === "document a planner example" && taskPlan.planner?.topology === "bounded-local" && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "stage a planner example" && swarmPlan.swarm?.topology === "bounded-local" && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 1 }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -1257,7 +1257,7 @@ const installedMetadataImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/metadata").then((m) => { const metadata = m.getPackageMetadata(); console.log(JSON.stringify({ ok: metadata.product === "codex-bees" && metadata.version === "0.1.0" && metadata.description === "Codex-native multi-agent runtime for explicit local orchestration." && metadata.license === "MIT" && metadata.homepage === "https://github.com/izumi0uu/codex-bees#readme" && metadata.bugsUrl === "https://github.com/izumi0uu/codex-bees/issues" && metadata.repositoryUrl === "https://github.com/izumi0uu/codex-bees.git" && Array.isArray(metadata.keywords) && metadata.keywords.includes("codex") && metadata.keywords.includes("orchestration") && m.getPackageMetadataView().kind === "package_metadata_view" })); })'
+    'import("codex-bees/metadata").then((m) => { const metadata = m.getPackageMetadata(); console.log(JSON.stringify({ ok: metadata.product === "codex-bees" && metadata.version === "0.1.0" && metadata.description === "Codex-native local bounded orchestration kernel for explicit multi-agent work." && metadata.license === "MIT" && metadata.homepage === "https://github.com/izumi0uu/codex-bees#readme" && metadata.bugsUrl === "https://github.com/izumi0uu/codex-bees/issues" && metadata.repositoryUrl === "https://github.com/izumi0uu/codex-bees.git" && Array.isArray(metadata.keywords) && metadata.keywords.includes("codex") && metadata.keywords.includes("orchestration") && m.getPackageMetadataView().kind === "package_metadata_view" })); })'
   ],
   {
     cwd: packedInstallAppDir,
@@ -1314,7 +1314,7 @@ const installedPlannerImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/planner").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("planTask")})))'
+    'import("codex-bees/planner").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("planTask") && Object.keys(m).includes("getPlannerProfile") && Object.keys(m).includes("getPlannerProfiles") && Object.keys(m).includes("getPlannerProfileView")})))'
   ],
   {
     cwd: packedInstallAppDir,

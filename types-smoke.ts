@@ -37,6 +37,9 @@ import {
   getRuntimeCatalogView,
   getRuntimeContractView,
   getRuntimeDoctorView,
+  getPlannerProfile,
+  getPlannerProfileView,
+  getPlannerProfiles,
   getRuntimeReadyView,
   getRuntimeStatus,
   getRuntimeStatusView,
@@ -101,6 +104,9 @@ import {
 import { addTask as addTaskStateSubpath, listTasksView as listTasksViewStateSubpath, stateFilePath as stateFilePathStateSubpath } from "codex-bees/state";
 import {
   getPackageMetadata as getApiPackageMetadata,
+  getPlannerProfile as getApiPlannerProfile,
+  getPlannerProfileView as getApiPlannerProfileView,
+  getPlannerProfiles as getApiPlannerProfiles,
   getRuntimeReadyView as getApiRuntimeReadyView,
   getToolCatalogView as getApiToolCatalogView,
   runMcpCli as runMcpCliApi,
@@ -109,7 +115,14 @@ import {
 } from "codex-bees/api";
 import { getAgentCatalogListView as getCatalogSubpathAgentListView, getRuntimeCatalogView as getCatalogSubpathView } from "codex-bees/catalog";
 import { getRuntimeContractView as getContractSubpathView } from "codex-bees/runtime-contract";
-import { planSwarm as planSwarmSubpath, planTask as planTaskSubpath, queueTasksFromPlan as queueTasksFromPlanSubpath } from "codex-bees/planner";
+import {
+  getPlannerProfile as getPlannerProfileSubpath,
+  getPlannerProfileView as getPlannerProfileViewSubpath,
+  getPlannerProfiles as getPlannerProfilesSubpath,
+  planSwarm as planSwarmSubpath,
+  planTask as planTaskSubpath,
+  queueTasksFromPlan as queueTasksFromPlanSubpath
+} from "codex-bees/planner";
 import {
   getCoordinationOverviewView as getRuntimeGuidanceSubpathOverviewView,
   getWorkerGuidelinesView as getRuntimeGuidanceSubpathWorkerView
@@ -234,10 +247,18 @@ const rootMcpToolViewReason: "mcp_tool_loaded" | "mcp_tool_missing" = getMcpTool
 const rootMcpToolViewMatched: string | null = getMcpToolView("runtime_contract").matchedTool;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
 const rootToolSchemaType: string | undefined = getToolCatalogView().tools[0]?.inputSchema.type as string | undefined;
+const rootPlannerProfileId: string | undefined = getPlannerProfiles()[0]?.id;
+const rootPlannerProfileTopology: "bounded-local" | undefined = getPlannerProfile()?.topology;
+const rootPlannerProfileLaneSource: "planner" | undefined = getPlannerProfile()?.laneSource;
+const rootPlannerProfileAdaptive: boolean | undefined = getPlannerProfile()?.adaptive;
+const rootPlannerProfileViewReason: "planner_profile_loaded" | "planner_profile_missing" = getPlannerProfileView().recommendedReason;
+const rootPlannerProfileViewKind: "planner_profile_view" = getPlannerProfileView().kind;
 const plannedSwarmReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready" = planSwarm("typed root swarm").recommendedReason;
 const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWorkers;
 const rootSwarmPlanTopology: "bounded-local" = planSwarm("typed root swarm").swarm.topology;
 const rootSwarmPlanLaneSource: "planner" = planSwarm("typed root swarm").swarm.laneSource;
+const rootTaskPlanPlannerTopology: "bounded-local" = planTask("typed smoke").planner.topology;
+const rootTaskPlanPlannerLaneSource: "planner" = planTask("typed smoke").planner.laneSource;
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
 const rootStartMcpServer: () => Promise<void> = startMcpServer;
@@ -247,6 +268,9 @@ const apiToolCatalogEntryName: string | undefined = toolCatalogApi[0]?.name;
 const taskPlanReason: "multi_lane_plan_ready" | "single_lane_plan_ready" = planTask("typed smoke").recommendedReason;
 const plannerHasSrc: boolean = planTask("typed smoke").evidence.repoSignals.hasSrc;
 const plannerRolePath: string | undefined = planTask("typed smoke").evidence.roleFiles[0]?.path;
+const apiPlannerProfileId: string | undefined = getApiPlannerProfiles()[0]?.id;
+const apiPlannerProfileTopology: "bounded-local" | undefined = getApiPlannerProfile()?.topology;
+const apiPlannerProfileViewKind: "planner_profile_view" = getApiPlannerProfileView().kind;
 
 const subpathMcpResult: unknown = handleMcpRequestSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
 const subpathMcpToolResult: unknown = callMcpToolSubpath("runtime_contract", {});
@@ -391,7 +415,7 @@ const apiMetadataProduct: "codex-bees" = getApiPackageMetadata().product;
 const apiMetadataMode: "codex-only" = getApiPackageMetadata().mode;
 const apiMetadataVersion: "0.1.0" = getApiPackageMetadata().version;
 const apiMetadataLicense: "MIT" = getApiPackageMetadata().license;
-const apiMetadataDescription: "Codex-native multi-agent runtime for explicit local orchestration." = getApiPackageMetadata().description;
+const apiMetadataDescription: "Codex-native local bounded orchestration kernel for explicit multi-agent work." = getApiPackageMetadata().description;
 const apiMetadataHomepage: "https://github.com/izumi0uu/codex-bees#readme" = getApiPackageMetadata().homepage;
 const apiMetadataBugsUrl: "https://github.com/izumi0uu/codex-bees/issues" = getApiPackageMetadata().bugsUrl;
 const packageMetadataViewKind: "package_metadata_view" = getPackageMetadataView().kind;
@@ -508,6 +532,9 @@ const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm")
 const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.maxWorkers;
 const plannedSwarmTopology: "bounded-local" = planSwarmSubpath("typed downstream swarm").swarm.topology;
 const plannedSwarmLaneSource: "planner" = planSwarmSubpath("typed downstream swarm").swarm.laneSource;
+const subpathPlannerProfileId: string | undefined = getPlannerProfilesSubpath()[0]?.id;
+const subpathPlannerProfileTopology: "bounded-local" | undefined = getPlannerProfileSubpath()?.topology;
+const subpathPlannerProfileViewKind: "planner_profile_view" = getPlannerProfileViewSubpath().kind;
 const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[]).kind;
 const queuedPlanReason: "multiple_plan_tasks_queued" | "single_plan_task_queued" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[]).recommendedReason;
 const memorySearchReason: "memory_search_has_results" | "memory_search_empty" = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).recommendedReason;
