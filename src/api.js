@@ -21,6 +21,8 @@ export { getRuntimeReadyView } from "./runtime-ready.js";
 export { getPackageMetadata, getPackageMetadataView, PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
 export { getCommandCatalog, getCommandCatalogView, renderHelpText } from "./commands.js";
 
+export { initWorkspace, previewWorkspaceInit } from "./init.js";
+
 export {
   getCoordinationOverview,
   getCoordinationOverviewView,

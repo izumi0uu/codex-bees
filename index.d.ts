@@ -1,24 +1,850 @@
-{h®Ø§µêßiÇiÉãµ§Zµªk¡ÛœµÊ{ÞzËÞ®È¨ŸMtuë®*mŠ‰Â¡×±«b½é®–Øšéí®éíŠgŸ¢·±¦XœŠÙhq©h­È^²ÚÚ¶*'–'žÇŒ!8h™êZèm¶›?þ­†æÜ¢oâÎé¢Òë¿r‡^Å·ž²·švg›º®Xm¶›?þ­†æÜ¢oâÎé¢Òë¿r‡^Å·ž³ø¬²ç¬­êh²+h¯%+–ËkŠx'ºYd{,(­Û,¶¸§‚jyÊ{'—'±¦ŠíŠ{^­öœxöœ‘¨1ëZu«ZV'°’)Ý¥§$j¦zÖjÖ¯‰ì+yÊ&™éÝyÔ^jÊ'¥§$j¦zÖjÖ¥¡§^vg­iÖ­höœ‘¨1ëZu«Z{h®Ø§µêßiÇ‚¢išÐšµ©h€Ií¯'(šf§vËkŠxzÇ+Š›b¢{-®)à¢›b¢{r¨šf§t&­jZ {kÉìi¢»bž×«}§1ÊB¢išÐšµ©h€Ií¯*)¶*'²Úâž^±Êâ¦Ø¨žËkŠxÆš+¶)íz·Úqà¨šf§t&­jZ V'°’)Ýr‰¦jw\jÖ¥¢â{
-Þr‰¦zw^uš²‰Ü¢iš×µ©h‚Zuç\¢iš×µ©hé©·'(º{l¶‹Z”*&™©Ý²{¦mêÜ¢išÛ¢išÐšµ©h€Ií¯'±¦ŠíŠ{^­öœxÇ)
-‰¦jwBjÖ¥¢b{	"Ùœ¥Ê&™©Ýq«Z–ˆ/‰ì+yÊ&™éÝyÔ^jÊ'™Ê\¢iš×µ©h‚Zuçfr—(šf§uÆ­jZ zjmÉÊ.žÛ-¢Ö¥:›b¢{'ºfÞ®ŠmŠ‰ì1ÊB¢išÐšµ©h€Ií¯'±¦ŠíŠ{^­öœy§¶)ž	«Z–ˆžÚò‰Û-®)à©ž²Úâž^±Êâ¦Ø¨žËkŠx'ºYijØl¶¸§‚Ê.­Ç°¢¹,¥§néÝ•çfŠË"ž±¦ŠíŠ{^­öœy§¶)ž	«Z–ˆjØl²‹«qì(®K)iÇ›ºweyÙ¢²È§ƒ
-+’)à*ÞrÚ+ÊËkŠx)iÉäh¢Û-®)àr‡^Ä8«²Úâž z{CŠ»-®)à²H¥”8«²Úâž±¦ŠíŠ{^­öœy§¶)ž	«Z–ˆ,¢êÜ{
-+’ÊZqæîÙ^vh¬²)à¥«a±Ê{â®ËkŠxéí*ì¶¸§‚É"–Pâ®ËkŠxéí±§¶)ž	«Z–ˆžÚò²H¥–ÄnžØ¦x&­jZ {kÉìi¢»bž×«}§FéíŠg‚jÖ¥¢b{	"ÚîžØ¦yÆ­jZ ¾'°­ç(šg§uçQy«(Æ­jZ z{k‰ë%¡§^uÆ­jZ zjmÉÊ.žÛéí²{¦mêì’)e²{¦mêí¢Ö¥{k‰ë'ºfÞ­Æ­jZ FéíŠg‚jÖ¥¢±¦ŠíŠ{^­öœy§¶)ž
-‰í­§-V'°’)Ý®éíŠgœ¢{kiËo‰ì+yÊ&™éÝyÔ^jÊ'r‰í­§-–†y×(º{lEç(­Û-®)àžé›z·(žÚÚrÔnžØ¦x*'¶¶œµìi¢»bž×«}§FéíŠgƒ¡Ëh­XžÂH§v»§¶)žv‡-¢»â{
-Þr‰¦zw^uš²‰Ý¡Ëh®·šw'hrÚ+z{kÊh¬²)à²Ö­ºÊ${œºÖ›•æè¢Wšéí¯+-®)à²Ö­xX¥zËkŠxjÖ¥¢nžØ¦x&­jZ V'°r‰í­§-FéíŠg‚¢{kiËU‰ìÆš+¶)íz·ÚqänžØ¦yšw%b{	"ÚîžØ¦z·šw+â{
-Þr‰¦zw^uš²‰ëº{b™ç§¶¼«y§r²Ö­ºÊÞiÜœ¢éí²w±µ+^¦Éî™·«r‰í­§-FéíŠg‚¢{kiËU‰ì'{l¶¸§ìi¢»bž×«}§
-Š+v)Ú¶*':÷«¾'°{œºØ¨œÊzYhq©[¢éÝyÙ®–ØšéírŠ+v)Ú¶*'uéb½êò‹§uªòr‡^Æ‰åÊ»§¶)žr§ã(uél™©e­ëÞ®È›•ë-z›Æš+¶)íz·Úqà¨¢·b«b¢s¯z»â{b{	"×(¢·b«b¢z/z»â{â{
-Þr‰¦zw^uš²‰Ü¢ŠÝŠv­Š‰æ¡×¥–†y×(º{l}§¶Éî™·«¢÷«¾'°
-Š+v)Ú¶*':÷«¾'°{h®Ø§µêßiÇ–¢¹¬k¢uébëŠWŽÂw«²©¢wšrØ¯{
-âµêéz·â•êZ­©ezX¬š–«jY^–,Þ¢yrÂ+av+#¢)í£	Þ®Èb¦ö¥‰Ö­Š‰À®¶²µªàz×½êâ~'¶*'~·¬…ëâuéÜz§v‡ßv+Š™bç±¦ŠíŠ{^­öœyj+‘êÆº'^–)Þ±XžÂH§w
-+‘êàº'^–)Þ²øžÂ·œ¢iž×Eæ¬¢|(®G«‚èzX§zÉhi×r‹§¶Êî•äžrØ¨žÉî™·«½©bu«b¢t­z›'ºfÞ®¢uébë¢¹¬k¢uébëÆš+¶)íz·ÚqänžØ¦y+Z¶ë‰ì$Šwkº{b™ë-jÛ¬¾'°­ç(šg§uçQy«(ž»§¶)ž²Ö­zø¬‰¹^®éíŠg¬µ«^zjmÉÊ.žÛº{b™ä­jÛ¬
-‹§¶ËkiÉu+Zµá'¶¸ž²{¦mêìµ«n±§¶)žJÖ­ºÇ±¦ŠíŠ{^­öœy§¶)ž	ªZn)b¶'¬V'°’)Ý®éíŠgœj–›ŠX­‰ë/‰ì+yÊ&™éÝyÔ^jÊ'qªZn)b¶'¬–†y×¥¦â–+bzÇ¦¦Üœ¢éí²Ú-jPš¥¦â–+bzÉî™·«q«^‚ŠâzÄ^rŠÝ²Úâž	î™·«qªZn)b¶'¬FéíŠg‚j–›ŠX­É+¦™ªò{h®Ø§µêßiÇ“jÉ•©Ëjw¥jw¬¶¸§‚Œ'z»-®)à½êâ~'«²Úâž.šf«ÊËkŠx,rŠ^²Úâžœqêmjw²ÚâžÞ®'âq«b¢{-®)à{h®Ø§µêßiÇ•©çz´h•áb•á/‰×§qêè•ë-®)à¥«a²Úâž±¦ŠíŠ{^­öœxùZžw«øzwµ«$²Úâž
-Þ¦„¢‚v¥²¬J·¢‰^jxZ±'+Š›lnŠ%y©ájÀ z{lnŠ%y©ájÄ¤ŠYlnŠ%y©ë¢W…ŠW¬>V§êÑ¢W…ŠW„¾'^ÇžÆš+¶)íz·ÚqäÚ²Cåjy"ÛZ²JejzÞr‰¦zw^uš²‰æº[b•©Þ¦V§­æÊÈ§‚W¥jw©•©ëy§r¡¸ÞrØ¯zËkŠx¾'^Ç•©çz±/‰×§qéZëjÉ•©ËjwžÆš+¶)íz·ÚqãåjyÞu,®i"ÚejyÞvÌ®jÞr‰¦zw^uš²‰æº[b•©Þ³«š·šw+"ž	^•©Þ³«š·šw*ç-Š÷¬¶¸§ëâuéÜxùZžw«øzw³«˜ùZžwK«™(Z¥ç±¦ŠíŠ{^­öœyž¹çO•©äŠwj¹ëžv™Zž·œ¢iž×Eæ¬¢y®–Ø©•êej{Z²K*¹ëžvÈ§‚W©•©íjÉ*¹ëžv†ãyËb½ë-®)à•©Þ±6¬ùZœ¶§yÊÞj×M«$Eç(­×±¦ŠíŠ{^­öœy§¶)ž
-‰í­§-¦º¹Ë\¡×±mç¬š‡^r‡^Æ‰åÉ×¥Š÷«È.Ö«ÉÊ{'—*îžØ¦{
-+’)à*ÞrÚ+ÊËkŠx'¡×¬¶¸§ªÜ†+^rÛ«x
-ëk'%Šg)²H¥–Æ z{lv‡,¶¶§²š+µÉb²×b¢g)²×b¢;(žº\­ë)¢{"n)b¶'¬²Úâž±r[¬Š‰ì²Úâž±¦ŠíŠ{^­öœy§¶)ž	ªZn)b·$®šf«Ê'\–*îžØ¦zg)®éíŠg©•©çŠx-jÉ¢ŠÝŠv­Š‰ïz¸Ÿ‰êëzøžÂWšuêè­È^²ÚÚ¶*'³«™Ê(­Ø§jØ¨žg¦¢¼«º{b™çµ©hÆ­z
-+Ê»§¶)ž¦V§ž)àrŠ+v)Ú¶*'™é¨¯(§¶º,¥ç-Š‰Ü– ¨šf§t*.žÙî™·«™ÊS¢‰B¢éížé›z¸b‚b‚l²Úâž
-ky÷«­çDžÚò>ˆ§¶Ç%ŠËkŠx&r›-®)àºÇ‚jÇ¬²Úâž±¦ŠíŠ{^­öœy§¶)ž	ªZn)b·(rX«º{b™éœ¦»§¶)ž¦V§ž)àµ«$rŠ+v)Ú¶*'½êâ~'«­ëâ{	^i×«¢·!zËkjØ¨žÌ®g(¢·b«b¢yžšŠò®éíŠgœjÖ¥¢µè(¯*îžØ¦z™Zžx§Ê(­Ø§jØ¨žg¦¢¼¢žÚè²—œ¶*'uë®*mŠ‰ì¶¸§Éb
-‰¦jwl²Úâž	œ¥:(–Ë-®)à†(!–(!¶Ë-®)à¦·ŸzºÞtIí¯#èŠ{lrX€®¶²•æz¶¬²('™éí•«§rejy^i×«jË"‚yžž×b²–­rîÙ^•æz¼(®K)iÇ¬µ«n±Æ©i¸¥ŠØž²»§¶)ž²é¦j¼©iÉ+º{b™ê®zç©iÉ&r+­¬¥y§^­«,Š	æz{ejéÜ†™ZžWšuêÚ²È žg§µØ¬¥«\…»§vW¥y§^¯
-+’ÊZqêîžØ¦zËZ¶ë+º{b™ç¥¦â–+bzÊîžØ¦zË¦™ªò¥§$®éíŠgª¹ëž¥§$ºÇ‚jÇ¬²Úâž±¦ŠíŠ{^­öœy§¶)žJÖ­ºÀ¨º{l¶Š%²{¦mêÚéí²{¦mêì’)e²{¦mêÜj–›ŠX­‰ë'ºfÞ®Ö¬’Éî™·«³«šÉî™·«™é¨®'¬žé›z·±¦ŠíŠ{^­öœy§¶)žJÖ­ºÊk¡ÛœµÊ{ÞzËÞ®È¨žËkŠx&¡×œ¡×±¢yrr‹§¶ÄnžØ¦y+Z¶ë¢éí²ËZµëZ²D.zç’µ«n±ëyÊ+vËkŠx'ºfÞ®Ì®d­jÛ¬zÄ^rŠÝ²Úâž	î™·«™é¨¯#Z™ë)iÇ¬Eç(­Û-®)àžé›z¸b‚b‚l²Úâž
-Þr‰¦zw^tIí¯#èŠ{lrX€®¶²•æz¶¬²('™éí•«§rejy^i×«jË"‚yžž×b²–­rîÙ^•æz¼(®K)iÇ¬µ«n±Æ©i¸¥ŠØž²»§¶)ž²é¦j¼©iÉ+º{b™ê®zç©iÉ&r+­¬¥y§^­«,Š	æz{ejéÜ†™ZžWšuêÚ²È žg§µØ¬¥«\…»§vW¥y§^¯
-+’ÊZqêîžØ¦zËZ¶ë+º{b™ç¥¦â–+bzÊîžØ¦zË¦™ªò¥§$®éíŠgª¹ëž¥§$ºÇ‚jÇ¬²Úâžµ©h§¶)ž	«Z–ˆj–›ŠX­‰ëº{b™àš¥¦â–+rJé¦j¼žÆš+¶)íz·ÚqãåjyÞu,®d¡j—¨n7œ¶+Þ²Úâžh¦‰hƒ&èºw^vZjYšÅj+‘êìžé›z¹Zä¨º·¦V§êåjw¬M«$>V§-©Þž‹^²ËkŠxÆš+¶)íz·Úqäè¢Pšµ©h€Ií¯)Ú™ë-®)àuë®*mŠ‰ì¶¸§‚)éºÔœ…éš&Ê'9¸Þr×±¦ŠíŠ{^­öœy:(”&­jZ V'°’)Ý¶Š%q«Z–ˆ/‰ì+yÊ&™éÝyÔ^jÊ'¶Š%q«Z–ˆ%¡§^vÚ(•Æ­jZ zjmÉÊ.žÛ-¢Ö¥NŠ%²{¦mêà®‹©±œ¢·l¶¸§‚{¦mêí¢‰lNŠ%	«Z–ˆžÚò{h®Ûr¥âl¢sëŠh­Š÷
+export interface PackageMetadata {
+  product: "codex-bees";
+  version: "0.1.0";
+  description: "Codex-native multi-agent runtime for explicit local orchestration.";
+  license: "MIT";
+  homepage: "https://github.com/izumi0uu/codex-bees#readme";
+  bugsUrl: "https://github.com/izumi0uu/codex-bees/issues";
+  repositoryUrl: string | null;
+  keywords: string[];
+  mode: "codex-only";
+}
+
+export interface PackageMetadataView {
+  kind: "package_metadata_view";
+  recommendedReason: "package_metadata_loaded";
+  metadata: PackageMetadata;
+}
+
+export interface CommandCatalogEntry {
+  command: string;
+  description: string;
+  options?: McpCommandCatalogEntry[];
+}
+
+export interface McpCommandCatalogEntry {
+  option: string;
+  description: string;
+}
+
+export interface CommandCatalogView {
+  kind: "command_catalog_view";
+  recommendedReason: "command_catalog_loaded" | "command_catalog_empty";
+  counts: {
+    totalCommands: number;
+  };
+  commands: CommandCatalogEntry[];
+}
+
+export interface McpCommandCatalogView {
+  kind: "mcp_command_catalog_view";
+  recommendedReason: "mcp_command_catalog_loaded" | "mcp_command_catalog_empty";
+  counts: {
+    totalOptions: number;
+  };
+  options: McpCommandCatalogEntry[];
+}
+
+export interface RuntimeCatalogEntry {
+  id: string;
+  name: string;
+  description: string | null;
+  path: string;
+  source: "workspace" | "bundled" | "missing";
+}
+
+export interface RuntimeCatalogPaths {
+  source: "workspace" | "bundled" | "missing";
+  workingDirectory: string;
+  packageRoot: string;
+  codexDir: string;
+  agentDir: string;
+  skillDir: string;
+}
+
+export interface RuntimeCatalog {
+  source: "workspace" | "bundled" | "missing";
+  paths: {
+    codexDir: string;
+    agentDir: string;
+    skillDir: string;
+  };
+  agents: RuntimeCatalogEntry[];
+  skills: RuntimeCatalogEntry[];
+}
+
+export interface RuntimeCatalogView {
+  kind: "runtime_catalog_view";
+  recommendedReason: "catalog_entries_loaded" | "catalog_empty";
+  counts: {
+    agents: number;
+    skills: number;
+    totalEntries: number;
+  };
+  catalog: RuntimeCatalog;
+}
+
+export interface RuntimeContractView {
+  kind: "runtime_contract_view";
+  recommendedReason: "contract_loaded";
+  counts: Record<string, number>;
+  contract: RuntimeContract;
+}
+
+export interface RuntimeDoctorView {
+  kind: "runtime_doctor_view";
+  recommendedReason: "doctor_ready" | "doctor_entry_missing";
+  status: "ok";
+  executable: boolean;
+  entry: string;
+  stateFile: string;
+  catalog: RuntimeCatalogView;
+  contract: RuntimeContractView;
+}
+
+export interface RuntimeReadyView {
+  kind: "runtime_ready_view";
+  recommendedReason: "runtime_entry_ready";
+  status: "ready";
+  counts: {
+    nextSteps: number;
+  };
+  contract: RuntimeContractView;
+  next: string[];
+}
+
+export interface WorkspaceInitOptions {
+  targetDirectory?: string;
+  force?: boolean;
+}
+
+export interface WorkspaceInitEntry {
+  type: "file";
+  path: string;
+  action: "create" | "update" | "skip";
+  reason: string;
+}
+
+export interface WorkspaceInitPreview {
+  kind: "workspace_init_preview";
+  recommendedReason: "init_changes_required" | "init_already_applied";
+  targetDirectory: string;
+  force: boolean;
+  counts: {
+    totalEntries: number;
+    create: number;
+    update: number;
+    skip: number;
+  };
+  entries: WorkspaceInitEntry[];
+  next: string[];
+}
+
+export interface WorkspaceInitResult {
+  kind: "workspace_init_result";
+  recommendedReason: "init_applied" | "init_no_changes";
+  targetDirectory: string;
+  force: boolean;
+  counts: {
+    created: number;
+    updated: number;
+    skipped: number;
+    totalEntries: number;
+  };
+  created: string[];
+  updated: string[];
+  skipped: string[];
+  next: string[];
+}
+
+export interface CoordinationOverview {
+  executionModel: "local bounded multi-agent coordination";
+  deliveryBoundary: "codex-only runtime";
+  changeModel: "small reversible steps";
+}
+
+export interface CoordinationOverviewView {
+  kind: "coordination_overview_view";
+  recommendedReason: "coordination_model_loaded";
+  counts: {
+    facets: number;
+  };
+  overview: CoordinationOverview;
+}
+
+export interface WorkerGuidelines {
+  fileOwnership: "one active writer per file";
+  parallelism: "parallelize only with disjoint ownership";
+  validation: Array<"targeted verification" | "fresh evidence" | "handoff discipline">;
+}
+
+export interface WorkerGuidelinesView {
+  kind: "worker_guidelines_view";
+  recommendedReason: "worker_guidelines_loaded";
+  counts: {
+    ruleSections: number;
+    validationSteps: number;
+  };
+  guidelines: WorkerGuidelines;
+}
+
+export interface RuntimeStatusView {
+  kind: "runtime_status_view";
+  recommendedReason: "runtime_state_visible" | "runtime_state_empty";
+  counts: RuntimeStatusCounts & {
+    trackedStateEntries: number;
+  };
+  status: RuntimeStatus;
+}
+
+export interface RuntimeCapabilitiesView {
+  kind: "runtime_capabilities_view";
+  recommendedReason: "capabilities_loaded" | "capabilities_empty";
+  counts: {
+    totalCapabilities: number;
+    categories: Record<string, number>;
+  };
+  capabilities: RuntimeCapabilitySummary[];
+}
+
+export interface TaskPlanLane {
+  lane: string;
+  owner: string;
+  verifier: string;
+  summary: string;
+  scope: string[];
+  acceptance: string[];
+  verification: string[];
+}
+
+export interface PlannerRoleFileEvidence {
+  role: string;
+  path: string;
+}
+
+export interface PlannerEvidence {
+  task: string;
+  repoSignals: {
+    hasSrc: boolean;
+    hasScripts: boolean;
+    hasAgents: boolean;
+    hasSkills: boolean;
+  };
+  roleFiles: PlannerRoleFileEvidence[];
+}
+
+export interface TaskPlan {
+  kind: "task_plan";
+  recommendedReason: "multi_lane_plan_ready" | "single_lane_plan_ready";
+  objective: string;
+  evidence: PlannerEvidence;
+  lanes: TaskPlanLane[];
+}
+
+export interface PlannedSwarm {
+  kind: "planned_swarm";
+  recommendedReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready";
+  objective: string;
+  evidence: PlannerEvidence;
+  swarm: PlannedSwarmShape;
+}
+
+export interface QueuedPlan {
+  kind: "queued_plan";
+  recommendedReason: "multiple_plan_tasks_queued" | "single_plan_task_queued";
+  objective: string;
+  lanes: TaskPlanLane[];
+  created: TaskRecord[];
+}
+
+export interface RuntimeContract {
+  product: "codex-bees";
+  mode: "codex-only";
+  deliveryBoundary: "codex-only runtime";
+  workingDirectory: string;
+  node: string;
+  architecture: Array<"cli" | "mcp" | "skills" | "agents" | "docs">;
+  transport: {
+    cli: "stdio";
+    mcp: "stdio-jsonrpc";
+  };
+  responsibilities: string[];
+  exclusions: string[];
+}
+
+export interface RuntimeCapabilitySummary {
+  id:
+    | "cli_runtime"
+    | "mcp_runtime"
+    | "planning"
+    | "task_coordination"
+    | "verifier_review"
+    | "leader_orchestration"
+    | "swarm_coordination"
+    | "memory"
+    | "runtime_catalog";
+  category: "runtime" | "planning" | "coordination" | "memory" | "introspection";
+  cliCommandCount: number;
+  mcpToolCount: number;
+  highlights: string[];
+  preferredEntryPoints: {
+    cli: string[];
+    mcp: string[];
+  };
+  useCases: string[];
+}
+
+export interface RuntimeCapability {
+  id:
+    | "cli_runtime"
+    | "mcp_runtime"
+    | "planning"
+    | "task_coordination"
+    | "verifier_review"
+    | "leader_orchestration"
+    | "swarm_coordination"
+    | "memory"
+    | "runtime_catalog";
+  category: "runtime" | "planning" | "coordination" | "memory" | "introspection";
+  description: string;
+  cliCommands: string[];
+  mcpTools: string[];
+  highlights: string[];
+  preferredEntryPoints: {
+    cli: Array<
+      | "leader:assignment-launch-plan"
+      | "leader:assignment-dispatch-bundle"
+      | "leader:workspace"
+      | "status"
+      | "capabilities"
+      | "runtime:summary-pack"
+      | "runtime:queue-pack"
+    >;
+    mcp: Array<
+      | "leader_assignment_launch_plan"
+      | "leader_assignment_dispatch_bundle"
+      | "leader_workspace"
+      | "runtime_status"
+      | "runtime_capabilities"
+      | "runtime_summary_pack"
+      | "runtime_queue_pack"
+    >;
+  };
+  useCases: string[];
+}
+
+export interface RuntimeStatusCounts {
+  tools: number;
+  agents: number;
+  skills: number;
+  capabilities: number;
+  tasks: number;
+  swarms: number;
+  memories: number;
+}
+
+export interface RuntimeStatus {
+  product: "codex-bees";
+  version: string;
+  mode: "codex-only";
+  counts: RuntimeStatusCounts;
+  state: {
+    taskQueueStatuses: Record<string, number>;
+    swarmStatuses: Record<string, number>;
+    memoryNamespaces: Record<string, number>;
+  };
+  highlights: string[];
+  recommendedEntryPoints: {
+    cli: Array<
+      | "leader:assignment-launch-plan"
+      | "leader:assignment-dispatch-bundle"
+      | "leader:workspace"
+      | "status"
+      | "capabilities"
+      | "runtime:summary-pack"
+      | "runtime:queue-pack"
+    >;
+    mcp: Array<
+      | "leader_assignment_launch_plan"
+      | "leader_assignment_dispatch_bundle"
+      | "leader_workspace"
+      | "runtime_status"
+      | "runtime_capabilities"
+      | "runtime_summary_pack"
+      | "runtime_queue_pack"
+    >;
+  };
+  useCases: string[];
+  catalog: RuntimeCatalog;
+  capabilities: RuntimeCapabilitySummary[];
+}
+
+export interface PlannedSwarmShape {
+  objective: string;
+  topology: "bounded-local";
+  maxWorkers: number;
+  laneSource: "planner";
+  lanes: TaskPlanLane[];
+  notes: string;
+}
+
+export interface ToolCatalogEntry {
+  name: string;
+  description: string;
+  inputSchema: JsonObject;
+}
+
+export interface ToolCatalogView {
+  kind: "tool_catalog_view";
+  recommendedReason: "tool_catalog_loaded" | "tool_catalog_empty";
+  counts: {
+    totalTools: number;
+    groups: Record<string, number>;
+  };
+  tools: ToolCatalogEntry[];
+}
+
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+export interface JsonObject {
+  [key: string]: JsonValue;
+}
+export type JsonArray = JsonValue[];
+
+export interface McpMessage {
+  jsonrpc?: string;
+  id?: string | number | null;
+  method?: string;
+  params?: JsonObject;
+}
+
+export interface McpResponse {
+  jsonrpc: "2.0";
+  id: string | number | null;
+  result?: unknown;
+  error?: {
+    code: number;
+    message: string;
+  };
+}
+
+export type TaskQueueStatus =
+  | "queued"
+  | "claimed"
+  | "blocked"
+  | "ready_for_review"
+  | "released"
+  | "done";
+
+export type SwarmStatus =
+  | "planned"
+  | "active"
+  | "blocked"
+  | "completed"
+  | "cancelled";
+
+export type TaskReviewState =
+  | "pending_verifier"
+  | "approved"
+  | "changes_requested"
+  | "not_started";
+
+export interface TaskHistoryEntry {
+  id: string;
+  at: string | null;
+  type: string;
+  fromQueueStatus: TaskQueueStatus | null;
+  toQueueStatus: TaskQueueStatus | null;
+  actor: string | null;
+  notes: string | null;
+  evidence: unknown[];
+  outcome: string | null;
+}
+
+export interface TaskAnnotation {
+  id: string;
+  at: string | null;
+  actor: string | null;
+  kind: string;
+  content: string;
+}
+
+export interface TaskRecord {
+  id: string;
+  title?: string;
+  owner: string | null;
+  verifier: string | null;
+  status: string;
+  queueStatus: TaskQueueStatus;
+  objective: string | null;
+  lane: string | null;
+  swarmId: string | null;
+  scope: string[] | null;
+  acceptance: string[] | null;
+  verification: string[] | null;
+  claimedBy: string | null;
+  notes: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewOutcome: string | null;
+  reviewNotes: string | null;
+  reviewEvidence: unknown[] | null;
+  annotations: TaskAnnotation[];
+  history: TaskHistoryEntry[];
+  createdAt: string | null;
+  updatedAt: string | null;
+  [key: string]: unknown;
+}
+
+export interface SwarmRecord {
+  id: string;
+  objective: string;
+  status: SwarmStatus;
+  topology: string;
+  maxWorkers: number;
+  owner: string | null;
+  laneSource: string;
+  lanes: SwarmLaneRecord[];
+  queuedAt: string | null;
+  notes: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  [key: string]: unknown;
+}
+
+export interface SwarmLaneRecord {
+  lane: string;
+  summary: string;
+  owner: string | null;
+  verifier: string | null;
+  scope: string[] | null;
+  acceptance: string[] | null;
+  verification: string[] | null;
+  taskId: string | null;
+}
+
+export interface SwarmLaneSummary {
+  lane: string;
+  summary: string;
+  owner: string | null;
+  verifier: string | null;
+  taskId: string | null;
+  queueStatus: TaskQueueStatus | null;
+  claimedBy: string | null;
+  status: string | null;
+  scope: string[] | null;
+  ready: boolean;
+  done: boolean;
+}
+
+export interface SwarmOverviewCounts {
+  totalLanes: number;
+  queued: number;
+  claimed: number;
+  blocked: number;
+  readyForReview: number;
+  released: number;
+  done: number;
+  unqueued: number;
+}
+
+export interface SwarmOverview {
+  kind: "swarm_overview";
+  recommendedReason:
+    | "swarm_ready_to_complete"
+    | "review_lane_waiting"
+    | "blocked_lanes_present"
+    | "dispatch_lane_ready"
+    | "claimed_lane_active"
+    | "planned_lanes_unqueued"
+    | "swarm_state_visible";
+  swarm: SwarmRecord;
+  counts: SwarmOverviewCounts;
+  lanes: SwarmLaneSummary[];
+  tasks: TaskRecord[];
+  nextLane: SwarmLaneSummary | null;
+  derivedStatus: SwarmStatus;
+  statusAligned: boolean;
+  readyToComplete: boolean;
+  dispatchableCount: number;
+}
+
+export interface MemoryRecord {
+  id: string;
+  title: string | null;
+  content: string;
+  namespace: string;
+  kind: string;
+  agent: string | null;
+  tags: string[];
+  notes: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  [key: string]: unknown;
+}
+
+export interface TaskListView {
+  kind: "task_view";
+  recommendedReason: "task_list_has_results" | "task_list_empty";
+  counts: {
+    totalTasks: number;
+  };
+  tasks: TaskRecord[];
+}
+
+export interface TaskDetailView {
+  kind: "task_detail";
+  recommendedReason: "task_detail_loaded";
+  metadata: TaskDetailMetadata;
+  task: TaskRecord;
+}
+
+export interface SwarmListView {
+  kind: "swarm_view";
+  recommendedReason: "swarm_list_has_results" | "swarm_list_empty";
+  detailed: false;
+  counts: {
+    totalSwarms: number;
+  };
+  swarms: SwarmRecord[];
+}
+
+export interface DetailedSwarmListView {
+  kind: "swarm_view";
+  recommendedReason: "swarm_list_has_results" | "swarm_list_empty";
+  detailed: true;
+  counts: {
+    totalSwarms: number;
+  };
+  swarms: SwarmOverview[];
+}
+
+export interface SwarmFilters {
+  status?: SwarmStatus;
+  topology?: string;
+  owner?: string;
+}
+
+export interface SwarmDetailView {
+  kind: "swarm_detail";
+  recommendedReason: "swarm_detail_loaded";
+  metadata: SwarmDetailMetadata;
+  swarm: SwarmRecord;
+}
+
+export interface TaskDetailMetadata {
+  hasHistory: boolean;
+  hasAnnotations: boolean;
+  reviewState: TaskReviewState;
+}
+
+export interface SwarmDetailMetadata {
+  derivedStatus: SwarmStatus;
+  statusAligned: boolean;
+  readyToComplete: boolean;
+  dispatchableCount: number;
+}
+
+export interface MemoryListView {
+  kind: "memory_view";
+  recommendedReason: "memory_list_has_results" | "memory_list_empty";
+  counts: {
+    totalMemories: number;
+  };
+  memories: MemoryRecord[];
+}
+
+export interface MemorySearchResult extends MemoryRecord {
+  score: number;
+}
+
+export interface MemorySearchView {
+  kind: "memory_search_view";
+  recommendedReason: "memory_search_has_results" | "memory_search_empty";
+  counts: {
+    totalResults: number;
+  };
+  query: string;
+  results: MemorySearchResult[];
+}
+
+export interface MemoryFilters {
+  namespace?: string;
+  kind?: string;
+  agent?: string;
+  tags?: string[];
+}
+
+export interface MemoryInput {
+  content: string;
+  namespace?: string;
+  kind?: string;
+  title?: string | null;
+  agent?: string | null;
+  tags?: string[];
+  notes?: string | null;
+}
+
+export interface TaskInput {
+  title: string;
+  status?: string;
+  queueStatus?: TaskQueueStatus;
+  owner?: string | null;
+  verifier?: string | null;
+  objective?: string | null;
+  lane?: string | null;
+  swarmId?: string | null;
+  scope?: string[] | null;
+  acceptance?: string[] | null;
+  verification?: string[] | null;
+  claimedBy?: string | null;
+  notes?: string | null;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  reviewOutcome?: string | null;
+  reviewNotes?: string | null;
+  reviewEvidence?: unknown[] | null;
+  annotations?: unknown[];
+}
+
+export interface SwarmLaneInput {
+  lane?: string;
+  summary?: string;
+  owner?: string | null;
+  verifier?: string | null;
+  scope?: string[] | null;
+  acceptance?: string[] | null;
+  verification?: string[] | null;
+  taskId?: string | null;
+}
+
+export interface SwarmInput {
+  objective: string;
+  status?: SwarmStatus;
+  topology?: string;
+  maxWorkers?: number;
+  owner?: string | null;
+  laneSource?: string;
+  lanes?: SwarmLaneInput[];
+  queuedAt?: string | null;
+  notes?: string | null;
+}
+
+export interface ValidationIssue {
+  code: string;
+  message: string;
+  allowed?: string[];
+}
+
+export interface SwarmOverlapIssue extends ValidationIssue {
+  lanes: string[];
+  path: string;
+}
+
+export interface TaskValidationView {
+  kind: "task_validation";
+  recommendedReason:
+    | "task_ready_to_claim"
+    | "task_role_validation_issues_present"
+    | "claimed_task_metadata_incomplete"
+    | "task_validation_issues_present"
+    | "task_validation_visible";
+  task: TaskRecord;
+  ready: boolean;
+  issues: ValidationIssue[];
+  catalog: {
+    agents: string[];
+  };
+}
+
+export interface SwarmLaneValidation {
+  lane: string;
+  ready: boolean;
+  issues: ValidationIssue[];
+}
+
+export interface SwarmValidationView {
+  kind: "swarm_validation";
+  recommendedReason:
+    | "swarm_ready_to_queue"
+    | "swarm_scope_overlap_detected"
+    | "lane_validation_issues_present"
+    | "swarm_validation_issues_present"
+    | "swarm_validation_visible";
+  swarm: SwarmRecord;
+  ready: boolean;
+  issues: ValidationIssue[];
+  lanes: SwarmLaneValidation[];
+  overlaps: SwarmOverlapIssue[];
+  catalog: {
+    agents: string[];
+  };
+}
+
+export declare const PRODUCT_NAME: "codex-bees";
+export declare const PACKAGE_VERSION: "0.1.0";
+export declare const toolCatalog: ToolCatalogEntry[];
+
+export declare function getPackageMetadata(): PackageMetadata;
+export declare function getPackageMetadataView(): PackageMetadataView;
+
+export declare function getCommandCatalog(): CommandCatalogEntry[];
+export declare function getCommandCatalogView(): CommandCatalogView;
+export declare function renderHelpText(): string;
+export declare function getMcpCommandCatalog(): McpCommandCatalogEntry[];
+export declare function getMcpCommandCatalogView(): McpCommandCatalogView;
+export declare function renderMcpHelpText(): string;
+
+export declare function previewWorkspaceInit(options?: WorkspaceInitOptions): WorkspaceInitPreview;
+export declare function initWorkspace(options?: WorkspaceInitOptions): WorkspaceInitResult;
+
+export declare function getRuntimeCatalogPaths(): RuntimeCatalogPaths;
+export declare function getBundledRuntimeCatalogPaths(): RuntimeCatalogPaths;
+export declare function resolveRuntimeCatalogPath(relativePath: string): string | null;
+export declare function listAgentCatalog(): RuntimeCatalogEntry[];
+export declare function listAgentRoleIds(): string[];
+export declare function listSkillCatalog(): RuntimeCatalogEntry[];
+export declare function getRuntimeCatalog(): RuntimeCatalog;
+export declare function getRuntimeCatalogView(): RuntimeCatalogView;
+
+export declare function getRuntimeContractView(): RuntimeContractView;
+export declare function getRuntimeDoctorView(entryUrl?: string): RuntimeDoctorView;
+export declare function getRuntimeReadyView(): RuntimeReadyView;
+
+export declare function getCoordinationOverview(): CoordinationOverview;
+export declare function getCoordinationOverviewView(): CoordinationOverviewView;
+export declare function getWorkerGuidelines(): WorkerGuidelines;
+export declare function getWorkerGuidelinesView(): WorkerGuidelinesView;
+
+export declare function getCapabilityCatalog(): RuntimeCapability[];
+export declare function getCapabilityCatalogView(): RuntimeCapabilitiesView;
+export declare function getRuntimeStatus(input?: { version?: string; toolCount?: number }): RuntimeStatus;
+export declare function getRuntimeStatusView(input?: { version?: string; toolCount?: number }): RuntimeStatusView;
+
+export declare function planTask(task: string): TaskPlan;
+export declare function planSwarm(task: string): PlannedSwarm;
+export declare function queueTasksFromPlan(task: string, addTasksFn?: (tasks: TaskInput[]) => TaskRecord[]): QueuedPlan;
+
+export declare function listMcpTools(): ToolCatalogEntry[];
+export declare function getToolCatalogView(): ToolCatalogView;
+export declare function handleMcpRequest(message: McpMessage): McpResponse;
+export declare function callMcpTool(name: string, args?: JsonObject): unknown;
+export declare function serializeMcpMessage(message: McpMessage): string;
+export declare function runMcpCli(args?: string[]): Promise<void>;
+export declare function startMcpServer(): Promise<void>;
+
+export declare function addTask(input: TaskInput): TaskRecord;
+export declare function getTask(id: string): TaskRecord | null;
+export declare function getTaskView(id: string): TaskDetailView | null;
+export declare function initSwarm(input: SwarmInput): SwarmRecord;
+export declare function getSwarm(id: string): SwarmRecord | null;
+export declare function getSwarmView(id: string): SwarmDetailView | null;
+export declare function listTasksView(): TaskListView;
+export declare function listSwarmsView(filters?: SwarmFilters, options?: { detailed?: false }): SwarmListView;
+export declare function listSwarmsView(filters: SwarmFilters | undefined, options: { detailed: true }): DetailedSwarmListView;
+export declare function listMemoriesView(filters?: MemoryFilters): MemoryListView;
+export declare function searchMemoriesView(query: string, filters?: MemoryFilters, limit?: number): MemorySearchView;
+export declare function storeMemory(input: MemoryInput): MemoryRecord;
+export declare function validateTask(id: string): TaskValidationView | null;
+export declare function validateSwarm(id: string): SwarmValidationView | null;
+export declare function stateFilePath(): string;

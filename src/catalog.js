@@ -56,6 +56,26 @@ function toDisplayPath(path, { preferBundled = false } = {}) {
   return path;
 }
 
+export function getBundledRuntimeCatalogPaths() {
+  const bundledPath = bundledCodexDir();
+  const bundledDistPath = bundledDistCodexDir();
+  const source = isDirectory(bundledDistPath) || isDirectory(bundledPath) ? "bundled" : "missing";
+  const codexDir = isDirectory(bundledDistPath)
+    ? bundledDistPath
+    : isDirectory(bundledPath)
+      ? bundledPath
+      : bundledDistPath;
+
+  return {
+    source,
+    workingDirectory: cwd(),
+    packageRoot: PACKAGE_ROOT,
+    codexDir,
+    agentDir: join(codexDir, "agents"),
+    skillDir: join(codexDir, "skills")
+  };
+}
+
 export function getRuntimeCatalogPaths() {
   const workspacePath = workspaceCodexDir();
   const bundledPath = bundledCodexDir();
