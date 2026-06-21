@@ -64,6 +64,7 @@ import {
   findDispatchableSwarmLane,
   queueSwarmTasksFromSources,
   transitionSwarmFromSources,
+  updateSwarmFromSources,
   updateLoadedSwarmState,
   buildTransitionedSwarmState,
   buildQueuedSwarmLaneState,
@@ -94,6 +95,7 @@ import {
   deriveTaskTransitionContext,
   resolveTaskClaimedBy,
   transitionTaskFromSources,
+  updateTaskFromSources,
   updateLoadedTaskState,
   transitionLoadedTaskState
 } from "./state-transition-helpers.js";
@@ -1851,20 +1853,13 @@ export function searchMemoriesView(query, filters = {}, limit = 10) {
 }
 
 export function updateTask(input) {
-  const state = loadState();
-  const next = updateLoadedTaskState(state, input, {
+  return updateTaskFromSources(input, {
+    loadState,
+    saveState,
     findTaskIndex,
     normalizeTask,
     buildUpdatedTaskState
   });
-  if (!next) {
-    return null;
-  }
-  if (next.error) {
-    return next;
-  }
-  saveState(state);
-  return next;
 }
 
 export function updateTaskMutation(input) {
@@ -1880,20 +1875,13 @@ export function updateTaskMutation(input) {
 }
 
 export function updateSwarm(input) {
-  const state = loadState();
-  const next = updateLoadedSwarmState(state, input, {
+  return updateSwarmFromSources(input, {
+    loadState,
+    saveState,
     findSwarmIndex,
     normalizeSwarm,
     buildUpdatedSwarmState
   });
-  if (!next) {
-    return null;
-  }
-  if (next.error) {
-    return next;
-  }
-  saveState(state);
-  return next;
 }
 
 export function updateSwarmMutation(input) {

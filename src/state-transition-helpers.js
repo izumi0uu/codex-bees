@@ -303,3 +303,30 @@ export function updateLoadedTaskState(
   state.tasks[taskIndex] = next;
   return next;
 }
+
+export function updateTaskFromSources(
+  input,
+  {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask,
+    buildUpdatedTaskState
+  }
+) {
+  const state = loadState();
+  const next = updateLoadedTaskState(state, input, {
+    findTaskIndex,
+    normalizeTask,
+    buildUpdatedTaskState
+  });
+  if (!next) {
+    return null;
+  }
+  if (next.error) {
+    return next;
+  }
+
+  saveState(state);
+  return next;
+}

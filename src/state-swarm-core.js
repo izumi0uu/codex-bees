@@ -531,3 +531,30 @@ export function updateLoadedSwarmState(
   updateSwarmAtIndex(state.swarms, swarmIndex, next);
   return next;
 }
+
+export function updateSwarmFromSources(
+  input,
+  {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    buildUpdatedSwarmState
+  }
+) {
+  const state = loadState();
+  const next = updateLoadedSwarmState(state, input, {
+    findSwarmIndex,
+    normalizeSwarm,
+    buildUpdatedSwarmState
+  });
+  if (!next) {
+    return null;
+  }
+  if (next.error) {
+    return next;
+  }
+
+  saveState(state);
+  return next;
+}
