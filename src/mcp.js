@@ -2727,6 +2727,18 @@ export function getMcpCommandCatalogEntry(option) {
   return getMcpCommandCatalog().find((entry) => entry.option === option);
 }
 
+export function getMcpCommandCatalogEntryView(option) {
+  const matchedEntry = getMcpCommandCatalogEntry(option);
+
+  return {
+    kind: "mcp_command_option_view",
+    recommendedReason: matchedEntry ? "mcp_command_option_loaded" : "mcp_command_option_missing",
+    option: option ?? null,
+    matchedOption: matchedEntry?.option ?? null,
+    entry: matchedEntry ?? null
+  };
+}
+
 export function getMcpCommandCatalogView() {
   const options = getMcpCommandCatalog();
   return {

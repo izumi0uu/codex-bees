@@ -55,6 +55,7 @@ export {
   callMcpTool,
   getMcpCommandCatalog,
   getMcpCommandCatalogEntry,
+  getMcpCommandCatalogEntryView,
   getMcpCommandCatalogView,
   getMcpHelpView,
   getMcpToolEntry,

@@ -81,6 +81,14 @@ export interface McpCommandCatalogView {
   options: McpCommandCatalogEntry[];
 }
 
+export interface McpCommandOptionView {
+  kind: "mcp_command_option_view";
+  recommendedReason: "mcp_command_option_loaded" | "mcp_command_option_missing";
+  option: string | null;
+  matchedOption: string | null;
+  entry: McpCommandCatalogEntry | null;
+}
+
 export interface McpHelpView {
   kind: "mcp_help_view";
   recommendedReason: "mcp_help_loaded" | "mcp_help_fallback_loaded";
@@ -894,6 +902,7 @@ export declare function renderHelpText(): string;
 export declare function renderInitHelpText(): string;
 export declare function getMcpCommandCatalog(): McpCommandCatalogEntry[];
 export declare function getMcpCommandCatalogEntry(option: string): McpCommandCatalogEntry | undefined;
+export declare function getMcpCommandCatalogEntryView(option?: string): McpCommandOptionView;
 export declare function getMcpCommandCatalogView(): McpCommandCatalogView;
 export declare function getMcpHelpView(option?: string): McpHelpView;
 export declare function renderMcpHelpText(): string;
