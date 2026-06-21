@@ -2541,6 +2541,39 @@ export function buildRuntimeSessionPackView(
   };
 }
 
+export function buildRuntimeSessionPackViewFromSources(
+  input,
+  {
+    runtimeWorkerPack,
+    runtimeOwnerPack,
+    runtimeVerifierPack,
+    runtimeRoles,
+    describeRole
+  },
+  {
+    deriveRuntimeSessionPackSurface,
+    deriveRuntimeSessionPackReason,
+    buildRuntimeSessionPackSummary,
+    buildRuntimeSessionPackView
+  }
+) {
+  return buildRuntimeSessionPackView(
+    input,
+    {
+      runtimeWorkerPack,
+      runtimeOwnerPack,
+      runtimeVerifierPack,
+      runtimeRoles,
+      describeRole
+    },
+    {
+      deriveRuntimeSessionPackSurface,
+      deriveRuntimeSessionPackReason,
+      buildRuntimeSessionPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeRolePackSurface({ roleEntry, sessionPack, ownerPack, verifierPack }) {
   if (sessionPack?.recommendedSurface && sessionPack.recommendedSurface !== "worker:session") {
     return sessionPack.recommendedSurface;

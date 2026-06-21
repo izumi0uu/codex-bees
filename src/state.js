@@ -267,6 +267,7 @@ import {
   buildRuntimeRolePackView,
   buildRuntimeReviewPackSummary,
   buildRuntimeRolePackSummary,
+  buildRuntimeSessionPackViewFromSources,
   buildRuntimeSessionPackView,
   buildRuntimeSessionPackSummary,
   buildRuntimeSignalPackViewFromSources,
@@ -1373,7 +1374,7 @@ export function runtimeTriagePack() {
 }
 
 export function runtimeSessionPack(input = {}) {
-  return buildRuntimeSessionPackView(
+  return buildRuntimeSessionPackViewFromSources(
     input,
     {
       runtimeWorkerPack,
@@ -1385,7 +1386,8 @@ export function runtimeSessionPack(input = {}) {
     {
       deriveRuntimeSessionPackSurface,
       deriveRuntimeSessionPackReason,
-      buildRuntimeSessionPackSummary
+      buildRuntimeSessionPackSummary,
+      buildRuntimeSessionPackView
     }
   );
 }
