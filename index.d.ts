@@ -113,6 +113,15 @@ export interface RuntimeCatalogView {
   catalog: RuntimeCatalog;
 }
 
+export interface RuntimeCatalogEntryView {
+  kind: "runtime_catalog_entry_view";
+  recommendedReason: "catalog_entry_loaded" | "catalog_entry_missing";
+  entryType: "agent";
+  id: string | null;
+  matchedId: string | null;
+  entry: RuntimeCatalogEntry | null;
+}
+
 export interface RuntimeContractView {
   kind: "runtime_contract_view";
   recommendedReason: "contract_loaded";
@@ -879,6 +888,7 @@ export declare function getBundledRuntimeCatalogPaths(): RuntimeCatalogPaths;
 export declare function resolveRuntimeCatalogPath(relativePath: string): string | null;
 export declare function listAgentCatalog(): RuntimeCatalogEntry[];
 export declare function getAgentCatalogEntry(id: string): RuntimeCatalogEntry | undefined;
+export declare function getAgentCatalogEntryView(id?: string): RuntimeCatalogEntryView;
 export declare function listAgentRoleIds(): string[];
 export declare function listSkillCatalog(): RuntimeCatalogEntry[];
 export declare function getSkillCatalogEntry(id: string): RuntimeCatalogEntry | undefined;

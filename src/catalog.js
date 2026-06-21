@@ -168,6 +168,21 @@ export function getAgentCatalogEntry(id) {
   return listAgentCatalog().find((entry) => entry.id === id);
 }
 
+function createCatalogEntryView(entryType, id, entry) {
+  return {
+    kind: "runtime_catalog_entry_view",
+    recommendedReason: entry ? "catalog_entry_loaded" : "catalog_entry_missing",
+    entryType,
+    id: id ?? null,
+    matchedId: entry?.id ?? null,
+    entry: entry ?? null
+  };
+}
+
+export function getAgentCatalogEntryView(id) {
+  return createCatalogEntryView("agent", id, getAgentCatalogEntry(id));
+}
+
 export function listSkillCatalog() {
   const paths = getRuntimeCatalogPaths();
   if (!isDirectory(paths.skillDir)) {

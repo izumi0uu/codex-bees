@@ -1,5 +1,6 @@
 export {
   getAgentCatalogEntry,
+  getAgentCatalogEntryView,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
   getRuntimeCatalogView,
