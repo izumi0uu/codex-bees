@@ -52,6 +52,7 @@ export function getCommandCatalog() {
     { command: "init", description: "Materialize the shipped .codex runtime assets into the current project", options: getInitCommandCatalog() },
     { command: "mcp", description: "Start the local Codex MCP stdio runtime or inspect its subcommands", options: getMcpCommandCatalog() },
     { command: "tools", description: "Print the current MCP tool catalog" },
+    { command: "tools:get", description: "Show one MCP tool view" },
     { command: "catalog", description: "Print the shipped local agent and skill catalog" },
     { command: "doctor", description: "Print runtime contract diagnostics" },
     { command: "metadata", description: "Print package identity metadata" },

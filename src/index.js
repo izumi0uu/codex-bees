@@ -4,7 +4,7 @@ import { stdout, stderr, exit, argv, env } from "node:process";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { renderHelpText, renderInitHelpText } from "./commands.js";
-import { getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
+import { getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
@@ -140,6 +140,11 @@ function printHelp() {
 
 function printDoctor() {
   write(JSON.stringify(getRuntimeDoctorView(import.meta.url), null, 2) + "\n");
+}
+
+function printToolView() {
+  const name = requireOption("--name");
+  write(JSON.stringify({ tool: getMcpToolView(name) }, null, 2) + "\n");
 }
 
 function printCatalog() {
@@ -1315,6 +1320,9 @@ async function runCommand(command) {
       return;
     case "tools":
       write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
+      return;
+    case "tools:get":
+      printToolView();
       return;
     case "doctor":
       printDoctor();
