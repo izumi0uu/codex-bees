@@ -1312,6 +1312,15 @@ function toolByName(name) {
   return toolCatalog.find((tool) => tool.name === name);
 }
 
+export function getMcpToolEntry(name) {
+  if (!name) {
+    return undefined;
+  }
+
+  const tool = toolByName(name);
+  return tool ? JSON.parse(JSON.stringify(tool)) : undefined;
+}
+
 export function listMcpTools() {
   return JSON.parse(JSON.stringify(toolCatalog));
 }

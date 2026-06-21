@@ -52,6 +52,7 @@ export {
   getMcpCommandCatalogEntry,
   getMcpCommandCatalogView,
   getMcpHelpView,
+  getMcpToolEntry,
   getToolCatalogView,
   handleMcpRequest,
   listMcpTools,

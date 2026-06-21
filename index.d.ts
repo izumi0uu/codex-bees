@@ -889,6 +889,7 @@ export declare function planSwarm(task: string): PlannedSwarm;
 export declare function queueTasksFromPlan(task: string, addTasksFn?: (tasks: TaskInput[]) => TaskRecord[]): QueuedPlan;
 
 export declare function listMcpTools(): ToolCatalogEntry[];
+export declare function getMcpToolEntry(name: string): ToolCatalogEntry | undefined;
 export declare function getToolCatalogView(): ToolCatalogView;
 export declare function handleMcpRequest(message: McpMessage): McpResponse;
 export declare function callMcpTool(name: string, args?: JsonObject): unknown;
