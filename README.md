@@ -133,12 +133,12 @@ const appliedCreated = applied.summary.created;
 rmSync(targetDirectory, { recursive: true, force: true });
 ```
 
-The `codex-bees/state` subpath is the smallest official programmatic bridge into persisted local coordination state. It exposes helpers such as `addTask`, `getTaskView`, `listTasksView`, `initSwarm`, `listSwarmsView`, `storeMemory`, `listMemoriesView`, `validateTask`, `validateSwarm`, and `stateFilePath`.
+The `codex-bees/state` subpath is the smallest official programmatic bridge into persisted local coordination state. It exposes helpers such as `addTask`, `getTaskView`, `listTasksView`, `initSwarm`, `listSwarmsView`, `storeMemory`, `getMemory`, `getMemoryView`, `listMemoriesView`, `validateTask`, `validateSwarm`, and `stateFilePath`.
 
 Example:
 
 ```js
-import { addTask, listTasksView, stateFilePath } from "codex-bees/state";
+import { addTask, getMemory, getMemoryView, listTasksView, stateFilePath, storeMemory } from "codex-bees/state";
 
 const task = addTask({
   title: "Ship a smoke-hardened release surface",
@@ -149,6 +149,14 @@ const task = addTask({
   verification: ["npm run smoke"]
 });
 
+const memory = storeMemory({
+  content: "Remember the smoke-hardened release surface",
+  namespace: "release",
+  kind: "note"
+});
+
+const memoryRecord = getMemory(memory.id);
+const memoryDetail = getMemoryView(memory.id);
 const queue = listTasksView();
 const storage = stateFilePath();
 ```
