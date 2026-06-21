@@ -54,6 +54,12 @@ import {
   tokenize
 } from "./state-query.js";
 import {
+  getMemoryFromSources,
+  listMemoriesFromSources,
+  searchMemoriesFromSources,
+  storeMemoryFromSources
+} from "./state-memory-core.js";
+import {
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
@@ -456,12 +462,17 @@ export function listTasksView() {
 }
 
 export function listMemories(filters = {}) {
-  return filterMemories(loadState().memories, filters);
+  return listMemoriesFromSources(filters, {
+    loadState,
+    filterMemories
+  });
 }
 
 export function getMemory(id) {
-  const memory = loadState().memories.find((item) => item.id === id);
-  return memory ? normalizeMemory(memory) : null;
+  return getMemoryFromSources(id, {
+    loadState,
+    normalizeMemory
+  });
 }
 
 export function listMemoriesView(filters = {}) {
@@ -1770,12 +1781,11 @@ export function addTasks(inputs) {
 }
 
 export function storeMemory(input) {
-  const state = loadState();
-  const memory = buildMemory(input, state.nextMemoryId);
-  state.memories.push(memory);
-  state.nextMemoryId += 1;
-  saveState(state);
-  return memory;
+  return storeMemoryFromSources(input, {
+    loadState,
+    saveState,
+    buildMemory
+  });
 }
 
 export function storeMemoryMutation(input) {
@@ -1811,24 +1821,11 @@ export function initSwarmMutation(input) {
 }
 
 export function searchMemories(query, filters = {}) {
-  const memories = filterMemories(loadState().memories, filters);
-  if (!query?.trim()) {
-    return memories.map((memory) => ({ ...memory, score: 0 }));
-  }
-
-  const tokens = tokenize(query);
-  return memories
-    .map((memory) => ({
-      ...memory,
-      score: scoreMemory(memory, tokens)
-    }))
-    .filter((memory) => memory.score > 0)
-    .sort((left, right) => {
-      if (right.score !== left.score) {
-        return right.score - left.score;
-      }
-      return right.updatedAt.localeCompare(left.updatedAt);
-    });
+  return searchMemoriesFromSources(query, filters, {
+    listMemories,
+    tokenize,
+    scoreMemory
+  });
 }
 
 export function searchMemoriesView(query, filters = {}, limit = 10) {
