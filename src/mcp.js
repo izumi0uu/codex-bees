@@ -2698,6 +2698,14 @@ export function getMcpCommandCatalog() {
   ];
 }
 
+export function getMcpCommandCatalogEntry(option) {
+  if (!option) {
+    return undefined;
+  }
+
+  return getMcpCommandCatalog().find((entry) => entry.option === option);
+}
+
 export function getMcpCommandCatalogView() {
   const options = getMcpCommandCatalog();
   return {
@@ -2716,6 +2724,20 @@ export function renderMcpHelpText() {
     lines.push(`  ${PRODUCT_NAME} mcp ${entry.option.padEnd(15)} ${entry.description}`);
   }
   return lines.join("\n") + "\n";
+}
+
+export function getMcpHelpView(option) {
+  const matchedOption = getMcpCommandCatalogEntry(option);
+  const text = renderMcpHelpText();
+
+  return {
+    kind: "mcp_help_view",
+    recommendedReason: matchedOption ? "mcp_help_loaded" : "mcp_help_fallback_loaded",
+    option: option ?? null,
+    matchedOption: matchedOption?.option ?? null,
+    text,
+    entry: matchedOption ?? null
+  };
 }
 
 export async function runMcpCli(args = []) {
