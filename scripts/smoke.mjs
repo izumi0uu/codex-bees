@@ -983,7 +983,7 @@ const installedRuntimeStatusExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedRuntimeStatusExampleScript}\nconsole.log(JSON.stringify({ ok: status.kind === "runtime_status_view" && status.status.product === "codex-bees" && status.status.mode === "codex-only" && typeof status.counts.tools === "number" && Array.isArray(status.status.capabilities) && status.status.capabilities.length > 0 && runtimeCatalogCapability?.id === "runtime_catalog" && runtimeCatalogCapabilityView?.kind === "runtime_capability_view" && runtimeCatalogCapabilityView?.matchedCapability === "runtime_catalog" && Array.isArray(status.status.recommendedEntryPoints.cli) && status.status.recommendedEntryPoints.cli.includes("status") }));`
+    `${documentedRuntimeStatusExampleScript}\nconsole.log(JSON.stringify({ ok: status.kind === "runtime_status_view" && status.status.product === "codex-bees" && status.status.mode === "codex-only" && typeof status.counts.tools === "number" && Array.isArray(status.status.capabilities) && status.status.capabilities.length > 0 && Array.isArray(capabilities) && capabilities.some((capability) => capability.id === "runtime_catalog") && capabilitiesView?.kind === "runtime_capabilities_view" && capabilitiesView?.capabilities?.some((capability) => capability.id === "runtime_catalog") && runtimeCatalogCapability?.id === "runtime_catalog" && runtimeCatalogCapabilityView?.kind === "runtime_capability_view" && runtimeCatalogCapabilityView?.matchedCapability === "runtime_catalog" && Array.isArray(status.status.recommendedEntryPoints.cli) && status.status.recommendedEntryPoints.cli.includes("status") }));`
   ],
   {
     cwd: packedInstallAppDir,

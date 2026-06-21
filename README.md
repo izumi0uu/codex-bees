@@ -324,9 +324,11 @@ The `codex-bees/runtime-status` subpath exposes the same runtime inventory shape
 Example:
 
 ```js
-import { getCapabilityCatalogEntry, getCapabilityCatalogEntryView, getRuntimeStatusView } from "codex-bees/runtime-status";
+import { getCapabilityCatalog, getCapabilityCatalogEntry, getCapabilityCatalogEntryView, getCapabilityCatalogView, getRuntimeStatusView } from "codex-bees/runtime-status";
 
 const status = getRuntimeStatusView();
+const capabilities = getCapabilityCatalog();
+const capabilitiesView = getCapabilityCatalogView();
 const runtimeCatalogCapability = getCapabilityCatalogEntry("runtime_catalog");
 const runtimeCatalogCapabilityView = getCapabilityCatalogEntryView("runtime_catalog");
 ```
