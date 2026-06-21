@@ -1105,6 +1105,75 @@ export function buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, 
   return `Runtime workspace pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
+export function buildRuntimeWorkspacePackView(
+  input,
+  {
+    runtimeDashboard,
+    runtimeDispatch,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeReview,
+    runtimeRecovery
+  },
+  {
+    deriveRuntimeWorkspacePackSurface,
+    deriveRuntimeWorkspacePackReason,
+    buildRuntimeWorkspacePackSummary
+  }
+) {
+  const dashboard = runtimeDashboard();
+  const dispatch = runtimeDispatch();
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
+  const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
+  const review = runtimeReview();
+  const recovery = runtimeRecovery();
+  const recommendedSurface = deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
+  const recommendedReason = deriveRuntimeWorkspacePackReason({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
+  const nextEntries = {
+    dashboard: dashboard?.leader?.queue?.next ?? null,
+    dispatch: dispatch?.next ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
+    review: review?.next ?? null,
+    recovery: recovery?.next ?? null
+  };
+
+  return {
+    kind: "runtime_workspace_pack",
+    recommendedSurface,
+    recommendedReason,
+    metadata: {
+      hasDashboard: Boolean(dashboard?.leader?.queue?.next),
+      hasDispatch: Boolean(dispatch?.next),
+      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
+      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next),
+      hasReview: Boolean(review?.next),
+      hasRecovery: Boolean(recovery?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
+    overview: {
+      dashboard: dashboard?.counts ?? null,
+      dispatch: dispatch?.counts ?? null,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
+      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null,
+      review: review?.counts ?? null,
+      recovery: recovery?.counts ?? null
+    },
+    next: nextEntries,
+    surfaces: {
+      dashboard,
+      dispatch,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      review,
+      recovery
+    },
+    summary: buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery)
+  };
+}
+
 export function deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack }) {
   if (summaryPack?.recommendedSurface) {
     return "runtime:summary-pack";
