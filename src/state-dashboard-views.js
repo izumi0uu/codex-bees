@@ -99,6 +99,70 @@ export function buildRuntimeAlertsSummary(alerts) {
   return `Runtime alerts has ${alerts.length} active alert${alerts.length === 1 ? "" : "s"}; ${top.summary}`;
 }
 
+export function buildRuntimeAlertsView(
+  {
+    runtimeDashboard,
+    listSwarmOverviews,
+    compareRuntimeAlerts
+  },
+  {
+    deriveRuntimeAlertsReason,
+    buildRuntimeAlertsSummary
+  }
+) {
+  const dashboard = runtimeDashboard();
+  const alerts = [];
+
+  for (const task of dashboard.blockedTasks) {
+    alerts.push({
+      kind: "blocked_task",
+      severity: "high",
+      taskId: task.id,
+      swarmId: task.swarmId,
+      lane: task.lane,
+      owner: task.owner,
+      summary: `Task ${task.id} is blocked${task.swarmId ? ` in ${task.swarmId}` : ""}.`
+    });
+  }
+
+  for (const task of dashboard.pendingReview) {
+    alerts.push({
+      kind: "pending_review",
+      severity: "medium",
+      taskId: task.id,
+      swarmId: task.swarmId,
+      lane: task.lane,
+      verifier: task.verifier,
+      summary: `Task ${task.id} is waiting on verifier ${task.verifier ?? "unknown"}.`
+    });
+  }
+
+  const readySwarms = listSwarmOverviews()
+    .filter((swarm) => swarm.readyToComplete)
+    .map((swarm) => ({
+      kind: "swarm_ready_to_complete",
+      severity: "medium",
+      swarmId: swarm.swarm.id,
+      summary: `Swarm ${swarm.swarm.id} is ready to complete.`
+    }));
+  alerts.push(...readySwarms);
+
+  alerts.sort(compareRuntimeAlerts);
+  const recommendedReason = deriveRuntimeAlertsReason({ alerts });
+
+  return {
+    kind: "runtime_alerts",
+    recommendedReason,
+    counts: {
+      total: alerts.length,
+      high: alerts.filter((alert) => alert.severity === "high").length,
+      medium: alerts.filter((alert) => alert.severity === "medium").length
+    },
+    alerts,
+    summary: buildRuntimeAlertsSummary(alerts)
+  };
+}
+
 export function deriveLeaderAssignmentsReason({ assignments, groups, next }) {
   if ((groups?.length ?? 0) > 1) {
     return "parallel_owner_groups_visible";
