@@ -106,6 +106,8 @@ import {
   buildTaskBriefViewFromSources,
   buildSwarmBriefView,
   buildSwarmBriefViewFromSources,
+  buildSwarmBundleView,
+  buildSwarmBundleViewFromSources,
   buildRuntimeReviewTaskEntry,
   buildSwarmHandoff,
   buildTaskReportEntries,
@@ -710,43 +712,19 @@ export function swarmBrief(id) {
 }
 
 export function swarmBundle(id) {
-  const overview = swarmOverview(id);
-  if (!overview) {
-    return null;
-  }
-
-  const brief = swarmBrief(id);
-  const laneBundles = overview.lanes.map((laneSummary) => {
-    const task = laneSummary.taskId
-      ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
-      : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
-    return {
-      lane: laneSummary.lane,
-      summary: laneSummary.summary,
-      owner: laneSummary.owner,
-      verifier: laneSummary.verifier,
-      taskId: task?.id ?? null,
-      queueStatus: task?.queueStatus ?? null,
-      claimedBy: task?.claimedBy ?? null,
-      ready: laneSummary.ready,
-      done: laneSummary.done,
-      report: task ? taskReport(task.id) : null
-    };
-  });
-  const recommendedReason = deriveSwarmBundleReason({ overview, laneBundles });
-
-  return {
-    kind: "swarm_bundle",
-    recommendedReason,
-    swarm: overview.swarm,
-    brief,
-    counts: overview.counts,
-    derivedStatus: overview.derivedStatus,
-    readyToComplete: overview.readyToComplete,
-    nextLane: overview.nextLane,
-    lanes: laneBundles,
-    summary: buildSwarmBundleSummary(overview, laneBundles)
-  };
+  return buildSwarmBundleViewFromSources(
+    id,
+    {
+      swarmOverview,
+      swarmBrief,
+      taskReport,
+      deriveSwarmBundleReason,
+      buildSwarmBundleSummary
+    },
+    {
+      buildSwarmBundleView
+    }
+  );
 }
 
 export function swarmCloseout(id) {
