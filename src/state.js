@@ -116,9 +116,9 @@ import {
   deriveWorkerSessionReason
 } from "./state-reasons.js";
 import {
+  buildRuntimeActivityView,
   buildRuntimeFocusView,
   buildRuntimeActivityEntry,
-  buildRuntimeActivityEventSummary,
   buildRuntimeCloseoutTaskEntry,
   buildRuntimeCloseoutTaskSummary,
   buildRuntimeFocusSummary,
@@ -1336,29 +1336,18 @@ export function runtimeFocus() {
 }
 
 export function runtimeActivity(input = {}) {
-  const limit = Number.isInteger(Number(input.limit)) && Number(input.limit) > 0
-    ? Number(input.limit)
-    : 20;
-  const tasks = loadState().tasks.map(normalizeTask);
-  const entries = tasks
-    .flatMap((task) => (task.history ?? []).map((event) => buildRuntimeActivityEntry(task, event, taskBrief)))
-    .sort(compareRuntimeActivityEntries)
-    .slice(0, limit);
-  const next = entries[0] ?? null;
-  const recommendedReason = deriveRuntimeActivityReason({ entries, next });
-
-  return {
-    kind: "runtime_activity",
-    recommendedReason,
-    counts: {
-      totalEntries: entries.length,
-      blockedEvents: entries.filter((entry) => entry.type === "blocked").length,
-      reviewEvents: entries.filter((entry) => ["ready_for_review", "approved", "changes_requested"].includes(entry.type)).length
-    },
-    entries,
-    next,
-    summary: buildRuntimeActivitySummary(entries, next)
-  };
+  return buildRuntimeActivityView(
+    input,
+    {
+      loadState,
+      normalizeTask,
+      taskBrief,
+      buildRuntimeActivityEntry,
+      compareRuntimeActivityEntries,
+      deriveRuntimeActivityReason,
+      buildRuntimeActivitySummary
+    }
+  );
 }
 
 export function runtimeHandoffs() {

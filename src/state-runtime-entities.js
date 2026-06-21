@@ -213,6 +213,43 @@ export function compareRuntimeActivityEntries(left, right) {
   return (left.taskId ?? "").localeCompare(right.taskId ?? "");
 }
 
+export function buildRuntimeActivityView(
+  input,
+  {
+    loadState,
+    normalizeTask,
+    taskBrief,
+    buildRuntimeActivityEntry,
+    compareRuntimeActivityEntries,
+    deriveRuntimeActivityReason,
+    buildRuntimeActivitySummary
+  }
+) {
+  const limit = Number.isInteger(Number(input.limit)) && Number(input.limit) > 0
+    ? Number(input.limit)
+    : 20;
+  const tasks = loadState().tasks.map(normalizeTask);
+  const entries = tasks
+    .flatMap((task) => (task.history ?? []).map((event) => buildRuntimeActivityEntry(task, event, taskBrief)))
+    .sort(compareRuntimeActivityEntries)
+    .slice(0, limit);
+  const next = entries[0] ?? null;
+  const recommendedReason = deriveRuntimeActivityReason({ entries, next });
+
+  return {
+    kind: "runtime_activity",
+    recommendedReason,
+    counts: {
+      totalEntries: entries.length,
+      blockedEvents: entries.filter((entry) => entry.type === "blocked").length,
+      reviewEvents: entries.filter((entry) => ["ready_for_review", "approved", "changes_requested"].includes(entry.type)).length
+    },
+    entries,
+    next,
+    summary: buildRuntimeActivitySummary(entries, next)
+  };
+}
+
 export function runtimeHandoffType(task) {
   if (task.queueStatus === "ready_for_review") {
     return "verifier_decision";
