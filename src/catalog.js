@@ -183,6 +183,19 @@ export function getAgentCatalogEntryView(id) {
   return createCatalogEntryView("agent", id, getAgentCatalogEntry(id));
 }
 
+export function getAgentCatalogListView() {
+  const agents = listAgentCatalog();
+  return {
+    kind: "runtime_catalog_lane_view",
+    recommendedReason: agents.length > 0 ? "catalog_lane_loaded" : "catalog_lane_empty",
+    entryType: "agent",
+    counts: {
+      totalEntries: agents.length
+    },
+    entries: agents
+  };
+}
+
 export function listSkillCatalog() {
   const paths = getRuntimeCatalogPaths();
   if (!isDirectory(paths.skillDir)) {
@@ -221,6 +234,19 @@ export function getSkillCatalogEntry(id) {
 
 export function getSkillCatalogEntryView(id) {
   return createCatalogEntryView("skill", id, getSkillCatalogEntry(id));
+}
+
+export function getSkillCatalogListView() {
+  const skills = listSkillCatalog();
+  return {
+    kind: "runtime_catalog_lane_view",
+    recommendedReason: skills.length > 0 ? "catalog_lane_loaded" : "catalog_lane_empty",
+    entryType: "skill",
+    counts: {
+      totalEntries: skills.length
+    },
+    entries: skills
+  };
 }
 
 export function listAgentRoleIds() {

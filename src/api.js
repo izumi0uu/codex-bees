@@ -1,5 +1,6 @@
 export {
   getAgentCatalogEntry,
+  getAgentCatalogListView,
   getAgentCatalogEntryView,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
@@ -7,6 +8,7 @@ export {
   listAgentCatalog,
   listAgentRoleIds,
   getSkillCatalogEntry,
+  getSkillCatalogListView,
   getSkillCatalogEntryView,
   listSkillCatalog,
   resolveRuntimeCatalogPath
