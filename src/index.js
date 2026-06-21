@@ -12,6 +12,7 @@ import { getRuntimeContractView } from "./runtime-contract.js";
 import { getRuntimeDoctorView } from "./doctor.js";
 import { getPackageMetadataView, PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
+import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
 import { initWorkspace, previewWorkspaceInit } from "./init.js";
 import {
   activateSwarm,
@@ -209,6 +210,14 @@ function printCatalogSkillsView() {
 function printCatalogSkillView() {
   const id = requireOption("--id");
   write(JSON.stringify({ skill: getSkillCatalogEntryView(id) }, null, 2) + "\n");
+}
+
+function printGuidanceOverviewView() {
+  write(JSON.stringify({ overview: getCoordinationOverviewView() }, null, 2) + "\n");
+}
+
+function printGuidanceWorkerView() {
+  write(JSON.stringify({ guidelines: getWorkerGuidelinesView() }, null, 2) + "\n");
 }
 
 function printMetadata() {
@@ -1433,6 +1442,12 @@ async function runCommand(command) {
       return;
     case "catalog:skill":
       printCatalogSkillView();
+      return;
+    case "guidance:overview":
+      printGuidanceOverviewView();
+      return;
+    case "guidance:worker":
+      printGuidanceWorkerView();
       return;
     case "metadata":
       printMetadata();
