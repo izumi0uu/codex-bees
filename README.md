@@ -40,7 +40,11 @@ npm run build
 npm run smoke
 ```
 
+To materialize the shipped Codex project assets into the current working directory, run `npx codex-bees init`. Use `npx codex-bees init --preview` first when you want the exact file plan before anything is written, and pass `--force` only when you intentionally want bundled assets to overwrite existing `.codex` files.
+
 `npm run build` now rebuilds `dist/` from the shipped source modules and immediately verifies that the packaged CLI (`dist/index.js`) and MCP entrypoint (`dist/mcp.js`) both boot successfully, so the distributable surface cannot silently drift behind `src/`.
+
+The `init` command turns the shipped package into a project starter surface again, but now in a Codex-only, productized way: it copies the bundled `.codex` agents, skills, and config into your current project, preserves existing files by default, and adds `.codex-bees/` to `.gitignore` so local runtime state stays local. `codex-bees init --preview` returns the exact create/update/skip plan as structured JSON before anything is written.
 
 When the current working directory does not provide its own `.codex/agents` or `.codex/skills`, the packaged CLI and MCP server now fall back to the bundled `.codex` assets that ship inside `dist/`. That keeps installed builds usable outside the source repo instead of degrading into an empty agent/skill catalog.
 
@@ -257,6 +261,8 @@ The package now also ships lightweight TypeScript declarations for the public AP
 
 ```bash
 node ./src/index.js run
+node ./src/index.js init --preview
+node ./src/index.js init
 node ./src/index.js tools
 node ./src/index.js catalog
 node ./src/index.js doctor
