@@ -277,15 +277,16 @@ const taskPlan = planTask("document a planner example");
 const swarmPlan = planSwarm("stage a planner example");
 ```
 
-The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` and `init` command entries both carry structured option lists, and it now also exposes direct command lookup plus machine-readable help views, so one command-catalog read is enough to discover the top-level runtime bootstrap surface as well as the shipped MCP flags. For the bootstrap path specifically, it also exposes direct `init` option lookup and an `init` help view so tooling can stay inside the init surface without first traversing the broader command catalog.
+The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` and `init` command entries both carry structured option lists, and it now also exposes direct command lookup plus machine-readable single-command and help views, so one command-catalog read is enough to discover the top-level runtime bootstrap surface as well as the shipped MCP flags. For the bootstrap path specifically, it also exposes direct `init` option lookup and an `init` help view so tooling can stay inside the init surface without first traversing the broader command catalog.
 
 Example:
 
 ```js
-import { getCommandCatalogEntry, getCommandCatalogView, getCommandHelpView, getInitCommandCatalog, getInitCommandCatalogEntry, getInitHelpView, renderCommandHelpText, renderHelpText } from "codex-bees/commands";
+import { getCommandCatalogEntry, getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalog, getInitCommandCatalogEntry, getInitHelpView, renderCommandHelpText, renderHelpText } from "codex-bees/commands";
 
 const catalog = getCommandCatalogView();
 const initEntry = getCommandCatalogEntry("init");
+const initEntryView = getCommandCatalogEntryView("init");
 const initHelpView = getCommandHelpView("init");
 const initOptions = getInitCommandCatalog();
 const previewOption = getInitCommandCatalogEntry("--preview");
