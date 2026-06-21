@@ -226,6 +226,8 @@ if (
   !importedSourceApi.includes("getWorkerGuidelinesView") ||
   !importedSourceApi.includes("handleMcpRequest") ||
   !importedSourceApi.includes("callMcpTool") ||
+  !importedSourceApi.includes("getMemory") ||
+  !importedSourceApi.includes("getMemoryView") ||
   !importedSourceApi.includes("planTask") ||
   !importedSourceApi.includes("addTask") ||
   !importedSourceApi.includes("stateFilePath")
@@ -262,6 +264,8 @@ if (
   !importedDistApi.includes("getWorkerGuidelinesView") ||
   !importedDistApi.includes("handleMcpRequest") ||
   !importedDistApi.includes("callMcpTool") ||
+  !importedDistApi.includes("getMemory") ||
+  !importedDistApi.includes("getMemoryView") ||
   !importedDistApi.includes("planTask") ||
   !importedDistApi.includes("addTask") ||
   !importedDistApi.includes("stateFilePath")
@@ -734,7 +738,7 @@ const installedStateExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedStateExampleScript}\nconsole.log(JSON.stringify({ ok: task.id === "task-1" && queue.counts.totalTasks === 1 && queue.tasks[0]?.id === task.id && typeof storage === "string" && storage.length > 0 }));`
+    `${documentedStateExampleScript}\nconsole.log(JSON.stringify({ ok: task.id === "task-1" && memory.id === "memory-1" && memoryRecord?.id === memory.id && memoryDetail?.kind === "memory_detail" && memoryDetail?.memory?.id === memory.id && queue.counts.totalTasks === 1 && queue.tasks[0]?.id === task.id && typeof storage === "string" && storage.length > 0 }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -1133,7 +1137,7 @@ const installedStateImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/state").then(async (m) => { const { rmSync } = await import("node:fs"); rmSync(".codex-bees", { recursive: true, force: true }); const task = m.addTask({ title: "state api task", owner: "executor", verifier: "tester", scope: ["src/index.js"], acceptance: ["ok"], verification: ["smoke"] }); const swarm = m.initSwarm({ objective: "state api swarm", owner: "leader", lanes: [{ lane: "lane-1", summary: "sum", owner: "explore", verifier: "reviewer", scope: ["src/index.js"], acceptance: ["ok"], verification: ["smoke"] }] }); const memory = m.storeMemory({ content: "state api memory", namespace: "state-api", kind: "note" }); console.log(JSON.stringify({ ok: task.id === "task-1" && m.listTasksView().counts.totalTasks === 1 && m.validateTask(task.id).recommendedReason === "task_ready_to_claim" && swarm.id === "swarm-1" && m.listSwarmsView({}, { detailed: true }).counts.totalSwarms === 1 && memory.id === "memory-1" && m.listMemoriesView({ namespace: "state-api" }).counts.totalMemories === 1 && typeof m.stateFilePath() === "string" })); })'
+    'import("codex-bees/state").then(async (m) => { const { rmSync } = await import("node:fs"); rmSync(".codex-bees", { recursive: true, force: true }); const task = m.addTask({ title: "state api task", owner: "executor", verifier: "tester", scope: ["src/index.js"], acceptance: ["ok"], verification: ["smoke"] }); const swarm = m.initSwarm({ objective: "state api swarm", owner: "leader", lanes: [{ lane: "lane-1", summary: "sum", owner: "explore", verifier: "reviewer", scope: ["src/index.js"], acceptance: ["ok"], verification: ["smoke"] }] }); const memory = m.storeMemory({ content: "state api memory", namespace: "state-api", kind: "note" }); const memoryRecord = m.getMemory(memory.id); const memoryDetail = m.getMemoryView(memory.id); console.log(JSON.stringify({ ok: task.id === "task-1" && m.listTasksView().counts.totalTasks === 1 && m.validateTask(task.id).recommendedReason === "task_ready_to_claim" && swarm.id === "swarm-1" && m.listSwarmsView({}, { detailed: true }).counts.totalSwarms === 1 && memory.id === "memory-1" && memoryRecord?.id === "memory-1" && memoryDetail?.kind === "memory_detail" && memoryDetail?.memory?.id === "memory-1" && m.listMemoriesView({ namespace: "state-api" }).counts.totalMemories === 1 && typeof m.stateFilePath() === "string" })); })'
   ],
   {
     cwd: packedInstallAppDir,

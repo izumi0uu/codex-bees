@@ -55,6 +55,8 @@ import {
   addTask,
   startMcpServer,
   callMcpTool,
+  getMemory,
+  getMemoryView,
   getTask,
   getTaskView,
   initSwarm,
@@ -261,6 +263,10 @@ const typedMemoryAgent: string | null | undefined = typedMemory.agent;
 const typedMemoryTag: string | undefined = typedMemory.tags?.[0];
 const typedMemoryCreatedAt: string | null | undefined = typedMemory.createdAt;
 const typedMemoryUpdatedAt: string | null | undefined = typedMemory.updatedAt;
+const fetchedMemoryId: string | undefined = getMemory(typedMemory.id)?.id ?? undefined;
+const memoryDetailKind: "memory_detail" | undefined = getMemoryView(typedMemory.id)?.kind;
+const memoryDetailReason: "memory_detail_loaded" | undefined = getMemoryView(typedMemory.id)?.recommendedReason;
+const memoryDetailHasTitle: boolean | undefined = getMemoryView(typedMemory.id)?.metadata.hasTitle;
 const memoryListNamespace: string | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.namespace;
 const memoryListTitle: string | null | undefined = listMemoriesView({ namespace: "types" }).memories[0]?.title;
 const memoryListAgent: string | null | undefined = listMemoriesView({ agent: "tester", tags: ["types"] }).memories[0]?.agent;
