@@ -210,6 +210,7 @@ import {
   buildRuntimeExecutionPackSummary,
   buildRuntimeFocusSources,
   buildRuntimeHandoffPackSummary,
+  buildRuntimeCloseoutPackView,
   buildRuntimeCloseoutPackSummary,
   buildRuntimeDispatchPackView,
   buildRuntimeDispatchPackSummary,
@@ -1483,42 +1484,19 @@ export function runtimeRecoveryPack() {
 }
 
 export function runtimeCloseoutPack(input = {}) {
-  const closeout = runtimeCloseout();
-  const summaryPack = runtimeSummaryPack(input);
-  const leaderPack = runtimeLeaderPack(input);
-  const recommendedSurface = deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack });
-  const recommendedReason = deriveRuntimeCloseoutPackReason({ closeout, summaryPack, leaderPack });
-  const nextEntries = {
-    closeout: closeout?.next ?? null,
-    summary: summaryPack?.next?.closeout ?? null,
-    leader: leaderPack?.next?.closeout ?? null
-  };
-
-  return {
-    kind: "runtime_closeout_pack",
-    recommendedSurface,
-    recommendedReason,
-    metadata: {
-      hasCloseout: Boolean(closeout?.next),
-      hasSummaryCloseout: Boolean(summaryPack?.next?.closeout),
-      hasLeaderCloseout: Boolean(leaderPack?.next?.closeout)
+  return buildRuntimeCloseoutPackView(
+    input,
+    {
+      runtimeCloseout,
+      runtimeSummaryPack,
+      runtimeLeaderPack
     },
-    counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
-    },
-    overview: {
-      closeout: closeout?.counts ?? null,
-      summary: summaryPack?.overview?.closeout ?? null,
-      leader: leaderPack?.overview?.closeout ?? null
-    },
-    next: nextEntries,
-    surfaces: {
-      closeout,
-      summaryPack,
-      leaderPack
-    },
-    summary: buildRuntimeCloseoutPackSummary(recommendedSurface, closeout, summaryPack)
-  };
+    {
+      deriveRuntimeCloseoutPackSurface,
+      deriveRuntimeCloseoutPackReason,
+      buildRuntimeCloseoutPackSummary
+    }
+  );
 }
 
 export function runtimeReviewPack(input = {}) {
