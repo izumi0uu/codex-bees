@@ -81,6 +81,7 @@ const checks = [
   ["catalog-skill", ["./src/index.js", "catalog:skill", "--id", "project-development"]],
   ["guidance-overview", ["./src/index.js", "guidance:overview"]],
   ["guidance-worker", ["./src/index.js", "guidance:worker"]],
+  ["contract", ["./src/index.js", "contract"]],
   ["metadata", ["./src/index.js", "metadata"]],
   ["status", ["./src/index.js", "status"]],
   ["capabilities", ["./src/index.js", "capabilities"]],
@@ -1765,6 +1766,70 @@ if (
   console.error(installedDirectCliDoctorContractImport.stderr || installedDirectCliDoctorContractImport.stdout);
   process.exit(installedDirectCliDoctorContractImport.status ?? 1);
 }
+const installedContract = JSON.parse(
+  runInstalled("installed-contract", "npx", ["codex-bees", "contract"]).stdout
+).contract;
+if (
+  installedContract.kind !== "runtime_contract_view" ||
+  installedContract.contract?.product !== "codex-bees" ||
+  installedContract.contract?.mode !== "codex-only" ||
+  installedContract.contract?.transport?.mcp !== "stdio-jsonrpc"
+) {
+  console.error("[smoke:installed-contract] expected installed npx codex-bees contract view");
+  process.exit(1);
+}
+const installedContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-contract").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getRuntimeContractView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedContract)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedContractImport.status !== 0 ||
+  JSON.parse(installedContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-contract-contract] expected installed contract output to match the runtime-contract api surface");
+  console.error(installedContractImport.stderr || installedContractImport.stdout);
+  process.exit(installedContractImport.status ?? 1);
+}
+const installedDirectCliContract = JSON.parse(
+  runInstalled("installed-direct-cli-contract", "node", ["./node_modules/codex-bees/dist/index.js", "contract"]).stdout
+).contract;
+if (
+  installedDirectCliContract.kind !== "runtime_contract_view" ||
+  installedDirectCliContract.contract?.product !== "codex-bees" ||
+  installedDirectCliContract.contract?.mode !== "codex-only" ||
+  installedDirectCliContract.contract?.transport?.mcp !== "stdio-jsonrpc"
+) {
+  console.error("[smoke:installed-direct-cli-contract] expected direct packaged CLI contract output");
+  process.exit(1);
+}
+const installedDirectCliContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-contract").then((m) => { const actual = JSON.parse(process.argv[1]); const expected = m.getRuntimeContractView(); console.log(JSON.stringify({ ok: JSON.stringify(actual) === JSON.stringify(expected) })); })',
+    JSON.stringify(installedDirectCliContract)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliContractImport.status !== 0 ||
+  JSON.parse(installedDirectCliContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-contract-contract] expected direct packaged CLI contract output to match the runtime-contract api surface");
+  console.error(installedDirectCliContractImport.stderr || installedDirectCliContractImport.stdout);
+  process.exit(installedDirectCliContractImport.status ?? 1);
+}
 const installedCliTools = JSON.parse(
   runInstalled("installed-tools", "npx", ["codex-bees", "tools"]).stdout
 ).tools;
@@ -2445,6 +2510,16 @@ if (
   cliGuidanceWorker.guidelines?.fileOwnership !== "one active writer per file"
 ) {
   console.error("[smoke:guidance-worker] expected worker guidance view");
+  process.exit(1);
+}
+const cliContractView = JSON.parse(run("contract-verify", ["./src/index.js", "contract"]).stdout).contract;
+if (
+  cliContractView.kind !== "runtime_contract_view" ||
+  cliContractView.recommendedReason !== "contract_loaded" ||
+  cliContractView.contract?.mode !== "codex-only" ||
+  cliContractView.contract?.transport?.mcp !== "stdio-jsonrpc"
+) {
+  console.error("[smoke:contract] expected runtime contract view");
   process.exit(1);
 }
 const cliToolView = JSON.parse(
