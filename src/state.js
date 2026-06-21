@@ -129,6 +129,7 @@ import {
   buildRuntimeActivityEntry,
   buildRuntimeHandoffsViewFromState,
   buildRuntimeHandoffsView,
+  buildRuntimeRecoveryViewFromState,
   buildRuntimeRecoveryView,
   buildRuntimeCloseoutTaskEntry,
   buildRuntimeFocusSummary,
@@ -1119,7 +1120,7 @@ export function runtimeCloseout() {
 }
 
 export function runtimeRecovery() {
-  return buildRuntimeRecoveryView(
+  return buildRuntimeRecoveryViewFromState(
     {
       loadState,
       normalizeTask,
@@ -1131,7 +1132,8 @@ export function runtimeRecovery() {
       compareRuntimeRecoveryEntries,
       compareRuntimeRecoveryGroups,
       deriveRuntimeRecoveryReason,
-      buildRuntimeRecoverySummary
+      buildRuntimeRecoverySummary,
+      buildRuntimeRecoveryView
     }
   );
 }

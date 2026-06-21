@@ -710,3 +710,36 @@ export function buildRuntimeRecoveryView(
     summary: buildRuntimeRecoverySummary(groups, next)
   };
 }
+
+export function buildRuntimeRecoveryViewFromState(
+  {
+    loadState,
+    normalizeTask,
+    taskBrief
+  },
+  {
+    isRuntimeRecoveryTask,
+    buildRuntimeRecoveryEntry,
+    compareRuntimeRecoveryEntries,
+    compareRuntimeRecoveryGroups,
+    deriveRuntimeRecoveryReason,
+    buildRuntimeRecoverySummary,
+    buildRuntimeRecoveryView
+  }
+) {
+  return buildRuntimeRecoveryView(
+    {
+      loadState,
+      normalizeTask,
+      taskBrief
+    },
+    {
+      isRuntimeRecoveryTask,
+      buildRuntimeRecoveryEntry,
+      compareRuntimeRecoveryEntries,
+      compareRuntimeRecoveryGroups,
+      deriveRuntimeRecoveryReason,
+      buildRuntimeRecoverySummary
+    }
+  );
+}
