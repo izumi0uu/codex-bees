@@ -62,6 +62,7 @@ const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
   ["init-preview", ["./src/index.js", "init", "--preview"]],
+["init-help", ["./src/index.js", "init", "--help"]],
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
   ["mcp-version", ["./src/index.js", "mcp", "--version"]],
   ["catalog", ["./src/index.js", "catalog"]],
@@ -184,6 +185,19 @@ if (importedDistCli !== "DIST_IMPORT_OK") {
   console.error("[smoke:import-dist-index] expected dist index import to stay silent and resolve");
   process.exit(1);
 }
+const initHelpSideEffectDir = mkdtempSync(join(tmpdir(), "codex-bees-init-help-"));
+const initHelpResult = runInCwd("init-help-side-effect-check", [join(REPO_ROOT, "src", "index.js"), "init", "--help"], initHelpSideEffectDir);
+if (
+  initHelpResult.status !== 0 ||
+  !initHelpResult.stdout.includes("codex-bees init") ||
+  existsSync(join(initHelpSideEffectDir, ".codex")) ||
+  existsSync(join(initHelpSideEffectDir, ".gitignore"))
+) {
+  console.error("[smoke:init-help] expected init help to stay side-effect free");
+  process.exit(1);
+}
+rmSync(initHelpSideEffectDir, { recursive: true, force: true });
+
 const importedSourceApi = JSON.parse(
   run("import-src-api", [
     "-e",
@@ -1130,6 +1144,33 @@ if (
   console.error("[smoke:installed-direct-cli-help] expected direct packaged CLI help surface");
   process.exit(1);
 }
+const installedInitHelpWorkspaceDir = mkdtempSync(join(tmpdir(), "codex-bees-installed-init-help-"));
+const installedInitHelp = runInstalled("installed-init-help", "npx", ["codex-bees", "init", "--help"]);
+if (
+  !installedInitHelp.stdout.includes("codex-bees init") ||
+  !installedInitHelp.stdout.includes("--preview") ||
+  !installedInitHelp.stdout.includes("--force") ||
+  !installedInitHelp.stdout.includes("--dir <path>")
+) {
+  console.error("[smoke:installed-init-help] expected installed init help surface");
+  process.exit(1);
+}
+const installedInitHelpSideEffect = runInstalled(
+  "installed-init-help-side-effect",
+  "node",
+  [join(packedInstallAppDir, "node_modules", "codex-bees", "dist", "index.js"), "init", "--help"],
+  { cwd: installedInitHelpWorkspaceDir }
+);
+if (
+  !installedInitHelpSideEffect.stdout.includes("codex-bees init") ||
+  existsSync(join(installedInitHelpWorkspaceDir, ".codex")) ||
+  existsSync(join(installedInitHelpWorkspaceDir, ".gitignore"))
+) {
+  console.error("[smoke:installed-init-help-side-effect] expected installed init help to stay side-effect free");
+  process.exit(1);
+}
+rmSync(installedInitHelpWorkspaceDir, { recursive: true, force: true });
+
 const installedDirectCliHelpImport = spawnSync(
   "node",
   [
