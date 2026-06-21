@@ -61,6 +61,78 @@ export function buildLeaderAssignmentsSummary(assignments, groups) {
   return `Leader assignments has ${assignments.length} dispatchable lane${assignments.length === 1 ? "" : "s"} across ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is first.`;
 }
 
+export function buildLeaderAssignmentsView(
+  input,
+  {
+    leaderWorkspace,
+    swarmBrief,
+    taskBrief
+  },
+  {
+    deriveLeaderAssignmentsReason
+  }
+) {
+  const workspace = leaderWorkspace(input);
+  if (!workspace) {
+    return null;
+  }
+
+  const assignments = workspace.swarms.flatMap((swarm) => {
+    const brief = swarmBrief(swarm.id);
+    return (brief?.lanes ?? [])
+      .filter((lane) => lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released")
+      .map((lane) => ({
+        swarmId: swarm.id,
+        objective: swarm.objective,
+        lane: lane.lane,
+        owner: lane.owner,
+        verifier: lane.verifier,
+        taskId: lane.taskId,
+        taskQueueStatus: lane.taskQueueStatus,
+        recommendedNextActor: lane.recommendedNextActor,
+        recommendedNextAction: lane.recommendedNextAction,
+        recommendedCommands: lane.recommendedCommands,
+        taskBrief: lane.taskId ? taskBrief(lane.taskId) : null,
+        summary: `Dispatch ${lane.lane} from ${swarm.id} to ${lane.owner.id ?? lane.owner.name ?? "unknown"}.`
+      }));
+  });
+
+  const groupsByOwner = new Map();
+  for (const assignment of assignments) {
+    const ownerId = assignment.owner?.id ?? assignment.owner?.name ?? "unknown";
+    const current = groupsByOwner.get(ownerId) ?? {
+      owner: assignment.owner,
+      count: 0,
+      assignments: []
+    };
+    current.assignments.push(assignment);
+    current.count += 1;
+    groupsByOwner.set(ownerId, current);
+  }
+
+  const groups = [...groupsByOwner.values()].sort((left, right) => {
+    if (right.count !== left.count) {
+      return right.count - left.count;
+    }
+    return (left.owner?.id ?? left.owner?.name ?? "").localeCompare(right.owner?.id ?? right.owner?.name ?? "");
+  });
+  const next = assignments[0] ?? null;
+  const recommendedReason = deriveLeaderAssignmentsReason({ assignments, groups, next });
+
+  return {
+    kind: "leader_assignments",
+    recommendedReason,
+    filters: workspace.filters,
+    counts: {
+      totalAssignments: assignments.length,
+      ownerGroups: groups.length
+    },
+    next,
+    groups,
+    summary: buildLeaderAssignmentsSummary(assignments, groups)
+  };
+}
+
 export function buildRuntimeDashboardSummary(queue, blockedTasks, pendingReview, activeClaimed) {
   const nextSwarm = queue?.next?.swarmId ?? null;
   if (blockedTasks.length > 0) {
