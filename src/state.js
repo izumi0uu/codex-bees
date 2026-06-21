@@ -209,6 +209,7 @@ import {
   buildRuntimeControlPackSummary,
   buildRuntimeControlPackView,
   buildRuntimeExecutionPackSummary,
+  buildRuntimeExecutionPackView,
   buildRuntimeFocusSources,
   buildRuntimeHandoffPackView,
   buildRuntimeHandoffPackSummary,
@@ -1665,57 +1666,22 @@ export function runtimeRolePack(input = {}) {
 }
 
 export function runtimeExecutionPack(input = {}) {
-  const focus = runtimeFocus();
-  const dispatch = runtimeDispatch();
-  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
-  const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
-  const roles = runtimeRoles();
-  const queuePack = runtimeQueuePack(input);
-  const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
-  const recommendedReason = deriveRuntimeExecutionPackReason({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
-  const nextEntries = {
-    focus: focus?.focus ?? null,
-    dispatch: dispatch?.next ?? null,
-    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
-    role: roles?.next ?? null,
-    queue: queuePack?.next?.queue ?? null
-  };
-
-  return {
-    kind: "runtime_execution_pack",
-    recommendedSurface,
-    recommendedReason,
-    metadata: {
-      hasFocus: Boolean(nextEntries.focus),
-      hasDispatch: Boolean(nextEntries.dispatch),
-      hasAssignmentLaunch: Boolean(nextEntries.assignmentLaunch),
-      hasAssignmentLaunchStep: Boolean(nextEntries.assignmentLaunchStep),
-      hasRole: Boolean(nextEntries.role),
-      hasQueue: Boolean(nextEntries.queue)
+  return buildRuntimeExecutionPackView(
+    input,
+    {
+      runtimeFocus,
+      runtimeDispatch,
+      leaderAssignmentDispatchBundle,
+      leaderAssignmentLaunchPlan,
+      runtimeRoles,
+      runtimeQueuePack
     },
-    counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
-    },
-    overview: {
-      focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
-      dispatch: dispatch?.counts ?? null,
-      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
-      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null,
-      roles: roles?.counts ?? null,
-      queue: queuePack?.overview?.queue ?? null
-    },
-    next: nextEntries,
-    surfaces: {
-      focus,
-      dispatch,
-      assignmentDispatchBundle,
-      assignmentLaunchPlan,
-      roles,
-      queuePack
-    },
-    summary: buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack)
-  };
+    {
+      deriveRuntimeExecutionPackSurface,
+      deriveRuntimeExecutionPackReason,
+      buildRuntimeExecutionPackSummary
+    }
+  );
 }
 
 export function runtimePickupPack(input = {}) {
