@@ -10,6 +10,22 @@ import { join } from "node:path";
 import { cwd } from "node:process";
 import { getRuntimeCatalog, listAgentRoleIds } from "./catalog.js";
 import {
+  buildMemory,
+  buildSwarm,
+  buildTask,
+  buildTaskHistoryEntry
+} from "./state-builders.js";
+import {
+  defaultState,
+  normalizeMemory,
+  normalizeState,
+  normalizeSwarm,
+  normalizeSwarmLane,
+  normalizeTask,
+  normalizeTaskAnnotation,
+  normalizeTaskHistoryEntry
+} from "./state-normalize.js";
+import {
   VALID_QUEUE_STATUSES,
   VALID_SWARM_STATUSES,
   canTransitionSwarm,
@@ -23,20 +39,6 @@ import {
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
-const STATE_VERSION = 3;
-
-function defaultState() {
-  return {
-    version: STATE_VERSION,
-    nextId: 1,
-    nextMemoryId: 1,
-    nextSwarmId: 1,
-    tasks: [],
-    memories: [],
-    swarms: [],
-    updatedAt: null
-  };
-}
 
 export function ensureStateFile() {
   mkdirSync(STATE_DIR, { recursive: true });
@@ -3812,154 +3814,6 @@ export function cancelSwarm(input) {
   };
 }
 
-function normalizeTask(task) {
-  return {
-    ...task,
-    queueStatus: VALID_QUEUE_STATUSES.has(task.queueStatus) ? task.queueStatus : "queued",
-    claimedBy: task.claimedBy ?? null,
-    owner: task.owner ?? null,
-    verifier: task.verifier ?? null,
-    objective: task.objective ?? null,
-    lane: task.lane ?? null,
-    swarmId: task.swarmId ?? null,
-    scope: Array.isArray(task.scope) ? task.scope : null,
-    acceptance: Array.isArray(task.acceptance) ? task.acceptance : null,
-    verification: Array.isArray(task.verification) ? task.verification : null,
-    notes: task.notes ?? null,
-    reviewedBy: task.reviewedBy ?? null,
-    reviewedAt: task.reviewedAt ?? null,
-    reviewOutcome: task.reviewOutcome ?? null,
-    reviewNotes: task.reviewNotes ?? null,
-    reviewEvidence: Array.isArray(task.reviewEvidence) ? task.reviewEvidence : null,
-    history: Array.isArray(task.history) ? task.history.map(normalizeTaskHistoryEntry) : [],
-    annotations: Array.isArray(task.annotations) ? task.annotations.map(normalizeTaskAnnotation) : []
-  };
-}
-
-function normalizeTaskHistoryEntry(entry, index = 0) {
-  return {
-    id: entry.id ?? `event-${index + 1}`,
-    at: entry.at ?? null,
-    type: entry.type ?? "updated",
-    fromQueueStatus: entry.fromQueueStatus ?? null,
-    toQueueStatus: entry.toQueueStatus ?? null,
-    actor: entry.actor ?? null,
-    notes: entry.notes ?? null,
-    evidence: Array.isArray(entry.evidence) ? entry.evidence : [],
-    outcome: entry.outcome ?? null
-  };
-}
-
-function normalizeTaskAnnotation(annotation, index = 0) {
-  return {
-    id: annotation.id ?? `annotation-${index + 1}`,
-    at: annotation.at ?? null,
-    actor: annotation.actor ?? null,
-    kind: annotation.kind ?? "note",
-    content: annotation.content ?? ""
-  };
-}
-
-function normalizeMemory(memory) {
-  return {
-    ...memory,
-    namespace: memory.namespace ?? "default",
-    kind: memory.kind ?? "note",
-    title: memory.title ?? null,
-    content: memory.content ?? "",
-    agent: memory.agent ?? null,
-    tags: Array.isArray(memory.tags) ? memory.tags : [],
-    notes: memory.notes ?? null
-  };
-}
-
-function normalizeSwarmLane(lane, index = 0) {
-  return {
-    lane: lane.lane ?? `lane-${index + 1}`,
-    summary: lane.summary ?? `Lane ${index + 1}`,
-    owner: lane.owner ?? null,
-    verifier: lane.verifier ?? null,
-    scope: Array.isArray(lane.scope) ? lane.scope : null,
-    acceptance: Array.isArray(lane.acceptance) ? lane.acceptance : null,
-    verification: Array.isArray(lane.verification) ? lane.verification : null,
-    taskId: lane.taskId ?? null
-  };
-}
-
-function normalizeSwarm(swarm) {
-  return {
-    ...swarm,
-    status: VALID_SWARM_STATUSES.has(swarm.status) ? swarm.status : "planned",
-    topology: swarm.topology ?? "bounded-local",
-    maxWorkers:
-      Number.isInteger(Number(swarm.maxWorkers)) && Number(swarm.maxWorkers) > 0
-        ? Number(swarm.maxWorkers)
-        : 1,
-    owner: swarm.owner ?? null,
-    laneSource: swarm.laneSource ?? "manual",
-    lanes: Array.isArray(swarm.lanes)
-      ? swarm.lanes.map((lane, index) => normalizeSwarmLane(lane, index))
-      : [],
-    queuedAt: swarm.queuedAt ?? null,
-    notes: swarm.notes ?? null
-  };
-}
-
-function normalizeState(state) {
-  if (!state || !Array.isArray(state.tasks)) {
-    return defaultState();
-  }
-
-  const tasks = state.tasks.map(normalizeTask);
-  const memories = Array.isArray(state.memories) ? state.memories.map(normalizeMemory) : [];
-  const swarms = Array.isArray(state.swarms) ? state.swarms.map(normalizeSwarm) : [];
-  const maxTaskNumber = tasks.reduce((max, task) => {
-    const match = /^task-(\d+)$/.exec(task.id ?? "");
-    if (!match) {
-      return max;
-    }
-    return Math.max(max, Number(match[1]));
-  }, 0);
-  const maxMemoryNumber = memories.reduce((max, memory) => {
-    const match = /^memory-(\d+)$/.exec(memory.id ?? "");
-    if (!match) {
-      return max;
-    }
-    return Math.max(max, Number(match[1]));
-  }, 0);
-  const maxSwarmNumber = swarms.reduce((max, swarm) => {
-    const match = /^swarm-(\d+)$/.exec(swarm.id ?? "");
-    if (!match) {
-      return max;
-    }
-    return Math.max(max, Number(match[1]));
-  }, 0);
-
-  const nextId =
-    Number.isInteger(state.nextId) && state.nextId > maxTaskNumber
-      ? state.nextId
-      : maxTaskNumber + 1;
-  const nextMemoryId =
-    Number.isInteger(state.nextMemoryId) && state.nextMemoryId > maxMemoryNumber
-      ? state.nextMemoryId
-      : maxMemoryNumber + 1;
-  const nextSwarmId =
-    Number.isInteger(state.nextSwarmId) && state.nextSwarmId > maxSwarmNumber
-      ? state.nextSwarmId
-      : maxSwarmNumber + 1;
-
-  return {
-    version: STATE_VERSION,
-    nextId,
-    nextMemoryId,
-    nextSwarmId,
-    tasks,
-    memories,
-    swarms,
-    updatedAt: state.updatedAt ?? null
-  };
-}
-
 function appendTaskHistoryEntry(task, entry) {
   const history = Array.isArray(task.history) ? task.history : [];
   return [
@@ -7286,115 +7140,6 @@ function transitionSwarm(input) {
   state.swarms[index] = next;
   saveState(state);
   return next;
-}
-
-function buildTask(input, nextId) {
-  return normalizeTask({
-    id: `task-${nextId}`,
-    title: input.title,
-    status: input.status ?? "todo",
-    queueStatus: input.queueStatus ?? "queued",
-    owner: input.owner ?? null,
-    verifier: input.verifier ?? null,
-    objective: input.objective ?? null,
-    lane: input.lane ?? null,
-    swarmId: input.swarmId ?? null,
-    scope: input.scope ?? null,
-    acceptance: input.acceptance ?? null,
-    verification: input.verification ?? null,
-    claimedBy: input.claimedBy ?? null,
-    notes: input.notes ?? null,
-    reviewedBy: input.reviewedBy ?? null,
-    reviewedAt: input.reviewedAt ?? null,
-    reviewOutcome: input.reviewOutcome ?? null,
-    reviewNotes: input.reviewNotes ?? null,
-    reviewEvidence: input.reviewEvidence ?? null,
-    annotations: input.annotations ?? [],
-    history: [
-      {
-        id: "event-1",
-        at: new Date().toISOString(),
-        type: "created",
-        fromQueueStatus: null,
-        toQueueStatus: input.queueStatus ?? "queued",
-        actor: input.claimedBy ?? null,
-        notes: input.notes ?? null,
-        evidence: [],
-        outcome: null
-      }
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  });
-}
-
-function buildTaskHistoryEntry(current, nextQueueStatus, input) {
-  const actor = input.reviewedBy ?? input.claimedBy ?? current.claimedBy ?? null;
-  const isVerifierApproval = nextQueueStatus === "done";
-  const isVerifierReturn =
-    current.queueStatus === "ready_for_review" &&
-    ["claimed", "blocked", "released"].includes(nextQueueStatus);
-
-  let type = "updated";
-  let outcome = null;
-  if (nextQueueStatus === "claimed" && current.queueStatus !== "ready_for_review") {
-    type = "claimed";
-  } else if (nextQueueStatus === "blocked") {
-    type = "blocked";
-  } else if (nextQueueStatus === "ready_for_review") {
-    type = "ready_for_review";
-  } else if (nextQueueStatus === "released") {
-    type = "released";
-  } else if (isVerifierApproval) {
-    type = "approved";
-    outcome = "approved";
-  } else if (isVerifierReturn) {
-    type = "changes_requested";
-    outcome = "changes_requested";
-  }
-
-  return {
-    at: new Date().toISOString(),
-    type,
-    fromQueueStatus: current.queueStatus,
-    toQueueStatus: nextQueueStatus,
-    actor,
-    notes: input.notes ?? null,
-    evidence: input.reviewEvidence ?? [],
-    outcome
-  };
-}
-
-function buildMemory(input, nextMemoryId) {
-  return normalizeMemory({
-    id: `memory-${nextMemoryId}`,
-    namespace: input.namespace ?? "default",
-    kind: input.kind ?? "note",
-    title: input.title ?? null,
-    content: input.content,
-    agent: input.agent ?? null,
-    tags: input.tags ?? [],
-    notes: input.notes ?? null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  });
-}
-
-function buildSwarm(input, nextSwarmId) {
-  return normalizeSwarm({
-    id: `swarm-${nextSwarmId}`,
-    objective: input.objective,
-    status: input.status ?? "planned",
-    topology: input.topology ?? "bounded-local",
-    maxWorkers: input.maxWorkers ?? 1,
-    owner: input.owner ?? null,
-    laneSource: input.laneSource ?? "manual",
-    lanes: input.lanes ?? [],
-    queuedAt: input.queuedAt ?? null,
-    notes: input.notes ?? null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  });
 }
 
 function filterMemories(memories, filters = {}) {
