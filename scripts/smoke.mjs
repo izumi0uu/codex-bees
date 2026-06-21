@@ -946,7 +946,7 @@ const installedCatalogExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedCatalogExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "runtime_catalog_view" && typeof catalog.counts?.agents === "number" && catalog.counts.agents > 0 && typeof catalog.counts?.skills === "number" && catalog.counts.skills > 0 && typeof catalog.catalog?.paths?.codexDir === "string" && catalog.catalog.paths.codexDir.length > 0 && ["workspace", "bundled"].includes(catalog.catalog?.source) }));`
+    `${documentedCatalogExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "runtime_catalog_view" && typeof catalog.counts?.agents === "number" && catalog.counts.agents > 0 && typeof catalog.counts?.skills === "number" && catalog.counts.skills > 0 && typeof catalog.catalog?.paths?.codexDir === "string" && catalog.catalog.paths.codexDir.length > 0 && ["workspace", "bundled"].includes(catalog.catalog?.source) && executorAgent?.id === "executor" && projectDevelopmentSkill?.id === "project-development" }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -965,7 +965,7 @@ const installedCatalogImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView")})))'
+    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && typeof m.getAgentCatalogEntry === "function" && m.getAgentCatalogEntry("executor")?.id === "executor" && typeof m.getSkillCatalogEntry === "function" && m.getSkillCatalogEntry("project-development")?.id === "project-development"})))'
   ],
   {
     cwd: packedInstallAppDir,

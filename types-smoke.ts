@@ -19,6 +19,7 @@ import {
   handleMcpRequest,
   getCapabilityCatalog,
   getCapabilityCatalogView,
+  getAgentCatalogEntry,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
   getRuntimeCatalogView,
@@ -59,6 +60,7 @@ import {
   toolCatalog,
   renderMcpHelpText,
   resolveRuntimeCatalogPath,
+  getSkillCatalogEntry,
   validateSwarm,
   validateTask,
   type TaskReviewState,
@@ -276,8 +278,10 @@ const packageVersion: "0.1.0" = PACKAGE_VERSION;
 const rootCapabilityCatalogViewKind: "runtime_capabilities_view" = getCapabilityCatalogView().kind;
 const runtimeCapabilitiesReason: "capabilities_loaded" | "capabilities_empty" = getCapabilityCatalogView().recommendedReason;
 const rootAgentId: string | undefined = listAgentCatalog()[0]?.id;
+const rootAgentEntryId: string | undefined = getAgentCatalogEntry("executor")?.id;
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
 const rootSkillId: string | undefined = listSkillCatalog()[0]?.id;
+const rootSkillEntryId: string | undefined = getSkillCatalogEntry("project-development")?.id;
 const rootCatalogSource: "workspace" | "bundled" | "missing" = getRuntimeCatalog().source;
 const runtimeCatalogSource: "workspace" | "bundled" | "missing" = getRuntimeCatalogPaths().source;
 const resolvedSkillPath: string | null = resolveRuntimeCatalogPath("skills");
