@@ -2621,6 +2621,11 @@ if (
   console.error("[smoke:commands] expected command catalog view");
   process.exit(1);
 }
+const requiredCliCatalogCommands = ["plan:swarm:queue", "swarm:overview", "swarm:dispatch", "swarm:sync"];
+if (!requiredCliCatalogCommands.every((command) => cliCommandsView.commands?.some((entry) => entry.command === command))) {
+  console.error("[smoke:commands-parity] expected command catalog to include shipped swarm and planner commands");
+  process.exit(1);
+}
 const cliCommandView = JSON.parse(
   run("command-get-verify", ["./src/index.js", "command:get", "--name", "init"]).stdout
 ).command;
