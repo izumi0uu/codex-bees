@@ -55,6 +55,7 @@ export function getCommandCatalog() {
     { command: "tools:get", description: "Show one MCP tool view" },
     { command: "catalog", description: "Print the shipped local agent and skill catalog" },
     { command: "catalog:agent", description: "Show one shipped local agent view" },
+    { command: "catalog:skill", description: "Show one shipped local skill view" },
     { command: "doctor", description: "Print runtime contract diagnostics" },
     { command: "metadata", description: "Print package identity metadata" },
     { command: "status", description: "Print runtime state and surface summary" },

@@ -5,7 +5,7 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { renderHelpText, renderInitHelpText } from "./commands.js";
 import { getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
-import { getAgentCatalogEntryView, getRuntimeCatalogView } from "./catalog.js";
+import { getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntryView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogEntryView, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
@@ -154,6 +154,11 @@ function printCatalog() {
 function printCatalogAgentView() {
   const id = requireOption("--id");
   write(JSON.stringify({ agent: getAgentCatalogEntryView(id) }, null, 2) + "\n");
+}
+
+function printCatalogSkillView() {
+  const id = requireOption("--id");
+  write(JSON.stringify({ skill: getSkillCatalogEntryView(id) }, null, 2) + "\n");
 }
 
 function printMetadata() {
@@ -1342,6 +1347,9 @@ async function runCommand(command) {
       return;
     case "catalog:agent":
       printCatalogAgentView();
+      return;
+    case "catalog:skill":
+      printCatalogSkillView();
       return;
     case "metadata":
       printMetadata();
