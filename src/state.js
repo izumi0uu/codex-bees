@@ -105,7 +105,12 @@ import {
   recommendWorkerSessionFocus
 } from "./state-worker-views.js";
 import {
+  buildRuntimeCloseoutPackSummary,
+  buildRuntimeDispatchPackSummary,
+  buildRuntimeOperatorPackSummary,
   buildRuntimeAssignmentPackSummary,
+  buildRuntimePickupPackSummary,
+  buildRuntimeRecoveryPackSummary,
   buildRuntimeLeaderPackSummary,
   buildLeaderWorkspaceSummary,
   buildLeaderWorkspaceSwarmEntry,
@@ -113,12 +118,20 @@ import {
   buildRuntimeVerifierPackSummary,
   buildRuntimeWorkerPackSummary,
   compareRuntimeRoleEntries,
+  deriveRuntimeCloseoutPackReason,
+  deriveRuntimeCloseoutPackSurface,
   deriveRuntimeAssignmentPackReason,
   deriveRuntimeAssignmentPackSurface,
+  deriveRuntimeDispatchPackReason,
+  deriveRuntimeDispatchPackSurface,
   deriveRuntimeLeaderPackReason,
   deriveRuntimeLeaderPackSurface,
   deriveRuntimeOwnerPackReason,
   deriveRuntimeOwnerPackSurface,
+  deriveRuntimePickupPackReason,
+  deriveRuntimePickupPackSurface,
+  deriveRuntimeRecoveryPackReason,
+  deriveRuntimeRecoveryPackSurface,
   deriveRuntimeVerifierPackReason,
   deriveRuntimeVerifierPackSurface,
   deriveRuntimeWorkerPackReason,
@@ -4908,158 +4921,6 @@ function deriveWorkerHandoffReason(session, focusTaskSnapshot) {
   return "idle_handoff";
 }
 
-function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
-  const detail =
-    focus?.summary ??
-    alerts?.summary ??
-    "Runtime operator pack has no current operator detail.";
-  return `Runtime operator pack recommends ${recommendedSurface} next. ${detail}`;
-}
-
-function deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs }) {
-  if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
-    return "leader:assignment-launch-plan";
-  }
-  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
-    return "leader:assignment-dispatch-bundle";
-  }
-  if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
-    return "leader:assignment-dispatch-pack";
-  }
-  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
-    return "runtime:dispatch";
-  }
-  if ((handoffs?.counts?.totalHandoffs ?? 0) > 0) {
-    return "runtime:handoffs";
-  }
-  if (
-    (roles?.counts?.withPendingReview ?? 0) > 0 ||
-    (roles?.counts?.withBlockedOwnerWork ?? 0) > 0 ||
-    (roles?.counts?.withClaimableOwnerWork ?? 0) > 0
-  ) {
-    return "runtime:roles";
-  }
-  return "runtime:dispatch";
-}
-
-function deriveRuntimeDispatchPackReason({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs }) {
-  if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
-    return "parallel_launch_plan_ready";
-  }
-  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
-    return "parallel_dispatch_bundle_ready";
-  }
-  if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
-    return "parallel_dispatch_pack_ready";
-  }
-  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
-    return "dispatch_priority";
-  }
-  if ((handoffs?.counts?.totalHandoffs ?? 0) > 0) {
-    return "handoff_pressure_priority";
-  }
-  if (
-    (roles?.counts?.withPendingReview ?? 0) > 0 ||
-    (roles?.counts?.withBlockedOwnerWork ?? 0) > 0 ||
-    (roles?.counts?.withClaimableOwnerWork ?? 0) > 0
-  ) {
-    return "role_pressure_priority";
-  }
-  return "default_dispatch_priority";
-}
-
-function buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, handoffs, roles) {
-  const detail =
-    assignmentLaunchPlan?.summary ??
-    assignmentDispatchBundle?.summary ??
-    assignmentDispatchPack?.summary ??
-    dispatch?.summary ??
-    handoffs?.summary ??
-    roles?.summary ??
-    "Runtime dispatch pack has no current dispatch detail.";
-  return `Runtime dispatch pack recommends ${recommendedSurface} next. ${detail}`;
-}
-
-function deriveRuntimeRecoveryPackSurface({ recovery, handoffs, focus }) {
-  if ((recovery?.counts?.totalEntries ?? 0) > 0) {
-    return "runtime:recovery";
-  }
-  if ((handoffs?.counts?.blockedRecoveries ?? 0) > 0 || (handoffs?.counts?.ownerClaims ?? 0) > 0) {
-    return "runtime:handoffs";
-  }
-  if (focus?.focus?.type === "blocked_task") {
-    return "runtime:focus";
-  }
-  return "runtime:recovery";
-}
-
-function deriveRuntimeRecoveryPackReason({ recovery, handoffs, focus }) {
-  if (recovery?.next?.recoveryType === "blocked_recovery") {
-    return "blocked_recovery_priority";
-  }
-  if (recovery?.next?.recoveryType === "changes_requested") {
-    return "changes_requested_priority";
-  }
-  if (recovery?.next?.recoveryType === "released_repickup") {
-    return "released_repickup_priority";
-  }
-  if ((handoffs?.counts?.blockedRecoveries ?? 0) > 0) {
-    return "blocked_recovery_handoff_priority";
-  }
-  if ((handoffs?.counts?.ownerClaims ?? 0) > 0) {
-    return "owner_claim_handoff_priority";
-  }
-  if (focus?.focus?.type === "blocked_task") {
-    return "blocked_focus_priority";
-  }
-  return "default_recovery_priority";
-}
-
-function buildRuntimeRecoveryPackSummary(recommendedSurface, recovery, focus) {
-  const detail =
-    recovery?.summary ??
-    focus?.summary ??
-    "Runtime recovery pack has no current recovery detail.";
-  return `Runtime recovery pack recommends ${recommendedSurface} next. ${detail}`;
-}
-
-function deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack }) {
-  if ((closeout?.counts?.totalReady ?? 0) > 0) {
-    return "runtime:closeout";
-  }
-  if ((summaryPack?.overview?.closeout?.totalReady ?? 0) > 0 || summaryPack?.next?.closeout) {
-    return "runtime:summary-pack";
-  }
-  if ((leaderPack?.overview?.closeout?.swarmsReady ?? 0) > 0 || leaderPack?.next?.closeout) {
-    return "runtime:leader-pack";
-  }
-  return "runtime:closeout";
-}
-
-function deriveRuntimeCloseoutPackReason({ closeout, summaryPack, leaderPack }) {
-  if ((closeout?.counts?.tasksReady ?? 0) > 0) {
-    return "tasks_ready_for_closeout";
-  }
-  if ((closeout?.counts?.swarmsReady ?? 0) > 0) {
-    return "swarms_ready_for_closeout";
-  }
-  if ((summaryPack?.overview?.closeout?.totalReady ?? 0) > 0 || summaryPack?.next?.closeout) {
-    return "summary_closeout_context_visible";
-  }
-  if ((leaderPack?.overview?.closeout?.swarmsReady ?? 0) > 0 || leaderPack?.next?.closeout) {
-    return "leader_closeout_context_visible";
-  }
-  return "no_closeout_ready";
-}
-
-function buildRuntimeCloseoutPackSummary(recommendedSurface, closeout, summaryPack) {
-  const detail =
-    closeout?.summary ??
-    summaryPack?.summary ??
-    "Runtime closeout pack has no current closure detail.";
-  return `Runtime closeout pack recommends ${recommendedSurface} next. ${detail}`;
-}
-
 function deriveRuntimeReviewPackSurface({ review, roles, verifierPack }) {
   if (verifierPack?.recommendedSurface) {
     return "runtime:verifier-pack";
@@ -5555,69 +5416,6 @@ function buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, a
     queuePack?.summary ??
     "Runtime execution pack has no current execution detail.";
   return `Runtime execution pack recommends ${recommendedSurface} next. ${resolvedDetail}`;
-}
-
-function deriveRuntimePickupPackSurface({ session, pickup, next, rolePack, role, workerId, mode }) {
-  if (pickup?.outcome === "claimable") {
-    return `task:pickup --role ${role} --worker ${workerId} --mode ${mode}`;
-  }
-  if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
-    return "worker:session";
-  }
-  if (session?.focus?.kind === "review_task") {
-    return "worker:closeout";
-  }
-  if (session?.focus?.kind === "awaiting_review") {
-    return "worker:handoff";
-  }
-  if (pickup?.command) {
-    return pickup.command.replace("node ./src/index.js ", "");
-  }
-  if (next?.candidate?.id) {
-    return "task:next";
-  }
-  return rolePack?.recommendedSurface ?? "worker:session";
-}
-
-function deriveRuntimePickupPackReason({ session, pickup, next, rolePack }) {
-  if (pickup?.outcome === "claimable") {
-    return "claimable_pickup_ready";
-  }
-  if (session?.focus?.kind === "active_task") {
-    return "active_task_priority";
-  }
-  if (session?.focus?.kind === "blocked_task") {
-    return "blocked_task_priority";
-  }
-  if (session?.focus?.kind === "review_task") {
-    return "review_task_priority";
-  }
-  if (session?.focus?.kind === "awaiting_review") {
-    return "awaiting_review_priority";
-  }
-  if (pickup?.command) {
-    return "pickup_command_ready";
-  }
-  if (next?.candidate?.id) {
-    return "next_candidate_visible";
-  }
-  if (rolePack?.recommendedSurface) {
-    return "role_fallback_priority";
-  }
-  return "default_pickup_priority";
-}
-
-function buildRuntimePickupPackSummary(recommendedSurface, session, pickup, next) {
-  const detail =
-    pickup?.outcome === "claimable"
-      ? `Worker can claim ${pickup.candidate?.id} now.`
-      : session?.focus?.reason
-        ? session.focus.reason
-        : next?.candidate?.id
-          ? `Next visible candidate is ${next.candidate.id}.`
-          : "worker has no immediate pickup target.";
-
-  return `Runtime pickup pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
 function syncSwarmInLoadedState(state, swarmId) {
