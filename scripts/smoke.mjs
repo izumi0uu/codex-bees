@@ -79,6 +79,8 @@ const checks = [
   ["catalog-agent", ["./src/index.js", "catalog:agent", "--id", "executor"]],
   ["catalog-skills", ["./src/index.js", "catalog:skills"]],
   ["catalog-skill", ["./src/index.js", "catalog:skill", "--id", "project-development"]],
+  ["guidance-overview", ["./src/index.js", "guidance:overview"]],
+  ["guidance-worker", ["./src/index.js", "guidance:worker"]],
   ["metadata", ["./src/index.js", "metadata"]],
   ["status", ["./src/index.js", "status"]],
   ["capabilities", ["./src/index.js", "capabilities"]],
@@ -2425,6 +2427,24 @@ if (!Array.isArray(cliCatalogAgents) || !cliCatalogAgents.some((entry) => entry.
 const cliCatalogSkills = JSON.parse(run("catalog-skills-verify", ["./src/index.js", "catalog:skills"]).stdout).skills;
 if (!Array.isArray(cliCatalogSkills) || !cliCatalogSkills.some((entry) => entry.id === "project-development")) {
   console.error("[smoke:catalog-skills] expected skill catalog listing");
+  process.exit(1);
+}
+const cliGuidanceOverview = JSON.parse(run("guidance-overview-verify", ["./src/index.js", "guidance:overview"]).stdout).overview;
+if (
+  cliGuidanceOverview.kind !== "coordination_overview_view" ||
+  cliGuidanceOverview.recommendedReason !== "coordination_model_loaded" ||
+  cliGuidanceOverview.overview?.deliveryBoundary !== "codex-only runtime"
+) {
+  console.error("[smoke:guidance-overview] expected coordination overview view");
+  process.exit(1);
+}
+const cliGuidanceWorker = JSON.parse(run("guidance-worker-verify", ["./src/index.js", "guidance:worker"]).stdout).guidelines;
+if (
+  cliGuidanceWorker.kind !== "worker_guidelines_view" ||
+  cliGuidanceWorker.recommendedReason !== "worker_guidelines_loaded" ||
+  cliGuidanceWorker.guidelines?.fileOwnership !== "one active writer per file"
+) {
+  console.error("[smoke:guidance-worker] expected worker guidance view");
   process.exit(1);
 }
 const cliToolView = JSON.parse(
