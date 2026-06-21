@@ -231,6 +231,7 @@ import {
   buildRuntimeReviewPackSummary,
   buildRuntimeRolePackSummary,
   buildRuntimeSessionPackSummary,
+  buildRuntimeSignalPackView,
   buildRuntimeSignalPackSummary,
   buildRuntimeSummaryPackView,
   buildRuntimeSummaryPackSummary,
@@ -1575,47 +1576,20 @@ export function runtimeControlPack(input = {}) {
 }
 
 export function runtimeSignalPack(input = {}) {
-  const focus = runtimeFocus();
-  const alerts = runtimeAlerts();
-  const activity = runtimeActivity(input);
-  const roles = runtimeRoles(input);
-  const recommendedSurface = deriveRuntimeSignalPackSurface({ focus, alerts, activity, roles });
-  const recommendedReason = deriveRuntimeSignalPackReason({ focus, alerts, activity, roles });
-  const nextEntries = {
-    focus: focus?.focus ?? null,
-    alert: alerts?.alerts?.[0] ?? null,
-    activity: activity?.next ?? null,
-    role: roles?.next ?? null
-  };
-
-  return {
-    kind: "runtime_signal_pack",
-    recommendedSurface,
-    recommendedReason,
-    metadata: {
-      hasFocus: Boolean(nextEntries.focus),
-      hasAlert: Boolean(nextEntries.alert),
-      hasActivity: Boolean(nextEntries.activity),
-      hasRole: Boolean(nextEntries.role)
+  return buildRuntimeSignalPackView(
+    input,
+    {
+      runtimeFocus,
+      runtimeAlerts,
+      runtimeActivity,
+      runtimeRoles
     },
-    counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
-    },
-    overview: {
-      focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
-      alerts: alerts?.counts ?? null,
-      activity: activity?.counts ?? null,
-      roles: roles?.counts ?? null
-    },
-    next: nextEntries,
-    surfaces: {
-      focus,
-      alerts,
-      activity,
-      roles
-    },
-    summary: buildRuntimeSignalPackSummary(recommendedSurface, focus, alerts, activity, roles)
-  };
+    {
+      deriveRuntimeSignalPackSurface,
+      deriveRuntimeSignalPackReason,
+      buildRuntimeSignalPackSummary
+    }
+  );
 }
 
 export function runtimeHandoffPack() {
