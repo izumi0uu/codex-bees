@@ -2324,6 +2324,7 @@ if (
   !Array.isArray(runtimeCapabilities.capabilities) ||
   !runtimeCapabilities.capabilities.some((capability) => capability.id === "swarm_coordination") ||
   !runtimeCapabilities.capabilities.some((capability) => capability.id === "runtime_catalog") ||
+  !runtimeCapabilities.capabilities.find((capability) => capability.id === "memory")?.mcpTools?.includes("memory_get") ||
   !runtimeCapabilities.capabilities.find((capability) => capability.id === "runtime_catalog")?.highlights?.includes("runtime:queue-pack recommends launch context before raw leader queue review") ||
   !runtimeCapabilities.capabilities.find((capability) => capability.id === "leader_orchestration")?.highlights?.includes("assignment-launch-plan provides ordered worker startup steps") ||
   runtimeCapabilities.capabilities.find((capability) => capability.id === "runtime_catalog")?.preferredEntryPoints?.cli?.[0] !== "status" ||
@@ -8374,6 +8375,17 @@ const memoryMcpInput = [
     id: 3,
     method: "tools/call",
     params: {
+      name: "memory_get",
+      arguments: {
+        id: "memory-1"
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
       name: "memory_list",
       arguments: {
         namespace: "mcp-smoke"
@@ -8382,7 +8394,7 @@ const memoryMcpInput = [
   }),
   JSON.stringify({
     jsonrpc: "2.0",
-    id: 4,
+    id: 5,
     method: "tools/call",
     params: {
       name: "memory_search",
@@ -8406,10 +8418,13 @@ const memoryMcpLines = memoryMcp.stdout
 const memoryStoreResult = memoryMcpLines.length >= 2 ? JSON.parse(memoryMcpLines[1]) : null;
 const memoryStoreText = memoryStoreResult?.result?.content?.[0]?.text;
 const memoryStorePayload = memoryStoreText ? JSON.parse(memoryStoreText) : null;
-const memoryListResult = memoryMcpLines.length >= 3 ? JSON.parse(memoryMcpLines[2]) : null;
+const memoryGetResult = memoryMcpLines.length >= 3 ? JSON.parse(memoryMcpLines[2]) : null;
+const memoryGetText = memoryGetResult?.result?.content?.[0]?.text;
+const memoryGetPayload = memoryGetText ? JSON.parse(memoryGetText) : null;
+const memoryListResult = memoryMcpLines.length >= 4 ? JSON.parse(memoryMcpLines[3]) : null;
 const memoryListText = memoryListResult?.result?.content?.[0]?.text;
 const memoryListPayload = memoryListText ? JSON.parse(memoryListText) : null;
-const memorySearchResult = memoryMcpLines.length >= 4 ? JSON.parse(memoryMcpLines[3]) : null;
+const memorySearchResult = memoryMcpLines.length >= 5 ? JSON.parse(memoryMcpLines[4]) : null;
 const memorySearchText = memorySearchResult?.result?.content?.[0]?.text;
 const memorySearchPayload = memorySearchText ? JSON.parse(memorySearchText) : null;
 if (
@@ -8418,6 +8433,9 @@ if (
   memoryStorePayload?.stored?.recommendedReason !== "memory_stored" ||
   memoryStorePayload?.stored?.memory?.namespace !== "mcp-smoke" ||
   memoryStorePayload?.stored?.memory?.content !== "Remember MCP memory smoke coverage" ||
+  memoryGetPayload?.memory?.kind !== "memory_detail" ||
+  memoryGetPayload?.memory?.recommendedReason !== "memory_detail_loaded" ||
+  memoryGetPayload?.memory?.memory?.id !== memoryStorePayload?.stored?.memory?.id ||
   memoryListPayload?.memories?.kind !== "memory_view" ||
   memoryListPayload?.memories?.recommendedReason !== "memory_list_has_results" ||
   memoryListPayload?.memories?.counts?.totalMemories !== memoryListPayload.memories.memories.length ||
