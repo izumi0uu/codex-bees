@@ -455,6 +455,14 @@ export interface ToolCatalogView {
   tools: ToolCatalogEntry[];
 }
 
+export interface McpToolView {
+  kind: "mcp_tool_view";
+  recommendedReason: "mcp_tool_loaded" | "mcp_tool_missing";
+  name: string | null;
+  matchedTool: string | null;
+  tool: ToolCatalogEntry | null;
+}
+
 export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 export interface JsonObject {
@@ -890,6 +898,7 @@ export declare function queueTasksFromPlan(task: string, addTasksFn?: (tasks: Ta
 
 export declare function listMcpTools(): ToolCatalogEntry[];
 export declare function getMcpToolEntry(name: string): ToolCatalogEntry | undefined;
+export declare function getMcpToolView(name?: string): McpToolView;
 export declare function getToolCatalogView(): ToolCatalogView;
 export declare function handleMcpRequest(message: McpMessage): McpResponse;
 export declare function callMcpTool(name: string, args?: JsonObject): unknown;

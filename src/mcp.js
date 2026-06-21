@@ -1321,6 +1321,18 @@ export function getMcpToolEntry(name) {
   return tool ? JSON.parse(JSON.stringify(tool)) : undefined;
 }
 
+export function getMcpToolView(name) {
+  const tool = getMcpToolEntry(name);
+
+  return {
+    kind: "mcp_tool_view",
+    recommendedReason: tool ? "mcp_tool_loaded" : "mcp_tool_missing",
+    name: name ?? null,
+    matchedTool: tool?.name ?? null,
+    tool: tool ?? null
+  };
+}
+
 export function listMcpTools() {
   return JSON.parse(JSON.stringify(toolCatalog));
 }
