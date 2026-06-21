@@ -199,3 +199,48 @@ export function transitionLoadedTaskState(
 
   return next;
 }
+
+export function buildUpdatedTaskState(current, input, updatedAt = new Date().toISOString()) {
+  return {
+    ...current,
+    ...(input.title !== undefined ? { title: input.title } : {}),
+    ...(input.status !== undefined ? { status: input.status } : {}),
+    ...(input.owner !== undefined ? { owner: input.owner } : {}),
+    ...(input.verifier !== undefined ? { verifier: input.verifier } : {}),
+    ...(input.objective !== undefined ? { objective: input.objective } : {}),
+    ...(input.lane !== undefined ? { lane: input.lane } : {}),
+    ...(input.swarmId !== undefined ? { swarmId: input.swarmId } : {}),
+    ...(input.scope !== undefined ? { scope: input.scope } : {}),
+    ...(input.acceptance !== undefined ? { acceptance: input.acceptance } : {}),
+    ...(input.verification !== undefined ? { verification: input.verification } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    updatedAt
+  };
+}
+
+export function updateLoadedTaskState(
+  state,
+  input,
+  {
+    findTaskIndex,
+    normalizeTask,
+    buildUpdatedTaskState
+  }
+) {
+  const taskIndex = findTaskIndex(state, input.id);
+  if (taskIndex < 0) {
+    return null;
+  }
+
+  const current = normalizeTask(state.tasks[taskIndex]);
+  if (input.queueStatus !== undefined) {
+    return { error: "queueStatus must be changed through lifecycle commands" };
+  }
+  if (input.claimedBy !== undefined) {
+    return { error: "claimedBy must be changed through lifecycle commands" };
+  }
+
+  const next = buildUpdatedTaskState(current, input);
+  state.tasks[taskIndex] = next;
+  return next;
+}

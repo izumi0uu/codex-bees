@@ -73,10 +73,12 @@ import {
   validateVerifierAction
 } from "./state-transition-guards.js";
 import {
+  buildUpdatedTaskState,
   buildTransitionedTaskState,
   buildTaskReviewPatch,
   deriveTaskTransitionContext,
   resolveTaskClaimedBy,
+  updateLoadedTaskState,
   transitionLoadedTaskState
 } from "./state-transition-helpers.js";
 import {
@@ -3571,33 +3573,17 @@ export function searchMemoriesView(query, filters = {}, limit = 10) {
 
 export function updateTask(input) {
   const state = loadState();
-  const index = state.tasks.findIndex((task) => task.id === input.id);
-  if (index < 0) {
+  const next = updateLoadedTaskState(state, input, {
+    findTaskIndex,
+    normalizeTask,
+    buildUpdatedTaskState
+  });
+  if (!next) {
     return null;
   }
-  const current = normalizeTask(state.tasks[index]);
-  if (input.queueStatus !== undefined) {
-    return { error: "queueStatus must be changed through lifecycle commands" };
+  if (next.error) {
+    return next;
   }
-  if (input.claimedBy !== undefined) {
-    return { error: "claimedBy must be changed through lifecycle commands" };
-  }
-  const next = {
-    ...current,
-    ...(input.title !== undefined ? { title: input.title } : {}),
-    ...(input.status !== undefined ? { status: input.status } : {}),
-    ...(input.owner !== undefined ? { owner: input.owner } : {}),
-    ...(input.verifier !== undefined ? { verifier: input.verifier } : {}),
-    ...(input.objective !== undefined ? { objective: input.objective } : {}),
-    ...(input.lane !== undefined ? { lane: input.lane } : {}),
-    ...(input.swarmId !== undefined ? { swarmId: input.swarmId } : {}),
-    ...(input.scope !== undefined ? { scope: input.scope } : {}),
-    ...(input.acceptance !== undefined ? { acceptance: input.acceptance } : {}),
-    ...(input.verification !== undefined ? { verification: input.verification } : {}),
-    ...(input.notes !== undefined ? { notes: input.notes } : {}),
-    updatedAt: new Date().toISOString()
-  };
-  state.tasks[index] = next;
   saveState(state);
   return next;
 }
