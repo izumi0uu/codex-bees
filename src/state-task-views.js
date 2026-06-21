@@ -424,6 +424,75 @@ export function buildSwarmCloseoutViewFromSources(
   );
 }
 
+export function buildSwarmBlockersView(
+  id,
+  {
+    swarmOverview,
+    swarmBrief,
+    taskReport,
+    deriveSwarmBlockersReason,
+    buildSwarmBlockersSummary
+  }
+) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const brief = swarmBrief(id);
+  const blockedLanes = (brief?.lanes ?? [])
+    .filter((lane) => lane.taskQueueStatus === "blocked")
+    .map((lane) => ({
+      lane: lane.lane,
+      summary: lane.summary,
+      owner: lane.owner,
+      verifier: lane.verifier,
+      taskId: lane.taskId,
+      claimedBy: lane.claimedBy,
+      recommendedNextActor: lane.recommendedNextActor,
+      recommendedNextAction: lane.recommendedNextAction,
+      recommendedCommands: lane.recommendedCommands,
+      report: lane.taskId ? taskReport(lane.taskId) : null
+    }));
+  const recommendedReason = deriveSwarmBlockersReason({ blockedLanes });
+
+  return {
+    kind: "swarm_blockers",
+    recommendedReason,
+    swarm: overview.swarm,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    blockedCount: blockedLanes.length,
+    blockers: blockedLanes,
+    summary: buildSwarmBlockersSummary(overview, blockedLanes)
+  };
+}
+
+export function buildSwarmBlockersViewFromSources(
+  id,
+  {
+    swarmOverview,
+    swarmBrief,
+    taskReport,
+    deriveSwarmBlockersReason,
+    buildSwarmBlockersSummary
+  },
+  {
+    buildSwarmBlockersView
+  }
+) {
+  return buildSwarmBlockersView(
+    id,
+    {
+      swarmOverview,
+      swarmBrief,
+      taskReport,
+      deriveSwarmBlockersReason,
+      buildSwarmBlockersSummary
+    }
+  );
+}
+
 export function recommendTaskAction(task) {
   if (task.queueStatus === "done") {
     return {
