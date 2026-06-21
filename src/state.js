@@ -249,6 +249,7 @@ import {
   buildRuntimeRecoveryPackViewFromSources,
   buildRuntimeRecoveryPackView,
   buildRuntimeRecoveryPackSummary,
+  buildRuntimeReviewPackViewFromSources,
   buildRuntimeReviewPackView,
   buildRuntimeLeaderPackSummary,
   buildRuntimeLeaderPackView,
@@ -1233,7 +1234,7 @@ export function runtimeCloseoutPack(input = {}) {
 }
 
 export function runtimeReviewPack(input = {}) {
-  return buildRuntimeReviewPackView(
+  return buildRuntimeReviewPackViewFromSources(
     input,
     {
       runtimeReview,
@@ -1244,7 +1245,8 @@ export function runtimeReviewPack(input = {}) {
     {
       deriveRuntimeReviewPackSurface,
       deriveRuntimeReviewPackReason,
-      buildRuntimeReviewPackSummary
+      buildRuntimeReviewPackSummary,
+      buildRuntimeReviewPackView
     }
   );
 }

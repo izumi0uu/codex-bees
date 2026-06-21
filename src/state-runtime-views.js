@@ -1424,6 +1424,37 @@ export function buildRuntimeReviewPackView(
   };
 }
 
+export function buildRuntimeReviewPackViewFromSources(
+  input,
+  {
+    runtimeReview,
+    runtimeRoles,
+    runtimeVerifierPack,
+    describeRole
+  },
+  {
+    deriveRuntimeReviewPackSurface,
+    deriveRuntimeReviewPackReason,
+    buildRuntimeReviewPackSummary,
+    buildRuntimeReviewPackView
+  }
+) {
+  return buildRuntimeReviewPackView(
+    input,
+    {
+      runtimeReview,
+      runtimeRoles,
+      runtimeVerifierPack,
+      describeRole
+    },
+    {
+      deriveRuntimeReviewPackSurface,
+      deriveRuntimeReviewPackReason,
+      buildRuntimeReviewPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeQueuePackSurface({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";
