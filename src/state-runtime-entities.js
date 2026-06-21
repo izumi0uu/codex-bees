@@ -428,6 +428,39 @@ export function buildRuntimeHandoffsView(
   };
 }
 
+export function buildRuntimeHandoffsViewFromState(
+  {
+    loadState,
+    normalizeTask,
+    taskBrief
+  },
+  {
+    buildRuntimeHandoffEntry,
+    compareRuntimeHandoffEntries,
+    runtimeHandoffActorKey,
+    compareRuntimeHandoffGroups,
+    deriveRuntimeHandoffsReason,
+    buildRuntimeHandoffsSummary,
+    buildRuntimeHandoffsView
+  }
+) {
+  return buildRuntimeHandoffsView(
+    {
+      loadState,
+      normalizeTask,
+      taskBrief
+    },
+    {
+      buildRuntimeHandoffEntry,
+      compareRuntimeHandoffEntries,
+      runtimeHandoffActorKey,
+      compareRuntimeHandoffGroups,
+      deriveRuntimeHandoffsReason,
+      buildRuntimeHandoffsSummary
+    }
+  );
+}
+
 export function buildRuntimeCloseoutTaskSummary(task) {
   if (task.reviewOutcome === "approved") {
     return `Task ${task.id} was approved and is ready for final archive or handoff.`;

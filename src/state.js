@@ -127,6 +127,7 @@ import {
   buildRuntimeCloseoutView,
   buildRuntimeFocusView,
   buildRuntimeActivityEntry,
+  buildRuntimeHandoffsViewFromState,
   buildRuntimeHandoffsView,
   buildRuntimeRecoveryView,
   buildRuntimeCloseoutTaskEntry,
@@ -1078,7 +1079,7 @@ export function runtimeActivity(input = {}) {
 }
 
 export function runtimeHandoffs() {
-  return buildRuntimeHandoffsView(
+  return buildRuntimeHandoffsViewFromState(
     {
       loadState,
       normalizeTask,
@@ -1090,7 +1091,8 @@ export function runtimeHandoffs() {
       runtimeHandoffActorKey,
       compareRuntimeHandoffGroups,
       deriveRuntimeHandoffsReason,
-      buildRuntimeHandoffsSummary
+      buildRuntimeHandoffsSummary,
+      buildRuntimeHandoffsView
     }
   );
 }
