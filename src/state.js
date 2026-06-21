@@ -45,6 +45,15 @@ import {
   tokenize
 } from "./state-query.js";
 import {
+  buildRuntimeCloseoutSummary,
+  buildRuntimeCloseoutSwarmEntry,
+  buildSwarmBundleSummary,
+  deriveLeaderWorkspaceReason,
+  deriveRuntimeCloseoutReason,
+  deriveSwarmBriefReason,
+  deriveSwarmBundleReason
+} from "./state-swarm-views.js";
+import {
   buildSessionTaskSnapshot,
   buildVerifierBundleSummary,
   buildVerifierDecisionCommands,
@@ -1306,7 +1315,7 @@ export function runtimeCloseout() {
     .sort(compareRuntimeCloseoutTasks);
   const swarms = listSwarmOverviews()
     .filter((overview) => overview.readyToComplete)
-    .map((overview) => buildRuntimeCloseoutSwarmEntry(overview))
+    .map((overview) => buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout))
     .sort(compareRuntimeCloseoutSwarms);
   const nextTask = tasks[0] ?? null;
   const nextSwarm = swarms[0] ?? null;
@@ -4166,29 +4175,6 @@ function buildSwarmHandoff(overview, recommended) {
   return `Swarm ${overview.swarm.id} is active with bounded local coordination state.`;
 }
 
-function buildSwarmBundleSummary(overview, laneBundles) {
-  if (overview.readyToComplete) {
-    return `Swarm ${overview.swarm.id} is ready to complete with ${overview.counts.done}/${overview.counts.totalLanes} lanes done.`;
-  }
-
-  const reviewLane = laneBundles.find((lane) => lane.queueStatus === "ready_for_review");
-  if (reviewLane) {
-    return `Swarm ${overview.swarm.id} has lane ${reviewLane.lane} waiting on verifier ${reviewLane.verifier}.`;
-  }
-
-  const claimedLane = laneBundles.find((lane) => lane.queueStatus === "claimed");
-  if (claimedLane) {
-    return `Swarm ${overview.swarm.id} is in progress on lane ${claimedLane.lane} with worker ${claimedLane.claimedBy ?? "unknown"}.`;
-  }
-
-  const nextLane = laneBundles.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released");
-  if (nextLane) {
-    return `Swarm ${overview.swarm.id} can dispatch lane ${nextLane.lane} next.`;
-  }
-
-  return `Swarm ${overview.swarm.id} remains active with ${overview.counts.totalLanes} tracked lanes.`;
-}
-
 function deriveSwarmCloseoutCommand(overview, brief) {
   if (overview.readyToComplete) {
     return `node ./src/index.js swarm:done --id ${overview.swarm.id}`;
@@ -4729,22 +4715,6 @@ function buildRuntimeCloseoutTaskSummary(task) {
   return `Task ${task.id} is done and ready for closeout packaging.`;
 }
 
-function buildRuntimeCloseoutSwarmEntry(overview) {
-  const closeout = swarmCloseout(overview.swarm.id);
-  return {
-    kind: "swarm",
-    swarmId: overview.swarm.id,
-    objective: overview.swarm.objective,
-    owner: overview.swarm.owner,
-    counts: overview.counts,
-    derivedStatus: overview.derivedStatus,
-    closeout,
-    command: closeout?.command ?? null,
-    updatedAt: overview.swarm.updatedAt ?? null,
-    summary: closeout?.summary ?? `Swarm ${overview.swarm.id} is ready for closeout.`
-  };
-}
-
 function compareRuntimeCloseoutTasks(left, right) {
   const approvedLeft = left.reviewOutcome === "approved" ? 0 : 1;
   const approvedRight = right.reviewOutcome === "approved" ? 0 : 1;
@@ -4774,22 +4744,6 @@ function chooseRuntimeCloseoutNext(nextTask, nextSwarm) {
     return nextSwarm;
   }
   return nextTask ?? null;
-}
-
-function buildRuntimeCloseoutSummary(tasks, swarms, next) {
-  if (tasks.length === 0 && swarms.length === 0) {
-    return "Runtime closeout has no finished tasks or swarms waiting on final closure.";
-  }
-
-  if (!next) {
-    return `Runtime closeout is tracking ${tasks.length + swarms.length} finished artifact${tasks.length + swarms.length === 1 ? "" : "s"}.`;
-  }
-
-  if (next.kind === "task") {
-    return `Runtime closeout should package ${next.taskId} first.`;
-  }
-
-  return `Runtime closeout should finish swarm ${next.swarmId} first.`;
 }
 
 function isRuntimeRecoveryTask(task) {
@@ -5039,34 +4993,6 @@ function deriveLeaderAssignmentDispatchReason({ ownerId, ownerGroup, assignment,
   return "no_assignment_dispatch_ready";
 }
 
-function deriveLeaderWorkspaceReason({ swarmEntries, focusEntry }) {
-  if (focusEntry?.recommendedNextAction?.startsWith("review_lane:")) {
-    return "review_focus_priority";
-  }
-  if (focusEntry?.recommendedNextAction?.startsWith("dispatch_lane:")) {
-    return "dispatch_focus_priority";
-  }
-  if (focusEntry?.recommendedNextAction === "queue_swarm_lanes") {
-    return "queue_focus_priority";
-  }
-  if (focusEntry?.recommendedNextAction === "complete" || focusEntry?.readyToComplete) {
-    return "closeout_focus_priority";
-  }
-  if (focusEntry?.recommendedNextAction?.startsWith("continue_lane:")) {
-    return "active_execution_focus";
-  }
-  if (focusEntry?.recommendedNextAction?.startsWith("unblock_lane:")) {
-    return "blocked_focus_priority";
-  }
-  if (focusEntry?.id) {
-    return "tracked_swarm_focus";
-  }
-  if ((swarmEntries?.length ?? 0) > 0) {
-    return "tracked_swarms_visible";
-  }
-  return "no_swarms_tracked";
-}
-
 function deriveRuntimeDispatchReason({ groups, totalAssignments, next }) {
   if ((groups?.length ?? 0) > 1) {
     return "parallel_owner_groups_visible";
@@ -5151,22 +5077,6 @@ function deriveRuntimeRecoveryReason({ groups, next }) {
     return "recovery_groups_visible";
   }
   return "no_recovery_needed";
-}
-
-function deriveRuntimeCloseoutReason({ tasks, swarms, next }) {
-  if (next?.kind === "task" && next?.reviewOutcome === "approved") {
-    return "approved_task_ready";
-  }
-  if (next?.kind === "task") {
-    return "task_closeout_ready";
-  }
-  if (next?.kind === "swarm") {
-    return "swarm_closeout_ready";
-  }
-  if (((tasks?.length ?? 0) + (swarms?.length ?? 0)) > 0) {
-    return "closeout_items_visible";
-  }
-  return "no_closeout_ready";
 }
 
 function deriveRuntimeAlertsReason({ alerts }) {
@@ -5298,48 +5208,6 @@ function deriveSwarmDispatchReason({ lane, previousTask, task }) {
     return "dispatch_lane_claimed";
   }
   return "swarm_dispatch_visible";
-}
-
-function deriveSwarmBriefReason(recommended) {
-  const action = recommended?.action ?? null;
-  if (action === "complete") {
-    return "swarm_complete";
-  }
-  if (action === "queue_swarm_lanes") {
-    return "queue_swarm_lanes";
-  }
-  if (typeof action === "string" && action.startsWith("review_lane:")) {
-    return "review_lane_ready";
-  }
-  if (typeof action === "string" && action.startsWith("dispatch_lane:")) {
-    return "dispatch_lane_ready";
-  }
-  if (typeof action === "string" && action.startsWith("continue_lane:")) {
-    return "continue_lane_active";
-  }
-  if (typeof action === "string" && action.startsWith("unblock_lane:")) {
-    return "blocked_lane_ready";
-  }
-  return "swarm_state_visible";
-}
-
-function deriveSwarmBundleReason({ overview, laneBundles }) {
-  if (overview?.readyToComplete) {
-    return "swarm_ready_to_complete";
-  }
-  const reviewLane = laneBundles?.find((lane) => lane.queueStatus === "ready_for_review") ?? null;
-  if (reviewLane?.lane) {
-    return "review_lane_waiting";
-  }
-  const claimedLane = laneBundles?.find((lane) => lane.queueStatus === "claimed") ?? null;
-  if (claimedLane?.lane) {
-    return "claimed_lane_active";
-  }
-  const dispatchLane = laneBundles?.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null;
-  if (dispatchLane?.lane) {
-    return "dispatch_lane_ready";
-  }
-  return "swarm_state_visible";
 }
 
 function deriveTaskHistoryReason({ history, next }) {
