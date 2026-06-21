@@ -365,7 +365,9 @@ import {
 import {
   VALID_QUEUE_STATUSES,
   VALID_SWARM_STATUSES,
+  buildSwarmValidationViewFromSources,
   buildSwarmValidationView,
+  buildTaskValidationViewFromSources,
   buildTaskValidationView,
   canTransitionSwarm,
   canTransitionTask,
@@ -1806,7 +1808,15 @@ export function validateTask(id) {
   if (!task) {
     return null;
   }
-  return buildTaskValidationView(task, runtimeRoleCatalog());
+  return buildTaskValidationViewFromSources(
+    task,
+    {
+      runtimeRoleCatalog
+    },
+    {
+      buildTaskValidationView
+    }
+  );
 }
 
 export function validateSwarm(id) {
@@ -1814,7 +1824,15 @@ export function validateSwarm(id) {
   if (!swarm) {
     return null;
   }
-  return buildSwarmValidationView(swarm, runtimeRoleCatalog());
+  return buildSwarmValidationViewFromSources(
+    swarm,
+    {
+      runtimeRoleCatalog
+    },
+    {
+      buildSwarmValidationView
+    }
+  );
 }
 
 export function runtimeRoleCatalog() {

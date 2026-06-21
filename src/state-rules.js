@@ -200,6 +200,18 @@ export function buildTaskValidationView(task, roleCatalog) {
   };
 }
 
+export function buildTaskValidationViewFromSources(
+  task,
+  {
+    runtimeRoleCatalog
+  },
+  {
+    buildTaskValidationView
+  }
+) {
+  return buildTaskValidationView(task, runtimeRoleCatalog());
+}
+
 export function buildSwarmValidationView(swarm, roleCatalog) {
   const validation = validateSwarmValue(swarm, roleCatalog);
   return {
@@ -207,6 +219,18 @@ export function buildSwarmValidationView(swarm, roleCatalog) {
     recommendedReason: deriveSwarmValidationReason(validation),
     ...validation
   };
+}
+
+export function buildSwarmValidationViewFromSources(
+  swarm,
+  {
+    runtimeRoleCatalog
+  },
+  {
+    buildSwarmValidationView
+  }
+) {
+  return buildSwarmValidationView(swarm, runtimeRoleCatalog());
 }
 
 export function deriveSwarmStatus(swarm, tasks) {
