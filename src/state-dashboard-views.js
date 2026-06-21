@@ -52,6 +52,29 @@ export function buildLeaderQueueView(
   };
 }
 
+export function buildLeaderQueueViewFromSources(
+  input,
+  {
+    leaderWorkspace
+  },
+  {
+    deriveLeaderQueueReason,
+    buildLeaderQueueSummary,
+    buildLeaderQueueView
+  }
+) {
+  return buildLeaderQueueView(
+    input,
+    {
+      leaderWorkspace
+    },
+    {
+      deriveLeaderQueueReason,
+      buildLeaderQueueSummary
+    }
+  );
+}
+
 export function buildLeaderAssignmentsSummary(assignments, groups) {
   if (assignments.length === 0) {
     return "Leader assignments has no dispatchable work right now.";

@@ -170,6 +170,7 @@ import {
   buildLeaderAssignmentsViewFromSources,
   buildLeaderAssignmentsView,
   buildLeaderAssignmentsSummary,
+  buildLeaderQueueViewFromSources,
   buildLeaderQueueView,
   buildLeaderQueueSummary,
   buildRuntimeAlertsSummary,
@@ -915,14 +916,15 @@ export function swarmDispatchBundle(id) {
 }
 
 export function leaderQueue(input = {}) {
-  return buildLeaderQueueView(
+  return buildLeaderQueueViewFromSources(
     input,
     {
       leaderWorkspace
     },
     {
       deriveLeaderQueueReason,
-      buildLeaderQueueSummary
+      buildLeaderQueueSummary,
+      buildLeaderQueueView
     }
   );
 }
