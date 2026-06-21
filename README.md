@@ -227,14 +227,15 @@ import { getRuntimeReadyView } from "codex-bees/runtime-ready";
 const ready = getRuntimeReadyView();
 ```
 
-The `codex-bees/runtime-status` subpath exposes the same runtime inventory shape that powers `codex-bees status`, so tools can inspect counts, recommended entry points, and catalog-backed capability summaries without shelling out.
+The `codex-bees/runtime-status` subpath exposes the same runtime inventory shape that powers `codex-bees status`, so tools can inspect counts, recommended entry points, and catalog-backed capability summaries without shelling out. It also exposes direct capability entry lookup when you already know the capability id you want.
 
 Example:
 
 ```js
-import { getRuntimeStatusView } from "codex-bees/runtime-status";
+import { getCapabilityCatalogEntry, getRuntimeStatusView } from "codex-bees/runtime-status";
 
 const status = getRuntimeStatusView();
+const runtimeCatalogCapability = getCapabilityCatalogEntry("runtime_catalog");
 ```
 
 The `codex-bees/runtime-contract` subpath exposes the stable runtime boundary directly, so tooling can read delivery mode, transport shape, responsibilities, and exclusions without scraping CLI or MCP output.
