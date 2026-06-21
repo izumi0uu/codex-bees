@@ -25,8 +25,92 @@ const INIT_COMMAND_OPTIONS = [
   { option: "--help", description: "Show init subcommand help" }
 ];
 
+const COMMAND_ALIASES = {
+  help: "--help",
+  version: "--version"
+};
+
+const COMMAND_HELP_OVERRIDES = {
+  "command:get": {
+    usage: [`${PRODUCT_NAME} command:get --name <command>`],
+    options: [{ option: "--name <command>", description: "Command id from the shipped CLI catalog" }]
+  },
+  "command:help": {
+    usage: [`${PRODUCT_NAME} command:help --name <command>`],
+    options: [{ option: "--name <command>", description: "Command id from the shipped CLI catalog" }]
+  },
+  "tools:get": {
+    usage: [`${PRODUCT_NAME} tools:get --name <tool>`],
+    options: [{ option: "--name <tool>", description: "Tool name from the shipped MCP tool catalog" }]
+  },
+  "catalog:agent": {
+    usage: [`${PRODUCT_NAME} catalog:agent --id <agent-id>`],
+    options: [{ option: "--id <agent-id>", description: "Agent id from the shipped local agent catalog" }]
+  },
+  "catalog:skill": {
+    usage: [`${PRODUCT_NAME} catalog:skill --id <skill-id>`],
+    options: [{ option: "--id <skill-id>", description: "Skill id from the shipped local skill catalog" }]
+  },
+  "capabilities:get": {
+    usage: [`${PRODUCT_NAME} capabilities:get --id <capability-id>`],
+    options: [{ option: "--id <capability-id>", description: "Capability id from the shipped runtime capability inventory" }]
+  },
+  "runtime:activity": {
+    usage: [`${PRODUCT_NAME} runtime:activity [--limit <number>]`],
+    options: [{ option: "--limit <number>", description: "Maximum number of recent activity entries to include" }]
+  },
+  "runtime:roles": {
+    usage: [`${PRODUCT_NAME} runtime:roles [--limit <number>]`],
+    options: [{ option: "--limit <number>", description: "Maximum number of role queue entries to include" }]
+  },
+  "--help": {
+    usage: [`${PRODUCT_NAME} --help`, `${PRODUCT_NAME} help`],
+    notes: ["Print the full top-level command catalog."]
+  },
+  "--version": {
+    usage: [`${PRODUCT_NAME} --version`, `${PRODUCT_NAME} version`],
+    notes: ["Print the shipped package version."]
+  }
+};
+
+function cloneEntries(entries = []) {
+  return entries.map((entry) => ({ ...entry }));
+}
+
+function normalizeCommand(command) {
+  if (!command) {
+    return undefined;
+  }
+
+  return COMMAND_ALIASES[command] ?? command;
+}
+
+function getCommandAliases(command) {
+  return Object.entries(COMMAND_ALIASES)
+    .filter(([, canonical]) => canonical === command)
+    .map(([alias]) => alias);
+}
+
+function getCommandHelpSpec(command, entry) {
+  const override = COMMAND_HELP_OVERRIDES[command];
+
+  return {
+    usage: cloneEntries(override?.usage?.map((line) => ({ line })) ?? []).map((entryLine) => entryLine.line),
+    options: cloneEntries(override?.options ?? entry?.options ?? []),
+    notes: [...(override?.notes ?? [])]
+  };
+}
+
+function pushCommandHelpSection(lines, title, bodyLines) {
+  if (bodyLines.length === 0) {
+    return;
+  }
+
+  lines.push("", `${title}:`, ...bodyLines.map((line) => `  ${line}`));
+}
+
 export function getInitCommandCatalog() {
-  return INIT_COMMAND_OPTIONS.map((entry) => ({ ...entry }));
+  return cloneEntries(INIT_COMMAND_OPTIONS);
 }
 
 export function getInitCommandCatalogView() {
@@ -196,11 +280,12 @@ export function getCommandCatalogView() {
 }
 
 export function getCommandCatalogEntry(command) {
-  if (!command) {
+  const normalizedCommand = normalizeCommand(command);
+  if (!normalizedCommand) {
     return undefined;
   }
 
-  return getCommandCatalog().find((entry) => entry.command === command);
+  return getCommandCatalog().find((entry) => entry.command === normalizedCommand);
 }
 
 export function getCommandCatalogEntryView(command) {
@@ -264,9 +349,39 @@ export function getInitHelpView(option) {
 }
 
 export function renderCommandHelpText(command) {
-  if (command === "init") {
+  const normalizedCommand = normalizeCommand(command);
+
+  if (normalizedCommand === "init") {
     return renderInitHelpText();
   }
 
-  return renderHelpText();
+  if (normalizedCommand === "mcp") {
+    return renderMcpHelpText();
+  }
+
+  const matchedEntry = getCommandCatalogEntry(normalizedCommand);
+  if (!matchedEntry) {
+    return renderHelpText();
+  }
+
+  const helpSpec = getCommandHelpSpec(normalizedCommand, matchedEntry);
+  const usageLines = helpSpec.usage.length > 0 ? helpSpec.usage : [`${PRODUCT_NAME} ${matchedEntry.command}`];
+  const aliases = getCommandAliases(matchedEntry.command);
+  const lines = [
+    `${PRODUCT_NAME} ${matchedEntry.command}`,
+    "",
+    "Usage:",
+    ...usageLines.map((line) => `  ${line}`)
+  ];
+
+  pushCommandHelpSection(lines, "Description", [matchedEntry.description]);
+  pushCommandHelpSection(lines, "Aliases", aliases);
+  pushCommandHelpSection(
+    lines,
+    "Options",
+    helpSpec.options.map((entry) => `${entry.option.padEnd(18)} ${entry.description}`)
+  );
+  pushCommandHelpSection(lines, "Notes", helpSpec.notes);
+
+  return lines.join("\n") + "\n";
 }

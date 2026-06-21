@@ -135,6 +135,8 @@ const initCatalogViewReason: "command_catalog_entry_loaded" | "command_catalog_e
 const initCatalogViewMatched: string | null = getCommandCatalogEntryView("init").matchedCommand;
 const initCommandHelpReason: "command_help_loaded" | "command_help_fallback_loaded" = getCommandHelpView("init").recommendedReason;
 const initCommandHelpMatched: string | null = getCommandHelpView("init").matchedCommand;
+const statusCommandHelpMatched: string | null = getCommandHelpView("status").matchedCommand;
+const aliasCommandHelpMatched: string | null = getCommandHelpView("help").matchedCommand;
 const initOptionEntry: string | undefined = getInitCommandCatalogEntry("--preview")?.option;
 const initOptionViewReason: "init_command_option_loaded" | "init_command_option_missing" = getInitCommandCatalogEntryView("--preview").recommendedReason;
 const initOptionViewMatched: string | null = getInitCommandCatalogEntryView("--preview").matchedOption;
@@ -145,6 +147,8 @@ const initHelpReason: "init_help_loaded" | "init_help_fallback_loaded" = getInit
 const initHelpMatched: string | null = getInitHelpView("--preview").matchedOption;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 const initHelpTextByCommand: string = renderCommandHelpText("init");
+const statusHelpTextByCommand: string = renderCommandHelpText("status");
+const aliasHelpTextByCommand: string = renderCommandHelpText("help");
 const rootHelpTextDirect: string = renderHelpTextRoot();
 const initHelpText: string = renderInitHelpText();
 const initPreviewSubpathReason: "init_changes_required" | "init_already_applied" = previewWorkspaceInitSubpath({ targetDirectory: "typed-init-preview" }).recommendedReason;
