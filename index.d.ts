@@ -16,16 +16,18 @@ export interface PackageMetadataView {
   metadata: PackageMetadata;
 }
 
-export interface CommandCatalogEntry {
-  command: string;
-  description: string;
-  options?: McpCommandCatalogEntry[];
-}
-
-export interface McpCommandCatalogEntry {
+export interface CommandOptionCatalogEntry {
   option: string;
   description: string;
 }
+
+export interface CommandCatalogEntry {
+  command: string;
+  description: string;
+  options?: CommandOptionCatalogEntry[];
+}
+
+export interface McpCommandCatalogEntry extends CommandOptionCatalogEntry {}
 
 export interface CommandCatalogView {
   kind: "command_catalog_view";
@@ -790,6 +792,7 @@ export declare function getPackageMetadataView(): PackageMetadataView;
 
 export declare function getCommandCatalog(): CommandCatalogEntry[];
 export declare function getCommandCatalogView(): CommandCatalogView;
+export declare function getInitCommandCatalog(): CommandOptionCatalogEntry[];
 export declare function renderHelpText(): string;
 export declare function renderInitHelpText(): string;
 export declare function getMcpCommandCatalog(): McpCommandCatalogEntry[];

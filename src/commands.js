@@ -1,10 +1,22 @@
 import { PRODUCT_NAME } from "./metadata.js";
 import { getMcpCommandCatalog } from "./mcp.js";
 
+const INIT_COMMAND_OPTIONS = [
+  { option: "--preview", description: "Show the exact init file plan without writing anything" },
+  { option: "--force", description: "Overwrite shipped .codex asset files that already exist" },
+  { option: "--dir <path>", description: "Materialize assets into a target directory instead of cwd" },
+  { option: "--target <path>", description: "Alias for --dir" },
+  { option: "--help", description: "Show init subcommand help" }
+];
+
+export function getInitCommandCatalog() {
+  return INIT_COMMAND_OPTIONS.map((entry) => ({ ...entry }));
+}
+
 export function getCommandCatalog() {
   return [
     { command: "run", description: "Start the local Codex runtime shell contract" },
-    { command: "init", description: "Materialize the shipped .codex runtime assets into the current project" },
+    { command: "init", description: "Materialize the shipped .codex runtime assets into the current project", options: getInitCommandCatalog() },
     { command: "mcp", description: "Start the local Codex MCP stdio runtime or inspect its subcommands", options: getMcpCommandCatalog() },
     { command: "tools", description: "Print the current MCP tool catalog" },
     { command: "catalog", description: "Print the shipped local agent and skill catalog" },
@@ -130,10 +142,6 @@ export function renderInitHelpText() {
     `  ${PRODUCT_NAME} init [--preview] [--force] [--dir <path>]`,
     "",
     "Options:",
-    "  --preview       Show the exact init file plan without writing anything",
-    "  --force         Overwrite shipped .codex asset files that already exist",
-    "  --dir <path>    Materialize assets into a target directory instead of cwd",
-    "  --target <path> Alias for --dir",
-    "  --help          Show init subcommand help"
+    ...getInitCommandCatalog().map((entry) => `  ${entry.option.padEnd(15)} ${entry.description}`)
   ].join("\n") + "\n";
 }
