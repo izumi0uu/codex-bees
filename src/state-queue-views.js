@@ -242,6 +242,39 @@ export function buildTaskNextView(
   };
 }
 
+export function buildTaskNextViewFromSources(
+  input,
+  {
+    normalizeNextMode,
+    loadState,
+    normalizeTask,
+    sortNextCandidates,
+    describeRole,
+    summarizeInboxTask,
+    taskBrief
+  },
+  {
+    deriveTaskNextReason,
+    buildTaskNextView
+  }
+) {
+  return buildTaskNextView(
+    input,
+    {
+      normalizeNextMode,
+      loadState,
+      normalizeTask,
+      sortNextCandidates,
+      describeRole,
+      summarizeInboxTask,
+      taskBrief
+    },
+    {
+      deriveTaskNextReason
+    }
+  );
+}
+
 export function buildTaskInboxView(
   input,
   {

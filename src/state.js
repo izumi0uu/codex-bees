@@ -35,6 +35,7 @@ import {
   buildPreviewTaskPickupView,
   buildTaskInboxViewFromSources,
   buildTaskInboxView,
+  buildTaskNextViewFromSources,
   buildTaskNextView,
   compareLeaderWorkspaceEntries,
   compareTasksByUpdatedAt,
@@ -1631,7 +1632,7 @@ export function taskInbox(input = {}) {
 }
 
 export function taskNext(input = {}) {
-  return buildTaskNextView(
+  return buildTaskNextViewFromSources(
     input,
     {
       normalizeNextMode,
@@ -1643,7 +1644,8 @@ export function taskNext(input = {}) {
       taskBrief
     },
     {
-      deriveTaskNextReason
+      deriveTaskNextReason,
+      buildTaskNextView
     }
   );
 }
