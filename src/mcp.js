@@ -205,6 +205,17 @@ export const toolCatalog = [
     }
   },
   {
+    name: "mcp_command_option",
+    description: "Return one shipped MCP command option view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        option: { type: "string" }
+      },
+      required: ["option"]
+    }
+  },
+  {
     name: "coordination_overview",
     description: "Describe the current local coordination model for Codex Bees.",
     inputSchema: {
@@ -1588,6 +1599,13 @@ function handleRequest(message) {
 
     if (name === "mcp_command_catalog") {
       return createSuccess(id, createTextPayload({ options: getMcpCommandCatalogView() }));
+    }
+
+    if (name === "mcp_command_option") {
+      if (!params.arguments?.option) {
+        return createError(id, -32602, "mcp_command_option requires arguments.option");
+      }
+      return createSuccess(id, createTextPayload({ option: getMcpCommandCatalogEntryView(params.arguments.option) }));
     }
 
     if (name === "worker_guidelines") {
