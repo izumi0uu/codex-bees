@@ -724,7 +724,7 @@ const installedRootExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedRootExampleScript}\nconsole.log(JSON.stringify({ ok: metadata.product === "codex-bees" && typeof stateFilePath() === "string" && getCommandCatalogView().kind === "command_catalog_view" && Array.isArray(getMcpCommandCatalog()) && getMcpCommandCatalogView().kind === "mcp_command_catalog_view" && getRuntimeCatalogView().kind === "runtime_catalog_view" && getRuntimeDoctorView().kind === "runtime_doctor_view" && getRuntimeReadyView().kind === "runtime_ready_view" && status.kind === "runtime_status_view" && getRuntimeContractView().kind === "runtime_contract_view" && planTask("readme root example").kind === "task_plan" && planSwarm("readme root swarm").kind === "planned_swarm" && renderMcpHelpText().includes("codex-bees mcp --help") }));`
+    `${documentedRootExampleScript}\nconsole.log(JSON.stringify({ ok: metadata.product === "codex-bees" && typeof stateFilePath() === "string" && getCommandCatalogView().kind === "command_catalog_view" && Array.isArray(getMcpCommandCatalog()) && getMcpCommandCatalogView().kind === "mcp_command_catalog_view" && getRuntimeCatalogView().kind === "runtime_catalog_view" && getRuntimeDoctorView().kind === "runtime_doctor_view" && getRuntimeReadyView().kind === "runtime_ready_view" && status.kind === "runtime_status_view" && getRuntimeContractView().kind === "runtime_contract_view" && brief?.kind === "task_execution_brief" && brief?.task?.id === releaseTask.id && history?.kind === "task_history" && history?.taskId === releaseTask.id && report?.kind === "task_report" && report?.task?.id === releaseTask.id && planTask("readme root example").kind === "task_plan" && planSwarm("readme root swarm").kind === "planned_swarm" && renderMcpHelpText().includes("codex-bees mcp --help") }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -784,7 +784,7 @@ const installedStateExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedStateExampleScript}\nconsole.log(JSON.stringify({ ok: task.id === "task-1" && memory.id === "memory-1" && memoryRecord?.id === memory.id && memoryDetail?.kind === "memory_detail" && memoryDetail?.memory?.id === memory.id && queue.counts.totalTasks === 1 && queue.tasks[0]?.id === task.id && typeof storage === "string" && storage.length > 0 }));`
+    `${documentedStateExampleScript}\nconsole.log(JSON.stringify({ ok: typeof task.id === "string" && task.id.length > 0 && typeof memory.id === "string" && memory.id.length > 0 && memoryRecord?.id === memory.id && memoryDetail?.kind === "memory_detail" && memoryDetail?.memory?.id === memory.id && queue.counts.totalTasks >= 1 && queue.tasks.some((entry) => entry.id === task.id) && typeof storage === "string" && storage.length > 0 }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -1197,6 +1197,25 @@ if (
   console.error("[smoke:installed-state-import] expected installed codex-bees/state subpath to expose working state helpers");
   console.error(installedStateImport.stderr || installedStateImport.stdout);
   process.exit(installedStateImport.status ?? 1);
+}
+const installedRootTaskViewsImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then(async (m) => { const { rmSync } = await import("node:fs"); rmSync(".codex-bees", { recursive: true, force: true }); const task = m.addTask({ title: "root task view api task", owner: "executor", verifier: "tester", scope: ["src/api.js"], acceptance: ["ok"], verification: ["smoke"] }); const brief = m.taskBrief(task.id); const history = m.taskHistory(task.id); const report = m.taskReport(task.id); console.log(JSON.stringify({ ok: task.id === "task-1" && brief?.kind === "task_execution_brief" && brief?.task?.id === "task-1" && history?.kind === "task_history" && history?.taskId === "task-1" && history?.counts?.totalHistoryEntries >= 1 && report?.kind === "task_report" && report?.task?.id === "task-1" && report?.brief?.task?.id === "task-1" })); })'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRootTaskViewsImport.status !== 0 ||
+  JSON.parse(installedRootTaskViewsImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-root-task-views-import] expected installed codex-bees root import to expose task delivery helpers");
+  console.error(installedRootTaskViewsImport.stderr || installedRootTaskViewsImport.stdout);
+  process.exit(installedRootTaskViewsImport.status ?? 1);
 }
 function runInstalled(label, command, args, options = {}) {
   const result = spawnSync(command, args, {
