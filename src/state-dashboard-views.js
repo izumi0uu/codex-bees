@@ -313,6 +313,31 @@ export function buildRuntimeAlertsView(
   };
 }
 
+export function buildRuntimeAlertsViewFromSources(
+  {
+    runtimeDashboard,
+    listSwarmOverviews,
+    compareRuntimeAlerts
+  },
+  {
+    deriveRuntimeAlertsReason,
+    buildRuntimeAlertsSummary,
+    buildRuntimeAlertsView
+  }
+) {
+  return buildRuntimeAlertsView(
+    {
+      runtimeDashboard,
+      listSwarmOverviews,
+      compareRuntimeAlerts
+    },
+    {
+      deriveRuntimeAlertsReason,
+      buildRuntimeAlertsSummary
+    }
+  );
+}
+
 export function deriveLeaderAssignmentsReason({ assignments, groups, next }) {
   if ((groups?.length ?? 0) > 1) {
     return "parallel_owner_groups_visible";

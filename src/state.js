@@ -168,6 +168,7 @@ import {
   buildLeaderQueueView,
   buildLeaderQueueSummary,
   buildRuntimeAlertsSummary,
+  buildRuntimeAlertsViewFromSources,
   buildRuntimeAlertsView,
   buildRuntimeDashboardSummary,
   buildRuntimeDashboardViewFromSources,
@@ -1002,7 +1003,7 @@ export function runtimeDashboard() {
 }
 
 export function runtimeAlerts() {
-  return buildRuntimeAlertsView(
+  return buildRuntimeAlertsViewFromSources(
     {
       runtimeDashboard,
       listSwarmOverviews,
@@ -1010,7 +1011,8 @@ export function runtimeAlerts() {
     },
     {
       deriveRuntimeAlertsReason,
-      buildRuntimeAlertsSummary
+      buildRuntimeAlertsSummary,
+      buildRuntimeAlertsView
     }
   );
 }
