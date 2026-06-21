@@ -61,6 +61,7 @@ rmSync(".codex-bees", { recursive: true, force: true });
 const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
+  ["ready", ["./src/index.js", "ready"]],
   ["commands", ["./src/index.js", "commands"]],
   ["command-get", ["./src/index.js", "command:get", "--name", "init"]],
   ["command-help", ["./src/index.js", "command:help", "--name", "init"]],
@@ -1399,6 +1400,38 @@ if (
   console.error(installedRunImport.stderr || installedRunImport.stdout);
   process.exit(installedRunImport.status ?? 1);
 }
+const installedReady = JSON.parse(
+  runInstalled("installed-ready", "npx", ["codex-bees", "ready"]).stdout
+).ready;
+if (
+  installedReady.kind !== "runtime_ready_view" ||
+  installedReady.recommendedReason !== "runtime_entry_ready" ||
+  installedReady.status !== "ready" ||
+  installedReady.contract?.kind !== "runtime_contract_view"
+) {
+  console.error("[smoke:installed-ready] expected installed npx codex-bees ready surface");
+  process.exit(1);
+}
+const installedReadyImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-ready").then((m) => console.log(JSON.stringify({ ok: JSON.stringify(m.getRuntimeReadyView()) === process.argv[1] })))',
+    JSON.stringify(installedReady)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedReadyImport.status !== 0 ||
+  JSON.parse(installedReadyImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-ready-contract] expected installed ready output to match runtime-ready api surface");
+  console.error(installedReadyImport.stderr || installedReadyImport.stdout);
+  process.exit(installedReadyImport.status ?? 1);
+}
 const installedDirectCliRun = JSON.parse(
   runInstalled("installed-direct-cli-run", "node", ["./node_modules/codex-bees/dist/index.js", "run"]).stdout
 );
@@ -1433,6 +1466,38 @@ if (
   console.error("[smoke:installed-direct-cli-run-contract] expected direct packaged CLI run output to match runtime-ready api surface");
   console.error(installedDirectCliRunImport.stderr || installedDirectCliRunImport.stdout);
   process.exit(installedDirectCliRunImport.status ?? 1);
+}
+const installedDirectCliReady = JSON.parse(
+  runInstalled("installed-direct-cli-ready", "node", ["./node_modules/codex-bees/dist/index.js", "ready"]).stdout
+).ready;
+if (
+  installedDirectCliReady.kind !== "runtime_ready_view" ||
+  installedDirectCliReady.recommendedReason !== "runtime_entry_ready" ||
+  installedDirectCliReady.status !== "ready" ||
+  installedDirectCliReady.contract?.kind !== "runtime_contract_view"
+) {
+  console.error("[smoke:installed-direct-cli-ready] expected direct packaged CLI ready surface");
+  process.exit(1);
+}
+const installedDirectCliReadyImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-ready").then((m) => console.log(JSON.stringify({ ok: JSON.stringify(m.getRuntimeReadyView()) === process.argv[1] })))',
+    JSON.stringify(installedDirectCliReady)
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedDirectCliReadyImport.status !== 0 ||
+  JSON.parse(installedDirectCliReadyImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-direct-cli-ready-contract] expected direct packaged CLI ready output to match runtime-ready api surface");
+  console.error(installedDirectCliReadyImport.stderr || installedDirectCliReadyImport.stdout);
+  process.exit(installedDirectCliReadyImport.status ?? 1);
 }
 const downstreamTypesSmokePath = join(packedInstallAppDir, "types-smoke.ts");
 writeFileSync(
@@ -2364,6 +2429,16 @@ if (
   runtimeReadyView.next?.[0] !== "use `codex-bees init` to materialize the shipped .codex project assets"
 ) {
   console.error("[smoke:run] expected runtime readiness view");
+  process.exit(1);
+}
+const cliReadyView = JSON.parse(run("ready-verify", ["./src/index.js", "ready"]).stdout).ready;
+if (
+  cliReadyView.kind !== "runtime_ready_view" ||
+  cliReadyView.recommendedReason !== "runtime_entry_ready" ||
+  cliReadyView.status !== "ready" ||
+  cliReadyView.contract?.kind !== "runtime_contract_view"
+) {
+  console.error("[smoke:ready] expected explicit runtime readiness view");
   process.exit(1);
 }
 const cliCommandsView = JSON.parse(run("commands-verify", ["./src/index.js", "commands"]).stdout).commands;
