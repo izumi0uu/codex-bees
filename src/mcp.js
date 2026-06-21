@@ -9,6 +9,7 @@ import { getRuntimeContractView } from "./runtime-contract.js";
 import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
 import { getRuntimeDoctorView } from "./doctor.js";
+import { getCommandCatalogView } from "./commands.js";
 import {
   activateSwarm,
   addTask,
@@ -130,6 +131,14 @@ export const toolCatalog = [
   {
     name: "runtime_doctor",
     description: "Return the runtime doctor diagnostics view for the local entrypoint.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "command_catalog",
+    description: "Return the shipped CLI command catalog view.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1479,6 +1488,10 @@ function handleRequest(message) {
 
     if (name === "runtime_doctor") {
       return createSuccess(id, createTextPayload({ doctor: getRuntimeDoctorView(import.meta.url) }));
+    }
+
+    if (name === "command_catalog") {
+      return createSuccess(id, createTextPayload({ commands: getCommandCatalogView() }));
     }
 
     if (name === "worker_guidelines") {
