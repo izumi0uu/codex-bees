@@ -156,6 +156,7 @@ const storage = stateFilePath();
 The `codex-bees/mcp` subpath is also usable as a small programmatic adapter layer when you want the same local MCP behavior without spawning the stdio server first. It exposes:
 
 - `listMcpTools()` for the raw tool inventory
+- `getMcpToolEntry(name)` for one raw MCP tool definition lookup
 - `getMcpCommandCatalog()` for the raw structured `mcp` subcommand option list
 - `getMcpCommandCatalogEntry(option)` for one structured `mcp` subcommand option lookup
 - `getToolCatalogView()` for the grouped catalog view
@@ -169,9 +170,10 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 Example:
 
 ```js
-import { callMcpTool, getMcpCommandCatalog, getMcpCommandCatalogEntry, getMcpHelpView, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
+import { callMcpTool, getMcpCommandCatalog, getMcpCommandCatalogEntry, getMcpHelpView, getMcpToolEntry, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
 
 const tools = listMcpTools();
+const runtimeContractTool = getMcpToolEntry("runtime_contract");
 const options = getMcpCommandCatalog();
 const toolsOption = getMcpCommandCatalogEntry("--tools");
 const helpView = getMcpHelpView("--tools");
