@@ -306,6 +306,41 @@ export function buildTaskInboxView(
   };
 }
 
+export function buildTaskInboxViewFromSources(
+  input,
+  {
+    getRuntimeCatalog,
+    loadState,
+    normalizeTask,
+    sortInboxTasks,
+    summarizeInboxTask,
+    taskNext,
+    isClaimableTask,
+    describeRole
+  },
+  {
+    deriveTaskInboxReason,
+    buildTaskInboxView
+  }
+) {
+  return buildTaskInboxView(
+    input,
+    {
+      getRuntimeCatalog,
+      loadState,
+      normalizeTask,
+      sortInboxTasks,
+      summarizeInboxTask,
+      taskNext,
+      isClaimableTask,
+      describeRole
+    },
+    {
+      deriveTaskInboxReason
+    }
+  );
+}
+
 export function buildPreviewTaskPickupView(
   input,
   {
@@ -393,6 +428,37 @@ export function buildPreviewTaskPickupView(
     brief: next.brief,
     command: pickupFollowupCommand(next.candidate, input.workerId)
   };
+}
+
+export function buildPreviewTaskPickupViewFromSources(
+  input,
+  {
+    taskNext,
+    describeRole,
+    normalizeNextMode,
+    getTask,
+    pickupOutcome,
+    pickupFollowupCommand
+  },
+  {
+    deriveTaskPickupPreviewReason,
+    buildPreviewTaskPickupView
+  }
+) {
+  return buildPreviewTaskPickupView(
+    input,
+    {
+      taskNext,
+      describeRole,
+      normalizeNextMode,
+      getTask,
+      pickupOutcome,
+      pickupFollowupCommand
+    },
+    {
+      deriveTaskPickupPreviewReason
+    }
+  );
 }
 
 export function buildPreviewTaskAssignmentView(
@@ -489,6 +555,41 @@ export function buildPreviewTaskAssignmentView(
     brief,
     command: assignmentFollowupCommand(candidate, input.workerId)
   };
+}
+
+export function buildPreviewTaskAssignmentViewFromSources(
+  input,
+  {
+    leaderAssignments,
+    describeRole,
+    normalizeNextMode,
+    getTask,
+    summarizeInboxTask,
+    taskBrief,
+    assignmentPickupOutcome,
+    assignmentFollowupCommand
+  },
+  {
+    deriveTaskAssignmentPreviewReason,
+    buildPreviewTaskAssignmentView
+  }
+) {
+  return buildPreviewTaskAssignmentView(
+    input,
+    {
+      leaderAssignments,
+      describeRole,
+      normalizeNextMode,
+      getTask,
+      summarizeInboxTask,
+      taskBrief,
+      assignmentPickupOutcome,
+      assignmentFollowupCommand
+    },
+    {
+      deriveTaskAssignmentPreviewReason
+    }
+  );
 }
 
 export function buildTaskAssignmentPickupView(
@@ -604,6 +705,43 @@ export function buildTaskAssignmentPickupView(
   };
 }
 
+export function buildTaskAssignmentPickupViewFromSources(
+  input,
+  {
+    leaderAssignments,
+    describeRole,
+    normalizeNextMode,
+    getTask,
+    taskBrief,
+    summarizeInboxTask,
+    claimTask,
+    assignmentPickupOutcome,
+    assignmentFollowupCommand
+  },
+  {
+    deriveTaskAssignmentPickupReason,
+    buildTaskAssignmentPickupView
+  }
+) {
+  return buildTaskAssignmentPickupView(
+    input,
+    {
+      leaderAssignments,
+      describeRole,
+      normalizeNextMode,
+      getTask,
+      taskBrief,
+      summarizeInboxTask,
+      claimTask,
+      assignmentPickupOutcome,
+      assignmentFollowupCommand
+    },
+    {
+      deriveTaskAssignmentPickupReason
+    }
+  );
+}
+
 export function buildTaskPickupView(
   input,
   {
@@ -696,4 +834,41 @@ export function buildTaskPickupView(
     brief: next.brief,
     command
   };
+}
+
+export function buildTaskPickupViewFromSources(
+  input,
+  {
+    taskNext,
+    claimTask,
+    describeRole,
+    summarizeInboxTask,
+    taskBrief,
+    getTask,
+    pickupFollowupCommand,
+    pickupOutcome,
+    normalizeNextMode
+  },
+  {
+    deriveTaskPickupReason,
+    buildTaskPickupView
+  }
+) {
+  return buildTaskPickupView(
+    input,
+    {
+      taskNext,
+      claimTask,
+      describeRole,
+      summarizeInboxTask,
+      taskBrief,
+      getTask,
+      pickupFollowupCommand,
+      pickupOutcome,
+      normalizeNextMode
+    },
+    {
+      deriveTaskPickupReason
+    }
+  );
 }

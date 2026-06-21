@@ -25,10 +25,15 @@ import {
 import {
   assignmentFollowupCommand,
   assignmentPickupOutcome,
+  buildTaskAssignmentPickupViewFromSources,
   buildTaskAssignmentPickupView,
+  buildTaskPickupViewFromSources,
   buildTaskPickupView,
+  buildPreviewTaskAssignmentViewFromSources,
   buildPreviewTaskAssignmentView,
+  buildPreviewTaskPickupViewFromSources,
   buildPreviewTaskPickupView,
+  buildTaskInboxViewFromSources,
   buildTaskInboxView,
   buildTaskNextView,
   compareLeaderWorkspaceEntries,
@@ -1602,7 +1607,7 @@ export function leaderWorkspace(input = {}) {
 }
 
 export function taskInbox(input = {}) {
-  return buildTaskInboxView(
+  return buildTaskInboxViewFromSources(
     input,
     {
       getRuntimeCatalog,
@@ -1615,7 +1620,8 @@ export function taskInbox(input = {}) {
       describeRole
     },
     {
-      deriveTaskInboxReason
+      deriveTaskInboxReason,
+      buildTaskInboxView
     }
   );
 }
@@ -1639,7 +1645,7 @@ export function taskNext(input = {}) {
 }
 
 export function taskPickup(input = {}) {
-  return buildTaskPickupView(
+  return buildTaskPickupViewFromSources(
     input,
     {
       taskNext,
@@ -1653,13 +1659,14 @@ export function taskPickup(input = {}) {
       normalizeNextMode
     },
     {
-      deriveTaskPickupReason
+      deriveTaskPickupReason,
+      buildTaskPickupView
     }
   );
 }
 
 export function taskAssignmentPickup(input = {}) {
-  return buildTaskAssignmentPickupView(
+  return buildTaskAssignmentPickupViewFromSources(
     input,
     {
       leaderAssignments,
@@ -1673,13 +1680,14 @@ export function taskAssignmentPickup(input = {}) {
       assignmentFollowupCommand
     },
     {
-      deriveTaskAssignmentPickupReason
+      deriveTaskAssignmentPickupReason,
+      buildTaskAssignmentPickupView
     }
   );
 }
 
 export function previewTaskAssignment(input = {}) {
-  return buildPreviewTaskAssignmentView(
+  return buildPreviewTaskAssignmentViewFromSources(
     input,
     {
       leaderAssignments,
@@ -1692,13 +1700,14 @@ export function previewTaskAssignment(input = {}) {
       assignmentFollowupCommand
     },
     {
-      deriveTaskAssignmentPreviewReason
+      deriveTaskAssignmentPreviewReason,
+      buildPreviewTaskAssignmentView
     }
   );
 }
 
 export function previewTaskPickup(input = {}) {
-  return buildPreviewTaskPickupView(
+  return buildPreviewTaskPickupViewFromSources(
     input,
     {
       taskNext,
@@ -1709,7 +1718,8 @@ export function previewTaskPickup(input = {}) {
       pickupFollowupCommand
     },
     {
-      deriveTaskPickupPreviewReason
+      deriveTaskPickupPreviewReason,
+      buildPreviewTaskPickupView
     }
   );
 }
