@@ -514,6 +514,12 @@ if (!documentedApiExampleBlockMatch) {
   process.exit(1);
 }
 const documentedApiExampleScript = documentedApiExampleBlockMatch[1];
+const documentedInitExampleBlockMatch = README_TEXT.match(/The `codex-bees\/init` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
+if (!documentedInitExampleBlockMatch) {
+  console.error("[smoke:readme-init-example] expected README to document a runnable init example block");
+  process.exit(1);
+}
+const documentedInitExampleScript = documentedInitExampleBlockMatch[1];
 const documentedStateExampleBlockMatch = README_TEXT.match(/The `codex-bees\/state` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedStateExampleBlockMatch) {
   console.error("[smoke:readme-state-example] expected README to document a runnable state subpath example block");
@@ -686,6 +692,26 @@ if (
   console.error("[smoke:readme-api-example-contract] expected README api example to execute successfully against the installed package");
   console.error(installedApiExample.stderr || installedApiExample.stdout);
   process.exit(installedApiExample.status ?? 1);
+}
+const installedInitExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedInitExampleScript}\nconsole.log(JSON.stringify({ ok: preview.kind === "workspace_init_preview" && preview.entries?.some((entry) => entry.path === ".codex/agents/executor.md") && applied.kind === "workspace_init_result" && applied.created?.includes(".codex/agents/executor.md") }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedInitExample.status !== 0 ||
+  JSON.parse(installedInitExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-init-example-contract] expected README init example to execute successfully against the installed package");
+  console.error(installedInitExample.stderr || installedInitExample.stdout);
+  process.exit(installedInitExample.status ?? 1);
 }
 const installedStateExample = spawnSync(
   "node",
@@ -972,6 +998,25 @@ if (
   console.error("[smoke:installed-commands-import] expected installed codex-bees/commands subpath export");
   console.error(installedCommandsImport.stderr || installedCommandsImport.stdout);
   process.exit(installedCommandsImport.status ?? 1);
+}
+const installedInitImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/init").then(async (m) => { const { mkdtempSync, rmSync } = await import("node:fs"); const { tmpdir } = await import("node:os"); const { join } = await import("node:path"); const targetDirectory = mkdtempSync(join(tmpdir(), "codex-bees-installed-init-import-")); const preview = m.previewWorkspaceInit({ targetDirectory }); const applied = m.initWorkspace({ targetDirectory }); rmSync(targetDirectory, { recursive: true, force: true }); console.log(JSON.stringify({ ok: preview.kind === "workspace_init_preview" && preview.entries?.some((entry) => entry.path === ".codex/agents/executor.md") && applied.kind === "workspace_init_result" && applied.created?.includes(".codex/agents/executor.md") })); })'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedInitImport.status !== 0 ||
+  JSON.parse(installedInitImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-init-import] expected installed codex-bees/init subpath export");
+  console.error(installedInitImport.stderr || installedInitImport.stdout);
+  process.exit(installedInitImport.status ?? 1);
 }
 const installedDoctorImport = spawnSync(
   "node",

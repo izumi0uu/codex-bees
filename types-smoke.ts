@@ -59,6 +59,7 @@ import {
 } from "codex-bees";
 
 import { renderHelpText as renderHelpTextCommands } from "codex-bees/commands";
+import { initWorkspace as initWorkspaceSubpath, previewWorkspaceInit as previewWorkspaceInitSubpath } from "codex-bees/init";
 import { callMcpTool as callMcpToolSubpath, handleMcpRequest as handleMcpRequestSubpath } from "codex-bees/mcp";
 import {
   getPackageMetadata as getApiPackageMetadata,
@@ -87,6 +88,8 @@ const initCommandOptions: string | undefined = getInitCommandCatalog()[0]?.optio
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 const rootHelpTextDirect: string = renderHelpTextRoot();
 const initHelpText: string = renderInitHelpText();
+const initPreviewSubpathReason: "init_changes_required" | "init_already_applied" = previewWorkspaceInitSubpath({ targetDirectory: "typed-init-preview" }).recommendedReason;
+const initAppliedSubpathKind: "workspace_init_result" = initWorkspaceSubpath({ targetDirectory: "typed-init-apply" }).kind;
 const rootHelpText: string = renderHelpTextCommands();
 const rootExecutionModel: "local bounded multi-agent coordination" = getCoordinationOverview().executionModel;
 const rootDeliveryBoundary: "codex-only runtime" = getCoordinationOverview().deliveryBoundary;
