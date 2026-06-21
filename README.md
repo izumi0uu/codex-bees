@@ -317,6 +317,7 @@ node ./src/index.js init --preview
 node ./src/index.js init
 node ./src/index.js tools
 node ./src/index.js catalog
+node ./src/index.js catalog:agent --id executor
 node ./src/index.js doctor
 node ./src/index.js metadata
 node ./src/index.js status
@@ -513,7 +514,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `plan:swarm:queue` / `queue_plan_swarm` return the explicit planner swarm queue result: the generated swarm contract plus the local lane tasks created from it. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane swarm queue events without inferring from the created-task array length alone.
 
-`catalog` and the MCP `runtime_catalog` tool expose the explicit runtime catalog view for shipped local agents and skills. They emit `kind: "runtime_catalog_view"` with a machine-readable `recommendedReason` plus inventory counts so automation can distinguish a loaded catalog from an empty one without inferring state only from nested arrays. `doctor` now exposes the explicit runtime doctor view, embedding the public catalog and contract views so operators can confirm executable entrypoint health, state-file location, shipped roles/skills, and runtime delivery boundaries from one product-facing payload.
+`catalog` and the MCP `runtime_catalog` tool expose the explicit runtime catalog view for shipped local agents and skills. They emit `kind: "runtime_catalog_view"` with a machine-readable `recommendedReason` plus inventory counts so automation can distinguish a loaded catalog from an empty one without inferring state only from nested arrays. `catalog:agent` exposes the paired single-agent view, returning `kind: "runtime_catalog_entry_view"` with `recommendedReason` set to `catalog_entry_loaded` or `catalog_entry_missing` so automation can inspect one shipped worker contract without walking the full catalog. `doctor` now exposes the explicit runtime doctor view, embedding the public catalog and contract views so operators can confirm executable entrypoint health, state-file location, shipped roles/skills, and runtime delivery boundaries from one product-facing payload.
 
 `runtime_contract` exposes the explicit runtime contract view. It emits `kind: "runtime_contract_view"` with a machine-readable `recommendedReason`, transport and responsibility counts, and the nested contract payload so automation can distinguish a loaded contract surface from ad hoc prose while sharing one stable contract shape across CLI doctor diagnostics and MCP.
 
