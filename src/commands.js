@@ -126,6 +126,14 @@ export function getCommandCatalogView() {
   };
 }
 
+export function getCommandCatalogEntry(command) {
+  if (!command) {
+    return undefined;
+  }
+
+  return getCommandCatalog().find((entry) => entry.command === command);
+}
+
 export function renderHelpText() {
   const lines = [`${PRODUCT_NAME}`, "", "Usage:"];
   for (const entry of getCommandCatalog()) {
@@ -144,4 +152,12 @@ export function renderInitHelpText() {
     "Options:",
     ...getInitCommandCatalog().map((entry) => `  ${entry.option.padEnd(15)} ${entry.description}`)
   ].join("\n") + "\n";
+}
+
+export function renderCommandHelpText(command) {
+  if (command === "init") {
+    return renderInitHelpText();
+  }
+
+  return renderHelpText();
 }

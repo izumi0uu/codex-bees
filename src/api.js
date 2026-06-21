@@ -19,7 +19,15 @@ export { getRuntimeContractView } from "./runtime-contract.js";
 export { getRuntimeDoctorView } from "./doctor.js";
 export { getRuntimeReadyView } from "./runtime-ready.js";
 export { getPackageMetadata, getPackageMetadataView, PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
-export { getCommandCatalog, getCommandCatalogView, getInitCommandCatalog, renderHelpText, renderInitHelpText } from "./commands.js";
+export {
+  getCommandCatalog,
+  getCommandCatalogEntry,
+  getCommandCatalogView,
+  getInitCommandCatalog,
+  renderCommandHelpText,
+  renderHelpText,
+  renderInitHelpText
+} from "./commands.js";
 
 export { initWorkspace, previewWorkspaceInit } from "./init.js";
 
