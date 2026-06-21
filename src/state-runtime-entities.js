@@ -342,6 +342,63 @@ export function compareRuntimeHandoffGroups(left, right) {
   return (left.actor?.id ?? left.actor?.name ?? "").localeCompare(right.actor?.id ?? right.actor?.name ?? "");
 }
 
+export function buildRuntimeHandoffsView(
+  {
+    loadState,
+    normalizeTask,
+    taskBrief
+  },
+  {
+    buildRuntimeHandoffEntry,
+    compareRuntimeHandoffEntries,
+    runtimeHandoffActorKey,
+    compareRuntimeHandoffGroups,
+    deriveRuntimeHandoffsReason,
+    buildRuntimeHandoffsSummary
+  }
+) {
+  const handoffs = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => ["ready_for_review", "blocked", "queued", "released"].includes(task.queueStatus))
+    .map((task) => buildRuntimeHandoffEntry(task, taskBrief))
+    .sort(compareRuntimeHandoffEntries);
+  const groupsByActor = new Map();
+
+  for (const handoff of handoffs) {
+    const key = runtimeHandoffActorKey(handoff.actor);
+    const current = groupsByActor.get(key) ?? {
+      actor: handoff.actor,
+      count: 0,
+      handoffs: []
+    };
+    current.handoffs.push({
+      position: current.count + 1,
+      ...handoff
+    });
+    current.count += 1;
+    groupsByActor.set(key, current);
+  }
+
+  const groups = [...groupsByActor.values()].sort(compareRuntimeHandoffGroups);
+  const next = groups[0]?.handoffs?.[0] ?? null;
+  const recommendedReason = deriveRuntimeHandoffsReason({ groups, next });
+
+  return {
+    kind: "runtime_handoffs",
+    recommendedReason,
+    counts: {
+      actorGroups: groups.length,
+      totalHandoffs: handoffs.length,
+      reviewDecisions: handoffs.filter((handoff) => handoff.handoffType === "verifier_decision").length,
+      blockedRecoveries: handoffs.filter((handoff) => handoff.handoffType === "blocked_recovery").length,
+      ownerClaims: handoffs.filter((handoff) => handoff.handoffType === "owner_claim").length
+    },
+    groups,
+    next,
+    summary: buildRuntimeHandoffsSummary(groups, next)
+  };
+}
+
 export function buildRuntimeCloseoutTaskSummary(task) {
   if (task.reviewOutcome === "approved") {
     return `Task ${task.id} was approved and is ready for final archive or handoff.`;

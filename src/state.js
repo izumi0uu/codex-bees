@@ -119,11 +119,11 @@ import {
   buildRuntimeActivityView,
   buildRuntimeFocusView,
   buildRuntimeActivityEntry,
+  buildRuntimeHandoffsView,
   buildRuntimeCloseoutTaskEntry,
   buildRuntimeCloseoutTaskSummary,
   buildRuntimeFocusSummary,
   buildRuntimeHandoffEntry,
-  buildRuntimeHandoffEntrySummary,
   buildRuntimeRecoveryEntry,
   buildRuntimeRecoveryEntrySummary,
   chooseRuntimeCloseoutNext,
@@ -137,7 +137,6 @@ import {
   isRuntimeRecoveryTask,
   runtimeHandoffActorKey,
   runtimeHandoffPriority,
-  runtimeHandoffType,
   runtimeRecoveryPriority,
   runtimeRecoveryType
 } from "./state-runtime-entities.js";
@@ -1351,46 +1350,21 @@ export function runtimeActivity(input = {}) {
 }
 
 export function runtimeHandoffs() {
-  const handoffs = loadState().tasks
-    .map(normalizeTask)
-    .filter((task) => ["ready_for_review", "blocked", "queued", "released"].includes(task.queueStatus))
-    .map((task) => buildRuntimeHandoffEntry(task, taskBrief))
-    .sort(compareRuntimeHandoffEntries);
-  const groupsByActor = new Map();
-
-  for (const handoff of handoffs) {
-    const key = runtimeHandoffActorKey(handoff.actor);
-    const current = groupsByActor.get(key) ?? {
-      actor: handoff.actor,
-      count: 0,
-      handoffs: []
-    };
-    current.handoffs.push({
-      position: current.count + 1,
-      ...handoff
-    });
-    current.count += 1;
-    groupsByActor.set(key, current);
-  }
-
-  const groups = [...groupsByActor.values()].sort(compareRuntimeHandoffGroups);
-  const next = groups[0]?.handoffs?.[0] ?? null;
-  const recommendedReason = deriveRuntimeHandoffsReason({ groups, next });
-
-  return {
-    kind: "runtime_handoffs",
-    recommendedReason,
-    counts: {
-      actorGroups: groups.length,
-      totalHandoffs: handoffs.length,
-      reviewDecisions: handoffs.filter((handoff) => handoff.handoffType === "verifier_decision").length,
-      blockedRecoveries: handoffs.filter((handoff) => handoff.handoffType === "blocked_recovery").length,
-      ownerClaims: handoffs.filter((handoff) => handoff.handoffType === "owner_claim").length
+  return buildRuntimeHandoffsView(
+    {
+      loadState,
+      normalizeTask,
+      taskBrief
     },
-    groups,
-    next,
-    summary: buildRuntimeHandoffsSummary(groups, next)
-  };
+    {
+      buildRuntimeHandoffEntry,
+      compareRuntimeHandoffEntries,
+      runtimeHandoffActorKey,
+      compareRuntimeHandoffGroups,
+      deriveRuntimeHandoffsReason,
+      buildRuntimeHandoffsSummary
+    }
+  );
 }
 
 export function runtimeCloseout() {
