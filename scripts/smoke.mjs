@@ -63,6 +63,7 @@ const checks = [
   ["version", ["./src/index.js", "--version"]],
   ["command-get", ["./src/index.js", "command:get", "--name", "init"]],
   ["command-help", ["./src/index.js", "command:help", "--name", "init"]],
+  ["init-option", ["./src/index.js", "init:option", "--option", "--preview"]],
   ["init-preview", ["./src/index.js", "init", "--preview"]],
 ["init-help", ["./src/index.js", "init", "--help"]],
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
@@ -2312,6 +2313,18 @@ if (
   !cliCommandHelpView.text?.includes("codex-bees init")
 ) {
   console.error("[smoke:command-help] expected single CLI command help view");
+  process.exit(1);
+}
+const cliInitOptionView = JSON.parse(
+  run("init-option-verify", ["./src/index.js", "init:option", "--option", "--preview"]).stdout
+).option;
+if (
+  cliInitOptionView.kind !== "init_command_option_view" ||
+  cliInitOptionView.recommendedReason !== "init_command_option_loaded" ||
+  cliInitOptionView.matchedOption !== "--preview" ||
+  cliInitOptionView.entry?.option !== "--preview"
+) {
+  console.error("[smoke:init-option] expected single init option view");
   process.exit(1);
 }
 const cliToolsView = JSON.parse(run("tools-cli-verify", ["./src/index.js", "tools"]).stdout).tools;
