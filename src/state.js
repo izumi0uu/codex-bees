@@ -121,11 +121,11 @@ import {
   buildRuntimeFocusView,
   buildRuntimeActivityEntry,
   buildRuntimeHandoffsView,
+  buildRuntimeRecoveryView,
   buildRuntimeCloseoutTaskEntry,
   buildRuntimeFocusSummary,
   buildRuntimeHandoffEntry,
   buildRuntimeRecoveryEntry,
-  buildRuntimeRecoveryEntrySummary,
   chooseRuntimeCloseoutNext,
   compareRuntimeActivityEntries,
   compareRuntimeCloseoutSwarms,
@@ -1389,47 +1389,21 @@ export function runtimeCloseout() {
 }
 
 export function runtimeRecovery() {
-  const entries = loadState().tasks
-    .map(normalizeTask)
-    .filter((task) => isRuntimeRecoveryTask(task))
-    .map((task) => buildRuntimeRecoveryEntry(task, taskBrief))
-    .sort(compareRuntimeRecoveryEntries);
-  const groupsByType = new Map();
-
-  for (const entry of entries) {
-    const current = groupsByType.get(entry.recoveryType) ?? {
-      recoveryType: entry.recoveryType,
-      count: 0,
-      next: null,
-      entries: []
-    };
-    current.entries.push({
-      position: current.count + 1,
-      ...entry
-    });
-    current.count += 1;
-    current.next = current.entries[0] ?? null;
-    groupsByType.set(entry.recoveryType, current);
-  }
-
-  const groups = [...groupsByType.values()].sort(compareRuntimeRecoveryGroups);
-  const next = groups[0]?.entries?.[0] ?? null;
-  const recommendedReason = deriveRuntimeRecoveryReason({ groups, next });
-
-  return {
-    kind: "runtime_recovery",
-    recommendedReason,
-    counts: {
-      recoveryGroups: groups.length,
-      totalEntries: entries.length,
-      blocked: entries.filter((entry) => entry.recoveryType === "blocked_recovery").length,
-      released: entries.filter((entry) => entry.recoveryType === "released_repickup").length,
-      changesRequested: entries.filter((entry) => entry.recoveryType === "changes_requested").length
+  return buildRuntimeRecoveryView(
+    {
+      loadState,
+      normalizeTask,
+      taskBrief
     },
-    groups,
-    next,
-    summary: buildRuntimeRecoverySummary(groups, next)
-  };
+    {
+      isRuntimeRecoveryTask,
+      buildRuntimeRecoveryEntry,
+      compareRuntimeRecoveryEntries,
+      compareRuntimeRecoveryGroups,
+      deriveRuntimeRecoveryReason,
+      buildRuntimeRecoverySummary
+    }
+  );
 }
 
 export function runtimeSummaryPack(input = {}) {
