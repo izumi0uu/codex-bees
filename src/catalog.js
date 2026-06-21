@@ -160,6 +160,14 @@ export function listAgentCatalog() {
     .sort((left, right) => left.id.localeCompare(right.id));
 }
 
+export function getAgentCatalogEntry(id) {
+  if (!id) {
+    return undefined;
+  }
+
+  return listAgentCatalog().find((entry) => entry.id === id);
+}
+
 export function listSkillCatalog() {
   const paths = getRuntimeCatalogPaths();
   if (!isDirectory(paths.skillDir)) {
@@ -186,6 +194,14 @@ export function listSkillCatalog() {
     })
     .filter(Boolean)
     .sort((left, right) => left.id.localeCompare(right.id));
+}
+
+export function getSkillCatalogEntry(id) {
+  if (!id) {
+    return undefined;
+  }
+
+  return listSkillCatalog().find((entry) => entry.id === id);
 }
 
 export function listAgentRoleIds() {

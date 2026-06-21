@@ -862,8 +862,10 @@ export declare function getRuntimeCatalogPaths(): RuntimeCatalogPaths;
 export declare function getBundledRuntimeCatalogPaths(): RuntimeCatalogPaths;
 export declare function resolveRuntimeCatalogPath(relativePath: string): string | null;
 export declare function listAgentCatalog(): RuntimeCatalogEntry[];
+export declare function getAgentCatalogEntry(id: string): RuntimeCatalogEntry | undefined;
 export declare function listAgentRoleIds(): string[];
 export declare function listSkillCatalog(): RuntimeCatalogEntry[];
+export declare function getSkillCatalogEntry(id: string): RuntimeCatalogEntry | undefined;
 export declare function getRuntimeCatalog(): RuntimeCatalog;
 export declare function getRuntimeCatalogView(): RuntimeCatalogView;
 

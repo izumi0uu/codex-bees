@@ -1,9 +1,11 @@
 export {
+  getAgentCatalogEntry,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
   getRuntimeCatalogView,
   listAgentCatalog,
   listAgentRoleIds,
+  getSkillCatalogEntry,
   listSkillCatalog,
   resolveRuntimeCatalogPath
 } from "./catalog.js";
