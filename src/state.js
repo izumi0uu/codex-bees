@@ -59,17 +59,17 @@ import {
 } from "./state-storage.js";
 import {
   buildUpdatedSwarmState,
+  buildSyncedSwarmState,
+  dispatchSwarmLaneFromSources,
+  findDispatchableSwarmLane,
+  queueSwarmTasksFromSources,
+  updateLoadedSwarmState,
+  buildTransitionedSwarmState,
   buildQueuedSwarmLaneState,
   buildQueuedSwarmLaneTaskInput,
   buildQueuedSwarmState,
   buildDispatchedSwarmState,
   buildDispatchedSwarmTaskState,
-  buildSyncedSwarmState,
-  dispatchLoadedSwarmLane,
-  findDispatchableSwarmLane,
-  queueLoadedSwarmTasks,
-  updateLoadedSwarmState,
-  buildTransitionedSwarmState,
   syncLoadedSwarmState,
   syncLoadedSwarmLifecycle,
   transitionLoadedSwarmState,
@@ -1907,8 +1907,9 @@ export function updateSwarmMutation(input) {
 }
 
 export function queueSwarmTasks(input) {
-  const state = loadState();
-  const result = queueLoadedSwarmTasks(state, input, {
+  return queueSwarmTasksFromSources(input, {
+    loadState,
+    saveState,
     findSwarmIndex,
     normalizeSwarm,
     normalizeSwarmLane,
@@ -1917,30 +1918,15 @@ export function queueSwarmTasks(input) {
     buildTask,
     buildQueuedSwarmLaneTaskInput,
     buildQueuedSwarmLaneState,
-    buildQueuedSwarmState
+    buildQueuedSwarmState,
+    deriveSwarmQueueReason
   });
-  if (!result) {
-    return null;
-  }
-  if (result.error) {
-    return result;
-  }
-  saveState(state);
-  const recommendedReason = deriveSwarmQueueReason({
-    swarm: result.swarm,
-    created: result.created
-  });
-  return {
-    kind: "swarm_queue",
-    recommendedReason,
-    swarm: result.swarm,
-    created: result.created
-  };
 }
 
 export function dispatchSwarmLane(input) {
-  const state = loadState();
-  const result = dispatchLoadedSwarmLane(state, input, {
+  return dispatchSwarmLaneFromSources(input, {
+    loadState,
+    saveState,
     findSwarmIndex,
     findTaskIndex,
     normalizeSwarm,
@@ -1951,28 +1937,9 @@ export function dispatchSwarmLane(input) {
     buildDispatchedSwarmTaskState,
     buildDispatchedSwarmState,
     findDispatchableSwarmLane,
-    syncSwarmInLoadedState
+    syncSwarmInLoadedState,
+    deriveSwarmDispatchReason
   });
-  if (!result) {
-    return null;
-  }
-  if (result.error) {
-    return result;
-  }
-  saveState(state);
-
-  const recommendedReason = deriveSwarmDispatchReason({
-    lane: result.lane,
-    previousTask: result.previousTask,
-    task: result.task
-  });
-  return {
-    kind: "swarm_dispatch",
-    recommendedReason,
-    swarm: result.swarm,
-    lane: result.lane,
-    task: result.task
-  };
 }
 
 export function stateFilePath() {

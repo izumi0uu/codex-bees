@@ -332,6 +332,134 @@ export function queueLoadedSwarmTasks(
   };
 }
 
+export function buildSwarmQueueMutation(
+  result,
+  {
+    deriveSwarmQueueReason
+  }
+) {
+  const recommendedReason = deriveSwarmQueueReason({
+    swarm: result.swarm,
+    created: result.created
+  });
+
+  return {
+    kind: "swarm_queue",
+    recommendedReason,
+    swarm: result.swarm,
+    created: result.created
+  };
+}
+
+export function queueSwarmTasksFromSources(
+  input,
+  {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeSwarmLane,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    buildTask,
+    buildQueuedSwarmLaneTaskInput,
+    buildQueuedSwarmLaneState,
+    buildQueuedSwarmState,
+    deriveSwarmQueueReason
+  }
+) {
+  const state = loadState();
+  const result = queueLoadedSwarmTasks(state, input, {
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeSwarmLane,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    buildTask,
+    buildQueuedSwarmLaneTaskInput,
+    buildQueuedSwarmLaneState,
+    buildQueuedSwarmState
+  });
+  if (!result) {
+    return null;
+  }
+  if (result.error) {
+    return result;
+  }
+
+  saveState(state);
+  return buildSwarmQueueMutation(result, {
+    deriveSwarmQueueReason
+  });
+}
+
+export function buildSwarmDispatchMutation(
+  result,
+  {
+    deriveSwarmDispatchReason
+  }
+) {
+  const recommendedReason = deriveSwarmDispatchReason({
+    lane: result.lane,
+    previousTask: result.previousTask,
+    task: result.task
+  });
+
+  return {
+    kind: "swarm_dispatch",
+    recommendedReason,
+    swarm: result.swarm,
+    lane: result.lane,
+    task: result.task
+  };
+}
+
+export function dispatchSwarmLaneFromSources(
+  input,
+  {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    findTaskIndex,
+    normalizeSwarm,
+    normalizeTask,
+    normalizeSwarmLane,
+    validateTaskValue,
+    runtimeRoleCatalog,
+    buildDispatchedSwarmTaskState,
+    buildDispatchedSwarmState,
+    findDispatchableSwarmLane,
+    syncSwarmInLoadedState,
+    deriveSwarmDispatchReason
+  }
+) {
+  const state = loadState();
+  const result = dispatchLoadedSwarmLane(state, input, {
+    findSwarmIndex,
+    findTaskIndex,
+    normalizeSwarm,
+    normalizeTask,
+    normalizeSwarmLane,
+    validateTaskValue,
+    runtimeRoleCatalog,
+    buildDispatchedSwarmTaskState,
+    buildDispatchedSwarmState,
+    findDispatchableSwarmLane,
+    syncSwarmInLoadedState
+  });
+  if (!result) {
+    return null;
+  }
+  if (result.error) {
+    return result;
+  }
+
+  saveState(state);
+  return buildSwarmDispatchMutation(result, {
+    deriveSwarmDispatchReason
+  });
+}
+
 export function buildUpdatedSwarmState(current, input, updatedAt = new Date().toISOString()) {
   return {
     ...current,
