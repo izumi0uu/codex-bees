@@ -25,6 +25,7 @@ import {
   completeTask,
   completeTaskLifecycle,
   dispatchSwarmLane,
+  getMemoryView,
   getTask,
   getTaskView,
   getSwarm,
@@ -1236,6 +1237,17 @@ export const toolCatalog = [
         agent: { type: "string" },
         tags: { type: "array", items: { type: "string" } },
         notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "memory_get",
+    description: "Load one persistent local memory by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
       }
     }
   },
@@ -2604,6 +2616,19 @@ function handleRequest(message) {
       });
 
       return createSuccess(id, createTextPayload({ stored: memory }));
+    }
+
+    if (name === "memory_get") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "memory_get requires arguments.id");
+      }
+
+      const memory = getMemoryView(params.arguments.id);
+      if (!memory) {
+        return createError(id, -32602, `Unknown memory id: ${params.arguments.id}`);
+      }
+
+      return createSuccess(id, createTextPayload({ memory }));
     }
 
     if (name === "memory_list") {

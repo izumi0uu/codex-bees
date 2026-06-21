@@ -99,7 +99,7 @@ const CAPABILITY_CATALOG = [
     category: "memory",
     description: "Persistent local memory storage, search, and namespace-aware recall.",
     cliCommands: ["memory:store", "memory:get", "memory:list", "memory:search"],
-    mcpTools: ["memory_store", "memory_list", "memory_search"]
+    mcpTools: ["memory_store", "memory_get", "memory_list", "memory_search"]
   },
   {
     id: "runtime_catalog",
