@@ -49,6 +49,7 @@ import {
   buildSyncedSwarmState,
   buildTransitionedSwarmState,
   syncLoadedSwarmState,
+  transitionLoadedSwarmState,
 } from "./state-swarm-core.js";
 import {
   findSwarmIndex,
@@ -4167,31 +4168,21 @@ function transitionTask(input) {
 
 function transitionSwarm(input) {
   const state = loadState();
-  const index = findSwarmIndex(state, input.id);
-  if (index < 0) {
+  const next = transitionLoadedSwarmState(state, input, {
+    findSwarmIndex,
+    normalizeSwarm,
+    validateNextSwarmStatus,
+    validateSwarmStatusTransition,
+    canTransitionSwarm,
+    validSwarmStatuses: VALID_SWARM_STATUSES,
+    buildTransitionedSwarmState
+  });
+  if (!next) {
     return null;
   }
-
-  const current = normalizeSwarm(state.swarms[index]);
-  const nextStatus = input.nextStatus;
-
-  const nextStatusError = validateNextSwarmStatus(nextStatus, VALID_SWARM_STATUSES);
-  if (nextStatusError) {
-    return nextStatusError;
+  if (next.error) {
+    return next;
   }
-
-  const transitionError = validateSwarmStatusTransition(
-    current.status,
-    nextStatus,
-    canTransitionSwarm
-  );
-  if (transitionError) {
-    return transitionError;
-  }
-
-  const next = normalizeSwarm(buildTransitionedSwarmState(current, input));
-
-  state.swarms[index] = next;
   saveState(state);
   return next;
 }

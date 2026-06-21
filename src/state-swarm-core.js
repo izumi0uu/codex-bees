@@ -57,3 +57,43 @@ export function buildTransitionedSwarmState(current, input, updatedAt = new Date
     updatedAt
   };
 }
+
+export function transitionLoadedSwarmState(
+  state,
+  input,
+  {
+    findSwarmIndex,
+    normalizeSwarm,
+    validateNextSwarmStatus,
+    validateSwarmStatusTransition,
+    canTransitionSwarm,
+    validSwarmStatuses,
+    buildTransitionedSwarmState
+  }
+) {
+  const swarmIndex = findSwarmIndex(state, input.id);
+  if (swarmIndex < 0) {
+    return null;
+  }
+
+  const current = normalizeSwarm(state.swarms[swarmIndex]);
+  const nextStatus = input.nextStatus;
+
+  const nextStatusError = validateNextSwarmStatus(nextStatus, validSwarmStatuses);
+  if (nextStatusError) {
+    return nextStatusError;
+  }
+
+  const transitionError = validateSwarmStatusTransition(
+    current.status,
+    nextStatus,
+    canTransitionSwarm
+  );
+  if (transitionError) {
+    return transitionError;
+  }
+
+  const next = normalizeSwarm(buildTransitionedSwarmState(current, input));
+  updateSwarmAtIndex(state.swarms, swarmIndex, next);
+  return next;
+}
