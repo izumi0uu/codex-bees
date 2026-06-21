@@ -527,6 +527,24 @@ function getStructuredCommandOptions(command, entry) {
   return helpSpec.options.length > 0 ? cloneEntries(helpSpec.options) : undefined;
 }
 
+function getStructuredCommandUsage(command, entry) {
+  if (command === "init") {
+    return [commandUsage("init", "[--preview] [--force] [--dir <path>]")];
+  }
+
+  if (command === "mcp") {
+    return [commandUsage("mcp", "--stdio | --tools | --capabilities | --version | --help")];
+  }
+
+  const helpSpec = getCommandHelpSpec(command, entry);
+  return helpSpec.usage.length > 0 ? [...helpSpec.usage] : [commandUsage(entry.command)];
+}
+
+function getStructuredCommandNotes(command, entry) {
+  const helpSpec = getCommandHelpSpec(command, entry);
+  return helpSpec.notes.length > 0 ? [...helpSpec.notes] : undefined;
+}
+
 function pushCommandHelpSection(lines, title, bodyLines) {
   if (bodyLines.length === 0) {
     return;
@@ -707,7 +725,14 @@ export function getCommandCatalog() {
 
   return commands.map((entry) => {
     const options = getStructuredCommandOptions(entry.command, entry);
-    return options ? { ...entry, options } : entry;
+    const usage = getStructuredCommandUsage(entry.command, entry);
+    const notes = getStructuredCommandNotes(entry.command, entry);
+    return {
+      ...entry,
+      ...(usage.length > 0 ? { usage } : {}),
+      ...(options ? { options } : {}),
+      ...(notes ? { notes } : {})
+    };
   });
 }
 

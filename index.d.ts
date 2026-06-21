@@ -24,7 +24,9 @@ export interface CommandOptionCatalogEntry {
 export interface CommandCatalogEntry {
   command: string;
   description: string;
+  usage?: string[];
   options?: CommandOptionCatalogEntry[];
+  notes?: string[];
 }
 
 export interface McpCommandCatalogEntry extends CommandOptionCatalogEntry {}
