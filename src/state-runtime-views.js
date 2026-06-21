@@ -124,6 +124,142 @@ export function buildRuntimeVerifierPackSummary(recommendedSurface, bundle, revi
   return `Runtime verifier pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
+export function deriveRuntimeAssignmentPackSurface({ assignment, session, next, pickup, roleEntry, role, workerId, mode }) {
+  if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
+    return "worker:session";
+  }
+  if (session?.focus?.kind === "review_task") {
+    return "worker:closeout";
+  }
+  if (session?.focus?.kind === "awaiting_review") {
+    return "worker:handoff";
+  }
+  if (assignment?.taskId) {
+    const suffix = mode ? ` --mode ${mode}` : "";
+    return `task:assignment-pickup --role ${role} --worker ${workerId}${suffix}`;
+  }
+  if (pickup?.outcome === "claimable") {
+    return `task:pickup --role ${role} --worker ${workerId} --mode ${mode}`;
+  }
+  if (pickup?.command) {
+    return pickup.command.replace("node ./src/index.js ", "");
+  }
+  if (next?.candidate?.id) {
+    return "task:next";
+  }
+  if (roleEntry?.nextAction?.command) {
+    return roleEntry.nextAction.command.replace("node ./src/index.js ", "");
+  }
+  return "leader:assignments";
+}
+
+export function deriveRuntimeAssignmentPackReason({ assignment, session, next, pickup, roleEntry }) {
+  if (session?.focus?.kind === "active_task") {
+    return "active_task_priority";
+  }
+  if (session?.focus?.kind === "blocked_task") {
+    return "blocked_task_priority";
+  }
+  if (session?.focus?.kind === "review_task") {
+    return "review_task_priority";
+  }
+  if (session?.focus?.kind === "awaiting_review") {
+    return "awaiting_review_priority";
+  }
+  if (assignment?.taskId) {
+    return "leader_assignment_ready";
+  }
+  if (pickup?.outcome === "claimable") {
+    return "claimable_pickup_ready";
+  }
+  if (pickup?.command) {
+    return "pickup_command_ready";
+  }
+  if (next?.candidate?.id) {
+    return "next_candidate_visible";
+  }
+  if (roleEntry?.nextAction?.command) {
+    return "role_action_fallback";
+  }
+  return "leader_assignments_fallback";
+}
+
+export function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, session, pickup, next, roleAssignments) {
+  if (assignment?.taskId && next?.candidate?.id !== assignment.taskId) {
+    return `Runtime assignment pack recommends ${recommendedSurface} next. Leader has assignment ${assignment.taskId} ready for this worker.`;
+  }
+
+  const detail =
+    session?.focus?.reason ??
+    (pickup?.outcome === "claimable" ? `Worker can claim ${pickup.candidate?.id} now.` : null) ??
+    (pickup?.candidate?.id ? `Worker should move ${pickup.candidate.id} next.` : null) ??
+    (roleAssignments?.count ? `Role has ${roleAssignments.count} leader assignment${roleAssignments.count === 1 ? "" : "s"} queued.` : null) ??
+    "worker has no immediate assignment handoff.";
+
+  return `Runtime assignment pack recommends ${recommendedSurface} next. ${detail}`;
+}
+
+export function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout }) {
+  if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
+    return "leader:assignment-launch-plan";
+  }
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "leader:assignment-dispatch-bundle";
+  }
+  if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
+    return "leader:assignment-dispatch-pack";
+  }
+  if ((workspace?.counts?.pendingReview ?? 0) > 0 || (queue?.next?.recommendedNextAction ?? "").startsWith("review_lane:")) {
+    return "leader:workspace";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "runtime:dispatch";
+  }
+  if ((closeout?.counts?.swarmsReady ?? 0) > 0) {
+    return "runtime:closeout";
+  }
+  if ((queue?.counts?.total ?? 0) > 0) {
+    return "leader:queue";
+  }
+  return "leader:workspace";
+}
+
+export function deriveRuntimeLeaderPackReason({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout }) {
+  if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
+    return "parallel_launch_plan_ready";
+  }
+  if ((assignmentDispatchBundle?.counts?.launches ?? 0) > 1) {
+    return "parallel_dispatch_bundle_ready";
+  }
+  if ((assignmentDispatchPack?.counts?.ownerGroups ?? 0) > 1) {
+    return "parallel_dispatch_pack_ready";
+  }
+  if ((workspace?.counts?.pendingReview ?? 0) > 0) {
+    return "pending_review_priority";
+  }
+  if ((queue?.next?.recommendedNextAction ?? "").startsWith("review_lane:")) {
+    return "queue_review_priority";
+  }
+  if ((dispatch?.counts?.totalAssignments ?? 0) > 0) {
+    return "dispatch_priority";
+  }
+  if ((closeout?.counts?.swarmsReady ?? 0) > 0) {
+    return "closeout_priority";
+  }
+  if ((queue?.counts?.total ?? 0) > 0) {
+    return "leader_queue_visible";
+  }
+  return "default_workspace_priority";
+}
+
+export function buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan) {
+  if (!workspace?.focus && !(queue?.counts?.total > 0)) {
+    return `Runtime leader pack recommends ${recommendedSurface}; there is no active leader orchestration target right now.`;
+  }
+
+  return `Runtime leader pack recommends ${recommendedSurface} next. ${assignmentLaunchPlan?.summary ?? assignmentDispatchBundle?.summary ?? assignmentDispatchPack?.summary ?? workspace?.summary ?? queue?.summary ?? ""}`.trim();
+}
+
 export function runtimeRolePriority(entry) {
   if (entry.counts.pendingReview > 0) {
     return 0;
