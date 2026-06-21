@@ -132,6 +132,7 @@ getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.optio
 const commandCatalogReason: "command_catalog_loaded" | "command_catalog_empty" = getCommandCatalogView().recommendedReason;
 const initCatalogEntry: string | undefined = getCommandCatalogEntry("init")?.command;
 const taskAddCommandUsage: string | undefined = getCommandCatalogEntry("task:add")?.usage?.[0];
+const helpCommandAlias: string | undefined = getCommandCatalogEntry("--help")?.aliases?.[0];
 const taskAddCommandOption: string | undefined = getCommandCatalogEntry("task:add")?.options?.[0]?.option;
 const taskAddCommandNote: string | undefined = getCommandCatalogEntry("task:add")?.notes?.[0] ?? undefined;
 const swarmInitCommandOption: string | undefined = getCommandCatalogEntry("swarm:init")?.options?.[0]?.option;

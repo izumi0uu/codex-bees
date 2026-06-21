@@ -25,6 +25,7 @@ export interface CommandCatalogEntry {
   command: string;
   description: string;
   usage?: string[];
+  aliases?: string[];
   options?: CommandOptionCatalogEntry[];
   notes?: string[];
 }

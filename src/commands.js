@@ -545,6 +545,11 @@ function getStructuredCommandNotes(command, entry) {
   return helpSpec.notes.length > 0 ? [...helpSpec.notes] : undefined;
 }
 
+function getStructuredCommandAliases(command) {
+  const aliases = getCommandAliases(command);
+  return aliases.length > 0 ? [...aliases] : undefined;
+}
+
 function pushCommandHelpSection(lines, title, bodyLines) {
   if (bodyLines.length === 0) {
     return;
@@ -727,9 +732,11 @@ export function getCommandCatalog() {
     const options = getStructuredCommandOptions(entry.command, entry);
     const usage = getStructuredCommandUsage(entry.command, entry);
     const notes = getStructuredCommandNotes(entry.command, entry);
+    const aliases = getStructuredCommandAliases(entry.command);
     return {
       ...entry,
       ...(usage.length > 0 ? { usage } : {}),
+      ...(aliases ? { aliases } : {}),
       ...(options ? { options } : {}),
       ...(notes ? { notes } : {})
     };
