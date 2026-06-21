@@ -330,3 +330,41 @@ export function updateTaskFromSources(
   saveState(state);
   return next;
 }
+
+export function addTaskFromSources(
+  input,
+  {
+    loadState,
+    saveState,
+    buildTask
+  }
+) {
+  const state = loadState();
+  const task = buildTask(input, state.nextId);
+  state.tasks.push(task);
+  state.nextId += 1;
+  saveState(state);
+  return task;
+}
+
+export function addTasksFromSources(
+  inputs,
+  {
+    loadState,
+    saveState,
+    buildTask
+  }
+) {
+  const state = loadState();
+  const created = [];
+
+  for (const input of inputs) {
+    const task = buildTask(input, state.nextId);
+    state.tasks.push(task);
+    state.nextId += 1;
+    created.push(task);
+  }
+
+  saveState(state);
+  return created;
+}

@@ -62,6 +62,7 @@ import {
   buildSyncedSwarmState,
   dispatchSwarmLaneFromSources,
   findDispatchableSwarmLane,
+  initSwarmFromSources,
   queueSwarmTasksFromSources,
   transitionSwarmFromSources,
   updateSwarmFromSources,
@@ -89,6 +90,8 @@ import {
   validateVerifierAction
 } from "./state-transition-guards.js";
 import {
+  addTaskFromSources,
+  addTasksFromSources,
   buildUpdatedTaskState,
   buildTransitionedTaskState,
   buildTaskReviewPatch,
@@ -1739,12 +1742,11 @@ export function swarmOverview(id) {
 }
 
 export function addTask(input) {
-  const state = loadState();
-  const task = buildTask(input, state.nextId);
-  state.tasks.push(task);
-  state.nextId += 1;
-  saveState(state);
-  return task;
+  return addTaskFromSources(input, {
+    loadState,
+    saveState,
+    buildTask
+  });
 }
 
 export function addTaskLifecycle(input) {
@@ -1760,18 +1762,11 @@ export function addTaskLifecycle(input) {
 }
 
 export function addTasks(inputs) {
-  const state = loadState();
-  const created = [];
-
-  for (const input of inputs) {
-    const task = buildTask(input, state.nextId);
-    state.tasks.push(task);
-    state.nextId += 1;
-    created.push(task);
-  }
-
-  saveState(state);
-  return created;
+  return addTasksFromSources(inputs, {
+    loadState,
+    saveState,
+    buildTask
+  });
 }
 
 export function storeMemory(input) {
@@ -1796,12 +1791,11 @@ export function storeMemoryMutation(input) {
 }
 
 export function initSwarm(input) {
-  const state = loadState();
-  const swarm = buildSwarm(input, state.nextSwarmId);
-  state.swarms.push(swarm);
-  state.nextSwarmId += 1;
-  saveState(state);
-  return swarm;
+  return initSwarmFromSources(input, {
+    loadState,
+    saveState,
+    buildSwarm
+  });
 }
 
 export function initSwarmMutation(input) {

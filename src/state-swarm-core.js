@@ -558,3 +558,19 @@ export function updateSwarmFromSources(
   saveState(state);
   return next;
 }
+
+export function initSwarmFromSources(
+  input,
+  {
+    loadState,
+    saveState,
+    buildSwarm
+  }
+) {
+  const state = loadState();
+  const swarm = buildSwarm(input, state.nextSwarmId);
+  state.swarms.push(swarm);
+  state.nextSwarmId += 1;
+  saveState(state);
+  return swarm;
+}
