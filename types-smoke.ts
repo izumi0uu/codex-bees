@@ -3,6 +3,7 @@ import {
   PRODUCT_NAME,
   getCommandCatalog,
   getCommandCatalogEntry,
+  getCommandCatalogEntryView,
   getCommandHelpView,
   getCommandCatalogView,
   getInitCommandCatalog,
@@ -100,6 +101,8 @@ getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 const commandCatalogReason: "command_catalog_loaded" | "command_catalog_empty" = getCommandCatalogView().recommendedReason;
 const initCatalogEntry: string | undefined = getCommandCatalogEntry("init")?.command;
+const initCatalogViewReason: "command_catalog_entry_loaded" | "command_catalog_entry_missing" = getCommandCatalogEntryView("init").recommendedReason;
+const initCatalogViewMatched: string | null = getCommandCatalogEntryView("init").matchedCommand;
 const initCommandHelpReason: "command_help_loaded" | "command_help_fallback_loaded" = getCommandHelpView("init").recommendedReason;
 const initCommandHelpMatched: string | null = getCommandHelpView("init").matchedCommand;
 const initOptionEntry: string | undefined = getInitCommandCatalogEntry("--preview")?.option;
