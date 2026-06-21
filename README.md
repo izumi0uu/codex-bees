@@ -316,6 +316,7 @@ node ./src/index.js run
 node ./src/index.js command:get --name init
 node ./src/index.js command:help --name init
 node ./src/index.js init:option --option --preview
+node ./src/index.js init:help --option --preview
 node ./src/index.js init --preview
 node ./src/index.js init
 node ./src/index.js tools
@@ -542,7 +543,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `command:get` exposes the paired single-command view, returning `kind: "command_catalog_entry_view"` with `recommendedReason` set to `command_catalog_entry_loaded` or `command_catalog_entry_missing` so automation can inspect one shipped CLI contract without walking the full command catalog first. `command:help` exposes the single-command help view, returning `kind: "command_help_view"` with `recommendedReason` set to `command_help_loaded` or `command_help_fallback_loaded` so automation can fetch one shipped help contract without reparsing the full top-level help text.
 
-`init:option` exposes the single-option init view, returning `kind: "init_command_option_view"` with `recommendedReason` set to `init_command_option_loaded` or `init_command_option_missing` so automation can inspect one shipped init flag contract without walking the broader init option catalog first.
+`init:option` exposes the single-option init view, returning `kind: "init_command_option_view"` with `recommendedReason` set to `init_command_option_loaded` or `init_command_option_missing` so automation can inspect one shipped init flag contract without walking the broader init option catalog first. `init:help` exposes the paired single-option help view, returning `kind: "init_help_view"` with `recommendedReason` set to `init_help_loaded` or `init_help_fallback_loaded` so automation can fetch one shipped init help contract without reparsing the full init help surface.
 
 `runtime:closeout` / `runtime_closeout` provide the final closure workspace: approved done tasks and ready-to-complete swarms gathered into one operator view for explicit archive or finish actions. It also emits a machine-readable `recommendedReason` so automation can distinguish approved task closeout, generic task closeout, swarm closeout, plain closeout visibility, and empty closeout state without reparsing next-item structure.
 
