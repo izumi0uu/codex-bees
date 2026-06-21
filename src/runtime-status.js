@@ -145,6 +145,14 @@ export function getCapabilityCatalog() {
   }));
 }
 
+export function getCapabilityCatalogEntry(id) {
+  if (!id) {
+    return undefined;
+  }
+
+  return getCapabilityCatalog().find((entry) => entry.id === id);
+}
+
 export function getCapabilityCatalogView() {
   const capabilities = getCapabilityCatalog();
   const categoryCounts = countBy(capabilities, (capability) => capability.category);

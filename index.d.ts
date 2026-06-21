@@ -879,6 +879,7 @@ export declare function getWorkerGuidelines(): WorkerGuidelines;
 export declare function getWorkerGuidelinesView(): WorkerGuidelinesView;
 
 export declare function getCapabilityCatalog(): RuntimeCapability[];
+export declare function getCapabilityCatalogEntry(id: string): RuntimeCapability | undefined;
 export declare function getCapabilityCatalogView(): RuntimeCapabilitiesView;
 export declare function getRuntimeStatus(input?: { version?: string; toolCount?: number }): RuntimeStatus;
 export declare function getRuntimeStatusView(input?: { version?: string; toolCount?: number }): RuntimeStatusView;

@@ -11,6 +11,7 @@ export {
 } from "./catalog.js";
 
 export {
+  getCapabilityCatalogEntry,
   getCapabilityCatalog,
   getCapabilityCatalogView,
   getRuntimeStatus,
