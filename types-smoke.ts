@@ -24,6 +24,7 @@ import {
   getCapabilityCatalogEntryView,
   getCapabilityCatalogView,
   getAgentCatalogEntry,
+  getAgentCatalogEntryView,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
   getRuntimeCatalogView,
@@ -289,6 +290,8 @@ const rootCapabilityViewReason: "runtime_capability_loaded" | "runtime_capabilit
 const rootCapabilityViewMatched: string | null = getCapabilityCatalogEntryView("runtime_catalog").matchedCapability;
 const rootAgentId: string | undefined = listAgentCatalog()[0]?.id;
 const rootAgentEntryId: string | undefined = getAgentCatalogEntry("executor")?.id;
+const rootAgentViewReason: "catalog_entry_loaded" | "catalog_entry_missing" = getAgentCatalogEntryView("executor").recommendedReason;
+const rootAgentViewMatched: string | null = getAgentCatalogEntryView("executor").matchedId;
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
 const rootSkillId: string | undefined = listSkillCatalog()[0]?.id;
 const rootSkillEntryId: string | undefined = getSkillCatalogEntry("project-development")?.id;
