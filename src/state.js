@@ -160,6 +160,7 @@ import {
 } from "./state-role-views.js";
 import {
   buildLeaderAssignmentDispatchView,
+  buildLeaderAssignmentDispatchViewFromSources,
   buildLeaderAssignmentDispatchBundleView,
   buildLeaderAssignmentDispatchBundleViewFromSources,
   buildLeaderAssignmentDispatchPackViewFromSources,
@@ -940,14 +941,15 @@ export function leaderAssignments(input = {}) {
 }
 
 export function leaderAssignmentDispatch(input = {}) {
-  return buildLeaderAssignmentDispatchView(
+  return buildLeaderAssignmentDispatchViewFromSources(
     input,
     {
       leaderAssignments,
       describeRole
     },
     {
-      deriveLeaderAssignmentDispatchReason
+      deriveLeaderAssignmentDispatchReason,
+      buildLeaderAssignmentDispatchView
     }
   );
 }

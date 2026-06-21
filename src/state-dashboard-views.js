@@ -440,6 +440,29 @@ export function buildLeaderAssignmentDispatchView(
   };
 }
 
+export function buildLeaderAssignmentDispatchViewFromSources(
+  input,
+  {
+    leaderAssignments,
+    describeRole
+  },
+  {
+    deriveLeaderAssignmentDispatchReason,
+    buildLeaderAssignmentDispatchView
+  }
+) {
+  return buildLeaderAssignmentDispatchView(
+    input,
+    {
+      leaderAssignments,
+      describeRole
+    },
+    {
+      deriveLeaderAssignmentDispatchReason
+    }
+  );
+}
+
 export function buildLeaderAssignmentDispatchPackView(
   input,
   {
