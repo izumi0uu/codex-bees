@@ -112,6 +112,30 @@ function summarizeEntries(entries) {
   );
 }
 
+function buildPreviewSummary(targetDirectory, force, counts) {
+  return {
+    hasChanges: counts.create + counts.update > 0,
+    targetDirectory,
+    force,
+    totalEntries: counts.totalEntries,
+    create: counts.create,
+    update: counts.update,
+    skip: counts.skip
+  };
+}
+
+function buildResultSummary(targetDirectory, force, created, updated, skipped, totalEntries) {
+  return {
+    hasChanges: created.length + updated.length > 0,
+    targetDirectory,
+    force,
+    totalEntries,
+    created: created.length,
+    updated: updated.length,
+    skipped: skipped.length
+  };
+}
+
 function materializeEntries(entries) {
   const created = [];
   const updated = [];
@@ -164,6 +188,7 @@ export function previewWorkspaceInit(options = {}) {
     recommendedReason: counts.create + counts.update > 0 ? "init_changes_required" : "init_already_applied",
     targetDirectory,
     force,
+    summary: buildPreviewSummary(targetDirectory, force, counts),
     counts,
     entries: entries.map(({ type, path, action, reason }) => ({ type, path, action, reason })),
     next: [
@@ -187,6 +212,7 @@ export function initWorkspace(options = {}) {
     recommendedReason: created.length + updated.length > 0 ? "init_applied" : "init_no_changes",
     targetDirectory,
     force,
+    summary: buildResultSummary(targetDirectory, force, created, updated, skipped, entries.length),
     counts: {
       created: created.length,
       updated: updated.length,

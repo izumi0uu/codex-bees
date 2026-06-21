@@ -127,11 +127,32 @@ export interface WorkspaceInitEntry {
   reason: string;
 }
 
+export interface WorkspaceInitPreviewSummary {
+  hasChanges: boolean;
+  targetDirectory: string;
+  force: boolean;
+  totalEntries: number;
+  create: number;
+  update: number;
+  skip: number;
+}
+
+export interface WorkspaceInitResultSummary {
+  hasChanges: boolean;
+  targetDirectory: string;
+  force: boolean;
+  totalEntries: number;
+  created: number;
+  updated: number;
+  skipped: number;
+}
+
 export interface WorkspaceInitPreview {
   kind: "workspace_init_preview";
   recommendedReason: "init_changes_required" | "init_already_applied";
   targetDirectory: string;
   force: boolean;
+  summary: WorkspaceInitPreviewSummary;
   counts: {
     totalEntries: number;
     create: number;
@@ -147,6 +168,7 @@ export interface WorkspaceInitResult {
   recommendedReason: "init_applied" | "init_no_changes";
   targetDirectory: string;
   force: boolean;
+  summary: WorkspaceInitResultSummary;
   counts: {
     created: number;
     updated: number;
