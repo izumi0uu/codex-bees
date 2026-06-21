@@ -536,6 +536,27 @@ export function buildLeaderAssignmentDispatchBundleView(
   };
 }
 
+export function buildLeaderAssignmentDispatchBundleViewFromSources(
+  input,
+  {
+    leaderAssignmentDispatchPack
+  },
+  {
+    deriveLeaderAssignmentDispatchBundleReason,
+    buildLeaderAssignmentDispatchBundleView
+  }
+) {
+  return buildLeaderAssignmentDispatchBundleView(
+    input,
+    {
+      leaderAssignmentDispatchPack
+    },
+    {
+      deriveLeaderAssignmentDispatchBundleReason
+    }
+  );
+}
+
 export function buildLeaderAssignmentLaunchPlanView(
   input,
   {
