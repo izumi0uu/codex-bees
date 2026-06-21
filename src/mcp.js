@@ -216,6 +216,17 @@ export const toolCatalog = [
     }
   },
   {
+    name: "mcp_help",
+    description: "Return one shipped MCP command help view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        option: { type: "string" }
+      },
+      required: ["option"]
+    }
+  },
+  {
     name: "coordination_overview",
     description: "Describe the current local coordination model for Codex Bees.",
     inputSchema: {
@@ -1606,6 +1617,13 @@ function handleRequest(message) {
         return createError(id, -32602, "mcp_command_option requires arguments.option");
       }
       return createSuccess(id, createTextPayload({ option: getMcpCommandCatalogEntryView(params.arguments.option) }));
+    }
+
+    if (name === "mcp_help") {
+      if (!params.arguments?.option) {
+        return createError(id, -32602, "mcp_help requires arguments.option");
+      }
+      return createSuccess(id, createTextPayload({ help: getMcpHelpView(params.arguments.option) }));
     }
 
     if (name === "worker_guidelines") {
