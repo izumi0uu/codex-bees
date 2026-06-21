@@ -1390,6 +1390,9 @@ async function runCommand(command) {
     case "run":
       write(JSON.stringify(getRuntimeReadyView(), null, 2) + "\n");
       return;
+    case "ready":
+      write(JSON.stringify({ ready: getRuntimeReadyView() }, null, 2) + "\n");
+      return;
     case "commands":
       printCommandsView();
       return;

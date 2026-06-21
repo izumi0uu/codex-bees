@@ -49,6 +49,7 @@ export function getInitCommandCatalogEntryView(option) {
 export function getCommandCatalog() {
   return [
     { command: "run", description: "Start the local Codex runtime shell contract" },
+    { command: "ready", description: "Show the runtime readiness view" },
     { command: "commands", description: "Show the CLI command catalog view" },
     { command: "command:get", description: "Show one CLI command view" },
     { command: "command:help", description: "Show one CLI command help view" },
