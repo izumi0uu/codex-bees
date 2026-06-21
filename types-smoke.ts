@@ -15,6 +15,7 @@ import {
   getMcpCommandCatalogView,
   getMcpHelpView,
   getMcpToolEntry,
+  getMcpToolView,
   getPackageMetadata,
   getPackageMetadataView,
   handleMcpRequest,
@@ -146,6 +147,8 @@ const runtimeStatusReason: "runtime_state_visible" | "runtime_state_empty" = get
 getToolCatalogView().tools[0]?.name;
 const toolCatalogReason: "tool_catalog_loaded" | "tool_catalog_empty" = getToolCatalogView().recommendedReason;
 const rootMcpToolEntryName: string | undefined = getMcpToolEntry("runtime_contract")?.name;
+const rootMcpToolViewReason: "mcp_tool_loaded" | "mcp_tool_missing" = getMcpToolView("runtime_contract").recommendedReason;
+const rootMcpToolViewMatched: string | null = getMcpToolView("runtime_contract").matchedTool;
 const rootToolName: string | undefined = toolCatalog[0]?.name;
 const rootToolSchemaType: string | undefined = getToolCatalogView().tools[0]?.inputSchema.type as string | undefined;
 const plannedSwarmReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready" = planSwarm("typed root swarm").recommendedReason;
