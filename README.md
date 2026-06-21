@@ -244,14 +244,15 @@ const taskPlan = planTask("document a planner example");
 const swarmPlan = planSwarm("stage a planner example");
 ```
 
-The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` command entry also carries the structured MCP subcommand option list, so one command-catalog read is enough to discover both the top-level `mcp` command and its shipped flags.
+The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` and `init` command entries both carry structured option lists, so one command-catalog read is enough to discover the top-level runtime bootstrap surface as well as the shipped MCP flags.
 
 Example:
 
 ```js
-import { getCommandCatalogView, renderHelpText } from "codex-bees/commands";
+import { getCommandCatalogView, getInitCommandCatalog, renderHelpText } from "codex-bees/commands";
 
 const catalog = getCommandCatalogView();
+const initOptions = getInitCommandCatalog();
 const help = renderHelpText();
 ```
 
