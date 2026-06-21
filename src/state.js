@@ -170,6 +170,7 @@ import {
   buildRuntimeAlertsSummary,
   buildRuntimeAlertsView,
   buildRuntimeDashboardSummary,
+  buildRuntimeDashboardViewFromSources,
   buildRuntimeDashboardView,
   buildRuntimeActivitySummary,
   deriveLeaderAssignmentDispatchReason,
@@ -982,7 +983,7 @@ export function leaderAssignmentLaunchPlan(input = {}) {
 }
 
 export function runtimeDashboard() {
-  return buildRuntimeDashboardView(
+  return buildRuntimeDashboardViewFromSources(
     {
       loadState,
       normalizeTask,
@@ -994,7 +995,8 @@ export function runtimeDashboard() {
     },
     {
       deriveRuntimeDashboardReason,
-      buildRuntimeDashboardSummary
+      buildRuntimeDashboardSummary,
+      buildRuntimeDashboardView
     }
   );
 }

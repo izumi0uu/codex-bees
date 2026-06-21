@@ -208,6 +208,39 @@ export function buildRuntimeDashboardView(
   };
 }
 
+export function buildRuntimeDashboardViewFromSources(
+  {
+    loadState,
+    normalizeTask,
+    listSwarmOverviews,
+    leaderQueue,
+    leaderAssignments,
+    compareTasksByUpdatedAt,
+    summarizeDashboardTask
+  },
+  {
+    deriveRuntimeDashboardReason,
+    buildRuntimeDashboardSummary,
+    buildRuntimeDashboardView
+  }
+) {
+  return buildRuntimeDashboardView(
+    {
+      loadState,
+      normalizeTask,
+      listSwarmOverviews,
+      leaderQueue,
+      leaderAssignments,
+      compareTasksByUpdatedAt,
+      summarizeDashboardTask
+    },
+    {
+      deriveRuntimeDashboardReason,
+      buildRuntimeDashboardSummary
+    }
+  );
+}
+
 export function buildRuntimeAlertsSummary(alerts) {
   if (alerts.length === 0) {
     return "Runtime alerts has no active alerts right now.";
