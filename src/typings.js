@@ -3,6 +3,7 @@ export const PUBLIC_TYPE_ENTRYPOINTS = [
   "catalog",
   "commands",
   "doctor",
+  "init",
   "metadata",
   "mcp",
   "planner",

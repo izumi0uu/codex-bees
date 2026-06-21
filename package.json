@@ -35,6 +35,10 @@
       "types": "./dist/doctor.d.ts",
       "default": "./dist/doctor.js"
     },
+    "./init": {
+      "types": "./dist/init.d.ts",
+      "default": "./dist/init.js"
+    },
     "./metadata": {
       "types": "./dist/metadata.d.ts",
       "default": "./dist/metadata.js"
