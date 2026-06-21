@@ -18,6 +18,7 @@ import {
   getPackageMetadataView,
   handleMcpRequest,
   getCapabilityCatalog,
+  getCapabilityCatalogEntry,
   getCapabilityCatalogView,
   getAgentCatalogEntry,
   getRuntimeCatalog,
@@ -277,6 +278,7 @@ const productName: "codex-bees" = PRODUCT_NAME;
 const packageVersion: "0.1.0" = PACKAGE_VERSION;
 const rootCapabilityCatalogViewKind: "runtime_capabilities_view" = getCapabilityCatalogView().kind;
 const runtimeCapabilitiesReason: "capabilities_loaded" | "capabilities_empty" = getCapabilityCatalogView().recommendedReason;
+const rootCapabilityEntryId: string | undefined = getCapabilityCatalogEntry("runtime_catalog")?.id;
 const rootAgentId: string | undefined = listAgentCatalog()[0]?.id;
 const rootAgentEntryId: string | undefined = getAgentCatalogEntry("executor")?.id;
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
