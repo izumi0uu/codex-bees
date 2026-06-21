@@ -32,6 +32,7 @@ export {
   getCommandHelpView,
   getCommandCatalogView,
   getInitCommandCatalog,
+  getInitCommandCatalogView,
   getInitCommandCatalogEntry,
   getInitCommandCatalogEntryView,
   getInitHelpView,

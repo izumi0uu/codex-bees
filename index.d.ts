@@ -46,6 +46,15 @@ export interface CommandCatalogEntryView {
   entry: CommandCatalogEntry | null;
 }
 
+export interface InitCommandCatalogView {
+  kind: "init_command_catalog_view";
+  recommendedReason: "init_command_catalog_loaded" | "init_command_catalog_empty";
+  counts: {
+    totalOptions: number;
+  };
+  options: CommandOptionCatalogEntry[];
+}
+
 export interface CommandHelpView {
   kind: "command_help_view";
   recommendedReason: "command_help_loaded" | "command_help_fallback_loaded";
@@ -894,6 +903,7 @@ export declare function getCommandCatalogEntryView(command?: string): CommandCat
 export declare function getCommandHelpView(command?: string): CommandHelpView;
 export declare function getCommandCatalogView(): CommandCatalogView;
 export declare function getInitCommandCatalog(): CommandOptionCatalogEntry[];
+export declare function getInitCommandCatalogView(): InitCommandCatalogView;
 export declare function getInitCommandCatalogEntry(option: string): CommandOptionCatalogEntry | undefined;
 export declare function getInitCommandCatalogEntryView(option?: string): InitCommandOptionView;
 export declare function getInitHelpView(option?: string): InitHelpView;

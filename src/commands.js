@@ -13,6 +13,19 @@ export function getInitCommandCatalog() {
   return INIT_COMMAND_OPTIONS.map((entry) => ({ ...entry }));
 }
 
+export function getInitCommandCatalogView() {
+  const options = getInitCommandCatalog();
+
+  return {
+    kind: "init_command_catalog_view",
+    recommendedReason: options.length > 0 ? "init_command_catalog_loaded" : "init_command_catalog_empty",
+    counts: {
+      totalOptions: options.length
+    },
+    options
+  };
+}
+
 export function getInitCommandCatalogEntry(option) {
   if (!option) {
     return undefined;
