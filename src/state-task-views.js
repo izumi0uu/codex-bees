@@ -144,6 +144,50 @@ export function buildTaskReportViewFromSources(
   });
 }
 
+export function buildTaskHistoryView(
+  id,
+  {
+    getTask,
+    deriveTaskHistoryReason
+  }
+) {
+  const task = getTask(id);
+  if (!task) {
+    return null;
+  }
+  const history = task.history ?? [];
+  const next = history.at(-1) ?? null;
+  const recommendedReason = deriveTaskHistoryReason({ history, next });
+
+  return {
+    kind: "task_history",
+    recommendedReason,
+    taskId: task.id,
+    title: task.title,
+    queueStatus: task.queueStatus,
+    counts: {
+      totalHistoryEntries: history.length
+    },
+    history
+  };
+}
+
+export function buildTaskHistoryViewFromSources(
+  id,
+  {
+    getTask,
+    deriveTaskHistoryReason
+  },
+  {
+    buildTaskHistoryView
+  }
+) {
+  return buildTaskHistoryView(id, {
+    getTask,
+    deriveTaskHistoryReason
+  });
+}
+
 export function deriveTaskBriefReason(task, recommended) {
   if (task.queueStatus === "done") {
     return "completed_task_brief";

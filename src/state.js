@@ -118,6 +118,8 @@ import {
 import {
   buildTaskBriefView,
   buildTaskBriefViewFromSources,
+  buildTaskHistoryView,
+  buildTaskHistoryViewFromSources,
   buildTaskReportView,
   buildTaskReportViewFromSources,
   buildSwarmBriefView,
@@ -557,25 +559,16 @@ export function getTaskView(id) {
 }
 
 export function taskHistory(id) {
-  const task = getTask(id);
-  if (!task) {
-    return null;
-  }
-  const history = task.history ?? [];
-  const next = history.at(-1) ?? null;
-  const recommendedReason = deriveTaskHistoryReason({ history, next });
-
-  return {
-    kind: "task_history",
-    recommendedReason,
-    taskId: task.id,
-    title: task.title,
-    queueStatus: task.queueStatus,
-    counts: {
-      totalHistoryEntries: history.length
+  return buildTaskHistoryViewFromSources(
+    id,
+    {
+      getTask,
+      deriveTaskHistoryReason
     },
-    history
-  };
+    {
+      buildTaskHistoryView
+    }
+  );
 }
 
 export function taskReport(id) {
