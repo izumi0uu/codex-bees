@@ -160,6 +160,7 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 - `getMcpToolView(name)` for one machine-readable MCP tool lookup view
 - `getMcpCommandCatalog()` for the raw structured `mcp` subcommand option list
 - `getMcpCommandCatalogEntry(option)` for one structured `mcp` subcommand option lookup
+- `getMcpCommandCatalogEntryView(option)` for one machine-readable `mcp` subcommand option lookup view
 - `getToolCatalogView()` for the grouped catalog view
 - `getMcpCommandCatalogView()` for the structured `mcp` subcommand option catalog
 - `getMcpHelpView(option)` for a machine-readable `mcp` help contract with matched option metadata
@@ -171,13 +172,14 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 Example:
 
 ```js
-import { callMcpTool, getMcpCommandCatalog, getMcpCommandCatalogEntry, getMcpHelpView, getMcpToolEntry, getMcpToolView, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
+import { callMcpTool, getMcpCommandCatalog, getMcpCommandCatalogEntry, getMcpCommandCatalogEntryView, getMcpHelpView, getMcpToolEntry, getMcpToolView, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
 
 const tools = listMcpTools();
 const runtimeContractTool = getMcpToolEntry("runtime_contract");
 const runtimeContractToolView = getMcpToolView("runtime_contract");
 const options = getMcpCommandCatalog();
 const toolsOption = getMcpCommandCatalogEntry("--tools");
+const toolsOptionView = getMcpCommandCatalogEntryView("--tools");
 const helpView = getMcpHelpView("--tools");
 const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const contract = callMcpTool("runtime_contract");
