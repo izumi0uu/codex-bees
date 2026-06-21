@@ -229,6 +229,7 @@ import {
 import {
   buildRuntimeControlPackSummary,
   buildRuntimeControlPackView,
+  buildRuntimeControlPackViewFromSources,
   buildRuntimeExecutionPackSummary,
   buildRuntimeExecutionPackView,
   buildRuntimeFocusSources,
@@ -1302,7 +1303,7 @@ export function runtimeWorkspacePack(input = {}) {
 }
 
 export function runtimeControlPack(input = {}) {
-  return buildRuntimeControlPackView(
+  return buildRuntimeControlPackViewFromSources(
     input,
     {
       runtimeSummaryPack,
@@ -1313,7 +1314,8 @@ export function runtimeControlPack(input = {}) {
     {
       deriveRuntimeControlPackSurface,
       deriveRuntimeControlPackReason,
-      buildRuntimeControlPackSummary
+      buildRuntimeControlPackSummary,
+      buildRuntimeControlPackView
     }
   );
 }

@@ -1967,6 +1967,37 @@ export function buildRuntimeControlPackView(
   };
 }
 
+export function buildRuntimeControlPackViewFromSources(
+  input,
+  {
+    runtimeSummaryPack,
+    runtimeWorkspacePack,
+    runtimeOperatorPack,
+    runtimeLeaderPack
+  },
+  {
+    deriveRuntimeControlPackSurface,
+    deriveRuntimeControlPackReason,
+    buildRuntimeControlPackSummary,
+    buildRuntimeControlPackView
+  }
+) {
+  return buildRuntimeControlPackView(
+    input,
+    {
+      runtimeSummaryPack,
+      runtimeWorkspacePack,
+      runtimeOperatorPack,
+      runtimeLeaderPack
+    },
+    {
+      deriveRuntimeControlPackSurface,
+      deriveRuntimeControlPackReason,
+      buildRuntimeControlPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeSignalPackSurface({ focus, alerts, activity, roles }) {
   if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task") {
     return "runtime:focus";
