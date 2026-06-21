@@ -16,7 +16,7 @@ const CAPABILITY_CATALOG = [
     category: "runtime",
     description: "Local MCP stdio server exposing coordination and runtime inspection tools.",
     cliCommands: ["mcp"],
-    mcpTools: ["runtime_contract", "runtime_catalog", "runtime_status", "runtime_capabilities"]
+    mcpTools: ["runtime_ready", "runtime_contract", "runtime_catalog", "runtime_status", "runtime_capabilities"]
   },
   {
     id: "planning",

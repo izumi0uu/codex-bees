@@ -7,6 +7,7 @@ import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
 import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
+import { getRuntimeReadyView } from "./runtime-ready.js";
 import {
   activateSwarm,
   addTask,
@@ -185,6 +186,14 @@ export const toolCatalog = [
         id: { type: "string" }
       },
       required: ["id"]
+    }
+  },
+  {
+    name: "runtime_ready",
+    description: "Return the explicit runtime readiness view and next startup steps.",
+    inputSchema: {
+      type: "object",
+      properties: {}
     }
   },
   {
@@ -1446,6 +1455,10 @@ function handleRequest(message) {
 
     if (name === "runtime_catalog") {
       return createSuccess(id, createTextPayload({ catalog: getRuntimeCatalogView() }));
+    }
+
+    if (name === "runtime_ready") {
+      return createSuccess(id, createTextPayload({ ready: getRuntimeReadyView() }));
     }
 
     if (name === "runtime_catalog_agents") {
