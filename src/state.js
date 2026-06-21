@@ -48,9 +48,7 @@ import {
 import {
   buildSyncedSwarmState,
   buildTransitionedSwarmState,
-  collectSwarmTasks,
-  isCancelledSwarm,
-  updateSwarmAtIndex
+  syncLoadedSwarmState,
 } from "./state-swarm-core.js";
 import {
   findSwarmIndex,
@@ -4061,20 +4059,13 @@ export function cancelSwarm(input) {
 }
 
 function syncSwarmInLoadedState(state, swarmId) {
-  const swarmIndex = findSwarmIndex(state, swarmId);
-  if (swarmIndex < 0) {
-    return null;
-  }
-
-  const current = normalizeSwarm(state.swarms[swarmIndex]);
-  if (isCancelledSwarm(current)) {
-    return updateSwarmAtIndex(state.swarms, swarmIndex, current);
-  }
-
-  const swarmTasks = collectSwarmTasks(state.tasks, current.id, normalizeTask);
-  const derivedStatus = deriveSwarmStatus(current, swarmTasks);
-  const next = normalizeSwarm(buildSyncedSwarmState(current, derivedStatus));
-  return updateSwarmAtIndex(state.swarms, swarmIndex, next);
+  return syncLoadedSwarmState(state, swarmId, {
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask,
+    deriveSwarmStatus,
+    buildSyncedSwarmState
+  });
 }
 
 function transitionTask(input) {
