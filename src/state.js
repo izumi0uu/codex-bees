@@ -270,6 +270,7 @@ import {
   buildRuntimeSignalPackView,
   buildRuntimeSignalPackSummary,
   buildRuntimeSummaryPackView,
+  buildRuntimeSummaryPackViewFromSources,
   buildRuntimeSummaryPackSummary,
   buildRuntimeWorkspacePackViewFromSources,
   buildRuntimeHandoffPackViewFromSources,
@@ -1149,7 +1150,7 @@ export function runtimeRecovery() {
 }
 
 export function runtimeSummaryPack(input = {}) {
-  return buildRuntimeSummaryPackView(
+  return buildRuntimeSummaryPackViewFromSources(
     input,
     {
       runtimeDashboard,
@@ -1164,7 +1165,8 @@ export function runtimeSummaryPack(input = {}) {
     {
       deriveRuntimeSummaryPackSurface,
       deriveRuntimeSummaryPackReason,
-      buildRuntimeSummaryPackSummary
+      buildRuntimeSummaryPackSummary,
+      buildRuntimeSummaryPackView
     }
   );
 }

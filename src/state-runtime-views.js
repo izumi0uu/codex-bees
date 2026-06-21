@@ -976,6 +976,45 @@ export function buildRuntimeSummaryPackView(
   };
 }
 
+export function buildRuntimeSummaryPackViewFromSources(
+  input,
+  {
+    runtimeDashboard,
+    runtimeAlerts,
+    runtimeFocus,
+    runtimeHandoffs,
+    runtimeRecovery,
+    runtimeCloseout,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  },
+  {
+    deriveRuntimeSummaryPackSurface,
+    deriveRuntimeSummaryPackReason,
+    buildRuntimeSummaryPackSummary,
+    buildRuntimeSummaryPackView
+  }
+) {
+  return buildRuntimeSummaryPackView(
+    input,
+    {
+      runtimeDashboard,
+      runtimeAlerts,
+      runtimeFocus,
+      runtimeHandoffs,
+      runtimeRecovery,
+      runtimeCloseout,
+      leaderAssignmentDispatchBundle,
+      leaderAssignmentLaunchPlan
+    },
+    {
+      deriveRuntimeSummaryPackSurface,
+      deriveRuntimeSummaryPackReason,
+      buildRuntimeSummaryPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeOperatorPackSurface({ focus, handoffs, closeout, dashboard, alerts }) {
   if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task") {
     return "runtime:focus";
