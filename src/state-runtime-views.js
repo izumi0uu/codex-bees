@@ -797,6 +797,41 @@ export function buildRuntimeDispatchPackView(
   };
 }
 
+export function buildRuntimeDispatchPackViewFromSources(
+  input,
+  {
+    runtimeDispatch,
+    leaderAssignmentDispatchPack,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeRoles,
+    runtimeHandoffs
+  },
+  {
+    deriveRuntimeDispatchPackSurface,
+    deriveRuntimeDispatchPackReason,
+    buildRuntimeDispatchPackSummary,
+    buildRuntimeDispatchPackView
+  }
+) {
+  return buildRuntimeDispatchPackView(
+    input,
+    {
+      runtimeDispatch,
+      leaderAssignmentDispatchPack,
+      leaderAssignmentDispatchBundle,
+      leaderAssignmentLaunchPlan,
+      runtimeRoles,
+      runtimeHandoffs
+    },
+    {
+      deriveRuntimeDispatchPackSurface,
+      deriveRuntimeDispatchPackReason,
+      buildRuntimeDispatchPackSummary
+    }
+  );
+}
+
 export function buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles) {
   return {
     dashboard: {

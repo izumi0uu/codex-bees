@@ -238,6 +238,7 @@ import {
   buildRuntimeCloseoutPackView,
   buildRuntimeCloseoutPackViewFromSources,
   buildRuntimeCloseoutPackSummary,
+  buildRuntimeDispatchPackViewFromSources,
   buildRuntimeDispatchPackView,
   buildRuntimeDispatchPackSummary,
   buildRuntimeAssignmentPackSummary,
@@ -1191,7 +1192,7 @@ export function runtimeOperatorPack() {
 }
 
 export function runtimeDispatchPack(input = {}) {
-  return buildRuntimeDispatchPackView(
+  return buildRuntimeDispatchPackViewFromSources(
     input,
     {
       runtimeDispatch,
@@ -1204,7 +1205,8 @@ export function runtimeDispatchPack(input = {}) {
     {
       deriveRuntimeDispatchPackSurface,
       deriveRuntimeDispatchPackReason,
-      buildRuntimeDispatchPackSummary
+      buildRuntimeDispatchPackSummary,
+      buildRuntimeDispatchPackView
     }
   );
 }
