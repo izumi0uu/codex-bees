@@ -212,6 +212,7 @@ if (
   !importedSourceApi.includes("getMcpToolView") ||
   !importedSourceApi.includes("getCapabilityCatalogEntryView") ||
   !importedSourceApi.includes("getAgentCatalogEntryView") ||
+  !importedSourceApi.includes("getSkillCatalogEntryView") ||
   !importedSourceApi.includes("renderMcpHelpText") ||
   !importedSourceApi.includes("getPackageMetadata") ||
   !importedSourceApi.includes("getRuntimeDoctorView") ||
@@ -243,6 +244,7 @@ if (
   !importedDistApi.includes("getMcpToolView") ||
   !importedDistApi.includes("getCapabilityCatalogEntryView") ||
   !importedDistApi.includes("getAgentCatalogEntryView") ||
+  !importedDistApi.includes("getSkillCatalogEntryView") ||
   !importedDistApi.includes("renderMcpHelpText") ||
   !importedDistApi.includes("getPackageMetadata") ||
   !importedDistApi.includes("getRuntimeDoctorView") ||
@@ -952,7 +954,7 @@ const installedCatalogExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedCatalogExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "runtime_catalog_view" && typeof catalog.counts?.agents === "number" && catalog.counts.agents > 0 && typeof catalog.counts?.skills === "number" && catalog.counts.skills > 0 && typeof catalog.catalog?.paths?.codexDir === "string" && catalog.catalog.paths.codexDir.length > 0 && ["workspace", "bundled"].includes(catalog.catalog?.source) && executorAgent?.id === "executor" && executorAgentView?.kind === "runtime_catalog_entry_view" && executorAgentView?.matchedId === "executor" && projectDevelopmentSkill?.id === "project-development" }));`
+    `${documentedCatalogExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "runtime_catalog_view" && typeof catalog.counts?.agents === "number" && catalog.counts.agents > 0 && typeof catalog.counts?.skills === "number" && catalog.counts.skills > 0 && typeof catalog.catalog?.paths?.codexDir === "string" && catalog.catalog.paths.codexDir.length > 0 && ["workspace", "bundled"].includes(catalog.catalog?.source) && executorAgent?.id === "executor" && executorAgentView?.kind === "runtime_catalog_entry_view" && executorAgentView?.matchedId === "executor" && projectDevelopmentSkill?.id === "project-development" && projectDevelopmentSkillView?.kind === "runtime_catalog_entry_view" && projectDevelopmentSkillView?.matchedId === "project-development" }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -971,7 +973,7 @@ const installedCatalogImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && typeof m.getAgentCatalogEntry === "function" && m.getAgentCatalogEntry("executor")?.id === "executor" && typeof m.getAgentCatalogEntryView === "function" && m.getAgentCatalogEntryView("executor")?.matchedId === "executor" && typeof m.getSkillCatalogEntry === "function" && m.getSkillCatalogEntry("project-development")?.id === "project-development"})))'
+    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && typeof m.getAgentCatalogEntry === "function" && m.getAgentCatalogEntry("executor")?.id === "executor" && typeof m.getAgentCatalogEntryView === "function" && m.getAgentCatalogEntryView("executor")?.matchedId === "executor" && typeof m.getSkillCatalogEntry === "function" && m.getSkillCatalogEntry("project-development")?.id === "project-development" && typeof m.getSkillCatalogEntryView === "function" && m.getSkillCatalogEntryView("project-development")?.matchedId === "project-development"})))'
   ],
   {
     cwd: packedInstallAppDir,

@@ -25,6 +25,7 @@ import {
   getCapabilityCatalogView,
   getAgentCatalogEntry,
   getAgentCatalogEntryView,
+  getSkillCatalogEntryView,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
   getRuntimeCatalogView,
@@ -295,6 +296,8 @@ const rootAgentViewMatched: string | null = getAgentCatalogEntryView("executor")
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
 const rootSkillId: string | undefined = listSkillCatalog()[0]?.id;
 const rootSkillEntryId: string | undefined = getSkillCatalogEntry("project-development")?.id;
+const rootSkillViewReason: "catalog_entry_loaded" | "catalog_entry_missing" = getSkillCatalogEntryView("project-development").recommendedReason;
+const rootSkillViewMatched: string | null = getSkillCatalogEntryView("project-development").matchedId;
 const rootCatalogSource: "workspace" | "bundled" | "missing" = getRuntimeCatalog().source;
 const runtimeCatalogSource: "workspace" | "bundled" | "missing" = getRuntimeCatalogPaths().source;
 const resolvedSkillPath: string | null = resolveRuntimeCatalogPath("skills");
