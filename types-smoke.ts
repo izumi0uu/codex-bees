@@ -6,6 +6,8 @@ import {
   getCommandHelpView,
   getCommandCatalogView,
   getInitCommandCatalog,
+  getInitCommandCatalogEntry,
+  getInitHelpView,
   getCoordinationOverview,
   getCoordinationOverviewView,
   getMcpCommandCatalog,
@@ -92,7 +94,10 @@ const commandCatalogReason: "command_catalog_loaded" | "command_catalog_empty" =
 const initCatalogEntry: string | undefined = getCommandCatalogEntry("init")?.command;
 const initCommandHelpReason: "command_help_loaded" | "command_help_fallback_loaded" = getCommandHelpView("init").recommendedReason;
 const initCommandHelpMatched: string | null = getCommandHelpView("init").matchedCommand;
+const initOptionEntry: string | undefined = getInitCommandCatalogEntry("--preview")?.option;
 const initCommandOptions: string | undefined = getInitCommandCatalog()[0]?.option;
+const initHelpReason: "init_help_loaded" | "init_help_fallback_loaded" = getInitHelpView("--preview").recommendedReason;
+const initHelpMatched: string | null = getInitHelpView("--preview").matchedOption;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 const initHelpTextByCommand: string = renderCommandHelpText("init");
 const rootHelpTextDirect: string = renderHelpTextRoot();
