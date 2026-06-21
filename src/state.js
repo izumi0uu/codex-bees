@@ -233,6 +233,7 @@ import {
   buildRuntimeReviewPackView,
   buildRuntimeLeaderPackSummary,
   buildRuntimeLeaderPackView,
+  buildLeaderWorkspaceView,
   buildLeaderWorkspaceSummary,
   buildLeaderWorkspaceSwarmEntry,
   buildRuntimeOwnerPackSummary,
@@ -1681,45 +1682,21 @@ export function runtimeVerifierPack(input = {}) {
 }
 
 export function leaderWorkspace(input = {}) {
-  const filters = {
-    status: input.status,
-    topology: input.topology,
-    owner: input.owner
-  };
-  const overviews = listSwarmOverviews(filters);
-  const swarmEntries = overviews
-    .map((overview) => buildLeaderWorkspaceSwarmEntry(overview, swarmBrief, buildSwarmBundleSummary))
-    .sort(compareLeaderWorkspaceEntries);
-  const focusEntry = swarmEntries[0] ?? null;
-  const recommendedReason = deriveLeaderWorkspaceReason({ swarmEntries, focusEntry });
-
-  return {
-    kind: "leader_workspace",
-    recommendedReason,
-    filters,
-    counts: {
-      totalSwarms: swarmEntries.length,
-      planned: swarmEntries.filter((entry) => entry.status === "planned").length,
-      active: swarmEntries.filter((entry) => entry.status === "active").length,
-      blocked: swarmEntries.filter((entry) => entry.status === "blocked").length,
-      completed: swarmEntries.filter((entry) => entry.status === "completed").length,
-      cancelled: swarmEntries.filter((entry) => entry.status === "cancelled").length,
-      readyToComplete: swarmEntries.filter((entry) => entry.readyToComplete).length,
-      dispatchable: swarmEntries.reduce((total, entry) => total + (entry.dispatchableCount ?? 0), 0),
-      pendingReview: swarmEntries.reduce((total, entry) => total + (entry.counts?.readyForReview ?? 0), 0)
+  return buildLeaderWorkspaceView(
+    input,
+    {
+      listSwarmOverviews,
+      buildLeaderWorkspaceSwarmEntry,
+      swarmBrief,
+      swarmBundle,
+      buildSwarmBundleSummary,
+      compareLeaderWorkspaceEntries
     },
-    swarms: swarmEntries,
-    focus: focusEntry
-      ? {
-          swarmId: focusEntry.id,
-          recommendedNextActor: focusEntry.recommendedNextActor,
-          recommendedNextAction: focusEntry.recommendedNextAction,
-          recommendedCommands: focusEntry.recommendedCommands,
-          bundle: swarmBundle(focusEntry.id)
-        }
-      : null,
-    summary: buildLeaderWorkspaceSummary(swarmEntries, focusEntry)
-  };
+    {
+      deriveLeaderWorkspaceReason,
+      buildLeaderWorkspaceSummary
+    }
+  );
 }
 
 export function taskInbox(input = {}) {
