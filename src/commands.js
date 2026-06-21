@@ -52,6 +52,7 @@ export function getCommandCatalog() {
     { command: "command:get", description: "Show one CLI command view" },
     { command: "command:help", description: "Show one CLI command help view" },
     { command: "init", description: "Materialize the shipped .codex runtime assets into the current project", options: getInitCommandCatalog() },
+    { command: "init:option", description: "Show one init option view" },
     { command: "mcp", description: "Start the local Codex MCP stdio runtime or inspect its subcommands", options: getMcpCommandCatalog() },
     { command: "tools", description: "Print the current MCP tool catalog" },
     { command: "tools:get", description: "Show one MCP tool view" },

@@ -3,7 +3,7 @@
 import { stdout, stderr, exit, argv, env } from "node:process";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { getCommandCatalogEntryView, getCommandHelpView, renderHelpText, renderInitHelpText } from "./commands.js";
+import { getCommandCatalogEntryView, getCommandHelpView, getInitCommandCatalogEntryView, renderHelpText, renderInitHelpText } from "./commands.js";
 import { getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntryView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
@@ -146,6 +146,11 @@ function printCommandView() {
 function printCommandHelpView() {
   const name = requireOption("--name");
   write(JSON.stringify({ help: getCommandHelpView(name) }, null, 2) + "\n");
+}
+
+function printInitOptionView() {
+  const option = requireOption("--option");
+  write(JSON.stringify({ option: getInitCommandCatalogEntryView(option) }, null, 2) + "\n");
 }
 
 function printDoctor() {
@@ -1348,6 +1353,9 @@ async function runCommand(command) {
       return;
     case "init":
       handleInit();
+      return;
+    case "init:option":
+      printInitOptionView();
       return;
     case "tools":
       write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
