@@ -45,6 +45,10 @@ import {
   tokenize
 } from "./state-query.js";
 import {
+  recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
+  writeStateFile as writeStateFileWithPaths
+} from "./state-storage.js";
+import {
   appendTaskAnnotation,
   appendTaskHistoryEntry,
   deriveReviewState,
@@ -249,7 +253,7 @@ const STATE_FILE = join(STATE_DIR, "state.json");
 export function ensureStateFile() {
   mkdirSync(STATE_DIR, { recursive: true });
   if (!existsSync(STATE_FILE)) {
-    writeStateFile(defaultState());
+    writeStateFileWithPaths(STATE_DIR, STATE_FILE, defaultState());
   }
   return STATE_FILE;
 }
@@ -261,7 +265,12 @@ export function loadState() {
     const parsed = JSON.parse(raw);
     return normalizeState(parsed);
   } catch (error) {
-    recoverCorruptStateFile(error);
+    recoverCorruptStateFileWithPaths({
+      stateDir: STATE_DIR,
+      stateFile: STATE_FILE,
+      error,
+      defaultState: defaultState()
+    });
     return defaultState();
   }
 }
@@ -272,7 +281,7 @@ export function saveState(state) {
     ...state,
     updatedAt: new Date().toISOString()
   });
-  writeStateFile(next);
+  writeStateFileWithPaths(STATE_DIR, STATE_FILE, next);
   return next;
 }
 
@@ -4188,27 +4197,3 @@ function transitionSwarm(input) {
   return next;
 }
 
-function writeStateFile(state) {
-  mkdirSync(STATE_DIR, { recursive: true });
-  const tmpPath = `${STATE_FILE}.tmp`;
-  writeFileSync(tmpPath, JSON.stringify(state, null, 2) + "\n", "utf8");
-  renameSync(tmpPath, STATE_FILE);
-}
-
-function recoverCorruptStateFile(error) {
-  try {
-    if (existsSync(STATE_FILE)) {
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const corruptPath = join(STATE_DIR, `state.corrupt.${timestamp}.json`);
-      renameSync(STATE_FILE, corruptPath);
-    }
-  } catch {
-    try {
-      unlinkSync(STATE_FILE);
-    } catch {
-      // ignore cleanup failures; caller will rewrite a clean file on next save
-    }
-  }
-  writeStateFile(defaultState());
-  console.warn(`[codex-bees] recovered corrupt state file: ${error.message}`);
-}
