@@ -406,6 +406,56 @@ export function buildRuntimeReviewSummary(groups, next) {
   return `Runtime review has ${groups.length} verifier group${groups.length === 1 ? "" : "s"}; ${next.taskId} is the next review decision.`;
 }
 
+export function buildRuntimeReviewView(
+  {
+    loadState,
+    normalizeTask,
+    compareTasksByUpdatedAt,
+    describeRole,
+    taskBrief,
+    buildRuntimeReviewTaskEntry,
+    compareRuntimeReviewGroups
+  },
+  {
+    deriveRuntimeReviewReason,
+    buildRuntimeReviewSummary
+  }
+) {
+  const tasks = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => task.queueStatus === "ready_for_review")
+    .sort(compareTasksByUpdatedAt);
+  const groupsByVerifier = new Map();
+
+  for (const task of tasks) {
+    const verifierId = task.verifier ?? "unknown";
+    const current = groupsByVerifier.get(verifierId) ?? {
+      verifier: describeRole(verifierId),
+      count: 0,
+      tasks: []
+    };
+    current.tasks.push(buildRuntimeReviewTaskEntry(task, current.count + 1, describeRole, taskBrief));
+    current.count += 1;
+    groupsByVerifier.set(verifierId, current);
+  }
+
+  const groups = [...groupsByVerifier.values()].sort(compareRuntimeReviewGroups);
+  const next = groups[0]?.tasks?.[0] ?? null;
+  const recommendedReason = deriveRuntimeReviewReason({ groups, next, totalPendingReview: tasks.length });
+
+  return {
+    kind: "runtime_review",
+    recommendedReason,
+    counts: {
+      verifierGroups: groups.length,
+      totalPendingReview: tasks.length
+    },
+    groups,
+    next,
+    summary: buildRuntimeReviewSummary(groups, next)
+  };
+}
+
 export function buildRuntimeActivitySummary(entries, next) {
   if (entries.length === 0) {
     return "Runtime activity has no recorded task events yet.";
