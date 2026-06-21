@@ -3,7 +3,7 @@
 import { stdout, stderr, exit, argv, env } from "node:process";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { renderHelpText } from "./commands.js";
+import { renderHelpText, renderInitHelpText } from "./commands.js";
 import { getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
@@ -483,6 +483,11 @@ function readPositiveIntegerOption(flag) {
 }
 
 function handleInit() {
+  if (argv.includes("--help") || argv.includes("help")) {
+    write(renderInitHelpText());
+    return;
+  }
+
   const preview = argv.includes("--preview");
   const force = argv.includes("--force");
   const targetDirectory = readOption("--dir") ?? readOption("--target") ?? undefined;

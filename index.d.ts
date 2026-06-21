@@ -791,6 +791,7 @@ export declare function getPackageMetadataView(): PackageMetadataView;
 export declare function getCommandCatalog(): CommandCatalogEntry[];
 export declare function getCommandCatalogView(): CommandCatalogView;
 export declare function renderHelpText(): string;
+export declare function renderInitHelpText(): string;
 export declare function getMcpCommandCatalog(): McpCommandCatalogEntry[];
 export declare function getMcpCommandCatalogView(): McpCommandCatalogView;
 export declare function renderMcpHelpText(): string;

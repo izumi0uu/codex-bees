@@ -121,3 +121,19 @@ export function renderHelpText() {
   }
   return lines.join("\n") + "\n";
 }
+
+export function renderInitHelpText() {
+  return [
+    `${PRODUCT_NAME} init`,
+    "",
+    "Usage:",
+    `  ${PRODUCT_NAME} init [--preview] [--force] [--dir <path>]`,
+    "",
+    "Options:",
+    "  --preview       Show the exact init file plan without writing anything",
+    "  --force         Overwrite shipped .codex asset files that already exist",
+    "  --dir <path>    Materialize assets into a target directory instead of cwd",
+    "  --target <path> Alias for --dir",
+    "  --help          Show init subcommand help"
+  ].join("\n") + "\n";
+}

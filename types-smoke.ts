@@ -27,6 +27,7 @@ import {
   planSwarm,
   planTask,
   renderHelpText as renderHelpTextRoot,
+  renderInitHelpText,
   queueTasksFromPlan,
   listAgentRoleIds,
   listMcpTools,
@@ -83,6 +84,7 @@ getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.optio
 const commandCatalogReason: "command_catalog_loaded" | "command_catalog_empty" = getCommandCatalogView().recommendedReason;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 const rootHelpTextDirect: string = renderHelpTextRoot();
+const initHelpText: string = renderInitHelpText();
 const rootHelpText: string = renderHelpTextCommands();
 const rootExecutionModel: "local bounded multi-agent coordination" = getCoordinationOverview().executionModel;
 const rootDeliveryBoundary: "codex-only runtime" = getCoordinationOverview().deliveryBoundary;
