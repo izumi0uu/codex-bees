@@ -9,7 +9,7 @@ import { getRuntimeContractView } from "./runtime-contract.js";
 import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
 import { getRuntimeDoctorView } from "./doctor.js";
-import { getCommandCatalogEntryView, getCommandCatalogView } from "./commands.js";
+import { getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView } from "./commands.js";
 import {
   activateSwarm,
   addTask,
@@ -147,6 +147,17 @@ export const toolCatalog = [
   {
     name: "command_catalog_entry",
     description: "Return one shipped CLI command catalog entry view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        command: { type: "string" }
+      },
+      required: ["command"]
+    }
+  },
+  {
+    name: "command_help",
+    description: "Return one shipped CLI command help view.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1510,6 +1521,13 @@ function handleRequest(message) {
         return createError(id, -32602, "command_catalog_entry requires arguments.command");
       }
       return createSuccess(id, createTextPayload({ command: getCommandCatalogEntryView(params.arguments.command) }));
+    }
+
+    if (name === "command_help") {
+      if (!params.arguments?.command) {
+        return createError(id, -32602, "command_help requires arguments.command");
+      }
+      return createSuccess(id, createTextPayload({ help: getCommandHelpView(params.arguments.command) }));
     }
 
     if (name === "worker_guidelines") {
