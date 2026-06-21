@@ -3068,6 +3068,41 @@ export function buildRuntimePickupPackView(
   };
 }
 
+export function buildRuntimePickupPackViewFromSources(
+  input,
+  {
+    normalizeNextMode,
+    workerSession,
+    taskNext,
+    previewTaskPickup,
+    runtimeRolePack,
+    describeRole
+  },
+  {
+    deriveRuntimePickupPackSurface,
+    deriveRuntimePickupPackReason,
+    buildRuntimePickupPackSummary,
+    buildRuntimePickupPackView
+  }
+) {
+  return buildRuntimePickupPackView(
+    input,
+    {
+      normalizeNextMode,
+      workerSession,
+      taskNext,
+      previewTaskPickup,
+      runtimeRolePack,
+      describeRole
+    },
+    {
+      deriveRuntimePickupPackSurface,
+      deriveRuntimePickupPackReason,
+      buildRuntimePickupPackSummary
+    }
+  );
+}
+
 export function runtimeRolePriority(entry) {
   if (entry.counts.pendingReview > 0) {
     return 0;

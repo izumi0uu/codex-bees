@@ -248,6 +248,7 @@ import {
   buildRuntimeOperatorPackView,
   buildRuntimeOperatorPackViewFromSources,
   buildRuntimeOperatorPackSummary,
+  buildRuntimePickupPackViewFromSources,
   buildRuntimePickupPackSummary,
   buildRuntimePickupPackView,
   buildRuntimeRecoveryPackViewFromSources,
@@ -1434,7 +1435,7 @@ export function runtimeExecutionPack(input = {}) {
 }
 
 export function runtimePickupPack(input = {}) {
-  return buildRuntimePickupPackView(
+  return buildRuntimePickupPackViewFromSources(
     input,
     {
       normalizeNextMode,
@@ -1447,7 +1448,8 @@ export function runtimePickupPack(input = {}) {
     {
       deriveRuntimePickupPackSurface,
       deriveRuntimePickupPackReason,
-      buildRuntimePickupPackSummary
+      buildRuntimePickupPackSummary,
+      buildRuntimePickupPackView
     }
   );
 }
