@@ -400,6 +400,7 @@ node ./src/index.js swarm:list --detailed
 node ./src/index.js swarm:overview --id swarm-1
 node ./src/index.js swarm:dispatch --id swarm-1 --by worker-1 --owner explore
 node ./src/index.js swarm:sync --id swarm-1
+node ./src/index.js tools:get --name runtime_contract
 node ./src/index.js memory:store --content "Remember the MCP contract" --namespace runtime --tags mcp,contract
 node ./src/index.js memory:get --id memory-1
 node ./src/index.js memory:search --query "MCP contract" --namespace runtime
@@ -515,7 +516,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime_contract` exposes the explicit runtime contract view. It emits `kind: "runtime_contract_view"` with a machine-readable `recommendedReason`, transport and responsibility counts, and the nested contract payload so automation can distinguish a loaded contract surface from ad hoc prose while sharing one stable contract shape across CLI doctor diagnostics and MCP.
 
-`tools` and `mcp --tools` expose the explicit tool catalog view for human and automation-side inspection of the shipped MCP surface. They emit `kind: "tool_catalog_view"` with a machine-readable `recommendedReason`, top-level tool counts grouped by tool prefix, and the nested tool inventory so consumers can branch on catalog presence and coarse tool families without reparsing the full list first.
+`tools` and `mcp --tools` expose the explicit tool catalog view for human and automation-side inspection of the shipped MCP surface. They emit `kind: "tool_catalog_view"` with a machine-readable `recommendedReason`, top-level tool counts grouped by tool prefix, and the nested tool inventory so consumers can branch on catalog presence and coarse tool families without reparsing the full list first. `tools:get` exposes the paired single-tool view, returning `kind: "mcp_tool_view"` with `recommendedReason` set to `mcp_tool_loaded` or `mcp_tool_missing` so automation can inspect one shipped tool contract without filtering the full catalog payload.
 
 `coordination_overview` and `worker_guidelines` expose explicit MCP guidance views for the shipped local coordination model. They emit `kind: "coordination_overview_view"` and `kind: "worker_guidelines_view"` with machine-readable `recommendedReason` values and small aggregate counts so MCP consumers can treat runtime guidance as stable product protocol instead of unstructured advisory prose.
 
