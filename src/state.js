@@ -49,6 +49,10 @@ import {
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
 import {
+  buildSyncedSwarmState,
+  buildTransitionedSwarmState
+} from "./state-swarm-core.js";
+import {
   buildTaskReviewPatch,
   deriveTaskTransitionContext,
   resolveTaskClaimedBy
@@ -4059,11 +4063,7 @@ function syncSwarmInLoadedState(state, swarmId) {
     .map(normalizeTask)
     .filter((task) => task.swarmId === current.id);
   const derivedStatus = deriveSwarmStatus(current, swarmTasks);
-  const next = normalizeSwarm({
-    ...current,
-    status: derivedStatus,
-    updatedAt: new Date().toISOString()
-  });
+  const next = normalizeSwarm(buildSyncedSwarmState(current, derivedStatus));
   state.swarms[swarmIndex] = next;
   return next;
 }
@@ -4173,13 +4173,7 @@ function transitionSwarm(input) {
     };
   }
 
-  const next = normalizeSwarm({
-    ...current,
-    status: nextStatus,
-    ...(input.owner !== undefined ? { owner: input.owner } : {}),
-    ...(input.notes !== undefined ? { notes: input.notes } : {}),
-    updatedAt: new Date().toISOString()
-  });
+  const next = normalizeSwarm(buildTransitionedSwarmState(current, input));
 
   state.swarms[index] = next;
   saveState(state);
