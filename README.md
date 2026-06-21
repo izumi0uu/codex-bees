@@ -313,6 +313,7 @@ The package now also ships lightweight TypeScript declarations for the public AP
 
 ```bash
 node ./src/index.js run
+node ./src/index.js command:get --name init
 node ./src/index.js init --preview
 node ./src/index.js init
 node ./src/index.js tools
@@ -536,6 +537,8 @@ Swarm contracts can carry bounded parallel execution detail:
 `runtime:execution-pack` / `runtime_execution_pack` provide the execution-oriented package: focus, dispatch, leader startup plans when parallel startup is ready, role pressure, and queue control combined into one start-work entrypoint with a recommended next surface. It also emits lightweight `metadata` for focus/dispatch/launch/launch-step/role/queue presence and compact `counts.surfacedNextEntries`, plus a machine-readable `recommendedReason` so automation can distinguish between launch readiness, focus-driven urgency, dispatch pressure, role pressure, and simple leader-queue visibility without parsing the nested queue and focus summaries. Pass `--workers` on CLI or `workerIds` over MCP when this entrypoint should emit concrete worker launch commands instead of placeholder worker ids.
 
 `runtime:activity` / `runtime_activity` provide the recent event stream: claims, blocks, review handoffs, approvals, and changes-requested events compressed into one top-level chronological feed. It also emits a machine-readable `recommendedReason` so automation can distinguish whether the newest event signals blocked recovery, review-state change, fresh claim activity, newly created work, or merely generic recent activity before drilling into the stream.
+
+`command:get` exposes the paired single-command view, returning `kind: "command_catalog_entry_view"` with `recommendedReason` set to `command_catalog_entry_loaded` or `command_catalog_entry_missing` so automation can inspect one shipped CLI contract without walking the full command catalog first.
 
 `runtime:closeout` / `runtime_closeout` provide the final closure workspace: approved done tasks and ready-to-complete swarms gathered into one operator view for explicit archive or finish actions. It also emits a machine-readable `recommendedReason` so automation can distinguish approved task closeout, generic task closeout, swarm closeout, plain closeout visibility, and empty closeout state without reparsing next-item structure.
 
