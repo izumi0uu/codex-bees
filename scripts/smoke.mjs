@@ -75,7 +75,9 @@ const checks = [
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
   ["mcp-version", ["./src/index.js", "mcp", "--version"]],
   ["catalog", ["./src/index.js", "catalog"]],
+  ["catalog-agents", ["./src/index.js", "catalog:agents"]],
   ["catalog-agent", ["./src/index.js", "catalog:agent", "--id", "executor"]],
+  ["catalog-skills", ["./src/index.js", "catalog:skills"]],
   ["catalog-skill", ["./src/index.js", "catalog:skill", "--id", "project-development"]],
   ["metadata", ["./src/index.js", "metadata"]],
   ["status", ["./src/index.js", "status"]],
@@ -2413,6 +2415,16 @@ if (
   !cliToolsView.tools.some((tool) => tool.name === "runtime_contract")
 ) {
   console.error("[smoke:tools-cli] expected tool catalog view");
+  process.exit(1);
+}
+const cliCatalogAgents = JSON.parse(run("catalog-agents-verify", ["./src/index.js", "catalog:agents"]).stdout).agents;
+if (!Array.isArray(cliCatalogAgents) || !cliCatalogAgents.some((entry) => entry.id === "executor")) {
+  console.error("[smoke:catalog-agents] expected agent catalog listing");
+  process.exit(1);
+}
+const cliCatalogSkills = JSON.parse(run("catalog-skills-verify", ["./src/index.js", "catalog:skills"]).stdout).skills;
+if (!Array.isArray(cliCatalogSkills) || !cliCatalogSkills.some((entry) => entry.id === "project-development")) {
+  console.error("[smoke:catalog-skills] expected skill catalog listing");
   process.exit(1);
 }
 const cliToolView = JSON.parse(
