@@ -157,8 +157,10 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 
 - `listMcpTools()` for the raw tool inventory
 - `getMcpCommandCatalog()` for the raw structured `mcp` subcommand option list
+- `getMcpCommandCatalogEntry(option)` for one structured `mcp` subcommand option lookup
 - `getToolCatalogView()` for the grouped catalog view
 - `getMcpCommandCatalogView()` for the structured `mcp` subcommand option catalog
+- `getMcpHelpView(option)` for a machine-readable `mcp` help contract with matched option metadata
 - `handleMcpRequest(message)` for one-shot JSON-RPC request handling
 - `callMcpTool(name, args)` for direct tool execution
 - `renderMcpHelpText()` for the same help contract printed by `codex-bees mcp --help`
@@ -167,10 +169,12 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 Example:
 
 ```js
-import { callMcpTool, getMcpCommandCatalog, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
+import { callMcpTool, getMcpCommandCatalog, getMcpCommandCatalogEntry, getMcpHelpView, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
 
 const tools = listMcpTools();
 const options = getMcpCommandCatalog();
+const toolsOption = getMcpCommandCatalogEntry("--tools");
+const helpView = getMcpHelpView("--tools");
 const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const contract = callMcpTool("runtime_contract");
 ```
