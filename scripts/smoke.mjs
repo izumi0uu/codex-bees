@@ -61,6 +61,7 @@ rmSync(".codex-bees", { recursive: true, force: true });
 const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
+  ["commands", ["./src/index.js", "commands"]],
   ["command-get", ["./src/index.js", "command:get", "--name", "init"]],
   ["command-help", ["./src/index.js", "command:help", "--name", "init"]],
   ["init-options", ["./src/index.js", "init:options"]],
@@ -2294,6 +2295,16 @@ if (
   runtimeReadyView.next?.[0] !== "use `codex-bees init` to materialize the shipped .codex project assets"
 ) {
   console.error("[smoke:run] expected runtime readiness view");
+  process.exit(1);
+}
+const cliCommandsView = JSON.parse(run("commands-verify", ["./src/index.js", "commands"]).stdout).commands;
+if (
+  cliCommandsView.kind !== "command_catalog_view" ||
+  cliCommandsView.recommendedReason !== "command_catalog_loaded" ||
+  cliCommandsView.counts?.totalCommands < 10 ||
+  !cliCommandsView.commands?.some((entry) => entry.command === "mcp")
+) {
+  console.error("[smoke:commands] expected command catalog view");
   process.exit(1);
 }
 const cliCommandView = JSON.parse(
