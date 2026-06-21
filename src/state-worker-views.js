@@ -65,6 +65,92 @@ export function recommendWorkerSessionFocus(input) {
   };
 }
 
+export function buildWorkerSessionView(
+  input,
+  {
+    loadState,
+    normalizeTask,
+    normalizeNextMode,
+    compareTasksByUpdatedAt,
+    taskInbox,
+    taskNext,
+    recommendWorkerSessionFocus,
+    deriveWorkerSessionReason,
+    describeRole,
+    buildSessionTaskSnapshot,
+    summarizeInboxTask,
+    taskBrief
+  }
+) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const role = input.role;
+  const workerId = input.workerId;
+  const mode = normalizeNextMode(input.mode);
+  const tasks = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => task.owner === role || task.verifier === role);
+
+  const activeOwned = tasks
+    .filter((task) => task.owner === role && task.claimedBy === workerId && task.queueStatus === "claimed")
+    .sort(compareTasksByUpdatedAt);
+  const blockedOwned = tasks
+    .filter((task) => task.owner === role && task.claimedBy === workerId && task.queueStatus === "blocked")
+    .sort(compareTasksByUpdatedAt);
+  const handoffsAwaitingReview = tasks
+    .filter((task) => task.owner === role && task.claimedBy === workerId && task.queueStatus === "ready_for_review")
+    .sort(compareTasksByUpdatedAt);
+  const reviewQueue = tasks
+    .filter((task) => task.verifier === role && task.queueStatus === "ready_for_review")
+    .sort(compareTasksByUpdatedAt);
+
+  const inbox = taskInbox({
+    role,
+    workerId,
+    mode,
+    limit: input.limit
+  });
+  const next = taskNext({
+    role,
+    workerId,
+    mode
+  });
+  const focus = recommendWorkerSessionFocus({
+    role,
+    workerId,
+    mode,
+    activeOwned,
+    blockedOwned,
+    handoffsAwaitingReview,
+    reviewQueue,
+    next
+  });
+  const recommendedReason = deriveWorkerSessionReason(focus, next);
+
+  return {
+    kind: "worker_session",
+    role: describeRole(role),
+    workerId,
+    mode,
+    recommendedReason,
+    counts: {
+      activeOwned: activeOwned.length,
+      blockedOwned: blockedOwned.length,
+      handoffsAwaitingReview: handoffsAwaitingReview.length,
+      reviewQueue: reviewQueue.length
+    },
+    activeOwned: activeOwned.map((task) => buildSessionTaskSnapshot(task, role, workerId, summarizeInboxTask, taskBrief)),
+    blockedOwned: blockedOwned.map((task) => buildSessionTaskSnapshot(task, role, workerId, summarizeInboxTask, taskBrief)),
+    handoffsAwaitingReview: handoffsAwaitingReview.map((task) => buildSessionTaskSnapshot(task, role, workerId, summarizeInboxTask, taskBrief)),
+    reviewQueue: reviewQueue.map((task) => buildSessionTaskSnapshot(task, role, workerId, summarizeInboxTask, taskBrief)),
+    inbox,
+    next,
+    focus
+  };
+}
+
 export function buildWorkerHandoffSummary(session, focusTaskSnapshot) {
   if (session.focus?.kind === "active_task" && focusTaskSnapshot) {
     return `Worker ${session.workerId} owns ${focusTaskSnapshot.summary.id} and should continue execution before handoff to verifier ${focusTaskSnapshot.summary.verifier}.`;
