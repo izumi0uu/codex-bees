@@ -431,6 +431,53 @@ export function buildLeaderAssignmentDispatchPackView(
   };
 }
 
+export function buildLeaderAssignmentDispatchBundleView(
+  input,
+  {
+    leaderAssignmentDispatchPack
+  },
+  {
+    deriveLeaderAssignmentDispatchBundleReason
+  }
+) {
+  const dispatchPack = leaderAssignmentDispatchPack(input);
+  const launches = (dispatchPack?.groups ?? []).map((group, index) => ({
+    roleId: group.owner?.id ?? group.owner?.name ?? "unknown",
+    position: index + 1,
+    role: group.owner,
+    workerId: group.workerId,
+    taskId: group.next?.taskId ?? null,
+    swarmId: group.next?.swarmId ?? null,
+    objective: group.next?.objective ?? null,
+    lane: group.next?.lane ?? null,
+    assignment: group.next ?? null,
+    sessionCommand: `node ./src/index.js worker:session --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
+    assignmentPackCommand: `node ./src/index.js runtime:assignment-pack --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
+    launchCommand: `node ./src/index.js runtime:assignment-pack --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
+    previewCommand: group.previewCommand,
+    pickupCommand: group.pickupCommand,
+    command: group.command,
+    summary: group.summary
+  }));
+  const next = launches[0] ?? null;
+  const recommendedReason = deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next });
+
+  return {
+    kind: "leader_assignment_dispatch_bundle",
+    recommendedReason,
+    counts: {
+      launches: launches.length,
+      ownerGroups: dispatchPack?.counts?.ownerGroups ?? 0,
+      totalAssignments: dispatchPack?.counts?.totalAssignments ?? 0
+    },
+    next,
+    launches,
+    summary: next
+      ? `Leader assignment dispatch bundle has ${launches.length} worker launch${launches.length === 1 ? "" : "es"} ready; ${next.role?.id ?? next.role?.name ?? "unknown"} via ${next.workerId ?? "<worker-id>"} is first.`
+      : "Leader assignment dispatch bundle has no worker launches right now."
+  };
+}
+
 export function deriveRuntimeDispatchReason({ groups, totalAssignments, next }) {
   if ((groups?.length ?? 0) > 1) {
     return "parallel_owner_groups_visible";
