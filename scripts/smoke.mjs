@@ -63,10 +63,12 @@ const checks = [
   ["version", ["./src/index.js", "--version"]],
   ["command-get", ["./src/index.js", "command:get", "--name", "init"]],
   ["command-help", ["./src/index.js", "command:help", "--name", "init"]],
+  ["init-options", ["./src/index.js", "init:options"]],
   ["init-option", ["./src/index.js", "init:option", "--option", "--preview"]],
   ["init-option-help", ["./src/index.js", "init:help", "--option", "--preview"]],
   ["init-preview", ["./src/index.js", "init", "--preview"]],
 ["init-help", ["./src/index.js", "init", "--help"]],
+  ["mcp-options", ["./src/index.js", "mcp:options"]],
   ["mcp-option", ["./src/index.js", "mcp:option", "--option", "--tools"]],
   ["mcp-option-help", ["./src/index.js", "mcp:help", "--option", "--tools"]],
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
@@ -2321,6 +2323,18 @@ if (
 const cliInitOptionView = JSON.parse(
   run("init-option-verify", ["./src/index.js", "init:option", "--option", "--preview"]).stdout
 ).option;
+const cliInitOptionsView = JSON.parse(
+  run("init-options-verify", ["./src/index.js", "init:options"]).stdout
+).options;
+if (
+  cliInitOptionsView.kind !== "init_command_catalog_view" ||
+  cliInitOptionsView.recommendedReason !== "init_command_catalog_loaded" ||
+  cliInitOptionsView.counts?.totalOptions < 3 ||
+  !cliInitOptionsView.options?.some((option) => option.option === "--preview")
+) {
+  console.error("[smoke:init-options] expected init option catalog view");
+  process.exit(1);
+}
 if (
   cliInitOptionView.kind !== "init_command_option_view" ||
   cliInitOptionView.recommendedReason !== "init_command_option_loaded" ||
@@ -2345,6 +2359,18 @@ if (
 const cliMcpOptionView = JSON.parse(
   run("mcp-option-verify", ["./src/index.js", "mcp:option", "--option", "--tools"]).stdout
 ).option;
+const cliMcpOptionsView = JSON.parse(
+  run("mcp-options-verify", ["./src/index.js", "mcp:options"]).stdout
+).options;
+if (
+  cliMcpOptionsView.kind !== "mcp_command_catalog_view" ||
+  cliMcpOptionsView.recommendedReason !== "mcp_command_catalog_loaded" ||
+  cliMcpOptionsView.counts?.totalOptions < 5 ||
+  !cliMcpOptionsView.options?.some((option) => option.option === "--tools")
+) {
+  console.error("[smoke:mcp-options] expected mcp option catalog view");
+  process.exit(1);
+}
 if (
   cliMcpOptionView.kind !== "mcp_command_option_view" ||
   cliMcpOptionView.recommendedReason !== "mcp_command_option_loaded" ||
