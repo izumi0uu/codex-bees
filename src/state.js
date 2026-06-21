@@ -169,6 +169,7 @@ import {
   deriveRuntimeReviewReason,
   deriveRuntimeRolesReason,
   buildRuntimeDispatchSummary,
+  buildRuntimeDispatchView,
   buildRuntimeHandoffsSummary,
   buildRuntimeRecoverySummary,
   buildRuntimeReviewSummary,
@@ -1196,41 +1197,15 @@ export function runtimeRoles(input = {}) {
 }
 
 export function runtimeDispatch() {
-  const assignments = leaderAssignments();
-  const groups = (assignments?.groups ?? []).map((group) => ({
-    owner: group.owner,
-    count: group.count,
-    next: group.assignments?.[0] ?? null,
-    assignments: (group.assignments ?? []).map((assignment, index) => ({
-      position: index + 1,
-      swarmId: assignment.swarmId,
-      objective: assignment.objective,
-      lane: assignment.lane,
-      taskId: assignment.taskId,
-      taskQueueStatus: assignment.taskQueueStatus,
-      verifier: assignment.verifier,
-      recommendedNextActor: assignment.recommendedNextActor,
-      recommendedNextAction: assignment.recommendedNextAction,
-      recommendedCommands: assignment.recommendedCommands,
-      taskBrief: assignment.taskBrief,
-      summary: assignment.summary
-    }))
-  }));
-  const next = groups[0]?.assignments?.[0] ?? null;
-  const totalAssignments = groups.reduce((total, group) => total + (group.count ?? 0), 0);
-  const recommendedReason = deriveRuntimeDispatchReason({ groups, totalAssignments, next });
-
-  return {
-    kind: "runtime_dispatch",
-    recommendedReason,
-    counts: {
-      ownerGroups: groups.length,
-      totalAssignments
+  return buildRuntimeDispatchView(
+    {
+      leaderAssignments
     },
-    groups,
-    next,
-    summary: buildRuntimeDispatchSummary(groups, next)
-  };
+    {
+      deriveRuntimeDispatchReason,
+      buildRuntimeDispatchSummary
+    }
+  );
 }
 
 export function runtimeReview() {

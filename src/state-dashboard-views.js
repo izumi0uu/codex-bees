@@ -348,6 +348,52 @@ export function buildRuntimeDispatchSummary(groups, next) {
   return `Runtime dispatch has ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is the next handoff.`;
 }
 
+export function buildRuntimeDispatchView(
+  {
+    leaderAssignments
+  },
+  {
+    deriveRuntimeDispatchReason,
+    buildRuntimeDispatchSummary
+  }
+) {
+  const assignments = leaderAssignments();
+  const groups = (assignments?.groups ?? []).map((group) => ({
+    owner: group.owner,
+    count: group.count,
+    next: group.assignments?.[0] ?? null,
+    assignments: (group.assignments ?? []).map((assignment, index) => ({
+      position: index + 1,
+      swarmId: assignment.swarmId,
+      objective: assignment.objective,
+      lane: assignment.lane,
+      taskId: assignment.taskId,
+      taskQueueStatus: assignment.taskQueueStatus,
+      verifier: assignment.verifier,
+      recommendedNextActor: assignment.recommendedNextActor,
+      recommendedNextAction: assignment.recommendedNextAction,
+      recommendedCommands: assignment.recommendedCommands,
+      taskBrief: assignment.taskBrief,
+      summary: assignment.summary
+    }))
+  }));
+  const next = groups[0]?.assignments?.[0] ?? null;
+  const totalAssignments = groups.reduce((total, group) => total + (group.count ?? 0), 0);
+  const recommendedReason = deriveRuntimeDispatchReason({ groups, totalAssignments, next });
+
+  return {
+    kind: "runtime_dispatch",
+    recommendedReason,
+    counts: {
+      ownerGroups: groups.length,
+      totalAssignments
+    },
+    groups,
+    next,
+    summary: buildRuntimeDispatchSummary(groups, next)
+  };
+}
+
 export function buildRuntimeReviewSummary(groups, next) {
   if (groups.length === 0) {
     return "Runtime review has no verifier-grouped work ready right now.";
