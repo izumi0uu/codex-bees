@@ -200,6 +200,65 @@ export function transitionLoadedTaskState(
   return next;
 }
 
+export function transitionTaskFromSources(
+  input,
+  {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask,
+    deriveTaskTransitionContext,
+    validateNextQueueStatus,
+    validQueueStatuses,
+    validateTaskQueueTransition,
+    canTransitionTask,
+    validateRequiredClaimedBy,
+    validateTaskClaimReady,
+    validateTaskValue,
+    runtimeRoleCatalog,
+    validateVerifierAction,
+    validateTaskClaimConflict,
+    resolveTaskClaimedBy,
+    buildTaskReviewPatch,
+    appendTaskHistoryEntry,
+    buildTaskHistoryEntry,
+    buildTransitionedTaskState,
+    syncSwarmInLoadedState
+  }
+) {
+  const state = loadState();
+  const next = transitionLoadedTaskState(state, input, {
+    findTaskIndex,
+    normalizeTask,
+    deriveTaskTransitionContext,
+    validateNextQueueStatus,
+    validQueueStatuses,
+    validateTaskQueueTransition,
+    canTransitionTask,
+    validateRequiredClaimedBy,
+    validateTaskClaimReady,
+    validateTaskValue,
+    runtimeRoleCatalog,
+    validateVerifierAction,
+    validateTaskClaimConflict,
+    resolveTaskClaimedBy,
+    buildTaskReviewPatch,
+    appendTaskHistoryEntry,
+    buildTaskHistoryEntry,
+    buildTransitionedTaskState,
+    syncSwarmInLoadedState
+  });
+  if (!next) {
+    return null;
+  }
+  if (next.error) {
+    return next;
+  }
+
+  saveState(state);
+  return next;
+}
+
 export function buildUpdatedTaskState(current, input, updatedAt = new Date().toISOString()) {
   return {
     ...current,

@@ -98,6 +98,41 @@ export function transitionLoadedSwarmState(
   return next;
 }
 
+export function transitionSwarmFromSources(
+  input,
+  {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    validateNextSwarmStatus,
+    validateSwarmStatusTransition,
+    canTransitionSwarm,
+    validSwarmStatuses,
+    buildTransitionedSwarmState
+  }
+) {
+  const state = loadState();
+  const next = transitionLoadedSwarmState(state, input, {
+    findSwarmIndex,
+    normalizeSwarm,
+    validateNextSwarmStatus,
+    validateSwarmStatusTransition,
+    canTransitionSwarm,
+    validSwarmStatuses,
+    buildTransitionedSwarmState
+  });
+  if (!next) {
+    return null;
+  }
+  if (next.error) {
+    return next;
+  }
+
+  saveState(state);
+  return next;
+}
+
 export function syncLoadedSwarmLifecycle(
   state,
   swarmId,

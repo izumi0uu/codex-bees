@@ -63,6 +63,7 @@ import {
   dispatchSwarmLaneFromSources,
   findDispatchableSwarmLane,
   queueSwarmTasksFromSources,
+  transitionSwarmFromSources,
   updateLoadedSwarmState,
   buildTransitionedSwarmState,
   buildQueuedSwarmLaneState,
@@ -92,6 +93,7 @@ import {
   buildTaskReviewPatch,
   deriveTaskTransitionContext,
   resolveTaskClaimedBy,
+  transitionTaskFromSources,
   updateLoadedTaskState,
   transitionLoadedTaskState
 } from "./state-transition-helpers.js";
@@ -2157,8 +2159,9 @@ function syncSwarmInLoadedState(state, swarmId) {
 }
 
 function transitionTask(input) {
-  const state = loadState();
-  const next = transitionLoadedTaskState(state, input, {
+  return transitionTaskFromSources(input, {
+    loadState,
+    saveState,
     findTaskIndex,
     normalizeTask,
     deriveTaskTransitionContext,
@@ -2179,19 +2182,12 @@ function transitionTask(input) {
     buildTransitionedTaskState,
     syncSwarmInLoadedState
   });
-  if (!next) {
-    return null;
-  }
-  if (next.error) {
-    return next;
-  }
-  saveState(state);
-  return next;
 }
 
 function transitionSwarm(input) {
-  const state = loadState();
-  const next = transitionLoadedSwarmState(state, input, {
+  return transitionSwarmFromSources(input, {
+    loadState,
+    saveState,
     findSwarmIndex,
     normalizeSwarm,
     validateNextSwarmStatus,
@@ -2200,12 +2196,4 @@ function transitionSwarm(input) {
     validSwarmStatuses: VALID_SWARM_STATUSES,
     buildTransitionedSwarmState
   });
-  if (!next) {
-    return null;
-  }
-  if (next.error) {
-    return next;
-  }
-  saveState(state);
-  return next;
 }
