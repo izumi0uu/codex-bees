@@ -57,7 +57,7 @@
     },
     "./state": {
       "types": "./dist/state.d.ts",
-      "default": "./dist/state.js"
+      "default": "./dist/state-public.js"
     },
     "./runtime-guidance": {
       "types": "./dist/runtime-guidance.d.ts",

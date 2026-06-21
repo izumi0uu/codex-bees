@@ -87,6 +87,7 @@ import {
 import { renderHelpText as renderHelpTextCommands } from "codex-bees/commands";
 import { initWorkspace as initWorkspaceSubpath, previewWorkspaceInit as previewWorkspaceInitSubpath } from "codex-bees/init";
 import { callMcpTool as callMcpToolSubpath, handleMcpRequest as handleMcpRequestSubpath } from "codex-bees/mcp";
+import { addTask as addTaskStateSubpath, listTasksView as listTasksViewStateSubpath, stateFilePath as stateFilePathStateSubpath } from "codex-bees/state";
 import {
   getPackageMetadata as getApiPackageMetadata,
   getRuntimeReadyView as getApiRuntimeReadyView,
@@ -131,6 +132,16 @@ const initPreviewSubpathReason: "init_changes_required" | "init_already_applied"
 const initAppliedSubpathKind: "workspace_init_result" = initWorkspaceSubpath({ targetDirectory: "typed-init-apply" }).kind;
 const initPreviewSummaryHasChanges: boolean = previewWorkspaceInitSubpath({ targetDirectory: "typed-init-preview-2" }).summary.hasChanges;
 const initResultSummaryCreated: number = initWorkspaceSubpath({ targetDirectory: "typed-init-apply-2" }).summary.created;
+const subpathStateTaskId: string = addTaskStateSubpath({
+  title: "typed state subpath task",
+  owner: "executor",
+  verifier: "tester",
+  scope: ["src/index.js"],
+  acceptance: ["ok"],
+  verification: ["ok"]
+}).id;
+const subpathStateTotalTasks: number = listTasksViewStateSubpath().counts.totalTasks;
+const subpathStatePath: string = stateFilePathStateSubpath();
 const rootHelpText: string = renderHelpTextCommands();
 const rootExecutionModel: "local bounded multi-agent coordination" = getCoordinationOverview().executionModel;
 const rootDeliveryBoundary: "codex-only runtime" = getCoordinationOverview().deliveryBoundary;
