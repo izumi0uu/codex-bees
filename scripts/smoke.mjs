@@ -686,7 +686,7 @@ const installedTypesNegativeMcpFile = join(packedInstallAppDir, "subpath-types-n
 writeFileSync(
   installedTypesPositiveFile,
   [
-    'import { getCommandCatalogView } from "codex-bees/commands";',
+    'import { getCommandCatalogView, getMcpCommandCatalogView, getMcpHelpView } from "codex-bees/commands";',
     'import { getPackageMetadataView } from "codex-bees/metadata";',
     'import { getRuntimeDoctorView } from "codex-bees/doctor";',
     'import { initWorkspace, previewWorkspaceInit } from "codex-bees/init";',
@@ -696,6 +696,8 @@ writeFileSync(
     'import { getRuntimeStatusView } from "codex-bees/runtime-status";',
     'import { getRuntimeContractView } from "codex-bees/runtime-contract";',
     'getCommandCatalogView().kind;',
+    'getMcpCommandCatalogView().kind;',
+    'getMcpHelpView("--tools").kind;',
     'getPackageMetadataView().kind;',
     'getRuntimeDoctorView().kind;',
     'previewWorkspaceInit({ targetDirectory: "typed-installed-preview" }).kind;',

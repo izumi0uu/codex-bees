@@ -84,7 +84,7 @@ import {
   type SwarmStatus
 } from "codex-bees";
 
-import { renderHelpText as renderHelpTextCommands } from "codex-bees/commands";
+import { getMcpCommandCatalog as getMcpCommandCatalogCommands, getMcpCommandCatalogEntry as getMcpCommandCatalogEntryCommands, getMcpCommandCatalogEntryView as getMcpCommandCatalogEntryViewCommands, getMcpCommandCatalogView as getMcpCommandCatalogViewCommands, getMcpHelpView as getMcpHelpViewCommands, renderHelpText as renderHelpTextCommands, renderMcpHelpText as renderMcpHelpTextCommands } from "codex-bees/commands";
 import { getRuntimeDoctorView as getDoctorSubpathView } from "codex-bees/doctor";
 import { initWorkspace as initWorkspaceSubpath, previewWorkspaceInit as previewWorkspaceInitSubpath } from "codex-bees/init";
 import {
@@ -176,6 +176,14 @@ const subpathGuidanceOverviewKind: "coordination_overview_view" = getRuntimeGuid
 const subpathGuidanceWorkerKind: "worker_guidelines_view" = getRuntimeGuidanceSubpathWorkerView().kind;
 const subpathRuntimeReadyKind: "runtime_ready_view" = getRuntimeReadySubpathView().kind;
 const rootHelpText: string = renderHelpTextCommands();
+const commandsMcpOption: string | undefined = getMcpCommandCatalogCommands()[0]?.option;
+const commandsMcpOptionEntry: string | undefined = getMcpCommandCatalogEntryCommands("--tools")?.option;
+const commandsMcpOptionViewReason: "mcp_command_option_loaded" | "mcp_command_option_missing" = getMcpCommandCatalogEntryViewCommands("--tools").recommendedReason;
+const commandsMcpOptionViewMatched: string | null = getMcpCommandCatalogEntryViewCommands("--tools").matchedOption;
+const commandsMcpCatalogReason: "mcp_command_catalog_loaded" | "mcp_command_catalog_empty" = getMcpCommandCatalogViewCommands().recommendedReason;
+const commandsMcpHelpReason: "mcp_help_loaded" | "mcp_help_fallback_loaded" = getMcpHelpViewCommands("--tools").recommendedReason;
+const commandsMcpHelpMatched: string | null = getMcpHelpViewCommands("--tools").matchedOption;
+const commandsMcpHelpText: string = renderMcpHelpTextCommands();
 const rootExecutionModel: "local bounded multi-agent coordination" = getCoordinationOverview().executionModel;
 const rootDeliveryBoundary: "codex-only runtime" = getCoordinationOverview().deliveryBoundary;
 const rootChangeModel: "small reversible steps" = getCoordinationOverview().changeModel;
