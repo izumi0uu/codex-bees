@@ -46,6 +46,7 @@ import {
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
 import {
+  buildUpdatedSwarmState,
   buildQueuedSwarmLaneState,
   buildQueuedSwarmLaneTaskInput,
   buildQueuedSwarmState,
@@ -55,6 +56,7 @@ import {
   dispatchLoadedSwarmLane,
   findDispatchableSwarmLane,
   queueLoadedSwarmTasks,
+  updateLoadedSwarmState,
   buildTransitionedSwarmState,
   syncLoadedSwarmState,
   syncLoadedSwarmLifecycle,
@@ -3602,28 +3604,17 @@ export function updateTaskMutation(input) {
 
 export function updateSwarm(input) {
   const state = loadState();
-  const index = state.swarms.findIndex((swarm) => swarm.id === input.id);
-  if (index < 0) {
+  const next = updateLoadedSwarmState(state, input, {
+    findSwarmIndex,
+    normalizeSwarm,
+    buildUpdatedSwarmState
+  });
+  if (!next) {
     return null;
   }
-  if (input.status !== undefined) {
-    return { error: "status must be changed through lifecycle commands" };
+  if (next.error) {
+    return next;
   }
-
-  const current = normalizeSwarm(state.swarms[index]);
-  const next = normalizeSwarm({
-    ...current,
-    ...(input.objective !== undefined ? { objective: input.objective } : {}),
-    ...(input.topology !== undefined ? { topology: input.topology } : {}),
-    ...(input.maxWorkers !== undefined ? { maxWorkers: input.maxWorkers } : {}),
-    ...(input.owner !== undefined ? { owner: input.owner } : {}),
-    ...(input.laneSource !== undefined ? { laneSource: input.laneSource } : {}),
-    ...(input.notes !== undefined ? { notes: input.notes } : {}),
-    ...(input.lanes !== undefined ? { lanes: input.lanes } : {}),
-    updatedAt: new Date().toISOString()
-  });
-
-  state.swarms[index] = next;
   saveState(state);
   return next;
 }
