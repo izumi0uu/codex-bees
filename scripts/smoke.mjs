@@ -559,6 +559,14 @@ if (!documentedApiExampleBlockMatch) {
   process.exit(1);
 }
 const documentedApiExampleScript = documentedApiExampleBlockMatch[1];
+const documentedApiAdvancedExampleBlockMatch = README_TEXT.match(
+  /Advanced root \/ api helper example:\n\n```js\n([\s\S]*?)\n```/
+);
+if (!documentedApiAdvancedExampleBlockMatch) {
+  console.error("[smoke:readme-api-advanced-example] expected README to document a runnable advanced api example block");
+  process.exit(1);
+}
+const documentedApiAdvancedExampleScript = documentedApiAdvancedExampleBlockMatch[1];
 const documentedInitExampleBlockMatch = README_TEXT.match(/The `codex-bees\/init` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
 if (!documentedInitExampleBlockMatch) {
   console.error("[smoke:readme-init-example] expected README to document a runnable init example block");
@@ -849,6 +857,26 @@ if (
   console.error("[smoke:readme-api-example-contract] expected README api example to execute successfully against the installed package");
   console.error(installedApiExample.stderr || installedApiExample.stdout);
   process.exit(installedApiExample.status ?? 1);
+}
+const installedApiAdvancedExample = spawnSync(
+  "node",
+  [
+    "--input-type=module",
+    "-e",
+    `${documentedApiAdvancedExampleScript}\nconsole.log(JSON.stringify({ ok: typeof cli === "function" && typeof server === "function" && hasRuntimeContractTool === true }));`
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedApiAdvancedExample.status !== 0 ||
+  JSON.parse(installedApiAdvancedExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
+) {
+  console.error("[smoke:readme-api-advanced-example-contract] expected README advanced api example to execute successfully against the installed package");
+  console.error(installedApiAdvancedExample.stderr || installedApiAdvancedExample.stdout);
+  process.exit(installedApiAdvancedExample.status ?? 1);
 }
 const installedInitExample = spawnSync(
   "node",

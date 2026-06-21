@@ -129,6 +129,20 @@ const ready = getRuntimeReadyView();
 const tools = getToolCatalogView();
 ```
 
+The small root example above is the recommended starting slice, but the root export and `codex-bees/api` subpath remain the broad library surface for advanced runtime integrations. That broader surface intentionally includes helpers such as `runMcpCli(args)`, `startMcpServer()`, and the raw `toolCatalog` array when you need to drive the packaged MCP runtime directly from JavaScript instead of shelling out through the binary.
+
+Those advanced helpers are intentionally **not** part of the narrower `codex-bees/mcp` adapter surface. The `mcp` subpath stays focused on request handling, tool lookup, and message serialization, while runtime boot helpers stay on the broader root / `api` library layer.
+
+Advanced root / api helper example:
+
+```js
+import { runMcpCli, startMcpServer, toolCatalog } from "codex-bees/api";
+
+const cli = runMcpCli;
+const server = startMcpServer;
+const hasRuntimeContractTool = toolCatalog.some((tool) => tool.name === "runtime_contract");
+```
+
 The `codex-bees/init` subpath exposes the same workspace bootstrap helpers that power `codex-bees init`, so tooling can preview or apply the shipped `.codex` starter surface without shelling out through the CLI.
 
 Example:
