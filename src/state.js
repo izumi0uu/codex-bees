@@ -161,6 +161,7 @@ import {
   buildRuntimeRolesSummary
 } from "./state-dashboard-views.js";
 import {
+  buildSwarmOverviewData,
   buildSwarmBlockersSummary,
   buildSwarmCloseoutSummary,
   buildSwarmDispatchBundleSummary,
@@ -3426,60 +3427,23 @@ export function swarmOverview(id) {
   const swarmTasks = state.tasks
     .map(normalizeTask)
     .filter((task) => task.swarmId === normalizedSwarm.id);
-
-  const laneSummaries = normalizedSwarm.lanes.map((lane) => {
-    const task = lane.taskId
-      ? swarmTasks.find((item) => item.id === lane.taskId) ?? null
-      : swarmTasks.find((item) => item.lane === lane.lane) ?? null;
-
-    return {
-      lane: lane.lane,
-      summary: lane.summary,
-      owner: lane.owner,
-      verifier: lane.verifier,
-      taskId: lane.taskId,
-      queueStatus: task?.queueStatus ?? null,
-      claimedBy: task?.claimedBy ?? null,
-      status: task?.status ?? null,
-      scope: lane.scope,
-      ready: task?.queueStatus === "queued" || task?.queueStatus === "released",
-      done: task?.queueStatus === "done"
-    };
-  });
-
-  const counts = {
-    totalLanes: laneSummaries.length,
-    queued: laneSummaries.filter((lane) => lane.queueStatus === "queued").length,
-    claimed: laneSummaries.filter((lane) => lane.queueStatus === "claimed").length,
-    blocked: laneSummaries.filter((lane) => lane.queueStatus === "blocked").length,
-    readyForReview: laneSummaries.filter((lane) => lane.queueStatus === "ready_for_review").length,
-    released: laneSummaries.filter((lane) => lane.queueStatus === "released").length,
-    done: laneSummaries.filter((lane) => lane.queueStatus === "done").length,
-    unqueued: laneSummaries.filter((lane) => !lane.taskId).length
-  };
-
-  const derivedStatus = deriveSwarmStatus(normalizedSwarm, swarmTasks);
-  const nextLane =
-    laneSummaries.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null;
-  const readyToComplete = counts.totalLanes > 0 && counts.done === counts.totalLanes;
-  const recommendedReason = deriveSwarmOverviewReason({
-    counts,
-    nextLane,
-    readyToComplete
+  const overview = buildSwarmOverviewData(normalizedSwarm, swarmTasks, {
+    deriveSwarmStatus,
+    deriveSwarmOverviewReason
   });
 
   return {
     kind: "swarm_overview",
-    recommendedReason,
+    recommendedReason: overview.recommendedReason,
     swarm: normalizedSwarm,
-    counts,
-    lanes: laneSummaries,
-    tasks: swarmTasks,
-    nextLane,
-    derivedStatus,
-    statusAligned: normalizedSwarm.status === derivedStatus,
-    readyToComplete,
-    dispatchableCount: counts.queued + counts.released
+    counts: overview.counts,
+    lanes: overview.lanes,
+    tasks: overview.tasks,
+    nextLane: overview.nextLane,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    readyToComplete: overview.readyToComplete,
+    dispatchableCount: overview.dispatchableCount
   };
 }
 
