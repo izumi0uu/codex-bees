@@ -566,6 +566,45 @@ export function buildRuntimeCloseoutView(
   };
 }
 
+export function buildRuntimeCloseoutViewFromState(
+  {
+    loadState,
+    normalizeTask,
+    taskReport,
+    listSwarmOverviews,
+    swarmCloseout
+  },
+  {
+    buildRuntimeCloseoutTaskEntry,
+    compareRuntimeCloseoutTasks,
+    buildRuntimeCloseoutSwarmEntry,
+    compareRuntimeCloseoutSwarms,
+    chooseRuntimeCloseoutNext,
+    deriveRuntimeCloseoutReason,
+    buildRuntimeCloseoutSummary,
+    buildRuntimeCloseoutView
+  }
+) {
+  return buildRuntimeCloseoutView(
+    {
+      loadState,
+      normalizeTask,
+      taskReport,
+      listSwarmOverviews,
+      swarmCloseout
+    },
+    {
+      buildRuntimeCloseoutTaskEntry,
+      compareRuntimeCloseoutTasks,
+      buildRuntimeCloseoutSwarmEntry,
+      compareRuntimeCloseoutSwarms,
+      chooseRuntimeCloseoutNext,
+      deriveRuntimeCloseoutReason,
+      buildRuntimeCloseoutSummary
+    }
+  );
+}
+
 export function isRuntimeRecoveryTask(task) {
   if (task.queueStatus === "blocked" || task.queueStatus === "released") {
     return true;

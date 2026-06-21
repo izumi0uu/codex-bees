@@ -124,6 +124,7 @@ import {
 import {
   buildRuntimeActivityView,
   buildRuntimeActivityViewFromState,
+  buildRuntimeCloseoutViewFromState,
   buildRuntimeCloseoutView,
   buildRuntimeFocusView,
   buildRuntimeActivityEntry,
@@ -1099,7 +1100,7 @@ export function runtimeHandoffs() {
 }
 
 export function runtimeCloseout() {
-  return buildRuntimeCloseoutView(
+  return buildRuntimeCloseoutViewFromState(
     {
       loadState,
       normalizeTask,
@@ -1114,7 +1115,8 @@ export function runtimeCloseout() {
       compareRuntimeCloseoutSwarms,
       chooseRuntimeCloseoutNext,
       deriveRuntimeCloseoutReason,
-      buildRuntimeCloseoutSummary
+      buildRuntimeCloseoutSummary,
+      buildRuntimeCloseoutView
     }
   );
 }
