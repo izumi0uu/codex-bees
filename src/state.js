@@ -289,6 +289,7 @@ import {
   buildRuntimeTriagePackView,
   buildRuntimeTriagePackSummary,
   buildRuntimeVerifierPackSummary,
+  buildRuntimeVerifierPackViewFromSources,
   buildRuntimeVerifierPackView,
   buildRuntimeWorkerPackSummary,
   buildRuntimeWorkerPackView,
@@ -1540,7 +1541,7 @@ export function runtimeWorkerPack(input = {}) {
 }
 
 export function runtimeVerifierPack(input = {}) {
-  return buildRuntimeVerifierPackView(
+  return buildRuntimeVerifierPackViewFromSources(
     input,
     {
       runtimeReview,
@@ -1552,7 +1553,8 @@ export function runtimeVerifierPack(input = {}) {
     {
       deriveRuntimeVerifierPackSurface,
       deriveRuntimeVerifierPackReason,
-      buildRuntimeVerifierPackSummary
+      buildRuntimeVerifierPackSummary,
+      buildRuntimeVerifierPackView
     }
   );
 }

@@ -402,6 +402,39 @@ export function buildRuntimeVerifierPackView(
   };
 }
 
+export function buildRuntimeVerifierPackViewFromSources(
+  input,
+  {
+    runtimeReview,
+    verifierBundle,
+    workerCloseout,
+    taskNext,
+    describeRole
+  },
+  {
+    deriveRuntimeVerifierPackSurface,
+    deriveRuntimeVerifierPackReason,
+    buildRuntimeVerifierPackSummary,
+    buildRuntimeVerifierPackView
+  }
+) {
+  return buildRuntimeVerifierPackView(
+    input,
+    {
+      runtimeReview,
+      verifierBundle,
+      workerCloseout,
+      taskNext,
+      describeRole
+    },
+    {
+      deriveRuntimeVerifierPackSurface,
+      deriveRuntimeVerifierPackReason,
+      buildRuntimeVerifierPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeAssignmentPackSurface({ assignment, session, next, pickup, roleEntry, role, workerId, mode }) {
   if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
     return "worker:session";
