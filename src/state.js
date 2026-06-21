@@ -56,15 +56,25 @@ import {
   buildLeaderQueueSummary,
   buildRuntimeAlertsSummary,
   buildRuntimeDashboardSummary,
+  buildRuntimeActivitySummary,
   deriveLeaderAssignmentDispatchReason,
+  deriveLeaderAssignmentDispatchBundleReason,
   deriveLeaderAssignmentsReason,
+  deriveLeaderAssignmentLaunchPlanReason,
   deriveLeaderQueueReason,
+  deriveRuntimeDashboardReason,
   deriveRuntimeActivityReason,
   deriveRuntimeAlertsReason,
   deriveRuntimeDispatchReason,
   deriveRuntimeHandoffsReason,
   deriveRuntimeRecoveryReason,
-  deriveRuntimeRolesReason
+  deriveRuntimeReviewReason,
+  deriveRuntimeRolesReason,
+  buildRuntimeDispatchSummary,
+  buildRuntimeHandoffsSummary,
+  buildRuntimeRecoverySummary,
+  buildRuntimeReviewSummary,
+  buildRuntimeRolesSummary
 } from "./state-dashboard-views.js";
 import {
   buildSwarmBlockersSummary,
@@ -4224,43 +4234,6 @@ function deriveSwarmCloseoutCommand(overview, brief) {
   return brief?.recommendedCommands?.[0] ?? null;
 }
 
-function buildRuntimeRolesSummary(roles, next) {
-  if (roles.length === 0) {
-    return "Runtime roles has no shipped roles to inspect.";
-  }
-
-  if (!next) {
-    return `Runtime roles is tracking ${roles.length} role${roles.length === 1 ? "" : "s"}.`;
-  }
-
-  if (next.counts.pendingReview > 0) {
-    return `Runtime roles should look at ${next.role.id} first because verifier work is waiting.`;
-  }
-  if (next.counts.ownerBlocked > 0) {
-    return `Runtime roles should look at ${next.role.id} first because blocked owner work is waiting.`;
-  }
-  if (next.counts.ownerClaimable > 0) {
-    return `Runtime roles should look at ${next.role.id} first because claimable owner work is waiting.`;
-  }
-  if (next.counts.ownerClaimed > 0) {
-    return `Runtime roles should look at ${next.role.id} first because active owner work is in flight.`;
-  }
-
-  return `Runtime roles is tracking ${roles.length} roles; ${next.role.id} is the next role to inspect.`;
-}
-
-function buildRuntimeDispatchSummary(groups, next) {
-  if (groups.length === 0) {
-    return "Runtime dispatch has no owner-grouped work ready right now.";
-  }
-
-  if (!next) {
-    return `Runtime dispatch is tracking ${groups.length} owner group${groups.length === 1 ? "" : "s"}.`;
-  }
-
-  return `Runtime dispatch has ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is the next handoff.`;
-}
-
 function buildRuntimeReviewTaskEntry(task, position) {
   return {
     position,
@@ -4292,18 +4265,6 @@ function compareRuntimeReviewGroups(left, right) {
     return right.count - left.count;
   }
   return (left.verifier?.id ?? left.verifier?.name ?? "").localeCompare(right.verifier?.id ?? right.verifier?.name ?? "");
-}
-
-function buildRuntimeReviewSummary(groups, next) {
-  if (groups.length === 0) {
-    return "Runtime review has no verifier-grouped work ready right now.";
-  }
-
-  if (!next) {
-    return `Runtime review is tracking ${groups.length} verifier group${groups.length === 1 ? "" : "s"}.`;
-  }
-
-  return `Runtime review has ${groups.length} verifier group${groups.length === 1 ? "" : "s"}; ${next.taskId} is the next review decision.`;
 }
 
 function buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles) {
@@ -4401,18 +4362,6 @@ function compareRuntimeActivityEntries(left, right) {
   return (left.taskId ?? "").localeCompare(right.taskId ?? "");
 }
 
-function buildRuntimeActivitySummary(entries, next) {
-  if (entries.length === 0) {
-    return "Runtime activity has no recorded task events yet.";
-  }
-
-  if (!next) {
-    return `Runtime activity is tracking ${entries.length} recent event${entries.length === 1 ? "" : "s"}.`;
-  }
-
-  return `Runtime activity is led by ${next.type} on ${next.taskId}.`;
-}
-
 function buildRuntimeHandoffEntry(task) {
   const brief = taskBrief(task.id);
   return {
@@ -4503,18 +4452,6 @@ function runtimeHandoffPriority(entry) {
     return 2;
   }
   return 3;
-}
-
-function buildRuntimeHandoffsSummary(groups, next) {
-  if (groups.length === 0) {
-    return "Runtime handoffs have no queued, blocked, or review-ready transfers right now.";
-  }
-
-  if (!next) {
-    return `Runtime handoffs are tracking ${groups.length} next-actor group${groups.length === 1 ? "" : "s"}.`;
-  }
-
-  return `Runtime handoffs should route ${next.taskId} to ${next.actor?.id ?? "the next actor"} first.`;
 }
 
 function buildRuntimeCloseoutTaskEntry(task) {
@@ -4662,18 +4599,6 @@ function runtimeRecoveryPriority(entry) {
   return 3;
 }
 
-function buildRuntimeRecoverySummary(groups, next) {
-  if (groups.length === 0) {
-    return "Runtime recovery has no blocked, released, or change-requested tasks right now.";
-  }
-
-  if (!next) {
-    return `Runtime recovery is tracking ${groups.length} recovery group${groups.length === 1 ? "" : "s"}.`;
-  }
-
-  return `Runtime recovery should start with ${next.taskId} in ${next.recoveryType}.`;
-}
-
 function deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard }) {
   if (focus?.focus?.type === "blocked_task") {
     return "runtime:focus";
@@ -4805,38 +4730,6 @@ function deriveTaskHistoryReason({ history, next }) {
   return "no_history_events";
 }
 
-function deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next }) {
-  if ((launches?.length ?? 0) > 1) {
-    return "parallel_worker_launches_ready";
-  }
-  if ((dispatchPack?.counts?.ownerGroups ?? 0) > 1) {
-    return "parallel_owner_groups_visible";
-  }
-  if (next?.taskId) {
-    return "next_worker_launch_ready";
-  }
-  if ((dispatchPack?.counts?.totalAssignments ?? 0) > 0) {
-    return "assignment_dispatch_visible";
-  }
-  return "no_worker_launch_ready";
-}
-
-function deriveLeaderAssignmentLaunchPlanReason({ bundle, steps, next }) {
-  if ((steps?.length ?? 0) > 1) {
-    return "parallel_startup_steps_ready";
-  }
-  if ((bundle?.counts?.launches ?? 0) > 1) {
-    return "parallel_launch_bundle_visible";
-  }
-  if (next?.workerId) {
-    return "next_startup_step_ready";
-  }
-  if ((bundle?.counts?.totalAssignments ?? 0) > 0) {
-    return "assignment_launch_context_visible";
-  }
-  return "no_startup_steps_ready";
-}
-
 function deriveTaskPickupReason(relation) {
   if (relation === "owner_claimed_by_worker") {
     return "continue_claimed_work";
@@ -4854,38 +4747,6 @@ function deriveTaskPickupReason(relation) {
     return "observe_without_action";
   }
   return "non_claim_followup";
-}
-
-function deriveRuntimeDashboardReason({ blockedTasks, pendingReview, activeClaimed, queue, assignments }) {
-  if (blockedTasks.length > 0) {
-    return "blocked_tasks_visible";
-  }
-  if (pendingReview.length > 0) {
-    return "pending_review_visible";
-  }
-  if (activeClaimed.length > 0) {
-    return "active_claimed_visible";
-  }
-  if ((queue?.counts?.total ?? 0) > 0) {
-    return "leader_queue_visible";
-  }
-  if ((assignments?.counts?.totalAssignments ?? 0) > 0) {
-    return "leader_assignments_visible";
-  }
-  return "empty_dashboard";
-}
-
-function deriveRuntimeReviewReason({ groups, next, totalPendingReview }) {
-  if (next?.taskId) {
-    return "review_decision_ready";
-  }
-  if (groups.length > 0) {
-    return "review_groups_visible";
-  }
-  if (totalPendingReview > 0) {
-    return "pending_review_visible";
-  }
-  return "no_review_pending";
 }
 
 function deriveTaskInboxReason({ tasks, next, counts }) {
