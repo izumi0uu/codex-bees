@@ -14,6 +14,7 @@ import {
   getCoordinationOverviewView,
   getMcpCommandCatalog,
   getMcpCommandCatalogEntry,
+  getMcpCommandCatalogEntryView,
   getMcpCommandCatalogView,
   getMcpHelpView,
   getMcpToolEntry,
@@ -138,6 +139,8 @@ const workerGuidelinesReason: "worker_guidelines_loaded" = getWorkerGuidelinesVi
 renderHelpTextCommands();
 getMcpCommandCatalog()[0]?.option;
 const mcpCatalogEntry: string | undefined = getMcpCommandCatalogEntry("--tools")?.option;
+const mcpOptionViewReason: "mcp_command_option_loaded" | "mcp_command_option_missing" = getMcpCommandCatalogEntryView("--tools").recommendedReason;
+const mcpOptionViewMatched: string | null = getMcpCommandCatalogEntryView("--tools").matchedOption;
 getMcpCommandCatalogView().options[0]?.option;
 const mcpCommandCatalogReason: "mcp_command_catalog_loaded" | "mcp_command_catalog_empty" = getMcpCommandCatalogView().recommendedReason;
 const mcpHelpReason: "mcp_help_loaded" | "mcp_help_fallback_loaded" = getMcpHelpView("--tools").recommendedReason;
