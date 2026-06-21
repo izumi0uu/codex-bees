@@ -90,6 +90,7 @@ const checks = [
       "smoke,metadata"
     ]
   ],
+  ["memory-get", ["./src/index.js", "memory:get", "--id", "memory-1"]],
   ["memory-list", ["./src/index.js", "memory:list", "--namespace", "smoke"]],
   [
     "memory-search",
@@ -2698,6 +2699,19 @@ if (
 const smokeMemory = listedMemories.memories.find((memory) => memory.namespace === "smoke");
 if (!smokeMemory || smokeMemory.agent !== "tester") {
   console.error("[smoke:memory-list] expected persisted memory with agent");
+  process.exit(1);
+}
+
+const memoryDetail = JSON.parse(
+  run("memory-get-verify", ["./src/index.js", "memory:get", "--id", smokeMemory.id]).stdout
+).memory;
+if (
+  memoryDetail.kind !== "memory_detail" ||
+  memoryDetail.recommendedReason !== "memory_detail_loaded" ||
+  memoryDetail.memory?.id !== smokeMemory.id ||
+  memoryDetail.metadata?.tagCount !== (smokeMemory.tags?.length ?? 0)
+) {
+  console.error("[smoke:memory-get] expected CLI memory detail payload");
   process.exit(1);
 }
 
