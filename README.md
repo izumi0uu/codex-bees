@@ -44,7 +44,7 @@ To materialize the shipped Codex project assets into the current working directo
 
 `npm run build` now rebuilds `dist/` from the shipped source modules and immediately verifies that the packaged CLI (`dist/index.js`) and MCP entrypoint (`dist/mcp.js`) both boot successfully, so the distributable surface cannot silently drift behind `src/`.
 
-The `init` command turns the shipped package into a project starter surface again, but now in a Codex-only, productized way: it copies the bundled `.codex` agents, skills, and config into your current project, preserves existing files by default, and adds `.codex-bees/` to `.gitignore` so local runtime state stays local. `codex-bees init --preview` returns the exact create/update/skip plan as structured JSON before anything is written.
+The `init` command turns the shipped package into a project starter surface again, but now in a Codex-only, productized way: it copies the bundled `.codex` agents, skills, and config into your current project, preserves existing files by default, and adds `.codex-bees/` to `.gitignore` so local runtime state stays local. `codex-bees init --preview` returns the exact create/update/skip plan as structured JSON before anything is written, and both preview/apply payloads now include a stable `summary` object so tooling can read change totals without re-deriving them from raw entries.
 
 When the current working directory does not provide its own `.codex/agents` or `.codex/skills`, the packaged CLI and MCP server now fall back to the bundled `.codex` assets that ship inside `dist/`. That keeps installed builds usable outside the source repo instead of degrading into an empty agent/skill catalog.
 
@@ -128,6 +128,8 @@ import { initWorkspace, previewWorkspaceInit } from "codex-bees/init";
 const targetDirectory = mkdtempSync(join(tmpdir(), "codex-bees-init-example-"));
 const preview = previewWorkspaceInit({ targetDirectory });
 const applied = initWorkspace({ targetDirectory });
+const previewHasChanges = preview.summary.hasChanges;
+const appliedCreated = applied.summary.created;
 rmSync(targetDirectory, { recursive: true, force: true });
 ```
 
