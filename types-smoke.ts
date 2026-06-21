@@ -2,6 +2,7 @@ import {
   PACKAGE_VERSION,
   PRODUCT_NAME,
   getCommandCatalog,
+  getCommandCatalogEntry,
   getCommandCatalogView,
   getInitCommandCatalog,
   getCoordinationOverview,
@@ -28,6 +29,7 @@ import {
   planSwarm,
   planTask,
   renderHelpText as renderHelpTextRoot,
+  renderCommandHelpText,
   renderInitHelpText,
   queueTasksFromPlan,
   listAgentRoleIds,
@@ -84,8 +86,10 @@ metadata.keywords[0];
 getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 const commandCatalogReason: "command_catalog_loaded" | "command_catalog_empty" = getCommandCatalogView().recommendedReason;
+const initCatalogEntry: string | undefined = getCommandCatalogEntry("init")?.command;
 const initCommandOptions: string | undefined = getInitCommandCatalog()[0]?.option;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
+const initHelpTextByCommand: string = renderCommandHelpText("init");
 const rootHelpTextDirect: string = renderHelpTextRoot();
 const initHelpText: string = renderInitHelpText();
 const initPreviewSubpathReason: "init_changes_required" | "init_already_applied" = previewWorkspaceInitSubpath({ targetDirectory: "typed-init-preview" }).recommendedReason;
