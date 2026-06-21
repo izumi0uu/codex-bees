@@ -207,6 +207,7 @@ import {
 } from "./state-worker-views.js";
 import {
   buildRuntimeControlPackSummary,
+  buildRuntimeControlPackView,
   buildRuntimeExecutionPackSummary,
   buildRuntimeFocusSources,
   buildRuntimeHandoffPackSummary,
@@ -1557,47 +1558,20 @@ export function runtimeWorkspacePack(input = {}) {
 }
 
 export function runtimeControlPack(input = {}) {
-  const summaryPack = runtimeSummaryPack(input);
-  const workspacePack = runtimeWorkspacePack(input);
-  const operatorPack = runtimeOperatorPack();
-  const leaderPack = runtimeLeaderPack(input);
-  const recommendedSurface = deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack });
-  const recommendedReason = deriveRuntimeControlPackReason({ summaryPack, workspacePack, operatorPack, leaderPack });
-  const nextEntries = {
-    summary: summaryPack?.focus?.focus ?? null,
-    workspace: workspacePack?.next ?? null,
-    operator: operatorPack?.next ?? null,
-    leader: leaderPack?.next ?? null
-  };
-
-  return {
-    kind: "runtime_control_pack",
-    recommendedSurface,
-    recommendedReason,
-    metadata: {
-      hasSummary: Boolean(nextEntries.summary),
-      hasWorkspace: Boolean(nextEntries.workspace),
-      hasOperator: Boolean(nextEntries.operator),
-      hasLeader: Boolean(nextEntries.leader)
+  return buildRuntimeControlPackView(
+    input,
+    {
+      runtimeSummaryPack,
+      runtimeWorkspacePack,
+      runtimeOperatorPack,
+      runtimeLeaderPack
     },
-    counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
-    },
-    overview: {
-      summary: summaryPack?.overview ?? null,
-      workspace: workspacePack?.overview ?? null,
-      operator: operatorPack?.overview ?? null,
-      leader: leaderPack?.overview ?? null
-    },
-    next: nextEntries,
-    surfaces: {
-      summaryPack,
-      workspacePack,
-      operatorPack,
-      leaderPack
-    },
-    summary: buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack)
-  };
+    {
+      deriveRuntimeControlPackSurface,
+      deriveRuntimeControlPackReason,
+      buildRuntimeControlPackSummary
+    }
+  );
 }
 
 export function runtimeSignalPack(input = {}) {

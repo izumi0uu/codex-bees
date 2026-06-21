@@ -1216,6 +1216,63 @@ export function buildRuntimeControlPackSummary(recommendedSurface, summaryPack, 
   return `Runtime control pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
+export function buildRuntimeControlPackView(
+  input,
+  {
+    runtimeSummaryPack,
+    runtimeWorkspacePack,
+    runtimeOperatorPack,
+    runtimeLeaderPack
+  },
+  {
+    deriveRuntimeControlPackSurface,
+    deriveRuntimeControlPackReason,
+    buildRuntimeControlPackSummary
+  }
+) {
+  const summaryPack = runtimeSummaryPack(input);
+  const workspacePack = runtimeWorkspacePack(input);
+  const operatorPack = runtimeOperatorPack();
+  const leaderPack = runtimeLeaderPack(input);
+  const recommendedSurface = deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack });
+  const recommendedReason = deriveRuntimeControlPackReason({ summaryPack, workspacePack, operatorPack, leaderPack });
+  const nextEntries = {
+    summary: summaryPack?.focus?.focus ?? null,
+    workspace: workspacePack?.next ?? null,
+    operator: operatorPack?.next ?? null,
+    leader: leaderPack?.next ?? null
+  };
+
+  return {
+    kind: "runtime_control_pack",
+    recommendedSurface,
+    recommendedReason,
+    metadata: {
+      hasSummary: Boolean(nextEntries.summary),
+      hasWorkspace: Boolean(nextEntries.workspace),
+      hasOperator: Boolean(nextEntries.operator),
+      hasLeader: Boolean(nextEntries.leader)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
+    overview: {
+      summary: summaryPack?.overview ?? null,
+      workspace: workspacePack?.overview ?? null,
+      operator: operatorPack?.overview ?? null,
+      leader: leaderPack?.overview ?? null
+    },
+    next: nextEntries,
+    surfaces: {
+      summaryPack,
+      workspacePack,
+      operatorPack,
+      leaderPack
+    },
+    summary: buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack)
+  };
+}
+
 export function deriveRuntimeSignalPackSurface({ focus, alerts, activity, roles }) {
   if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task") {
     return "runtime:focus";
