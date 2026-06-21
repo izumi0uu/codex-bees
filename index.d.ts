@@ -38,6 +38,15 @@ export interface CommandCatalogView {
   commands: CommandCatalogEntry[];
 }
 
+export interface CommandHelpView {
+  kind: "command_help_view";
+  recommendedReason: "command_help_loaded" | "command_help_fallback_loaded";
+  command: string | null;
+  matchedCommand: string | null;
+  text: string;
+  entry: CommandCatalogEntry | null;
+}
+
 export interface McpCommandCatalogView {
   kind: "mcp_command_catalog_view";
   recommendedReason: "mcp_command_catalog_loaded" | "mcp_command_catalog_empty";
@@ -814,6 +823,7 @@ export declare function getPackageMetadataView(): PackageMetadataView;
 
 export declare function getCommandCatalog(): CommandCatalogEntry[];
 export declare function getCommandCatalogEntry(command: string): CommandCatalogEntry | undefined;
+export declare function getCommandHelpView(command?: string): CommandHelpView;
 export declare function getCommandCatalogView(): CommandCatalogView;
 export declare function getInitCommandCatalog(): CommandOptionCatalogEntry[];
 export declare function renderCommandHelpText(command: string): string;

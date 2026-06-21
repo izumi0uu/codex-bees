@@ -134,6 +134,20 @@ export function getCommandCatalogEntry(command) {
   return getCommandCatalog().find((entry) => entry.command === command);
 }
 
+export function getCommandHelpView(command) {
+  const matchedEntry = getCommandCatalogEntry(command);
+  const text = renderCommandHelpText(command);
+
+  return {
+    kind: "command_help_view",
+    recommendedReason: matchedEntry ? "command_help_loaded" : "command_help_fallback_loaded",
+    command: command ?? null,
+    matchedCommand: matchedEntry?.command ?? null,
+    text,
+    entry: matchedEntry ?? null
+  };
+}
+
 export function renderHelpText() {
   const lines = [`${PRODUCT_NAME}`, "", "Usage:"];
   for (const entry of getCommandCatalog()) {
