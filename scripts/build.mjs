@@ -3,6 +3,21 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { PUBLIC_TYPE_ENTRYPOINTS } from "../src/typings.js";
 
+const TYPE_FACADE_FILES = {
+  catalog: "catalog.d.ts",
+  commands: "commands.d.ts",
+  doctor: "doctor.d.ts",
+  init: "init.d.ts",
+  metadata: "metadata.d.ts",
+  mcp: "mcp.d.ts",
+  planner: "planner.d.ts",
+  "runtime-contract": "runtime-contract.d.ts",
+  "runtime-guidance": "runtime-guidance.d.ts",
+  "runtime-ready": "runtime-ready.d.ts",
+  "runtime-status": "runtime-status.d.ts",
+  state: "state.d.ts"
+};
+
 function copySourceModules() {
   for (const entry of readdirSync("src")) {
     if (
@@ -84,14 +99,7 @@ mkdirSync("dist", { recursive: true });
 copySourceModules();
 copyFileSync("index.d.ts", join("dist", "api.d.ts"));
 for (const entrypoint of PUBLIC_TYPE_ENTRYPOINTS) {
-  const sourceDtsPath =
-    entrypoint === "state"
-      ? "state.d.ts"
-      : entrypoint === "catalog"
-        ? "catalog.d.ts"
-        : entrypoint === "runtime-contract"
-          ? "runtime-contract.d.ts"
-          : "index.d.ts";
+  const sourceDtsPath = TYPE_FACADE_FILES[entrypoint] ?? "index.d.ts";
   copyFileSync(sourceDtsPath, join("dist", `${entrypoint}.d.ts`));
 }
 copyTree(".codex", join("dist", ".codex"));

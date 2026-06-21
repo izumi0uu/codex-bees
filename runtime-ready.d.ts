@@ -1,0 +1,1 @@
+export { getRuntimeReadyView } from "./api";
