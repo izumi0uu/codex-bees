@@ -162,6 +162,7 @@ import {
   buildLeaderAssignmentDispatchView,
   buildLeaderAssignmentDispatchBundleView,
   buildLeaderAssignmentDispatchBundleViewFromSources,
+  buildLeaderAssignmentDispatchPackViewFromSources,
   buildLeaderAssignmentDispatchPackView,
   buildLeaderAssignmentLaunchPlanView,
   buildLeaderAssignmentLaunchPlanViewFromSources,
@@ -952,14 +953,15 @@ export function leaderAssignmentDispatch(input = {}) {
 }
 
 export function leaderAssignmentDispatchPack(input = {}) {
-  return buildLeaderAssignmentDispatchPackView(
+  return buildLeaderAssignmentDispatchPackViewFromSources(
     input,
     {
       leaderAssignments,
       leaderAssignmentDispatch
     },
     {
-      deriveLeaderAssignmentDispatchPackReason
+      deriveLeaderAssignmentDispatchPackReason,
+      buildLeaderAssignmentDispatchPackView
     }
   );
 }
