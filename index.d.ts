@@ -116,7 +116,7 @@ export interface RuntimeCatalogView {
 export interface RuntimeCatalogEntryView {
   kind: "runtime_catalog_entry_view";
   recommendedReason: "catalog_entry_loaded" | "catalog_entry_missing";
-  entryType: "agent";
+  entryType: "agent" | "skill";
   id: string | null;
   matchedId: string | null;
   entry: RuntimeCatalogEntry | null;
@@ -892,6 +892,7 @@ export declare function getAgentCatalogEntryView(id?: string): RuntimeCatalogEnt
 export declare function listAgentRoleIds(): string[];
 export declare function listSkillCatalog(): RuntimeCatalogEntry[];
 export declare function getSkillCatalogEntry(id: string): RuntimeCatalogEntry | undefined;
+export declare function getSkillCatalogEntryView(id?: string): RuntimeCatalogEntryView;
 export declare function getRuntimeCatalog(): RuntimeCatalog;
 export declare function getRuntimeCatalogView(): RuntimeCatalogView;
 

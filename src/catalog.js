@@ -219,6 +219,10 @@ export function getSkillCatalogEntry(id) {
   return listSkillCatalog().find((entry) => entry.id === id);
 }
 
+export function getSkillCatalogEntryView(id) {
+  return createCatalogEntryView("skill", id, getSkillCatalogEntry(id));
+}
+
 export function listAgentRoleIds() {
   return listAgentCatalog().map((agent) => agent.id);
 }

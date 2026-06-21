@@ -7,6 +7,7 @@ export {
   listAgentCatalog,
   listAgentRoleIds,
   getSkillCatalogEntry,
+  getSkillCatalogEntryView,
   listSkillCatalog,
   resolveRuntimeCatalogPath
 } from "./catalog.js";
