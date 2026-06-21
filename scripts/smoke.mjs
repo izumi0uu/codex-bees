@@ -66,6 +66,7 @@ const checks = [
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
   ["mcp-version", ["./src/index.js", "mcp", "--version"]],
   ["catalog", ["./src/index.js", "catalog"]],
+  ["catalog-agent", ["./src/index.js", "catalog:agent", "--id", "executor"]],
   ["metadata", ["./src/index.js", "metadata"]],
   ["status", ["./src/index.js", "status"]],
   ["capabilities", ["./src/index.js", "capabilities"]],
@@ -360,6 +361,19 @@ if (
   !runtimeCatalog.catalog.skills.some((skill) => skill.id === "project-development")
 ) {
   console.error("[smoke:catalog] expected shipped agent and skill catalog");
+  process.exit(1);
+}
+const runtimeCatalogAgentView = JSON.parse(
+  run("catalog-agent-verify", ["./src/index.js", "catalog:agent", "--id", "executor"]).stdout
+).agent;
+if (
+  runtimeCatalogAgentView.kind !== "runtime_catalog_entry_view" ||
+  runtimeCatalogAgentView.recommendedReason !== "catalog_entry_loaded" ||
+  runtimeCatalogAgentView.entryType !== "agent" ||
+  runtimeCatalogAgentView.matchedId !== "executor" ||
+  runtimeCatalogAgentView.entry?.id !== "executor"
+) {
+  console.error("[smoke:catalog-agent] expected shipped agent detail view");
   process.exit(1);
 }
 const bundledRuntimeDir = mkdtempSync(join(tmpdir(), "codex-bees-bundled-"));
