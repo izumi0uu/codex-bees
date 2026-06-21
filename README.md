@@ -185,6 +185,8 @@ import { callMcpTool, getMcpCommandCatalog, getMcpCommandCatalogEntry, getMcpCom
 const tools = listMcpTools();
 const runtimeReadyTool = getMcpToolEntry("runtime_ready");
 const runtimeReadyToolView = getMcpToolView("runtime_ready");
+const runtimeCapabilityTool = getMcpToolEntry("runtime_capability");
+const runtimeCapabilityToolView = getMcpToolView("runtime_capability");
 const runtimeContractTool = getMcpToolEntry("runtime_contract");
 const runtimeContractToolView = getMcpToolView("runtime_contract");
 const options = getMcpCommandCatalog();
@@ -193,6 +195,7 @@ const toolsOptionView = getMcpCommandCatalogEntryView("--tools");
 const helpView = getMcpHelpView("--tools");
 const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const ready = callMcpTool("runtime_ready");
+const capability = callMcpTool("runtime_capability", { id: "memory" });
 const contract = callMcpTool("runtime_contract");
 ```
 
@@ -545,7 +548,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `run` now exposes the explicit runtime readiness view. It emits `kind: "runtime_ready_view"` with a machine-readable `recommendedReason`, a next-step count, the shared runtime contract view, and the concrete startup suggestions so automation can treat the default entrypoint as stable protocol instead of free-form startup text. `ready` exposes that same view through an explicit CLI command, so automation can bind to a named readiness surface instead of relying on the default entrypoint behavior. MCP now exposes the same payload through `runtime_ready`, so CLI, library, and MCP consumers can all bind to one shared readiness contract instead of special-casing startup transport.
 
-`status` and the MCP `runtime_status` tool expose the explicit runtime status view. They emit `kind: "runtime_status_view"` with a machine-readable `recommendedReason`, top-level aggregate counts, and the nested runtime summary so automation can distinguish an empty local state from a stateful runtime without inferring that only from the nested task/swarm/memory maps. `capabilities` and `runtime_capabilities` expose the explicit runtime capabilities view. They emit `kind: "runtime_capabilities_view"` with a machine-readable `recommendedReason`, category counts, and the nested capability inventory so automation can distinguish a loaded capability surface from an empty one without reparsing the full array first. `capabilities:get` exposes the paired single-capability view, returning `kind: "runtime_capability_view"` with `recommendedReason` set to `runtime_capability_loaded` or `runtime_capability_missing` so automation can inspect one shipped capability contract without walking the full list.
+`status` and the MCP `runtime_status` tool expose the explicit runtime status view. They emit `kind: "runtime_status_view"` with a machine-readable `recommendedReason`, top-level aggregate counts, and the nested runtime summary so automation can distinguish an empty local state from a stateful runtime without inferring that only from the nested task/swarm/memory maps. `capabilities` and `runtime_capabilities` expose the explicit runtime capabilities view. They emit `kind: "runtime_capabilities_view"` with a machine-readable `recommendedReason`, category counts, and the nested capability inventory so automation can distinguish a loaded capability surface from an empty one without reparsing the full array first. `capabilities:get` exposes the paired single-capability view, returning `kind: "runtime_capability_view"` with `recommendedReason` set to `runtime_capability_loaded` or `runtime_capability_missing` so automation can inspect one shipped capability contract without walking the full list. MCP now exposes that same single-capability contract through `runtime_capability`, so CLI, library, and MCP consumers can all inspect one capability without reopening the broader inventory payload.
 
 `runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload. They also emit a machine-readable `recommendedReason` so automation can distinguish whether blocked tasks, pending review, active claimed work, leader queue pressure, leader assignments, or an empty workspace currently dominate the dashboard.
 
