@@ -70,6 +70,7 @@ const checks = [
   ["status", ["./src/index.js", "status"]],
   ["capabilities", ["./src/index.js", "capabilities"]],
   ["cli-tools", ["./src/index.js", "tools"]],
+  ["cli-tool-get", ["./src/index.js", "tools:get", "--name", "runtime_contract"]],
   ["tools", ["./src/mcp.js", "--tools"]],
   ["dist-help", ["./dist/index.js", "--help"]],
   ["dist-tools", ["./dist/mcp.js", "--tools"]],
@@ -2268,6 +2269,18 @@ if (
   !cliToolsView.tools.some((tool) => tool.name === "runtime_contract")
 ) {
   console.error("[smoke:tools-cli] expected tool catalog view");
+  process.exit(1);
+}
+const cliToolView = JSON.parse(
+  run("tools-cli-get-verify", ["./src/index.js", "tools:get", "--name", "runtime_contract"]).stdout
+).tool;
+if (
+  cliToolView.kind !== "mcp_tool_view" ||
+  cliToolView.recommendedReason !== "mcp_tool_loaded" ||
+  cliToolView.matchedTool !== "runtime_contract" ||
+  cliToolView.tool?.name !== "runtime_contract"
+) {
+  console.error("[smoke:tools-cli-get] expected single MCP tool view");
   process.exit(1);
 }
 const cliStatusWithToolsFlag = JSON.parse(
