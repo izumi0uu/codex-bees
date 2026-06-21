@@ -44,6 +44,7 @@ import {
   leaderQueue,
   leaderWorkspace,
   getTaskView,
+  getMemoryView,
   listMemories,
   listSwarmOverviews,
   listSwarms,
@@ -1256,6 +1257,16 @@ function handleMemoryStore() {
   write(JSON.stringify({ stored: memory }, null, 2) + "\n");
 }
 
+function handleMemoryGet() {
+  const id = requireOption("--id");
+  const memory = getMemoryView(id);
+  if (!memory) {
+    writeErr(`Unknown memory id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ memory }, null, 2) + "\n");
+}
+
 function handleMemoryList() {
   write(
     JSON.stringify(
@@ -1580,6 +1591,9 @@ async function runCommand(command) {
       return;
     case "memory:store":
       handleMemoryStore();
+      return;
+    case "memory:get":
+      handleMemoryGet();
       return;
     case "memory:list":
       handleMemoryList();

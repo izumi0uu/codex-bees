@@ -140,6 +140,7 @@ export function getCommandCatalog() {
     { command: "swarm:cancel", description: "Cancel a swarm" },
     { command: "swarm:queue", description: "Queue swarm lanes into local tasks" },
     { command: "memory:store", description: "Store a persistent local memory" },
+    { command: "memory:get", description: "Show one persistent local memory" },
     { command: "memory:list", description: "List persistent local memories" },
     { command: "memory:search", description: "Search persistent local memories" },
     { command: "--help", description: "Show help" },
