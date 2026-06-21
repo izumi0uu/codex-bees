@@ -8,6 +8,7 @@ import {
   getCommandCatalogView,
   getInitCommandCatalog,
   getInitCommandCatalogEntry,
+  getInitCommandCatalogEntryView,
   getInitHelpView,
   getCoordinationOverview,
   getCoordinationOverviewView,
@@ -106,6 +107,8 @@ const initCatalogViewMatched: string | null = getCommandCatalogEntryView("init")
 const initCommandHelpReason: "command_help_loaded" | "command_help_fallback_loaded" = getCommandHelpView("init").recommendedReason;
 const initCommandHelpMatched: string | null = getCommandHelpView("init").matchedCommand;
 const initOptionEntry: string | undefined = getInitCommandCatalogEntry("--preview")?.option;
+const initOptionViewReason: "init_command_option_loaded" | "init_command_option_missing" = getInitCommandCatalogEntryView("--preview").recommendedReason;
+const initOptionViewMatched: string | null = getInitCommandCatalogEntryView("--preview").matchedOption;
 const initCommandOptions: string | undefined = getInitCommandCatalog()[0]?.option;
 const initHelpReason: "init_help_loaded" | "init_help_fallback_loaded" = getInitHelpView("--preview").recommendedReason;
 const initHelpMatched: string | null = getInitHelpView("--preview").matchedOption;
