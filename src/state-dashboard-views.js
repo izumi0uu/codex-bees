@@ -584,6 +584,27 @@ export function buildLeaderAssignmentLaunchPlanView(
   };
 }
 
+export function buildLeaderAssignmentLaunchPlanViewFromSources(
+  input,
+  {
+    leaderAssignmentDispatchBundle
+  },
+  {
+    deriveLeaderAssignmentLaunchPlanReason,
+    buildLeaderAssignmentLaunchPlanView
+  }
+) {
+  return buildLeaderAssignmentLaunchPlanView(
+    input,
+    {
+      leaderAssignmentDispatchBundle
+    },
+    {
+      deriveLeaderAssignmentLaunchPlanReason
+    }
+  );
+}
+
 export function deriveRuntimeDispatchReason({ groups, totalAssignments, next }) {
   if ((groups?.length ?? 0) > 1) {
     return "parallel_owner_groups_visible";
