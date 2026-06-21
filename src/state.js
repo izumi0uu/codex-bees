@@ -167,6 +167,7 @@ import {
   buildLeaderAssignmentDispatchPackView,
   buildLeaderAssignmentLaunchPlanView,
   buildLeaderAssignmentLaunchPlanViewFromSources,
+  buildLeaderAssignmentsViewFromSources,
   buildLeaderAssignmentsView,
   buildLeaderAssignmentsSummary,
   buildLeaderQueueView,
@@ -927,7 +928,7 @@ export function leaderQueue(input = {}) {
 }
 
 export function leaderAssignments(input = {}) {
-  return buildLeaderAssignmentsView(
+  return buildLeaderAssignmentsViewFromSources(
     input,
     {
       leaderWorkspace,
@@ -935,7 +936,8 @@ export function leaderAssignments(input = {}) {
       taskBrief
     },
     {
-      deriveLeaderAssignmentsReason
+      deriveLeaderAssignmentsReason,
+      buildLeaderAssignmentsView
     }
   );
 }

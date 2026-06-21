@@ -133,6 +133,31 @@ export function buildLeaderAssignmentsView(
   };
 }
 
+export function buildLeaderAssignmentsViewFromSources(
+  input,
+  {
+    leaderWorkspace,
+    swarmBrief,
+    taskBrief
+  },
+  {
+    deriveLeaderAssignmentsReason,
+    buildLeaderAssignmentsView
+  }
+) {
+  return buildLeaderAssignmentsView(
+    input,
+    {
+      leaderWorkspace,
+      swarmBrief,
+      taskBrief
+    },
+    {
+      deriveLeaderAssignmentsReason
+    }
+  );
+}
+
 export function buildRuntimeDashboardSummary(queue, blockedTasks, pendingReview, activeClaimed) {
   const nextSwarm = queue?.next?.swarmId ?? null;
   if (blockedTasks.length > 0) {
