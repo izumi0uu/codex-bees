@@ -28,7 +28,9 @@ import {
   getCapabilityCatalogEntryView,
   getCapabilityCatalogView,
   getAgentCatalogEntry,
+  getAgentCatalogListView,
   getAgentCatalogEntryView,
+  getSkillCatalogListView,
   getSkillCatalogEntryView,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
@@ -340,11 +342,19 @@ const rootCapabilityViewReason: "runtime_capability_loaded" | "runtime_capabilit
 const rootCapabilityViewMatched: string | null = getCapabilityCatalogEntryView("runtime_catalog").matchedCapability;
 const rootAgentId: string | undefined = listAgentCatalog()[0]?.id;
 const rootAgentEntryId: string | undefined = getAgentCatalogEntry("executor")?.id;
+const rootAgentLaneKind: "runtime_catalog_lane_view" = getAgentCatalogListView().kind;
+const rootAgentLaneReason: "catalog_lane_loaded" | "catalog_lane_empty" = getAgentCatalogListView().recommendedReason;
+const rootAgentLaneEntryType: "agent" | "skill" = getAgentCatalogListView().entryType;
+const rootAgentLaneEntryId: string | undefined = getAgentCatalogListView().entries[0]?.id;
 const rootAgentViewReason: "catalog_entry_loaded" | "catalog_entry_missing" = getAgentCatalogEntryView("executor").recommendedReason;
 const rootAgentViewMatched: string | null = getAgentCatalogEntryView("executor").matchedId;
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
 const rootSkillId: string | undefined = listSkillCatalog()[0]?.id;
 const rootSkillEntryId: string | undefined = getSkillCatalogEntry("project-development")?.id;
+const rootSkillLaneKind: "runtime_catalog_lane_view" = getSkillCatalogListView().kind;
+const rootSkillLaneReason: "catalog_lane_loaded" | "catalog_lane_empty" = getSkillCatalogListView().recommendedReason;
+const rootSkillLaneEntryType: "agent" | "skill" = getSkillCatalogListView().entryType;
+const rootSkillLaneEntryId: string | undefined = getSkillCatalogListView().entries[0]?.id;
 const rootSkillViewReason: "catalog_entry_loaded" | "catalog_entry_missing" = getSkillCatalogEntryView("project-development").recommendedReason;
 const rootSkillViewMatched: string | null = getSkillCatalogEntryView("project-development").matchedId;
 const rootCatalogSource: "workspace" | "bundled" | "missing" = getRuntimeCatalog().source;
