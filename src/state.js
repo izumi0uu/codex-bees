@@ -108,6 +108,8 @@ import {
   buildSwarmBriefViewFromSources,
   buildSwarmBundleView,
   buildSwarmBundleViewFromSources,
+  buildSwarmCloseoutView,
+  buildSwarmCloseoutViewFromSources,
   buildRuntimeReviewTaskEntry,
   buildSwarmHandoff,
   buildTaskReportEntries,
@@ -728,28 +730,20 @@ export function swarmBundle(id) {
 }
 
 export function swarmCloseout(id) {
-  const overview = swarmOverview(id);
-  if (!overview) {
-    return null;
-  }
-
-  const brief = swarmBrief(id);
-  const bundle = swarmBundle(id);
-  const command = deriveSwarmCloseoutCommand(overview, brief);
-  const recommendedReason = deriveSwarmCloseoutReason({ overview, command });
-
-  return {
-    kind: "swarm_closeout",
-    recommendedReason,
-    swarm: overview.swarm,
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
-    readyToComplete: overview.readyToComplete,
-    brief,
-    bundle,
-    command,
-    summary: buildSwarmCloseoutSummary(overview, command)
-  };
+  return buildSwarmCloseoutViewFromSources(
+    id,
+    {
+      swarmOverview,
+      swarmBrief,
+      swarmBundle,
+      deriveSwarmCloseoutCommand,
+      deriveSwarmCloseoutReason,
+      buildSwarmCloseoutSummary
+    },
+    {
+      buildSwarmCloseoutView
+    }
+  );
 }
 
 export function swarmBlockers(id) {
