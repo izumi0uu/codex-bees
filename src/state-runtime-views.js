@@ -199,6 +199,113 @@ export function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment
   return `Runtime assignment pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
+export function buildRuntimeAssignmentPackView(
+  input,
+  {
+    normalizeNextMode,
+    leaderAssignments,
+    workerSession,
+    taskNext,
+    previewTaskAssignment,
+    runtimeRoles,
+    describeRole
+  },
+  {
+    deriveRuntimeAssignmentPackSurface,
+    deriveRuntimeAssignmentPackReason,
+    buildRuntimeAssignmentPackSummary
+  }
+) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const mode = normalizeNextMode(input.mode);
+  const assignments = leaderAssignments();
+  const roleAssignments = (assignments?.groups ?? []).find((group) => group.owner?.id === input.role) ?? null;
+  const assignment = roleAssignments?.assignments?.[0] ?? null;
+  const session = workerSession({
+    role: input.role,
+    workerId: input.workerId,
+    mode,
+    limit: input.limit
+  });
+  const next = taskNext({
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+  const pickup = previewTaskAssignment({
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+  const roleEntry = runtimeRoles()?.roles?.find((entry) => entry.role?.id === input.role) ?? null;
+  const recommendedSurface = deriveRuntimeAssignmentPackSurface({
+    assignment,
+    session,
+    next,
+    pickup,
+    roleEntry,
+    role: input.role,
+    workerId: input.workerId,
+    mode
+  });
+  const recommendedReason = deriveRuntimeAssignmentPackReason({ assignment, session, next, pickup, roleEntry });
+  const nextEntries = {
+    assignment,
+    pickup,
+    candidate: next?.candidate ?? null,
+    focus: session?.focus ?? null
+  };
+
+  return {
+    kind: "runtime_assignment_pack",
+    role: describeRole(input.role),
+    workerId: input.workerId,
+    mode,
+    recommendedSurface,
+    recommendedReason,
+    metadata: {
+      hasAssignment: Boolean(nextEntries.assignment),
+      hasPickup: Boolean(nextEntries.pickup),
+      hasCandidate: Boolean(nextEntries.candidate),
+      hasFocus: Boolean(nextEntries.focus)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
+    overview: {
+      assignments: {
+        count: roleAssignments?.count ?? 0,
+        ownerGroups: assignments?.counts?.ownerGroups ?? 0
+      },
+      pickup: pickup
+        ? {
+            outcome: pickup.outcome,
+            command: pickup.command,
+            candidateId: pickup.candidate?.id ?? null
+          }
+        : null,
+      role: roleEntry?.counts ?? null,
+      session: session?.counts ?? null
+    },
+    next: nextEntries,
+    surfaces: {
+      roleAssignments,
+      session,
+      next,
+      pickup,
+      role: roleEntry,
+      assignments: {
+        counts: assignments?.counts ?? null,
+        next: assignments?.next ?? null
+      }
+    },
+    summary: buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, session, pickup, next, roleAssignments)
+  };
+}
+
 export function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";
