@@ -5,7 +5,7 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalogEntryView, getInitCommandCatalogView, getInitHelpView, renderHelpText, renderInitHelpText } from "./commands.js";
 import { getMcpCommandCatalogEntryView, getMcpCommandCatalogView, getMcpHelpView, getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
-import { getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntryView } from "./catalog.js";
+import { getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntryView, listAgentCatalog, listSkillCatalog } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogEntryView, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
@@ -193,9 +193,17 @@ function printCatalog() {
   write(JSON.stringify({ catalog: getRuntimeCatalogView() }, null, 2) + "\n");
 }
 
+function printCatalogAgentsView() {
+  write(JSON.stringify({ agents: listAgentCatalog() }, null, 2) + "\n");
+}
+
 function printCatalogAgentView() {
   const id = requireOption("--id");
   write(JSON.stringify({ agent: getAgentCatalogEntryView(id) }, null, 2) + "\n");
+}
+
+function printCatalogSkillsView() {
+  write(JSON.stringify({ skills: listSkillCatalog() }, null, 2) + "\n");
 }
 
 function printCatalogSkillView() {
@@ -1414,8 +1422,14 @@ async function runCommand(command) {
     case "catalog":
       printCatalog();
       return;
+    case "catalog:agents":
+      printCatalogAgentsView();
+      return;
     case "catalog:agent":
       printCatalogAgentView();
+      return;
+    case "catalog:skills":
+      printCatalogSkillsView();
       return;
     case "catalog:skill":
       printCatalogSkillView();
