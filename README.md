@@ -166,10 +166,10 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 - `listMcpTools()` for the raw tool inventory
 - `getMcpToolEntry(name)` for one raw MCP tool definition lookup
 - `getMcpToolView(name)` for one machine-readable MCP tool lookup view
+- `getToolCatalogView()` for the grouped catalog view
 - `getMcpCommandCatalog()` for the raw structured `mcp` subcommand option list
 - `getMcpCommandCatalogEntry(option)` for one structured `mcp` subcommand option lookup
 - `getMcpCommandCatalogEntryView(option)` for one machine-readable `mcp` subcommand option lookup view
-- `getToolCatalogView()` for the grouped catalog view
 - `getMcpCommandCatalogView()` for the structured `mcp` subcommand option catalog
 - `getMcpHelpView(option)` for a machine-readable `mcp` help contract with matched option metadata
 - `handleMcpRequest(message)` for one-shot JSON-RPC request handling
@@ -180,7 +180,7 @@ The `codex-bees/mcp` subpath is also usable as a small programmatic adapter laye
 Example:
 
 ```js
-import { callMcpTool, getMcpCommandCatalog, getMcpCommandCatalogEntry, getMcpCommandCatalogEntryView, getMcpHelpView, getMcpToolEntry, getMcpToolView, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
+import { callMcpTool, getMcpCommandCatalog, getMcpCommandCatalogEntry, getMcpCommandCatalogEntryView, getMcpHelpView, getMcpToolEntry, getMcpToolView, getToolCatalogView, handleMcpRequest, listMcpTools } from "codex-bees/mcp";
 
 const tools = listMcpTools();
 const packageMetadataTool = getMcpToolEntry("package_metadata");
@@ -205,6 +205,11 @@ const mcpCommandOptionTool = getMcpToolEntry("mcp_command_option");
 const mcpCommandOptionToolView = getMcpToolView("mcp_command_option");
 const mcpHelpTool = getMcpToolEntry("mcp_help");
 const mcpHelpToolView = getMcpToolView("mcp_help");
+const toolCatalogView = getToolCatalogView();
+const toolCatalogTool = getMcpToolEntry("tool_catalog");
+const toolCatalogToolView = getMcpToolView("tool_catalog");
+const toolCatalogEntryTool = getMcpToolEntry("tool_catalog_entry");
+const toolCatalogEntryToolView = getMcpToolView("tool_catalog_entry");
 const runtimeReadyTool = getMcpToolEntry("runtime_ready");
 const runtimeReadyToolView = getMcpToolView("runtime_ready");
 const runtimeCapabilityTool = getMcpToolEntry("runtime_capability");
@@ -227,6 +232,8 @@ const initOptionHelp = callMcpTool("init_help", { option: "--preview" });
 const mcpOptionsView = callMcpTool("mcp_command_catalog");
 const mcpOption = callMcpTool("mcp_command_option", { option: "--tools" });
 const mcpOptionHelp = callMcpTool("mcp_help", { option: "--tools" });
+const toolsView = callMcpTool("tool_catalog");
+const toolView = callMcpTool("tool_catalog_entry", { name: "runtime_contract" });
 const ready = callMcpTool("runtime_ready");
 const capability = callMcpTool("runtime_capability", { id: "memory" });
 const contract = callMcpTool("runtime_contract");
@@ -575,7 +582,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `runtime_contract` exposes the explicit runtime contract view. It emits `kind: "runtime_contract_view"` with a machine-readable `recommendedReason`, transport and responsibility counts, and the nested contract payload so automation can distinguish a loaded contract surface from ad hoc prose while sharing one stable contract shape across CLI doctor diagnostics and MCP. `contract` exposes that same view directly on the CLI, so automation can fetch the shipped runtime boundary without going through the larger `doctor` surface first. MCP now also exposes `package_metadata`, returning the same `package_metadata_view` that the CLI `metadata` command and `codex-bees/metadata` library surface already share, so package identity stays transport-symmetric too.
 
-`tools` and `mcp --tools` expose the explicit tool catalog view for human and automation-side inspection of the shipped MCP surface. They emit `kind: "tool_catalog_view"` with a machine-readable `recommendedReason`, top-level tool counts grouped by tool prefix, and the nested tool inventory so consumers can branch on catalog presence and coarse tool families without reparsing the full list first. `tools:get` exposes the paired single-tool view, returning `kind: "mcp_tool_view"` with `recommendedReason` set to `mcp_tool_loaded` or `mcp_tool_missing` so automation can inspect one shipped tool contract without filtering the full catalog payload.
+`tools` and `mcp --tools` expose the explicit tool catalog view for human and automation-side inspection of the shipped MCP surface. They emit `kind: "tool_catalog_view"` with a machine-readable `recommendedReason`, top-level tool counts grouped by tool prefix, and the nested tool inventory so consumers can branch on catalog presence and coarse tool families without reparsing the full list first. `tools:get` exposes the paired single-tool view, returning `kind: "mcp_tool_view"` with `recommendedReason` set to `mcp_tool_loaded` or `mcp_tool_missing` so automation can inspect one shipped tool contract without filtering the full catalog payload. MCP now exposes that same grouped catalog payload through `tool_catalog`, plus the paired single-tool lookup through `tool_catalog_entry`, so CLI, library, and MCP consumers can all inspect the shipped tool surface from one shared machine-readable contract.
 
 `coordination_overview` and `worker_guidelines` expose explicit MCP guidance views for the shipped local coordination model. They emit `kind: "coordination_overview_view"` and `kind: "worker_guidelines_view"` with machine-readable `recommendedReason` values and small aggregate counts so MCP consumers can treat runtime guidance as stable product protocol instead of unstructured advisory prose. `guidance:overview` and `guidance:worker` expose those same views directly on the CLI, so automation can fetch the shipped coordination contract without opening the MCP transport first.
 
