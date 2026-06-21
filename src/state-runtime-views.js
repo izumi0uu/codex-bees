@@ -2872,6 +2872,41 @@ export function buildRuntimeExecutionPackView(
   };
 }
 
+export function buildRuntimeExecutionPackViewFromSources(
+  input,
+  {
+    runtimeFocus,
+    runtimeDispatch,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeRoles,
+    runtimeQueuePack
+  },
+  {
+    deriveRuntimeExecutionPackSurface,
+    deriveRuntimeExecutionPackReason,
+    buildRuntimeExecutionPackSummary,
+    buildRuntimeExecutionPackView
+  }
+) {
+  return buildRuntimeExecutionPackView(
+    input,
+    {
+      runtimeFocus,
+      runtimeDispatch,
+      leaderAssignmentDispatchBundle,
+      leaderAssignmentLaunchPlan,
+      runtimeRoles,
+      runtimeQueuePack
+    },
+    {
+      deriveRuntimeExecutionPackSurface,
+      deriveRuntimeExecutionPackReason,
+      buildRuntimeExecutionPackSummary
+    }
+  );
+}
+
 export function deriveRuntimePickupPackSurface({ session, pickup, next, rolePack, role, workerId, mode }) {
   if (pickup?.outcome === "claimable") {
     return `task:pickup --role ${role} --worker ${workerId} --mode ${mode}`;

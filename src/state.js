@@ -231,6 +231,7 @@ import {
   buildRuntimeControlPackView,
   buildRuntimeControlPackViewFromSources,
   buildRuntimeExecutionPackSummary,
+  buildRuntimeExecutionPackViewFromSources,
   buildRuntimeExecutionPackView,
   buildRuntimeFocusSources,
   buildRuntimeFocusViewFromSources,
@@ -1413,7 +1414,7 @@ export function runtimeRolePack(input = {}) {
 }
 
 export function runtimeExecutionPack(input = {}) {
-  return buildRuntimeExecutionPackView(
+  return buildRuntimeExecutionPackViewFromSources(
     input,
     {
       runtimeFocus,
@@ -1426,7 +1427,8 @@ export function runtimeExecutionPack(input = {}) {
     {
       deriveRuntimeExecutionPackSurface,
       deriveRuntimeExecutionPackReason,
-      buildRuntimeExecutionPackSummary
+      buildRuntimeExecutionPackSummary,
+      buildRuntimeExecutionPackView
     }
   );
 }
