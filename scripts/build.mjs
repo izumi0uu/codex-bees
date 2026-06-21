@@ -51,12 +51,22 @@ function verifyDistCommand(label, args) {
   }
 }
 
-function verifyDistScript(label, script) {
-  const result = spawnSync("node", ["-e", script], { encoding: "utf8" });
-  if (result.status !== 0) {
+function assertMatchingExportSurface(label, sourceModule, distModule) {
+  const sourceKeys = Object.keys(sourceModule).sort();
+  const distKeys = Object.keys(distModule).sort();
+  if (JSON.stringify(sourceKeys) !== JSON.stringify(distKeys)) {
     console.error(`[build:${label}] failed`);
-    console.error(result.stderr || result.stdout);
-    process.exit(result.status ?? 1);
+    console.error(
+      JSON.stringify(
+        {
+          sourceKeys,
+          distKeys
+        },
+        null,
+        2
+      )
+    );
+    process.exit(1);
   }
 }
 
@@ -72,9 +82,8 @@ writeDistPackageMetadata();
 
 verifyDistCommand("dist-help", ["./dist/index.js", "--help"]);
 verifyDistCommand("dist-tools", ["./dist/mcp.js", "--tools"]);
-verifyDistScript(
-  "dist-api",
-  'import("./dist/api.js").then((m) => { if (!("getRuntimeCatalogView" in m) || !("getToolCatalogView" in m) || !("planTask" in m)) { throw new Error("dist api surface incomplete"); } })'
-);
+const sourceApiModule = await import(new URL("../src/api.js", import.meta.url));
+const distApiModule = await import(new URL("../dist/api.js", import.meta.url));
+assertMatchingExportSurface("dist-api", sourceApiModule, distApiModule);
 
 console.log("built");

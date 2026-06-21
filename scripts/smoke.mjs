@@ -15,6 +15,20 @@ const README_TEXT = readFileSync(README_PATH, "utf8");
 const NPM_CACHE_DIR = join(tmpdir(), "codex-bees-smoke-npm-cache");
 let packedTarballPath = null;
 
+function sortedKeys(value) {
+  return Object.keys(value).sort();
+}
+
+function assertMatchingKeys(label, actual, expected) {
+  const actualKeys = sortedKeys(actual);
+  const expectedKeys = sortedKeys(expected);
+  if (JSON.stringify(actualKeys) !== JSON.stringify(expectedKeys)) {
+    console.error(`[smoke:${label}] expected matching export keys`);
+    console.error(JSON.stringify({ actualKeys, expectedKeys }, null, 2));
+    process.exit(1);
+  }
+}
+
 function cleanupPackedTarball() {
   if (packedTarballPath) {
     rmSync(packedTarballPath, { force: true });
@@ -224,35 +238,8 @@ const importedSourceApi = JSON.parse(
     'import("./src/api.js").then((m) => console.log(JSON.stringify(Object.keys(m).sort())))'
   ]).stdout
 );
-if (
-  !importedSourceApi.includes("getRuntimeCatalogView") ||
-  !importedSourceApi.includes("getCommandCatalogView") ||
-  !importedSourceApi.includes("getCommandCatalogEntryView") ||
-  !importedSourceApi.includes("getInitCommandCatalogView") ||
-  !importedSourceApi.includes("getInitCommandCatalogEntryView") ||
-  !importedSourceApi.includes("getMcpCommandCatalog") ||
-  !importedSourceApi.includes("getMcpCommandCatalogEntryView") ||
-  !importedSourceApi.includes("getMcpCommandCatalogView") ||
-  !importedSourceApi.includes("getMcpToolView") ||
-  !importedSourceApi.includes("getCapabilityCatalogEntryView") ||
-  !importedSourceApi.includes("getAgentCatalogEntryView") ||
-  !importedSourceApi.includes("getSkillCatalogEntryView") ||
-  !importedSourceApi.includes("renderMcpHelpText") ||
-  !importedSourceApi.includes("getPackageMetadata") ||
-  !importedSourceApi.includes("getRuntimeDoctorView") ||
-  !importedSourceApi.includes("getRuntimeReadyView") ||
-  !importedSourceApi.includes("getToolCatalogView") ||
-  !importedSourceApi.includes("getCoordinationOverviewView") ||
-  !importedSourceApi.includes("getWorkerGuidelinesView") ||
-  !importedSourceApi.includes("handleMcpRequest") ||
-  !importedSourceApi.includes("callMcpTool") ||
-  !importedSourceApi.includes("getMemory") ||
-  !importedSourceApi.includes("getMemoryView") ||
-  !importedSourceApi.includes("planTask") ||
-  !importedSourceApi.includes("addTask") ||
-  !importedSourceApi.includes("stateFilePath")
-) {
-  console.error("[smoke:import-src-api] expected source api module to export catalog, mcp, planner, and state surfaces");
+if (!importedSourceApi.includes("getRuntimeCatalogView")) {
+  console.error("[smoke:import-src-api] expected source api module to expose root runtime catalog");
   process.exit(1);
 }
 
@@ -262,37 +249,11 @@ const importedDistApi = JSON.parse(
     'import("./dist/api.js").then((m) => console.log(JSON.stringify(Object.keys(m).sort())))'
   ]).stdout
 );
-if (
-  !importedDistApi.includes("getRuntimeCatalogView") ||
-  !importedDistApi.includes("getCommandCatalogView") ||
-  !importedDistApi.includes("getCommandCatalogEntryView") ||
-  !importedDistApi.includes("getInitCommandCatalogView") ||
-  !importedDistApi.includes("getInitCommandCatalogEntryView") ||
-  !importedDistApi.includes("getMcpCommandCatalog") ||
-  !importedDistApi.includes("getMcpCommandCatalogEntryView") ||
-  !importedDistApi.includes("getMcpCommandCatalogView") ||
-  !importedDistApi.includes("getMcpToolView") ||
-  !importedDistApi.includes("getCapabilityCatalogEntryView") ||
-  !importedDistApi.includes("getAgentCatalogEntryView") ||
-  !importedDistApi.includes("getSkillCatalogEntryView") ||
-  !importedDistApi.includes("renderMcpHelpText") ||
-  !importedDistApi.includes("getPackageMetadata") ||
-  !importedDistApi.includes("getRuntimeDoctorView") ||
-  !importedDistApi.includes("getRuntimeReadyView") ||
-  !importedDistApi.includes("getToolCatalogView") ||
-  !importedDistApi.includes("getCoordinationOverviewView") ||
-  !importedDistApi.includes("getWorkerGuidelinesView") ||
-  !importedDistApi.includes("handleMcpRequest") ||
-  !importedDistApi.includes("callMcpTool") ||
-  !importedDistApi.includes("getMemory") ||
-  !importedDistApi.includes("getMemoryView") ||
-  !importedDistApi.includes("planTask") ||
-  !importedDistApi.includes("addTask") ||
-  !importedDistApi.includes("stateFilePath")
-) {
-  console.error("[smoke:import-dist-api] expected dist api module to export catalog, mcp, planner, and state surfaces");
-  process.exit(1);
-}
+assertMatchingKeys(
+  "import-dist-api",
+  Object.fromEntries(importedDistApi.map((key) => [key, true])),
+  Object.fromEntries(importedSourceApi.map((key) => [key, true]))
+);
 
 const metadataCli = JSON.parse(run("metadata-cli", ["./src/index.js", "metadata"]).stdout).metadata;
 if (
@@ -695,7 +656,7 @@ const installedImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && Object.keys(m).includes("getToolCatalogView") && Object.keys(m).includes("getMcpCommandCatalog") && Object.keys(m).includes("getMcpCommandCatalogView") && Object.keys(m).includes("renderMcpHelpText") && Object.keys(m).includes("planTask") && Object.keys(m).includes("addTask") && Object.keys(m).includes("stateFilePath") && Array.isArray(m.getMcpCommandCatalog()) && m.getMcpCommandCatalog().some((option) => option.option === "--capabilities") && m.getMcpCommandCatalogView().counts.totalOptions >= 5 && m.renderMcpHelpText().includes("codex-bees mcp --capabilities"), keys:Object.keys(m).sort()})))'
+    'import("codex-bees").then((m) => console.log(JSON.stringify({ok:Array.isArray(m.getMcpCommandCatalog()) && m.getMcpCommandCatalog().some((option) => option.option === "--capabilities") && m.getMcpCommandCatalogView().counts.totalOptions >= 5 && m.renderMcpHelpText().includes("codex-bees mcp --capabilities"), keys:Object.keys(m).sort()})))'
   ],
   {
     cwd: packedInstallAppDir,
@@ -711,6 +672,11 @@ if (
   console.error(installedImport.stderr || installedImport.stdout);
   process.exit(installedImport.status ?? 1);
 }
+assertMatchingKeys(
+  "installed-import",
+  Object.fromEntries(installedImportPayload.keys.map((key) => [key, true])),
+  Object.fromEntries(importedSourceApi.map((key) => [key, true]))
+);
 const missingDocumentedRootImports = documentedRootImportExports.filter(
   (name) => !installedImportPayload.keys.includes(name)
 );
