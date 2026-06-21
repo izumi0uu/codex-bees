@@ -158,6 +158,7 @@ import {
   buildLeaderAssignmentDispatchView,
   buildLeaderAssignmentDispatchBundleView,
   buildLeaderAssignmentDispatchPackView,
+  buildLeaderAssignmentLaunchPlanView,
   buildLeaderAssignmentsView,
   buildLeaderAssignmentsSummary,
   buildLeaderQueueView,
@@ -943,43 +944,15 @@ export function leaderAssignmentDispatchBundle(input = {}) {
 }
 
 export function leaderAssignmentLaunchPlan(input = {}) {
-  const bundle = leaderAssignmentDispatchBundle(input);
-  const steps = (bundle?.launches ?? []).map((launch, index) => ({
-    position: index + 1,
-    role: launch.role,
-    workerId: launch.workerId,
-    taskId: launch.taskId,
-    lane: launch.lane,
-    swarmId: launch.swarmId,
-    launchCommand: launch.launchCommand,
-    sessionCommand: launch.sessionCommand,
-    previewCommand: launch.previewCommand,
-    pickupCommand: launch.pickupCommand,
-    handoff: {
-      assignmentPackCommand: launch.assignmentPackCommand,
-      pickupCommand: launch.pickupCommand
+  return buildLeaderAssignmentLaunchPlanView(
+    input,
+    {
+      leaderAssignmentDispatchBundle
     },
-    summary: `Start ${launch.workerId ?? "<worker-id>"} on ${launch.role?.id ?? launch.role?.name ?? "unknown"} for ${launch.taskId ?? "no-task"}.`
-  }));
-  const next = steps[0] ?? null;
-  const recommendedReason = deriveLeaderAssignmentLaunchPlanReason({ bundle, steps, next });
-
-  return {
-    kind: "leader_assignment_launch_plan",
-    recommendedReason,
-    counts: {
-      steps: steps.length,
-      launches: bundle?.counts?.launches ?? 0,
-      ownerGroups: bundle?.counts?.ownerGroups ?? 0,
-      totalAssignments: bundle?.counts?.totalAssignments ?? 0
-    },
-    next,
-    steps,
-    bundle,
-    summary: next
-      ? `Leader assignment launch plan has ${steps.length} startup step${steps.length === 1 ? "" : "s"} ready; ${next.workerId ?? "<worker-id>"} is first.`
-      : "Leader assignment launch plan has no startup steps right now."
-  };
+    {
+      deriveLeaderAssignmentLaunchPlanReason
+    }
+  );
 }
 
 export function runtimeDashboard() {
