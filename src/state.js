@@ -49,6 +49,11 @@ import {
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
 import {
+  buildTaskReviewPatch,
+  deriveTaskTransitionContext,
+  resolveTaskClaimedBy
+} from "./state-transition-helpers.js";
+import {
   appendTaskAnnotation,
   appendTaskHistoryEntry,
   deriveReviewState,
@@ -4071,7 +4076,12 @@ function transitionTask(input) {
   }
 
   const current = normalizeTask(state.tasks[index]);
-  const nextQueueStatus = input.nextQueueStatus;
+  const {
+    nextQueueStatus,
+    isVerifierApproval,
+    isVerifierReturn,
+    verifierActor
+  } = deriveTaskTransitionContext(current, input);
 
   if (!VALID_QUEUE_STATUSES.has(nextQueueStatus)) {
     return { error: `Invalid queue status: ${nextQueueStatus}` };
@@ -4089,10 +4099,6 @@ function transitionTask(input) {
   if (input.requireClaimedBy && !input.claimedBy) {
     return { error: "claimedBy is required for this transition" };
   }
-
-  const isVerifierApproval = nextQueueStatus === "done";
-  const isVerifierReturn = current.queueStatus === "ready_for_review" && ["claimed", "blocked", "released"].includes(nextQueueStatus);
-  const verifierActor = input.reviewedBy ?? null;
 
   if (nextQueueStatus === "claimed" && !isVerifierReturn) {
     const validation = validateTaskValue(current, runtimeRoleCatalog());
@@ -4119,14 +4125,14 @@ function transitionTask(input) {
     }
   }
 
-  let claimedBy = current.claimedBy;
-  if (nextQueueStatus === "claimed" && !isVerifierReturn) {
-    claimedBy = input.claimedBy;
-  } else if (nextQueueStatus === "released") {
-    claimedBy = null;
-  } else if (input.claimedBy && !claimedBy) {
-    claimedBy = input.claimedBy;
-  }
+  const claimedBy = resolveTaskClaimedBy(current, input, nextQueueStatus, isVerifierReturn);
+  const reviewPatch = buildTaskReviewPatch(
+    input,
+    nextQueueStatus,
+    isVerifierApproval,
+    isVerifierReturn,
+    verifierActor
+  );
 
   const next = normalizeTask({
     ...current,
@@ -4134,24 +4140,7 @@ function transitionTask(input) {
     claimedBy,
     ...(input.owner !== undefined ? { owner: input.owner } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
-    ...(nextQueueStatus === "ready_for_review"
-      ? {
-          reviewedBy: null,
-          reviewedAt: null,
-          reviewOutcome: null,
-          reviewNotes: null,
-          reviewEvidence: null
-        }
-      : {}),
-    ...(isVerifierApproval || isVerifierReturn
-      ? {
-          reviewedBy: verifierActor,
-          reviewedAt: new Date().toISOString(),
-          reviewOutcome: isVerifierApproval ? "approved" : "changes_requested",
-          reviewNotes: input.notes ?? null,
-          reviewEvidence: input.reviewEvidence ?? null
-        }
-      : {}),
+    ...reviewPatch,
     history: appendTaskHistoryEntry(current, buildTaskHistoryEntry(current, nextQueueStatus, input)),
     updatedAt: new Date().toISOString()
   });
@@ -4196,4 +4185,3 @@ function transitionSwarm(input) {
   saveState(state);
   return next;
 }
-
