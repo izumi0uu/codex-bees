@@ -266,6 +266,7 @@ import {
   buildRuntimeOwnerPackViewFromSources,
   buildRuntimeOwnerPackSummary,
   buildRuntimeOwnerPackView,
+  buildRuntimeWorkerPackViewFromSources,
   buildRuntimeQueuePackView,
   buildRuntimeQueuePackViewFromSources,
   buildRuntimeQueuePackSummary,
@@ -1519,7 +1520,7 @@ export function runtimeOwnerPack(input = {}) {
 }
 
 export function runtimeWorkerPack(input = {}) {
-  return buildRuntimeWorkerPackView(
+  return buildRuntimeWorkerPackViewFromSources(
     input,
     {
       workerSession,
@@ -1532,7 +1533,8 @@ export function runtimeWorkerPack(input = {}) {
     {
       deriveRuntimeWorkerPackSurface,
       deriveRuntimeWorkerPackReason,
-      buildRuntimeWorkerPackSummary
+      buildRuntimeWorkerPackSummary,
+      buildRuntimeWorkerPackView
     }
   );
 }

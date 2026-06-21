@@ -262,6 +262,41 @@ export function buildRuntimeWorkerPackView(
   };
 }
 
+export function buildRuntimeWorkerPackViewFromSources(
+  input,
+  {
+    workerSession,
+    workerHandoff,
+    workerCloseout,
+    taskNext,
+    describeRole,
+    normalizeNextMode
+  },
+  {
+    deriveRuntimeWorkerPackSurface,
+    deriveRuntimeWorkerPackReason,
+    buildRuntimeWorkerPackSummary,
+    buildRuntimeWorkerPackView
+  }
+) {
+  return buildRuntimeWorkerPackView(
+    input,
+    {
+      workerSession,
+      workerHandoff,
+      workerCloseout,
+      taskNext,
+      describeRole,
+      normalizeNextMode
+    },
+    {
+      deriveRuntimeWorkerPackSurface,
+      deriveRuntimeWorkerPackReason,
+      buildRuntimeWorkerPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role }) {
   if (bundle?.currentTask?.id || closeout?.report?.task?.id) {
     return "worker:closeout";
