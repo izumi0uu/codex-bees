@@ -210,6 +210,7 @@ if (
   !importedSourceApi.includes("getMcpCommandCatalog") ||
   !importedSourceApi.includes("getMcpCommandCatalogView") ||
   !importedSourceApi.includes("getMcpToolView") ||
+  !importedSourceApi.includes("getCapabilityCatalogEntryView") ||
   !importedSourceApi.includes("renderMcpHelpText") ||
   !importedSourceApi.includes("getPackageMetadata") ||
   !importedSourceApi.includes("getRuntimeDoctorView") ||
@@ -239,6 +240,7 @@ if (
   !importedDistApi.includes("getMcpCommandCatalog") ||
   !importedDistApi.includes("getMcpCommandCatalogView") ||
   !importedDistApi.includes("getMcpToolView") ||
+  !importedDistApi.includes("getCapabilityCatalogEntryView") ||
   !importedDistApi.includes("renderMcpHelpText") ||
   !importedDistApi.includes("getPackageMetadata") ||
   !importedDistApi.includes("getRuntimeDoctorView") ||
@@ -800,7 +802,7 @@ const installedRuntimeStatusExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedRuntimeStatusExampleScript}\nconsole.log(JSON.stringify({ ok: status.kind === "runtime_status_view" && status.status.product === "codex-bees" && status.status.mode === "codex-only" && typeof status.counts.tools === "number" && Array.isArray(status.status.capabilities) && status.status.capabilities.length > 0 && runtimeCatalogCapability?.id === "runtime_catalog" && Array.isArray(status.status.recommendedEntryPoints.cli) && status.status.recommendedEntryPoints.cli.includes("status") }));`
+    `${documentedRuntimeStatusExampleScript}\nconsole.log(JSON.stringify({ ok: status.kind === "runtime_status_view" && status.status.product === "codex-bees" && status.status.mode === "codex-only" && typeof status.counts.tools === "number" && Array.isArray(status.status.capabilities) && status.status.capabilities.length > 0 && runtimeCatalogCapability?.id === "runtime_catalog" && runtimeCatalogCapabilityView?.kind === "runtime_capability_view" && runtimeCatalogCapabilityView?.matchedCapability === "runtime_catalog" && Array.isArray(status.status.recommendedEntryPoints.cli) && status.status.recommendedEntryPoints.cli.includes("status") }));`
   ],
   {
     cwd: packedInstallAppDir,

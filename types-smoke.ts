@@ -21,6 +21,7 @@ import {
   handleMcpRequest,
   getCapabilityCatalog,
   getCapabilityCatalogEntry,
+  getCapabilityCatalogEntryView,
   getCapabilityCatalogView,
   getAgentCatalogEntry,
   getRuntimeCatalog,
@@ -284,6 +285,8 @@ const packageVersion: "0.1.0" = PACKAGE_VERSION;
 const rootCapabilityCatalogViewKind: "runtime_capabilities_view" = getCapabilityCatalogView().kind;
 const runtimeCapabilitiesReason: "capabilities_loaded" | "capabilities_empty" = getCapabilityCatalogView().recommendedReason;
 const rootCapabilityEntryId: string | undefined = getCapabilityCatalogEntry("runtime_catalog")?.id;
+const rootCapabilityViewReason: "runtime_capability_loaded" | "runtime_capability_missing" = getCapabilityCatalogEntryView("runtime_catalog").recommendedReason;
+const rootCapabilityViewMatched: string | null = getCapabilityCatalogEntryView("runtime_catalog").matchedCapability;
 const rootAgentId: string | undefined = listAgentCatalog()[0]?.id;
 const rootAgentEntryId: string | undefined = getAgentCatalogEntry("executor")?.id;
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
