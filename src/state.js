@@ -45,6 +45,12 @@ import {
   tokenize
 } from "./state-query.js";
 import {
+  appendTaskAnnotation,
+  appendTaskHistoryEntry,
+  deriveReviewState,
+  describeRole
+} from "./state-task-core.js";
+import {
   buildRuntimeReviewTaskEntry,
   buildSwarmHandoff,
   buildTaskReportEntries,
@@ -4021,68 +4027,6 @@ export function cancelSwarm(input) {
     recommendedReason: "swarm_cancelled",
     swarm: result
   };
-}
-
-function appendTaskHistoryEntry(task, entry) {
-  const history = Array.isArray(task.history) ? task.history : [];
-  return [
-    ...history,
-    normalizeTaskHistoryEntry(
-      {
-        id: `event-${history.length + 1}`,
-        ...entry
-      },
-      history.length
-    )
-  ];
-}
-
-function appendTaskAnnotation(task, annotation) {
-  const annotations = Array.isArray(task.annotations) ? task.annotations : [];
-  return [
-    ...annotations,
-    normalizeTaskAnnotation(
-      {
-        id: `annotation-${annotations.length + 1}`,
-        ...annotation
-      },
-      annotations.length
-    )
-  ];
-}
-
-function describeRole(roleId, catalog = getRuntimeCatalog()) {
-  if (!roleId) {
-    return {
-      id: null,
-      exists: false,
-      name: null,
-      description: null,
-      promptPath: null
-    };
-  }
-
-  const agent = catalog.agents.find((item) => item.id === roleId) ?? null;
-  return {
-    id: roleId,
-    exists: Boolean(agent),
-    name: agent?.name ?? roleId,
-    description: agent?.description ?? null,
-    promptPath: agent?.path ?? null
-  };
-}
-
-function deriveReviewState(task) {
-  if (task.queueStatus === "ready_for_review") {
-    return "pending_verifier";
-  }
-  if (task.reviewOutcome === "approved") {
-    return "approved";
-  }
-  if (task.reviewOutcome === "changes_requested") {
-    return "changes_requested";
-  }
-  return "not_started";
 }
 
 function syncSwarmInLoadedState(state, swarmId) {
