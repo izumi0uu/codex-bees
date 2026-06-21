@@ -1003,7 +1003,7 @@ const installedInitImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/init").then(async (m) => { const { mkdtempSync, rmSync } = await import("node:fs"); const { tmpdir } = await import("node:os"); const { join } = await import("node:path"); const targetDirectory = mkdtempSync(join(tmpdir(), "codex-bees-installed-init-import-")); const preview = m.previewWorkspaceInit({ targetDirectory }); const applied = m.initWorkspace({ targetDirectory }); rmSync(targetDirectory, { recursive: true, force: true }); console.log(JSON.stringify({ ok: preview.kind === "workspace_init_preview" && preview.entries?.some((entry) => entry.path === ".codex/agents/executor.md") && applied.kind === "workspace_init_result" && applied.created?.includes(".codex/agents/executor.md") })); })'
+    'import("codex-bees/init").then(async (m) => { const { mkdtempSync, rmSync } = await import("node:fs"); const { tmpdir } = await import("node:os"); const { join } = await import("node:path"); const targetDirectory = mkdtempSync(join(tmpdir(), "codex-bees-installed-init-import-")); const preview = m.previewWorkspaceInit({ targetDirectory }); const applied = m.initWorkspace({ targetDirectory }); rmSync(targetDirectory, { recursive: true, force: true }); console.log(JSON.stringify({ ok: preview.kind === "workspace_init_preview" && preview.summary?.hasChanges === true && preview.summary?.create >= 1 && preview.entries?.some((entry) => entry.path === ".codex/agents/executor.md") && applied.kind === "workspace_init_result" && applied.summary?.hasChanges === true && applied.summary?.created >= 1 && applied.created?.includes(".codex/agents/executor.md") })); })'
   ],
   {
     cwd: packedInstallAppDir,
@@ -1244,6 +1244,8 @@ const installedInitPreview = JSON.parse(
 if (
   installedInitPreview.kind !== "workspace_init_preview" ||
   installedInitPreview.recommendedReason !== "init_changes_required" ||
+  installedInitPreview.summary?.hasChanges !== true ||
+  installedInitPreview.summary?.create < 1 ||
   !installedInitPreview.entries?.some((entry) => entry.path === ".codex/agents/executor.md")
 ) {
   console.error("[smoke:installed-init-preview] expected installed init preview to expose bundled workspace assets");
@@ -1255,6 +1257,8 @@ const installedInitApplied = JSON.parse(
 if (
   installedInitApplied.kind !== "workspace_init_result" ||
   installedInitApplied.recommendedReason !== "init_applied" ||
+  installedInitApplied.summary?.hasChanges !== true ||
+  installedInitApplied.summary?.created < 1 ||
   !existsSync(join(installedInitWorkspaceDir, ".codex", "agents", "executor.md")) ||
   !existsSync(join(installedInitWorkspaceDir, ".codex", "skills", "project-development", "SKILL.md"))
 ) {
