@@ -1,5 +1,21 @@
 import { PRODUCT_NAME } from "./metadata.js";
-import { getMcpCommandCatalog } from "./mcp.js";
+import {
+  getMcpCommandCatalog,
+  getMcpCommandCatalogEntry,
+  getMcpCommandCatalogEntryView,
+  getMcpCommandCatalogView,
+  getMcpHelpView,
+  renderMcpHelpText
+} from "./mcp.js";
+
+export {
+  getMcpCommandCatalog,
+  getMcpCommandCatalogEntry,
+  getMcpCommandCatalogEntryView,
+  getMcpCommandCatalogView,
+  getMcpHelpView,
+  renderMcpHelpText
+};
 
 const INIT_COMMAND_OPTIONS = [
   { option: "--preview", description: "Show the exact init file plan without writing anything" },

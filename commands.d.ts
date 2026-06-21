@@ -3,6 +3,11 @@ export {
   getInitCommandCatalogView,
   getInitCommandCatalogEntry,
   getInitCommandCatalogEntryView,
+  getMcpCommandCatalog,
+  getMcpCommandCatalogView,
+  getMcpCommandCatalogEntry,
+  getMcpCommandCatalogEntryView,
+  getMcpHelpView,
   getCommandCatalog,
   getCommandCatalogView,
   getCommandCatalogEntry,
@@ -11,5 +16,6 @@ export {
   renderHelpText,
   renderInitHelpText,
   getInitHelpView,
-  renderCommandHelpText
+  renderCommandHelpText,
+  renderMcpHelpText
 } from "./api.js";

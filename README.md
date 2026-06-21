@@ -376,12 +376,12 @@ const taskPlan = planTask("document a planner example");
 const swarmPlan = planSwarm("stage a planner example");
 ```
 
-The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` and `init` command entries both carry structured option lists, and it now also exposes direct command lookup plus machine-readable single-command and help views, so one command-catalog read is enough to discover the top-level runtime bootstrap surface as well as the shipped MCP flags. For the bootstrap path specifically, it also exposes a machine-readable `init` option catalog, direct `init` option lookup, a machine-readable single-option view, and an `init` help view so tooling can stay inside the init surface without first traversing the broader command catalog.
+The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` and `init` command entries both carry structured option lists, and it now also exposes direct command lookup plus machine-readable single-command and help views, so one command-catalog read is enough to discover the top-level runtime bootstrap surface as well as the shipped MCP flags. For the bootstrap path specifically, it also exposes a machine-readable `init` option catalog, direct `init` option lookup, a machine-readable single-option view, and an `init` help view so tooling can stay inside the init surface without first traversing the broader command catalog. For the shipped MCP flag surface, it also exposes the dedicated `mcp` option catalog, single-option lookup, single-option view, paired `mcp` help view, and rendered MCP help text directly from the same `commands` subpath.
 
 Example:
 
 ```js
-import { getCommandCatalogEntry, getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalog, getInitCommandCatalogView, getInitCommandCatalogEntry, getInitCommandCatalogEntryView, getInitHelpView, renderCommandHelpText, renderHelpText } from "codex-bees/commands";
+import { getCommandCatalogEntry, getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalog, getInitCommandCatalogView, getInitCommandCatalogEntry, getInitCommandCatalogEntryView, getInitHelpView, getMcpCommandCatalog, getMcpCommandCatalogView, getMcpCommandCatalogEntry, getMcpCommandCatalogEntryView, getMcpHelpView, renderCommandHelpText, renderHelpText, renderMcpHelpText } from "codex-bees/commands";
 
 const catalog = getCommandCatalogView();
 const initEntry = getCommandCatalogEntry("init");
@@ -392,8 +392,14 @@ const initOptionsView = getInitCommandCatalogView();
 const previewOption = getInitCommandCatalogEntry("--preview");
 const previewOptionView = getInitCommandCatalogEntryView("--preview");
 const initOptionHelpView = getInitHelpView("--preview");
+const mcpOptions = getMcpCommandCatalog();
+const mcpOptionsView = getMcpCommandCatalogView();
+const toolsOption = getMcpCommandCatalogEntry("--tools");
+const toolsOptionView = getMcpCommandCatalogEntryView("--tools");
+const mcpHelpView = getMcpHelpView("--tools");
 const initHelp = renderCommandHelpText("init");
 const help = renderHelpText();
+const mcpHelp = renderMcpHelpText();
 ```
 
 The package now also ships lightweight TypeScript declarations for the public API surface. They are intentionally minimal, but they cover the documented root export and subpath imports well enough for editor completion, typed imports, and smoke-level compile checks in downstream projects.
