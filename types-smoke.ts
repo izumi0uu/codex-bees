@@ -9,7 +9,9 @@ import {
   getCoordinationOverview,
   getCoordinationOverviewView,
   getMcpCommandCatalog,
+  getMcpCommandCatalogEntry,
   getMcpCommandCatalogView,
+  getMcpHelpView,
   getPackageMetadata,
   getPackageMetadataView,
   handleMcpRequest,
@@ -116,8 +118,11 @@ const rootWorkerGuidelinesKind: "worker_guidelines_view" = getWorkerGuidelinesVi
 const workerGuidelinesReason: "worker_guidelines_loaded" = getWorkerGuidelinesView().recommendedReason;
 renderHelpTextCommands();
 getMcpCommandCatalog()[0]?.option;
+const mcpCatalogEntry: string | undefined = getMcpCommandCatalogEntry("--tools")?.option;
 getMcpCommandCatalogView().options[0]?.option;
 const mcpCommandCatalogReason: "mcp_command_catalog_loaded" | "mcp_command_catalog_empty" = getMcpCommandCatalogView().recommendedReason;
+const mcpHelpReason: "mcp_help_loaded" | "mcp_help_fallback_loaded" = getMcpHelpView("--tools").recommendedReason;
+const mcpHelpMatched: string | null = getMcpHelpView("--tools").matchedOption;
 renderMcpHelpText();
 getRuntimeCatalogView().catalog.paths.codexDir;
 const runtimeCatalogReason: "catalog_entries_loaded" | "catalog_empty" = getRuntimeCatalogView().recommendedReason;
