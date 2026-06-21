@@ -958,7 +958,7 @@ const installedCommandsImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/commands").then((m) => { const mcp = m.getCommandCatalogView().commands.find((entry) => entry.command === "mcp"); console.log(JSON.stringify({ ok: m.getCommandCatalogView().kind === "command_catalog_view" && m.getCommandCatalogView().counts.totalCommands > 10 && m.renderHelpText().includes("codex-bees run") && m.renderHelpText().includes("codex-bees metadata") && Array.isArray(mcp?.options) && mcp.options.some((option) => option.option === "--capabilities") && mcp.options.some((option) => option.option === "--tools") })); })'
+    'import("codex-bees/commands").then((m) => { const mcp = m.getCommandCatalogView().commands.find((entry) => entry.command === "mcp"); const init = m.getCommandCatalogView().commands.find((entry) => entry.command === "init"); console.log(JSON.stringify({ ok: m.getCommandCatalogView().kind === "command_catalog_view" && m.getCommandCatalogView().counts.totalCommands > 10 && m.renderHelpText().includes("codex-bees run") && m.renderHelpText().includes("codex-bees metadata") && Array.isArray(mcp?.options) && mcp.options.some((option) => option.option === "--capabilities") && mcp.options.some((option) => option.option === "--tools") && typeof m.getInitCommandCatalog === "function" && Array.isArray(m.getInitCommandCatalog()) && m.getInitCommandCatalog().some((option) => option.option === "--preview") && Array.isArray(init?.options) && init.options.some((option) => option.option === "--dir <path>") })); })'
   ],
   {
     cwd: packedInstallAppDir,

@@ -3,6 +3,7 @@ import {
   PRODUCT_NAME,
   getCommandCatalog,
   getCommandCatalogView,
+  getInitCommandCatalog,
   getCoordinationOverview,
   getCoordinationOverviewView,
   getMcpCommandCatalog,
@@ -82,6 +83,7 @@ metadata.keywords[0];
 getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 const commandCatalogReason: "command_catalog_loaded" | "command_catalog_empty" = getCommandCatalogView().recommendedReason;
+const initCommandOptions: string | undefined = getInitCommandCatalog()[0]?.option;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
 const rootHelpTextDirect: string = renderHelpTextRoot();
 const initHelpText: string = renderInitHelpText();
