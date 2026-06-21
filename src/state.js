@@ -230,9 +230,13 @@ import {
   deriveSwarmSyncReason
 } from "./state-swarm-views.js";
 import {
+  buildWorkerSessionViewFromSources,
   buildWorkerSessionView,
+  buildWorkerCloseoutViewFromSources,
   buildWorkerCloseoutView,
+  buildWorkerHandoffViewFromSources,
   buildWorkerHandoffView,
+  buildVerifierBundleViewFromSources,
   buildVerifierBundleView,
   buildSessionTaskSnapshot,
   buildVerifierBundleSummary,
@@ -1725,50 +1729,74 @@ export function previewTaskPickup(input = {}) {
 }
 
 export function workerSession(input = {}) {
-  return buildWorkerSessionView(input, {
-    loadState,
-    normalizeTask,
-    normalizeNextMode,
-    compareTasksByUpdatedAt,
-    taskInbox,
-    taskNext,
-    recommendWorkerSessionFocus,
-    deriveWorkerSessionReason,
-    describeRole,
-    buildSessionTaskSnapshot,
-    summarizeInboxTask,
-    taskBrief
-  });
+  return buildWorkerSessionViewFromSources(
+    input,
+    {
+      loadState,
+      normalizeTask,
+      normalizeNextMode,
+      compareTasksByUpdatedAt,
+      taskInbox,
+      taskNext,
+      recommendWorkerSessionFocus,
+      deriveWorkerSessionReason,
+      describeRole,
+      buildSessionTaskSnapshot,
+      summarizeInboxTask,
+      taskBrief
+    },
+    {
+      buildWorkerSessionView
+    }
+  );
 }
 
 export function workerHandoff(input = {}) {
-  return buildWorkerHandoffView(input, {
-    workerSession,
-    deriveWorkerHandoffReason,
-    buildWorkerHandoffSummary
-  });
+  return buildWorkerHandoffViewFromSources(
+    input,
+    {
+      workerSession,
+      deriveWorkerHandoffReason,
+      buildWorkerHandoffSummary
+    },
+    {
+      buildWorkerHandoffView
+    }
+  );
 }
 
 export function workerCloseout(input = {}) {
-  return buildWorkerCloseoutView(input, {
-    workerHandoff,
-    taskReport,
-    deriveWorkerCloseoutReason,
-    deriveWorkerCloseoutCommand,
-    buildWorkerCloseoutSummary
-  });
+  return buildWorkerCloseoutViewFromSources(
+    input,
+    {
+      workerHandoff,
+      taskReport,
+      deriveWorkerCloseoutReason,
+      deriveWorkerCloseoutCommand,
+      buildWorkerCloseoutSummary
+    },
+    {
+      buildWorkerCloseoutView
+    }
+  );
 }
 
 export function verifierBundle(input = {}) {
-  return buildVerifierBundleView(input, {
-    workerSession,
-    workerHandoff,
-    taskReport,
-    describeRole,
-    deriveVerifierBundleReason,
-    buildVerifierDecisionCommands,
-    buildVerifierBundleSummary
-  });
+  return buildVerifierBundleViewFromSources(
+    input,
+    {
+      workerSession,
+      workerHandoff,
+      taskReport,
+      describeRole,
+      deriveVerifierBundleReason,
+      buildVerifierDecisionCommands,
+      buildVerifierBundleSummary
+    },
+    {
+      buildVerifierBundleView
+    }
+  );
 }
 
 export function validateTask(id) {

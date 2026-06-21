@@ -151,6 +151,45 @@ export function buildWorkerSessionView(
   };
 }
 
+export function buildWorkerSessionViewFromSources(
+  input,
+  {
+    loadState,
+    normalizeTask,
+    normalizeNextMode,
+    compareTasksByUpdatedAt,
+    taskInbox,
+    taskNext,
+    recommendWorkerSessionFocus,
+    deriveWorkerSessionReason,
+    describeRole,
+    buildSessionTaskSnapshot,
+    summarizeInboxTask,
+    taskBrief
+  },
+  {
+    buildWorkerSessionView
+  }
+) {
+  return buildWorkerSessionView(
+    input,
+    {
+      loadState,
+      normalizeTask,
+      normalizeNextMode,
+      compareTasksByUpdatedAt,
+      taskInbox,
+      taskNext,
+      recommendWorkerSessionFocus,
+      deriveWorkerSessionReason,
+      describeRole,
+      buildSessionTaskSnapshot,
+      summarizeInboxTask,
+      taskBrief
+    }
+  );
+}
+
 export function buildWorkerHandoffSummary(session, focusTaskSnapshot) {
   if (session.focus?.kind === "active_task" && focusTaskSnapshot) {
     return `Worker ${session.workerId} owns ${focusTaskSnapshot.summary.id} and should continue execution before handoff to verifier ${focusTaskSnapshot.summary.verifier}.`;
@@ -211,6 +250,27 @@ export function buildWorkerHandoffView(
     nextCommand: session.focus?.command ?? null,
     summary: buildWorkerHandoffSummary(session, focusTaskSnapshot)
   };
+}
+
+export function buildWorkerHandoffViewFromSources(
+  input,
+  {
+    workerSession,
+    deriveWorkerHandoffReason,
+    buildWorkerHandoffSummary
+  },
+  {
+    buildWorkerHandoffView
+  }
+) {
+  return buildWorkerHandoffView(
+    input,
+    {
+      workerSession,
+      deriveWorkerHandoffReason,
+      buildWorkerHandoffSummary
+    }
+  );
 }
 
 export function deriveWorkerCloseoutCommand(handoff, report) {
@@ -285,6 +345,31 @@ export function buildWorkerCloseoutView(
     command: deriveWorkerCloseoutCommand(handoff, report),
     summary: buildWorkerCloseoutSummary(handoff, report)
   };
+}
+
+export function buildWorkerCloseoutViewFromSources(
+  input,
+  {
+    workerHandoff,
+    taskReport,
+    deriveWorkerCloseoutReason,
+    deriveWorkerCloseoutCommand,
+    buildWorkerCloseoutSummary
+  },
+  {
+    buildWorkerCloseoutView
+  }
+) {
+  return buildWorkerCloseoutView(
+    input,
+    {
+      workerHandoff,
+      taskReport,
+      deriveWorkerCloseoutReason,
+      deriveWorkerCloseoutCommand,
+      buildWorkerCloseoutSummary
+    }
+  );
 }
 
 export function buildVerifierDecisionCommands(taskSummary, role) {
@@ -363,4 +448,33 @@ export function buildVerifierBundleView(
     commands,
     summary: buildVerifierBundleSummary(reviewSnapshot?.summary, input.role, input.workerId)
   };
+}
+
+export function buildVerifierBundleViewFromSources(
+  input,
+  {
+    workerSession,
+    workerHandoff,
+    taskReport,
+    describeRole,
+    deriveVerifierBundleReason,
+    buildVerifierDecisionCommands,
+    buildVerifierBundleSummary
+  },
+  {
+    buildVerifierBundleView
+  }
+) {
+  return buildVerifierBundleView(
+    input,
+    {
+      workerSession,
+      workerHandoff,
+      taskReport,
+      describeRole,
+      deriveVerifierBundleReason,
+      buildVerifierDecisionCommands,
+      buildVerifierBundleSummary
+    }
+  );
 }
