@@ -9,7 +9,7 @@ import { getRuntimeContractView } from "./runtime-contract.js";
 import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
 import { getRuntimeDoctorView } from "./doctor.js";
-import { getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalogEntryView, getInitCommandCatalogView } from "./commands.js";
+import { getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalogEntryView, getInitCommandCatalogView, getInitHelpView } from "./commands.js";
 import {
   activateSwarm,
   addTask,
@@ -177,6 +177,17 @@ export const toolCatalog = [
   {
     name: "init_command_option",
     description: "Return one shipped init command option view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        option: { type: "string" }
+      },
+      required: ["option"]
+    }
+  },
+  {
+    name: "init_help",
+    description: "Return one shipped init command help view.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1558,6 +1569,13 @@ function handleRequest(message) {
         return createError(id, -32602, "init_command_option requires arguments.option");
       }
       return createSuccess(id, createTextPayload({ option: getInitCommandCatalogEntryView(params.arguments.option) }));
+    }
+
+    if (name === "init_help") {
+      if (!params.arguments?.option) {
+        return createError(id, -32602, "init_help requires arguments.option");
+      }
+      return createSuccess(id, createTextPayload({ help: getInitHelpView(params.arguments.option) }));
     }
 
     if (name === "worker_guidelines") {
