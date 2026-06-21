@@ -118,6 +118,8 @@ import {
 import {
   buildTaskBriefView,
   buildTaskBriefViewFromSources,
+  buildTaskDetailView,
+  buildTaskDetailViewFromSources,
   buildTaskHistoryView,
   buildTaskHistoryViewFromSources,
   buildTaskReportView,
@@ -542,20 +544,16 @@ export function getTask(id) {
 }
 
 export function getTaskView(id) {
-  const task = getTask(id);
-  if (!task) {
-    return null;
-  }
-  return {
-    kind: "task_detail",
-    recommendedReason: "task_detail_loaded",
-    metadata: {
-      hasHistory: (task.history ?? []).length > 0,
-      hasAnnotations: (task.annotations ?? []).length > 0,
-      reviewState: deriveReviewState(task)
+  return buildTaskDetailViewFromSources(
+    id,
+    {
+      getTask,
+      deriveReviewState
     },
-    task
-  };
+    {
+      buildTaskDetailView
+    }
+  );
 }
 
 export function taskHistory(id) {

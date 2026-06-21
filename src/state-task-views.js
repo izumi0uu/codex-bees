@@ -188,6 +188,46 @@ export function buildTaskHistoryViewFromSources(
   });
 }
 
+export function buildTaskDetailView(
+  id,
+  {
+    getTask,
+    deriveReviewState
+  }
+) {
+  const task = getTask(id);
+  if (!task) {
+    return null;
+  }
+
+  return {
+    kind: "task_detail",
+    recommendedReason: "task_detail_loaded",
+    metadata: {
+      hasHistory: (task.history ?? []).length > 0,
+      hasAnnotations: (task.annotations ?? []).length > 0,
+      reviewState: deriveReviewState(task)
+    },
+    task
+  };
+}
+
+export function buildTaskDetailViewFromSources(
+  id,
+  {
+    getTask,
+    deriveReviewState
+  },
+  {
+    buildTaskDetailView
+  }
+) {
+  return buildTaskDetailView(id, {
+    getTask,
+    deriveReviewState
+  });
+}
+
 export function deriveTaskBriefReason(task, recommended) {
   if (task.queueStatus === "done") {
     return "completed_task_brief";
