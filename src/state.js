@@ -117,11 +117,11 @@ import {
 } from "./state-reasons.js";
 import {
   buildRuntimeActivityView,
+  buildRuntimeCloseoutView,
   buildRuntimeFocusView,
   buildRuntimeActivityEntry,
   buildRuntimeHandoffsView,
   buildRuntimeCloseoutTaskEntry,
-  buildRuntimeCloseoutTaskSummary,
   buildRuntimeFocusSummary,
   buildRuntimeHandoffEntry,
   buildRuntimeRecoveryEntry,
@@ -1368,33 +1368,24 @@ export function runtimeHandoffs() {
 }
 
 export function runtimeCloseout() {
-  const tasks = loadState().tasks
-    .map(normalizeTask)
-    .filter((task) => task.queueStatus === "done")
-    .map((task) => buildRuntimeCloseoutTaskEntry(task, taskReport))
-    .sort(compareRuntimeCloseoutTasks);
-  const swarms = listSwarmOverviews()
-    .filter((overview) => overview.readyToComplete)
-    .map((overview) => buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout))
-    .sort(compareRuntimeCloseoutSwarms);
-  const nextTask = tasks[0] ?? null;
-  const nextSwarm = swarms[0] ?? null;
-  const next = chooseRuntimeCloseoutNext(nextTask, nextSwarm);
-  const recommendedReason = deriveRuntimeCloseoutReason({ tasks, swarms, next });
-
-  return {
-    kind: "runtime_closeout",
-    recommendedReason,
-    counts: {
-      tasksReady: tasks.length,
-      swarmsReady: swarms.length,
-      totalReady: tasks.length + swarms.length
+  return buildRuntimeCloseoutView(
+    {
+      loadState,
+      normalizeTask,
+      taskReport,
+      listSwarmOverviews,
+      swarmCloseout
     },
-    tasks,
-    swarms,
-    next,
-    summary: buildRuntimeCloseoutSummary(tasks, swarms, next)
-  };
+    {
+      buildRuntimeCloseoutTaskEntry,
+      compareRuntimeCloseoutTasks,
+      buildRuntimeCloseoutSwarmEntry,
+      compareRuntimeCloseoutSwarms,
+      chooseRuntimeCloseoutNext,
+      deriveRuntimeCloseoutReason,
+      buildRuntimeCloseoutSummary
+    }
+  );
 }
 
 export function runtimeRecovery() {

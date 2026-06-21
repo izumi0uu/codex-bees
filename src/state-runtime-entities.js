@@ -457,6 +457,53 @@ export function chooseRuntimeCloseoutNext(nextTask, nextSwarm) {
   return nextTask ?? null;
 }
 
+export function buildRuntimeCloseoutView(
+  {
+    loadState,
+    normalizeTask,
+    taskReport,
+    listSwarmOverviews,
+    swarmCloseout
+  },
+  {
+    buildRuntimeCloseoutTaskEntry,
+    compareRuntimeCloseoutTasks,
+    buildRuntimeCloseoutSwarmEntry,
+    compareRuntimeCloseoutSwarms,
+    chooseRuntimeCloseoutNext,
+    deriveRuntimeCloseoutReason,
+    buildRuntimeCloseoutSummary
+  }
+) {
+  const tasks = loadState().tasks
+    .map(normalizeTask)
+    .filter((task) => task.queueStatus === "done")
+    .map((task) => buildRuntimeCloseoutTaskEntry(task, taskReport))
+    .sort(compareRuntimeCloseoutTasks);
+  const swarms = listSwarmOverviews()
+    .filter((overview) => overview.readyToComplete)
+    .map((overview) => buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout))
+    .sort(compareRuntimeCloseoutSwarms);
+  const nextTask = tasks[0] ?? null;
+  const nextSwarm = swarms[0] ?? null;
+  const next = chooseRuntimeCloseoutNext(nextTask, nextSwarm);
+  const recommendedReason = deriveRuntimeCloseoutReason({ tasks, swarms, next });
+
+  return {
+    kind: "runtime_closeout",
+    recommendedReason,
+    counts: {
+      tasksReady: tasks.length,
+      swarmsReady: swarms.length,
+      totalReady: tasks.length + swarms.length
+    },
+    tasks,
+    swarms,
+    next,
+    summary: buildRuntimeCloseoutSummary(tasks, swarms, next)
+  };
+}
+
 export function isRuntimeRecoveryTask(task) {
   if (task.queueStatus === "blocked" || task.queueStatus === "released") {
     return true;
