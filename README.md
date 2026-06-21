@@ -74,15 +74,29 @@ import {
   planTask,
   planSwarm,
   renderMcpHelpText,
+  taskBrief,
+  taskHistory,
+  taskReport,
   stateFilePath,
   storeMemory
 } from "codex-bees";
 
 const metadata = getPackageMetadata();
+const releaseTask = addTask({
+  title: "Ship the public root contract",
+  owner: "executor",
+  verifier: "tester",
+  scope: ["src/api.js"],
+  acceptance: ["root api stays transport-symmetric"],
+  verification: ["npm run smoke"]
+});
 const status = getRuntimeStatusView({
   version: metadata.version,
   toolCount: getToolCatalogView().tools.length
 });
+const brief = taskBrief(releaseTask.id);
+const history = taskHistory(releaseTask.id);
+const report = taskReport(releaseTask.id);
 ```
 
 The package manifest now aligns with that contract too: the root export and `main` entry both point at the library surface (`dist/api.js`), while the `codex-bees` bin continues to point at the CLI entrypoint. It also ships npm-facing project metadata for the public GitHub home, issue tracker, and searchable package keywords, so installed consumers get a package surface that behaves like a real maintained product instead of a bare internal tarball.
