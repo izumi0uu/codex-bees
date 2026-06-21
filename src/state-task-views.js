@@ -53,6 +53,97 @@ export function buildTaskReportEntries(task) {
   };
 }
 
+export function buildTaskReportView(
+  id,
+  {
+    getTask,
+    taskBrief,
+    buildTaskReportEntries,
+    deriveTaskReportReason,
+    deriveReviewState,
+    taskReportNextGate
+  }
+) {
+  const task = getTask(id);
+  if (!task) {
+    return null;
+  }
+
+  const brief = taskBrief(id);
+  const reportEntries = buildTaskReportEntries(task);
+  const recommendedReason = deriveTaskReportReason(task);
+  const acceptance = (task.acceptance ?? []).map((item) => ({
+    item,
+    status: task.reviewOutcome === "approved" || task.queueStatus === "done" ? "verified" : "pending"
+  }));
+  const verification = task.verification ?? [];
+  const reviewEvidence = task.reviewEvidence ?? [];
+
+  return {
+    kind: "task_report",
+    recommendedReason,
+    task: {
+      id: task.id,
+      title: task.title,
+      objective: task.objective,
+      queueStatus: task.queueStatus,
+      owner: task.owner,
+      verifier: task.verifier,
+      claimedBy: task.claimedBy,
+      swarmId: task.swarmId,
+      lane: task.lane
+    },
+    closure: {
+      reviewState: deriveReviewState(task),
+      reviewedBy: task.reviewedBy,
+      reviewedAt: task.reviewedAt,
+      reviewOutcome: task.reviewOutcome,
+      reviewNotes: task.reviewNotes,
+      closureReady: task.queueStatus === "ready_for_review" || task.queueStatus === "done",
+      nextGate: taskReportNextGate(task)
+    },
+    counts: {
+      acceptanceItems: acceptance.length,
+      verificationSteps: verification.length,
+      reviewEvidenceEntries: reviewEvidence.length,
+      annotationEntries: reportEntries.annotations.length,
+      recentHistoryEntries: reportEntries.history.length
+    },
+    acceptance,
+    verification,
+    evidence: {
+      reviewEvidence,
+      annotations: reportEntries.annotations,
+      recentHistory: reportEntries.history
+    },
+    brief
+  };
+}
+
+export function buildTaskReportViewFromSources(
+  id,
+  {
+    getTask,
+    taskBrief,
+    buildTaskReportEntries,
+    deriveTaskReportReason,
+    deriveReviewState,
+    taskReportNextGate
+  },
+  {
+    buildTaskReportView
+  }
+) {
+  return buildTaskReportView(id, {
+    getTask,
+    taskBrief,
+    buildTaskReportEntries,
+    deriveTaskReportReason,
+    deriveReviewState,
+    taskReportNextGate
+  });
+}
+
 export function deriveTaskBriefReason(task, recommended) {
   if (task.queueStatus === "done") {
     return "completed_task_brief";

@@ -118,6 +118,8 @@ import {
 import {
   buildTaskBriefView,
   buildTaskBriefViewFromSources,
+  buildTaskReportView,
+  buildTaskReportViewFromSources,
   buildSwarmBriefView,
   buildSwarmBriefViewFromSources,
   buildSwarmBundleView,
@@ -577,59 +579,20 @@ export function taskHistory(id) {
 }
 
 export function taskReport(id) {
-  const task = getTask(id);
-  if (!task) {
-    return null;
-  }
-
-  const brief = taskBrief(id);
-  const reportEntries = buildTaskReportEntries(task);
-  const recommendedReason = deriveTaskReportReason(task);
-  const acceptance = (task.acceptance ?? []).map((item) => ({
-    item,
-    status: task.reviewOutcome === "approved" || task.queueStatus === "done" ? "verified" : "pending"
-  }));
-  const verification = task.verification ?? [];
-  const reviewEvidence = task.reviewEvidence ?? [];
-  return {
-    kind: "task_report",
-    recommendedReason,
-    task: {
-      id: task.id,
-      title: task.title,
-      objective: task.objective,
-      queueStatus: task.queueStatus,
-      owner: task.owner,
-      verifier: task.verifier,
-      claimedBy: task.claimedBy,
-      swarmId: task.swarmId,
-      lane: task.lane
+  return buildTaskReportViewFromSources(
+    id,
+    {
+      getTask,
+      taskBrief,
+      buildTaskReportEntries,
+      deriveTaskReportReason,
+      deriveReviewState,
+      taskReportNextGate
     },
-    closure: {
-      reviewState: deriveReviewState(task),
-      reviewedBy: task.reviewedBy,
-      reviewedAt: task.reviewedAt,
-      reviewOutcome: task.reviewOutcome,
-      reviewNotes: task.reviewNotes,
-      closureReady: task.queueStatus === "ready_for_review" || task.queueStatus === "done",
-      nextGate: taskReportNextGate(task)
-    },
-    counts: {
-      acceptanceItems: acceptance.length,
-      verificationSteps: verification.length,
-      reviewEvidenceEntries: reviewEvidence.length,
-      annotationEntries: reportEntries.annotations.length,
-      recentHistoryEntries: reportEntries.history.length
-    },
-    acceptance,
-    verification,
-    evidence: {
-      reviewEvidence,
-      annotations: reportEntries.annotations,
-      recentHistory: reportEntries.history
-    },
-    brief
-  };
+    {
+      buildTaskReportView
+    }
+  );
 }
 
 export function annotateTask(input = {}) {
