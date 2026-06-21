@@ -205,3 +205,39 @@ export function sortNextCandidates(tasks, role, workerId, mode) {
       return (left.createdAt ?? "").localeCompare(right.createdAt ?? "");
     });
 }
+
+export function buildTaskNextView(
+  input,
+  {
+    normalizeNextMode,
+    loadState,
+    normalizeTask,
+    sortNextCandidates,
+    describeRole,
+    summarizeInboxTask,
+    taskBrief
+  },
+  {
+    deriveTaskNextReason
+  }
+) {
+  if (!input.role) {
+    return null;
+  }
+
+  const mode = normalizeNextMode(input.mode);
+  const tasks = loadState().tasks.map(normalizeTask);
+  const candidates = sortNextCandidates(tasks, input.role, input.workerId, mode);
+  const selected = candidates[0] ?? null;
+  const candidate = selected ? summarizeInboxTask(selected, input.role, input.workerId) : null;
+
+  return {
+    kind: "next_task_candidate",
+    role: describeRole(input.role),
+    workerId: input.workerId ?? null,
+    mode,
+    recommendedReason: deriveTaskNextReason(candidate?.relation ?? null),
+    candidate,
+    brief: selected ? taskBrief(selected.id) : null
+  };
+}

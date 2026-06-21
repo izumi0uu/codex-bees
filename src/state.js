@@ -25,6 +25,7 @@ import {
 import {
   assignmentFollowupCommand,
   assignmentPickupOutcome,
+  buildTaskNextView,
   compareLeaderWorkspaceEntries,
   compareTasksByUpdatedAt,
   isClaimableTask,
@@ -1760,24 +1761,21 @@ export function taskInbox(input = {}) {
 }
 
 export function taskNext(input = {}) {
-  if (!input.role) {
-    return null;
-  }
-
-  const mode = normalizeNextMode(input.mode);
-  const tasks = loadState().tasks.map(normalizeTask);
-  const candidates = sortNextCandidates(tasks, input.role, input.workerId, mode);
-  const selected = candidates[0] ?? null;
-
-  return {
-    kind: "next_task_candidate",
-    role: describeRole(input.role),
-    workerId: input.workerId ?? null,
-    mode,
-    recommendedReason: deriveTaskNextReason(selected ? summarizeInboxTask(selected, input.role, input.workerId).relation : null),
-    candidate: selected ? summarizeInboxTask(selected, input.role, input.workerId) : null,
-    brief: selected ? taskBrief(selected.id) : null
-  };
+  return buildTaskNextView(
+    input,
+    {
+      normalizeNextMode,
+      loadState,
+      normalizeTask,
+      sortNextCandidates,
+      describeRole,
+      summarizeInboxTask,
+      taskBrief
+    },
+    {
+      deriveTaskNextReason
+    }
+  );
 }
 
 export function taskPickup(input = {}) {
