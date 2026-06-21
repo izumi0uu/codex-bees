@@ -321,6 +321,7 @@ node ./src/index.js doctor
 node ./src/index.js metadata
 node ./src/index.js status
 node ./src/index.js capabilities
+node ./src/index.js capabilities:get --id memory
 node ./src/index.js runtime:activity
 node ./src/index.js runtime:assignment-pack --role executor --worker worker-1 --mode owner
 node ./src/index.js runtime:closeout
@@ -522,7 +523,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `run` now exposes the explicit runtime readiness view. It emits `kind: "runtime_ready_view"` with a machine-readable `recommendedReason`, a next-step count, the shared runtime contract view, and the concrete startup suggestions so automation can treat the default entrypoint as stable protocol instead of free-form startup text.
 
-`status` and the MCP `runtime_status` tool expose the explicit runtime status view. They emit `kind: "runtime_status_view"` with a machine-readable `recommendedReason`, top-level aggregate counts, and the nested runtime summary so automation can distinguish an empty local state from a stateful runtime without inferring that only from the nested task/swarm/memory maps. `capabilities` and `runtime_capabilities` expose the explicit runtime capabilities view. They emit `kind: "runtime_capabilities_view"` with a machine-readable `recommendedReason`, category counts, and the nested capability inventory so automation can distinguish a loaded capability surface from an empty one without reparsing the full array first.
+`status` and the MCP `runtime_status` tool expose the explicit runtime status view. They emit `kind: "runtime_status_view"` with a machine-readable `recommendedReason`, top-level aggregate counts, and the nested runtime summary so automation can distinguish an empty local state from a stateful runtime without inferring that only from the nested task/swarm/memory maps. `capabilities` and `runtime_capabilities` expose the explicit runtime capabilities view. They emit `kind: "runtime_capabilities_view"` with a machine-readable `recommendedReason`, category counts, and the nested capability inventory so automation can distinguish a loaded capability surface from an empty one without reparsing the full array first. `capabilities:get` exposes the paired single-capability view, returning `kind: "runtime_capability_view"` with `recommendedReason` set to `runtime_capability_loaded` or `runtime_capability_missing` so automation can inspect one shipped capability contract without walking the full list.
 
 `runtime:dashboard` / `runtime_dashboard` provide the top-level operator console: leader queue and assignments plus blocked, review-pending, and actively claimed task slices in one payload. They also emit a machine-readable `recommendedReason` so automation can distinguish whether blocked tasks, pending review, active claimed work, leader queue pressure, leader assignments, or an empty workspace currently dominate the dashboard.
 
