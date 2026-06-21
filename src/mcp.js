@@ -1,7 +1,7 @@
 import { argv, stdin, stdout, stderr, exit } from "node:process";
 import { fileURLToPath } from "node:url";
 import { PRODUCT_NAME } from "./metadata.js";
-import { getAgentCatalogListView, getRuntimeCatalogView, getSkillCatalogListView } from "./catalog.js";
+import { getAgentCatalogEntryView, getAgentCatalogListView, getRuntimeCatalogView, getSkillCatalogEntryView, getSkillCatalogListView } from "./catalog.js";
 import { getPackageMetadata, PACKAGE_VERSION } from "./metadata.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
@@ -163,6 +163,28 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_catalog_agent",
+    description: "Return one shipped local agent catalog entry view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" }
+      },
+      required: ["id"]
+    }
+  },
+  {
+    name: "runtime_catalog_skill",
+    description: "Return one shipped local skill catalog entry view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" }
+      },
+      required: ["id"]
     }
   },
   {
@@ -1432,6 +1454,20 @@ function handleRequest(message) {
 
     if (name === "runtime_catalog_skills") {
       return createSuccess(id, createTextPayload({ skills: getSkillCatalogListView() }));
+    }
+
+    if (name === "runtime_catalog_agent") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "runtime_catalog_agent requires arguments.id");
+      }
+      return createSuccess(id, createTextPayload({ agent: getAgentCatalogEntryView(params.arguments.id) }));
+    }
+
+    if (name === "runtime_catalog_skill") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "runtime_catalog_skill requires arguments.id");
+      }
+      return createSuccess(id, createTextPayload({ skill: getSkillCatalogEntryView(params.arguments.id) }));
     }
 
     if (name === "runtime_status") {
