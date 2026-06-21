@@ -754,6 +754,12 @@ export interface SwarmDetailMetadata {
   dispatchableCount: number;
 }
 
+export interface MemoryDetailMetadata {
+  hasTitle: boolean;
+  hasNotes: boolean;
+  tagCount: number;
+}
+
 export interface MemoryListView {
   kind: "memory_view";
   recommendedReason: "memory_list_has_results" | "memory_list_empty";
@@ -761,6 +767,13 @@ export interface MemoryListView {
     totalMemories: number;
   };
   memories: MemoryRecord[];
+}
+
+export interface MemoryDetailView {
+  kind: "memory_detail";
+  recommendedReason: "memory_detail_loaded";
+  metadata: MemoryDetailMetadata;
+  memory: MemoryRecord;
 }
 
 export interface MemorySearchResult extends MemoryRecord {
@@ -969,6 +982,8 @@ export declare function getTaskView(id: string): TaskDetailView | null;
 export declare function initSwarm(input: SwarmInput): SwarmRecord;
 export declare function getSwarm(id: string): SwarmRecord | null;
 export declare function getSwarmView(id: string): SwarmDetailView | null;
+export declare function getMemory(id: string): MemoryRecord | null;
+export declare function getMemoryView(id: string): MemoryDetailView | null;
 export declare function listTasksView(): TaskListView;
 export declare function listSwarmsView(filters?: SwarmFilters, options?: { detailed?: false }): SwarmListView;
 export declare function listSwarmsView(filters: SwarmFilters | undefined, options: { detailed: true }): DetailedSwarmListView;

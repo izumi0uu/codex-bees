@@ -73,6 +73,8 @@ export {
 
 export {
   addTask,
+  getMemory,
+  getMemoryView,
   getTask,
   getTaskView,
   initSwarm,

@@ -110,6 +110,11 @@ export function listMemories(filters = {}) {
   return filterMemories(loadState().memories, filters);
 }
 
+export function getMemory(id) {
+  const memory = loadState().memories.find((item) => item.id === id);
+  return memory ? normalizeMemory(memory) : null;
+}
+
 export function listMemoriesView(filters = {}) {
   const memories = listMemories(filters);
   const recommendedReason = memories.length > 0 ? "memory_list_has_results" : "memory_list_empty";
@@ -120,6 +125,24 @@ export function listMemoriesView(filters = {}) {
       totalMemories: memories.length
     },
     memories
+  };
+}
+
+export function getMemoryView(id) {
+  const memory = getMemory(id);
+  if (!memory) {
+    return null;
+  }
+
+  return {
+    kind: "memory_detail",
+    recommendedReason: "memory_detail_loaded",
+    metadata: {
+      hasTitle: Boolean(memory.title),
+      hasNotes: Boolean(memory.notes),
+      tagCount: (memory.tags ?? []).length
+    },
+    memory
   };
 }
 
