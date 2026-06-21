@@ -1,1 +1,1 @@
-export { getRuntimeDoctorView } from "./api";
+export { getRuntimeDoctorView } from "./api.js";

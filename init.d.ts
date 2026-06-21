@@ -1,1 +1,1 @@
-export { initWorkspace, previewWorkspaceInit } from "./api";
+export { initWorkspace, previewWorkspaceInit } from "./api.js";

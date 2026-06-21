@@ -85,8 +85,15 @@ import {
 } from "codex-bees";
 
 import { renderHelpText as renderHelpTextCommands } from "codex-bees/commands";
+import { getRuntimeDoctorView as getDoctorSubpathView } from "codex-bees/doctor";
 import { initWorkspace as initWorkspaceSubpath, previewWorkspaceInit as previewWorkspaceInitSubpath } from "codex-bees/init";
 import { callMcpTool as callMcpToolSubpath, handleMcpRequest as handleMcpRequestSubpath } from "codex-bees/mcp";
+import {
+  getPackageMetadata as getMetadataSubpath,
+  getPackageMetadataView as getMetadataSubpathView,
+  PACKAGE_VERSION as metadataSubpathVersion,
+  PRODUCT_NAME as metadataSubpathProductName
+} from "codex-bees/metadata";
 import { addTask as addTaskStateSubpath, listTasksView as listTasksViewStateSubpath, stateFilePath as stateFilePathStateSubpath } from "codex-bees/state";
 import {
   getPackageMetadata as getApiPackageMetadata,
@@ -95,7 +102,12 @@ import {
 } from "codex-bees/api";
 import { getAgentCatalogListView as getCatalogSubpathAgentListView, getRuntimeCatalogView as getCatalogSubpathView } from "codex-bees/catalog";
 import { getRuntimeContractView as getContractSubpathView } from "codex-bees/runtime-contract";
-import { planSwarm as planSwarmSubpath, planTask as planTaskSubpath } from "codex-bees/planner";
+import { planSwarm as planSwarmSubpath, planTask as planTaskSubpath, queueTasksFromPlan as queueTasksFromPlanSubpath } from "codex-bees/planner";
+import {
+  getCoordinationOverviewView as getRuntimeGuidanceSubpathOverviewView,
+  getWorkerGuidelinesView as getRuntimeGuidanceSubpathWorkerView
+} from "codex-bees/runtime-guidance";
+import { getRuntimeReadyView as getRuntimeReadySubpathView } from "codex-bees/runtime-ready";
 import { getRuntimeStatusView as getStatusSubpathView } from "codex-bees/runtime-status";
 
 const metadata = getPackageMetadata();
@@ -145,6 +157,16 @@ const subpathStatePath: string = stateFilePathStateSubpath();
 const subpathCatalogKind: "runtime_catalog_view" = getCatalogSubpathView().kind;
 const subpathCatalogAgentLaneKind: "runtime_catalog_lane_view" = getCatalogSubpathAgentListView().kind;
 const subpathRuntimeContractKind: "runtime_contract_view" = getContractSubpathView().kind;
+const subpathDoctorKind: "runtime_doctor_view" = getDoctorSubpathView().kind;
+const subpathMetadataProduct: "codex-bees" = getMetadataSubpath().product;
+const subpathMetadataViewKind: "package_metadata_view" = getMetadataSubpathView().kind;
+const subpathMetadataVersion: "0.1.0" = metadataSubpathVersion;
+const subpathMetadataProductName: "codex-bees" = metadataSubpathProductName;
+const subpathPlannerQueuedKind: "queued_plan" = queueTasksFromPlanSubpath("typed queue").kind;
+const subpathPlannerQueuedLane: string | undefined = queueTasksFromPlanSubpath("typed queue").lanes[0]?.lane;
+const subpathGuidanceOverviewKind: "coordination_overview_view" = getRuntimeGuidanceSubpathOverviewView().kind;
+const subpathGuidanceWorkerKind: "worker_guidelines_view" = getRuntimeGuidanceSubpathWorkerView().kind;
+const subpathRuntimeReadyKind: "runtime_ready_view" = getRuntimeReadySubpathView().kind;
 const rootHelpText: string = renderHelpTextCommands();
 const rootExecutionModel: "local bounded multi-agent coordination" = getCoordinationOverview().executionModel;
 const rootDeliveryBoundary: "codex-only runtime" = getCoordinationOverview().deliveryBoundary;

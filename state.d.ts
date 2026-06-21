@@ -18,6 +18,6 @@ export {
   storeMemory,
   validateSwarm,
   validateTask
-} from "./api";
+} from "./api.js";
 
-export type { SwarmStatus, TaskReviewState } from "./api";
+export type { SwarmStatus, TaskReviewState } from "./api.js";

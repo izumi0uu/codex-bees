@@ -1,1 +1,1 @@
-export { getRuntimeContractView } from "./api";
+export { getRuntimeContractView } from "./api.js";

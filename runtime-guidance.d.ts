@@ -3,4 +3,4 @@ export {
   getCoordinationOverviewView,
   getWorkerGuidelines,
   getWorkerGuidelinesView
-} from "./api";
+} from "./api.js";

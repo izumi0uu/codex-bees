@@ -12,4 +12,4 @@ export {
   renderInitHelpText,
   getInitHelpView,
   renderCommandHelpText
-} from "./api";
+} from "./api.js";

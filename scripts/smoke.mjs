@@ -69,6 +69,24 @@ function runNpm(args, options = {}) {
   });
 }
 
+function runInstalledTypecheck(label, files) {
+  const command = [
+    "exec",
+    "--yes",
+    "--package",
+    "typescript",
+    "tsc",
+    "--",
+    "--noEmit",
+    "--module",
+    "NodeNext",
+    "--moduleResolution",
+    "NodeNext",
+    ...files
+  ];
+  return runNpm(command, { cwd: packedInstallAppDir });
+}
+
 run("build-dist", ["./scripts/build.mjs"]);
 rmSync(".codex-bees", { recursive: true, force: true });
 
@@ -651,6 +669,64 @@ for (const entrypoint of PUBLIC_TYPE_ENTRYPOINTS) {
     console.error(`[smoke:installed-types-subpath] expected installed package to ship ${entrypoint}.d.ts`);
     process.exit(1);
   }
+}
+const installedTypesPositiveFile = join(packedInstallAppDir, "subpath-types-positive.ts");
+const installedTypesNegativeCatalogFile = join(packedInstallAppDir, "subpath-types-negative-catalog.ts");
+const installedTypesNegativeContractFile = join(packedInstallAppDir, "subpath-types-negative-runtime-contract.ts");
+writeFileSync(
+  installedTypesPositiveFile,
+  [
+    'import { getCommandCatalogView } from "codex-bees/commands";',
+    'import { getPackageMetadataView } from "codex-bees/metadata";',
+    'import { getRuntimeDoctorView } from "codex-bees/doctor";',
+    'import { initWorkspace, previewWorkspaceInit } from "codex-bees/init";',
+    'import { planSwarm, queueTasksFromPlan } from "codex-bees/planner";',
+    'import { getRuntimeReadyView } from "codex-bees/runtime-ready";',
+    'import { getCoordinationOverviewView } from "codex-bees/runtime-guidance";',
+    'import { getRuntimeStatusView } from "codex-bees/runtime-status";',
+    'import { getRuntimeContractView } from "codex-bees/runtime-contract";',
+    'getCommandCatalogView().kind;',
+    'getPackageMetadataView().kind;',
+    'getRuntimeDoctorView().kind;',
+    'previewWorkspaceInit({ targetDirectory: "typed-installed-preview" }).kind;',
+    'initWorkspace({ targetDirectory: "typed-installed-apply" }).kind;',
+    'planSwarm("typed installed swarm").kind;',
+    'queueTasksFromPlan("typed installed queue").kind;',
+    'getRuntimeReadyView().kind;',
+    'getCoordinationOverviewView().kind;',
+    'getRuntimeStatusView().kind;',
+    'getRuntimeContractView().kind;'
+  ].join("\n") + "\n"
+);
+writeFileSync(
+  installedTypesNegativeCatalogFile,
+  'import { addTask } from "codex-bees/catalog";\naddTask;\n'
+);
+writeFileSync(
+  installedTypesNegativeContractFile,
+  'import { getRuntimeContract } from "codex-bees/runtime-contract";\ngetRuntimeContract;\n'
+);
+const installedTypesPositive = runInstalledTypecheck("installed-types-positive", [
+  installedTypesPositiveFile
+]);
+if (installedTypesPositive.status !== 0) {
+  console.error("[smoke:installed-types-positive] expected installed subpath type facades to compile");
+  console.error(installedTypesPositive.stderr || installedTypesPositive.stdout);
+  process.exit(installedTypesPositive.status ?? 1);
+}
+const installedTypesNegativeCatalog = runInstalledTypecheck("installed-types-negative-catalog", [
+  installedTypesNegativeCatalogFile
+]);
+if (installedTypesNegativeCatalog.status === 0) {
+  console.error("[smoke:installed-types-negative-catalog] expected codex-bees/catalog to reject root-only type imports");
+  process.exit(1);
+}
+const installedTypesNegativeContract = runInstalledTypecheck("installed-types-negative-runtime-contract", [
+  installedTypesNegativeContractFile
+]);
+if (installedTypesNegativeContract.status === 0) {
+  console.error("[smoke:installed-types-negative-runtime-contract] expected codex-bees/runtime-contract to reject internal-only type imports");
+  process.exit(1);
 }
 const installedImport = spawnSync(
   "node",

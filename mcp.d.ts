@@ -15,4 +15,4 @@ export {
   serializeMcpMessage,
   startMcpServer,
   toolCatalog
-} from "./api";
+} from "./api.js";

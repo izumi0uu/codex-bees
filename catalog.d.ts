@@ -12,4 +12,4 @@ export {
   getSkillCatalogEntryView,
   listSkillCatalog,
   resolveRuntimeCatalogPath
-} from "./api";
+} from "./api.js";

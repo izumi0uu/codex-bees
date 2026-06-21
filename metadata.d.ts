@@ -3,4 +3,4 @@ export {
   getPackageMetadataView,
   PACKAGE_VERSION,
   PRODUCT_NAME
-} from "./api";
+} from "./api.js";

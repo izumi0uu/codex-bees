@@ -1,1 +1,1 @@
-export { getRuntimeReadyView } from "./api";
+export { getRuntimeReadyView } from "./api.js";

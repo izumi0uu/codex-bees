@@ -5,4 +5,4 @@ export {
   getCapabilityCatalogView,
   getRuntimeStatus,
   getRuntimeStatusView
-} from "./api";
+} from "./api.js";
