@@ -142,6 +142,18 @@ export function getCommandCatalogEntry(command) {
   return getCommandCatalog().find((entry) => entry.command === command);
 }
 
+export function getCommandCatalogEntryView(command) {
+  const matchedEntry = getCommandCatalogEntry(command);
+
+  return {
+    kind: "command_catalog_entry_view",
+    recommendedReason: matchedEntry ? "command_catalog_entry_loaded" : "command_catalog_entry_missing",
+    command: command ?? null,
+    matchedCommand: matchedEntry?.command ?? null,
+    entry: matchedEntry ?? null
+  };
+}
+
 export function getCommandHelpView(command) {
   const matchedEntry = getCommandCatalogEntry(command);
   const text = renderCommandHelpText(command);

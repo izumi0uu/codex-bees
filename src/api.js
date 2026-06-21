@@ -28,6 +28,7 @@ export { getPackageMetadata, getPackageMetadataView, PACKAGE_VERSION, PRODUCT_NA
 export {
   getCommandCatalog,
   getCommandCatalogEntry,
+  getCommandCatalogEntryView,
   getCommandHelpView,
   getCommandCatalogView,
   getInitCommandCatalog,
