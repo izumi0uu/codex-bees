@@ -401,6 +401,7 @@ node ./src/index.js swarm:overview --id swarm-1
 node ./src/index.js swarm:dispatch --id swarm-1 --by worker-1 --owner explore
 node ./src/index.js swarm:sync --id swarm-1
 node ./src/index.js memory:store --content "Remember the MCP contract" --namespace runtime --tags mcp,contract
+node ./src/index.js memory:get --id memory-1
 node ./src/index.js memory:search --query "MCP contract" --namespace runtime
 node ./src/index.js task:claim --id task-1 --by explore
 node ./src/index.js task:block --id task-1 --by explore --notes "waiting on dependency"
@@ -648,6 +649,8 @@ The foundation layer is in place:
 - smoke checks for the current command surface
 
 `memory:store` / `memory_store` return the explicit memory mutation result. They emit `kind: "memory_mutation"` with `recommendedReason: "memory_stored"` so automation can distinguish durable memory writes from later search/list retrieval surfaces without inferring from the nested memory payload alone.
+
+`memory:get` returns the explicit memory detail view. It emits `kind: "memory_detail"` with `recommendedReason: "memory_detail_loaded"` plus simple metadata such as `tagCount`, `hasTitle`, and `hasNotes`, so automation can inspect one persisted memory entry without first filtering the broader memory list.
 
 `memory:list` / `memory_list` return the explicit memory retrieval view. They emit `kind: "memory_view"` with `recommendedReason: "memory_list_has_results"` or `recommendedReason: "memory_list_empty"`, plus `counts.totalMemories`, so automation can distinguish non-empty and empty filtered memory listings without inferring only from array length.
 
