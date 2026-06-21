@@ -3,7 +3,7 @@
 import { stdout, stderr, exit, argv, env } from "node:process";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { renderHelpText, renderInitHelpText } from "./commands.js";
+import { getCommandCatalogEntryView, renderHelpText, renderInitHelpText } from "./commands.js";
 import { getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntryView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
@@ -136,6 +136,11 @@ function writeErr(text) {
 
 function printHelp() {
   write(renderHelpText());
+}
+
+function printCommandView() {
+  const name = requireOption("--name");
+  write(JSON.stringify({ command: getCommandCatalogEntryView(name) }, null, 2) + "\n");
 }
 
 function printDoctor() {
@@ -1326,6 +1331,9 @@ async function runCommand(command) {
     case undefined:
     case "run":
       write(JSON.stringify(getRuntimeReadyView(), null, 2) + "\n");
+      return;
+    case "command:get":
+      printCommandView();
       return;
     case "mcp":
       await runMcpCli(argv.slice(3));
