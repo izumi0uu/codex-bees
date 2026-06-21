@@ -93,7 +93,7 @@ import {
   getRuntimeReadyView as getApiRuntimeReadyView,
   getToolCatalogView as getApiToolCatalogView
 } from "codex-bees/api";
-import { getRuntimeCatalogView as getCatalogSubpathView } from "codex-bees/catalog";
+import { getAgentCatalogListView as getCatalogSubpathAgentListView, getRuntimeCatalogView as getCatalogSubpathView } from "codex-bees/catalog";
 import { getRuntimeContractView as getContractSubpathView } from "codex-bees/runtime-contract";
 import { planSwarm as planSwarmSubpath, planTask as planTaskSubpath } from "codex-bees/planner";
 import { getRuntimeStatusView as getStatusSubpathView } from "codex-bees/runtime-status";
@@ -142,6 +142,9 @@ const subpathStateTaskId: string = addTaskStateSubpath({
 }).id;
 const subpathStateTotalTasks: number = listTasksViewStateSubpath().counts.totalTasks;
 const subpathStatePath: string = stateFilePathStateSubpath();
+const subpathCatalogKind: "runtime_catalog_view" = getCatalogSubpathView().kind;
+const subpathCatalogAgentLaneKind: "runtime_catalog_lane_view" = getCatalogSubpathAgentListView().kind;
+const subpathRuntimeContractKind: "runtime_contract_view" = getContractSubpathView().kind;
 const rootHelpText: string = renderHelpTextCommands();
 const rootExecutionModel: "local bounded multi-agent coordination" = getCoordinationOverview().executionModel;
 const rootDeliveryBoundary: "codex-only runtime" = getCoordinationOverview().deliveryBoundary;

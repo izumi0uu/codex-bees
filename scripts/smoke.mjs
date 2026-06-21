@@ -997,7 +997,7 @@ const installedCatalogImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && typeof m.getAgentCatalogEntry === "function" && m.getAgentCatalogEntry("executor")?.id === "executor" && typeof m.getAgentCatalogEntryView === "function" && m.getAgentCatalogEntryView("executor")?.matchedId === "executor" && typeof m.getSkillCatalogEntry === "function" && m.getSkillCatalogEntry("project-development")?.id === "project-development" && typeof m.getSkillCatalogEntryView === "function" && m.getSkillCatalogEntryView("project-development")?.matchedId === "project-development"})))'
+    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && typeof m.getAgentCatalogEntry === "function" && m.getAgentCatalogEntry("executor")?.id === "executor" && typeof m.getAgentCatalogEntryView === "function" && m.getAgentCatalogEntryView("executor")?.matchedId === "executor" && typeof m.getSkillCatalogEntry === "function" && m.getSkillCatalogEntry("project-development")?.id === "project-development" && typeof m.getSkillCatalogEntryView === "function" && m.getSkillCatalogEntryView("project-development")?.matchedId === "project-development" && !("getBundledRuntimeCatalogPaths" in m)})))'
   ],
   {
     cwd: packedInstallAppDir,
@@ -1144,6 +1144,25 @@ if (
   console.error("[smoke:installed-planner-import] expected installed codex-bees/planner subpath export");
   console.error(installedPlannerImport.stderr || installedPlannerImport.stdout);
   process.exit(installedPlannerImport.status ?? 1);
+}
+const installedRuntimeContractImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/runtime-contract").then((m) => console.log(JSON.stringify({ ok: typeof m.getRuntimeContractView === "function" && m.getRuntimeContractView().kind === "runtime_contract_view" && m.getRuntimeContractView().contract.product === "codex-bees" && !("getRuntimeContract" in m) })))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRuntimeContractImport.status !== 0 ||
+  JSON.parse(installedRuntimeContractImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-runtime-contract-import] expected installed codex-bees/runtime-contract subpath export");
+  console.error(installedRuntimeContractImport.stderr || installedRuntimeContractImport.stdout);
+  process.exit(installedRuntimeContractImport.status ?? 1);
 }
 const installedStateImport = spawnSync(
   "node",

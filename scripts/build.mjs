@@ -5,13 +5,20 @@ import { PUBLIC_TYPE_ENTRYPOINTS } from "../src/typings.js";
 
 function copySourceModules() {
   for (const entry of readdirSync("src")) {
-    if (!entry.endsWith(".js") || entry === "state-public.js") {
+    if (
+      !entry.endsWith(".js") ||
+      entry === "state-public.js" ||
+      entry === "catalog-public.js" ||
+      entry === "runtime-contract-public.js"
+    ) {
       continue;
     }
     copyFileSync(join("src", entry), join("dist", entry));
   }
 
   copyFileSync(join("src", "state-public.js"), join("dist", "state-public.js"));
+  copyFileSync(join("src", "catalog-public.js"), join("dist", "catalog-public.js"));
+  copyFileSync(join("src", "runtime-contract-public.js"), join("dist", "runtime-contract-public.js"));
 }
 
 function copyTree(source, target) {
@@ -77,7 +84,14 @@ mkdirSync("dist", { recursive: true });
 copySourceModules();
 copyFileSync("index.d.ts", join("dist", "api.d.ts"));
 for (const entrypoint of PUBLIC_TYPE_ENTRYPOINTS) {
-  const sourceDtsPath = entrypoint === "state" ? "state.d.ts" : "index.d.ts";
+  const sourceDtsPath =
+    entrypoint === "state"
+      ? "state.d.ts"
+      : entrypoint === "catalog"
+        ? "catalog.d.ts"
+        : entrypoint === "runtime-contract"
+          ? "runtime-contract.d.ts"
+          : "index.d.ts";
   copyFileSync(sourceDtsPath, join("dist", `${entrypoint}.d.ts`));
 }
 copyTree(".codex", join("dist", ".codex"));
