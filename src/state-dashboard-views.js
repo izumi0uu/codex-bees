@@ -33,6 +33,64 @@ export function buildRuntimeDashboardSummary(queue, blockedTasks, pendingReview,
   return "Runtime dashboard has no active coordination work right now.";
 }
 
+export function buildRuntimeDashboardView(
+  {
+    loadState,
+    normalizeTask,
+    listSwarmOverviews,
+    leaderQueue,
+    leaderAssignments,
+    compareTasksByUpdatedAt,
+    summarizeDashboardTask
+  },
+  {
+    deriveRuntimeDashboardReason,
+    buildRuntimeDashboardSummary
+  }
+) {
+  const state = loadState();
+  const tasks = state.tasks.map(normalizeTask);
+  const swarms = listSwarmOverviews();
+  const queue = leaderQueue();
+  const assignments = leaderAssignments();
+
+  const blockedTasks = tasks
+    .filter((task) => task.queueStatus === "blocked")
+    .sort(compareTasksByUpdatedAt)
+    .map((task) => summarizeDashboardTask(task));
+  const pendingReview = tasks
+    .filter((task) => task.queueStatus === "ready_for_review")
+    .sort(compareTasksByUpdatedAt)
+    .map((task) => summarizeDashboardTask(task));
+  const activeClaimed = tasks
+    .filter((task) => task.queueStatus === "claimed")
+    .sort(compareTasksByUpdatedAt)
+    .map((task) => summarizeDashboardTask(task));
+  const recommendedReason = deriveRuntimeDashboardReason({ blockedTasks, pendingReview, activeClaimed, queue, assignments });
+
+  return {
+    kind: "runtime_dashboard",
+    recommendedReason,
+    counts: {
+      tasks: tasks.length,
+      swarms: swarms.length,
+      blockedTasks: blockedTasks.length,
+      pendingReview: pendingReview.length,
+      activeClaimed: activeClaimed.length,
+      leaderQueueItems: queue?.counts?.total ?? 0,
+      leaderAssignments: assignments?.counts?.totalAssignments ?? 0
+    },
+    leader: {
+      queue,
+      assignments
+    },
+    blockedTasks,
+    pendingReview,
+    activeClaimed,
+    summary: buildRuntimeDashboardSummary(queue, blockedTasks, pendingReview, activeClaimed)
+  };
+}
+
 export function buildRuntimeAlertsSummary(alerts) {
   if (alerts.length === 0) {
     return "Runtime alerts has no active alerts right now.";

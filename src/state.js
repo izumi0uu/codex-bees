@@ -152,6 +152,7 @@ import {
   buildLeaderQueueSummary,
   buildRuntimeAlertsSummary,
   buildRuntimeDashboardSummary,
+  buildRuntimeDashboardView,
   buildRuntimeActivitySummary,
   deriveLeaderAssignmentDispatchReason,
   deriveLeaderAssignmentDispatchBundleReason,
@@ -1121,47 +1122,21 @@ export function leaderAssignmentLaunchPlan(input = {}) {
 }
 
 export function runtimeDashboard() {
-  const state = loadState();
-  const tasks = state.tasks.map(normalizeTask);
-  const swarms = listSwarmOverviews();
-  const queue = leaderQueue();
-  const assignments = leaderAssignments();
-
-  const blockedTasks = tasks
-    .filter((task) => task.queueStatus === "blocked")
-    .sort(compareTasksByUpdatedAt)
-    .map((task) => summarizeDashboardTask(task));
-  const pendingReview = tasks
-    .filter((task) => task.queueStatus === "ready_for_review")
-    .sort(compareTasksByUpdatedAt)
-    .map((task) => summarizeDashboardTask(task));
-  const activeClaimed = tasks
-    .filter((task) => task.queueStatus === "claimed")
-    .sort(compareTasksByUpdatedAt)
-    .map((task) => summarizeDashboardTask(task));
-  const recommendedReason = deriveRuntimeDashboardReason({ blockedTasks, pendingReview, activeClaimed, queue, assignments });
-
-  return {
-    kind: "runtime_dashboard",
-    recommendedReason,
-    counts: {
-      tasks: tasks.length,
-      swarms: swarms.length,
-      blockedTasks: blockedTasks.length,
-      pendingReview: pendingReview.length,
-      activeClaimed: activeClaimed.length,
-      leaderQueueItems: queue?.counts?.total ?? 0,
-      leaderAssignments: assignments?.counts?.totalAssignments ?? 0
+  return buildRuntimeDashboardView(
+    {
+      loadState,
+      normalizeTask,
+      listSwarmOverviews,
+      leaderQueue,
+      leaderAssignments,
+      compareTasksByUpdatedAt,
+      summarizeDashboardTask
     },
-    leader: {
-      queue,
-      assignments
-    },
-    blockedTasks,
-    pendingReview,
-    activeClaimed,
-    summary: buildRuntimeDashboardSummary(queue, blockedTasks, pendingReview, activeClaimed)
-  };
+    {
+      deriveRuntimeDashboardReason,
+      buildRuntimeDashboardSummary
+    }
+  );
 }
 
 export function runtimeAlerts() {
