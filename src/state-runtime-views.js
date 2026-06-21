@@ -3418,3 +3418,36 @@ export function buildLeaderWorkspaceView(
     summary: buildLeaderWorkspaceSummary(swarmEntries, focusEntry)
   };
 }
+
+export function buildLeaderWorkspaceViewFromSources(
+  input,
+  {
+    listSwarmOverviews,
+    buildLeaderWorkspaceSwarmEntry,
+    swarmBrief,
+    swarmBundle,
+    buildSwarmBundleSummary,
+    compareLeaderWorkspaceEntries
+  },
+  {
+    deriveLeaderWorkspaceReason,
+    buildLeaderWorkspaceSummary,
+    buildLeaderWorkspaceView
+  }
+) {
+  return buildLeaderWorkspaceView(
+    input,
+    {
+      listSwarmOverviews,
+      buildLeaderWorkspaceSwarmEntry,
+      swarmBrief,
+      swarmBundle,
+      buildSwarmBundleSummary,
+      compareLeaderWorkspaceEntries
+    },
+    {
+      deriveLeaderWorkspaceReason,
+      buildLeaderWorkspaceSummary
+    }
+  );
+}

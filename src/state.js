@@ -271,6 +271,7 @@ import {
   buildRuntimeLeaderPackSummary,
   buildRuntimeLeaderPackViewFromSources,
   buildRuntimeLeaderPackView,
+  buildLeaderWorkspaceViewFromSources,
   buildLeaderWorkspaceView,
   buildLeaderWorkspaceSummary,
   buildLeaderWorkspaceSwarmEntry,
@@ -1582,7 +1583,7 @@ export function runtimeVerifierPack(input = {}) {
 }
 
 export function leaderWorkspace(input = {}) {
-  return buildLeaderWorkspaceView(
+  return buildLeaderWorkspaceViewFromSources(
     input,
     {
       listSwarmOverviews,
@@ -1594,7 +1595,8 @@ export function leaderWorkspace(input = {}) {
     },
     {
       deriveLeaderWorkspaceReason,
-      buildLeaderWorkspaceSummary
+      buildLeaderWorkspaceSummary,
+      buildLeaderWorkspaceView
     }
   );
 }
