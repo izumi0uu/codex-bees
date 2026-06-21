@@ -399,6 +399,81 @@ export function buildRuntimeSummaryPackSummary(recommendedSurface, focus) {
   return `Runtime summary pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
+export function buildRuntimeSummaryPackView(
+  input,
+  {
+    runtimeDashboard,
+    runtimeAlerts,
+    runtimeFocus,
+    runtimeHandoffs,
+    runtimeRecovery,
+    runtimeCloseout,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  },
+  {
+    deriveRuntimeSummaryPackSurface,
+    deriveRuntimeSummaryPackReason,
+    buildRuntimeSummaryPackSummary
+  }
+) {
+  const dashboard = runtimeDashboard();
+  const alerts = runtimeAlerts();
+  const focus = runtimeFocus();
+  const handoffs = runtimeHandoffs();
+  const recovery = runtimeRecovery();
+  const closeout = runtimeCloseout();
+  const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
+  const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
+  const recommendedSurface = deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard });
+  const recommendedReason = deriveRuntimeSummaryPackReason({ focus, recovery, closeout, handoffs, dashboard });
+  const nextEntries = {
+    focus: focus.focus ?? null,
+    handoff: handoffs.next ?? null,
+    recovery: recovery.next ?? null,
+    closeout: closeout.next ?? null,
+    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
+    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
+  };
+
+  return {
+    kind: "runtime_summary_pack",
+    recommendedSurface,
+    recommendedReason,
+    metadata: {
+      hasFocus: Boolean(focus.focus),
+      hasRecovery: Boolean(recovery.next),
+      hasCloseout: Boolean(closeout.next),
+      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
+      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next)
+    },
+    counts: {
+      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+    },
+    focus,
+    overview: {
+      dashboard: dashboard.counts,
+      alerts: alerts.counts,
+      handoffs: handoffs.counts,
+      recovery: recovery.counts,
+      closeout: closeout.counts,
+      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
+      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
+    },
+    next: nextEntries,
+    surfaces: {
+      dashboard,
+      alerts,
+      handoffs,
+      recovery,
+      closeout,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan
+    },
+    summary: buildRuntimeSummaryPackSummary(recommendedSurface, focus)
+  };
+}
+
 export function deriveRuntimeOperatorPackSurface({ focus, handoffs, closeout, dashboard, alerts }) {
   if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task") {
     return "runtime:focus";
