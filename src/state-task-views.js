@@ -493,6 +493,77 @@ export function buildSwarmBlockersViewFromSources(
   );
 }
 
+export function buildSwarmDispatchBundleView(
+  id,
+  {
+    swarmOverview,
+    swarmBrief,
+    taskBrief,
+    deriveSwarmDispatchBundleReason,
+    buildSwarmDispatchBundleSummary
+  }
+) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const brief = swarmBrief(id);
+  const dispatchLane = (brief?.lanes ?? []).find(
+    (lane) => lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released"
+  ) ?? null;
+  const recommendedReason = deriveSwarmDispatchBundleReason({ overview, dispatchLane });
+  const laneTaskBrief = dispatchLane?.taskId ? taskBrief(dispatchLane.taskId) : null;
+  const recommendedCommands = dispatchLane?.recommendedCommands ?? [];
+
+  return {
+    kind: "swarm_dispatch_bundle",
+    recommendedReason,
+    metadata: {
+      hasNextLane: Boolean(dispatchLane),
+      hasTaskBrief: Boolean(laneTaskBrief),
+      nextLaneId: dispatchLane?.lane ?? null
+    },
+    counts: {
+      dispatchableLanes: overview.dispatchableCount,
+      nextLaneCommands: recommendedCommands.filter(Boolean).length
+    },
+    swarm: overview.swarm,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    dispatchableCount: overview.dispatchableCount,
+    nextLane: dispatchLane,
+    taskBrief: laneTaskBrief,
+    command: recommendedCommands[0] ?? null,
+    summary: buildSwarmDispatchBundleSummary(overview, dispatchLane)
+  };
+}
+
+export function buildSwarmDispatchBundleViewFromSources(
+  id,
+  {
+    swarmOverview,
+    swarmBrief,
+    taskBrief,
+    deriveSwarmDispatchBundleReason,
+    buildSwarmDispatchBundleSummary
+  },
+  {
+    buildSwarmDispatchBundleView
+  }
+) {
+  return buildSwarmDispatchBundleView(
+    id,
+    {
+      swarmOverview,
+      swarmBrief,
+      taskBrief,
+      deriveSwarmDispatchBundleReason,
+      buildSwarmDispatchBundleSummary
+    }
+  );
+}
+
 export function recommendTaskAction(task) {
   if (task.queueStatus === "done") {
     return {

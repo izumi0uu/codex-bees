@@ -112,6 +112,8 @@ import {
   buildSwarmCloseoutViewFromSources,
   buildSwarmBlockersView,
   buildSwarmBlockersViewFromSources,
+  buildSwarmDispatchBundleView,
+  buildSwarmDispatchBundleViewFromSources,
   buildRuntimeReviewTaskEntry,
   buildSwarmHandoff,
   buildTaskReportEntries,
@@ -765,40 +767,19 @@ export function swarmBlockers(id) {
 }
 
 export function swarmDispatchBundle(id) {
-  const overview = swarmOverview(id);
-  if (!overview) {
-    return null;
-  }
-
-  const brief = swarmBrief(id);
-  const dispatchLane = (brief?.lanes ?? []).find(
-    (lane) => lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released"
-  ) ?? null;
-  const recommendedReason = deriveSwarmDispatchBundleReason({ overview, dispatchLane });
-  const laneTaskBrief = dispatchLane?.taskId ? taskBrief(dispatchLane.taskId) : null;
-  const recommendedCommands = dispatchLane?.recommendedCommands ?? [];
-
-  return {
-    kind: "swarm_dispatch_bundle",
-    recommendedReason,
-    metadata: {
-      hasNextLane: Boolean(dispatchLane),
-      hasTaskBrief: Boolean(laneTaskBrief),
-      nextLaneId: dispatchLane?.lane ?? null
+  return buildSwarmDispatchBundleViewFromSources(
+    id,
+    {
+      swarmOverview,
+      swarmBrief,
+      taskBrief,
+      deriveSwarmDispatchBundleReason,
+      buildSwarmDispatchBundleSummary
     },
-    counts: {
-      dispatchableLanes: overview.dispatchableCount,
-      nextLaneCommands: recommendedCommands.filter(Boolean).length
-    },
-    swarm: overview.swarm,
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
-    dispatchableCount: overview.dispatchableCount,
-    nextLane: dispatchLane,
-    taskBrief: laneTaskBrief,
-    command: recommendedCommands[0] ?? null,
-    summary: buildSwarmDispatchBundleSummary(overview, dispatchLane)
-  };
+    {
+      buildSwarmDispatchBundleView
+    }
+  );
 }
 
 export function leaderQueue(input = {}) {
