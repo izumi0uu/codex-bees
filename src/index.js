@@ -3,8 +3,8 @@
 import { stdout, stderr, exit, argv, env } from "node:process";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { getCommandCatalogEntryView, getCommandHelpView, getInitCommandCatalogEntryView, getInitHelpView, renderHelpText, renderInitHelpText } from "./commands.js";
-import { getMcpCommandCatalogEntryView, getMcpHelpView, getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
+import { getCommandCatalogEntryView, getCommandHelpView, getInitCommandCatalogEntryView, getInitCommandCatalogView, getInitHelpView, renderHelpText, renderInitHelpText } from "./commands.js";
+import { getMcpCommandCatalogEntryView, getMcpCommandCatalogView, getMcpHelpView, getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntryView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogEntryView, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
@@ -153,9 +153,17 @@ function printInitOptionView() {
   write(JSON.stringify({ option: getInitCommandCatalogEntryView(option) }, null, 2) + "\n");
 }
 
+function printInitOptionsView() {
+  write(JSON.stringify({ options: getInitCommandCatalogView() }, null, 2) + "\n");
+}
+
 function printInitHelpView() {
   const option = requireOption("--option");
   write(JSON.stringify({ help: getInitHelpView(option) }, null, 2) + "\n");
+}
+
+function printMcpOptionsView() {
+  write(JSON.stringify({ options: getMcpCommandCatalogView() }, null, 2) + "\n");
 }
 
 function printMcpOptionView() {
@@ -1366,6 +1374,9 @@ async function runCommand(command) {
     case "mcp":
       await runMcpCli(argv.slice(3));
       return;
+    case "mcp:options":
+      printMcpOptionsView();
+      return;
     case "mcp:option":
       printMcpOptionView();
       return;
@@ -1374,6 +1385,9 @@ async function runCommand(command) {
       return;
     case "init":
       handleInit();
+      return;
+    case "init:options":
+      printInitOptionsView();
       return;
     case "init:option":
       printInitOptionView();
