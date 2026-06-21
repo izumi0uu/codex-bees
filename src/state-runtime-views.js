@@ -2704,6 +2704,39 @@ export function buildRuntimeRolePackView(
   };
 }
 
+export function buildRuntimeRolePackViewFromSources(
+  input,
+  {
+    runtimeRoles,
+    runtimeSessionPack,
+    runtimeOwnerPack,
+    runtimeVerifierPack,
+    describeRole
+  },
+  {
+    deriveRuntimeRolePackSurface,
+    deriveRuntimeRolePackReason,
+    buildRuntimeRolePackSummary,
+    buildRuntimeRolePackView
+  }
+) {
+  return buildRuntimeRolePackView(
+    input,
+    {
+      runtimeRoles,
+      runtimeSessionPack,
+      runtimeOwnerPack,
+      runtimeVerifierPack,
+      describeRole
+    },
+    {
+      deriveRuntimeRolePackSurface,
+      deriveRuntimeRolePackReason,
+      buildRuntimeRolePackSummary
+    }
+  );
+}
+
 export function deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";

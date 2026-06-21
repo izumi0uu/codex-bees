@@ -264,6 +264,7 @@ import {
   buildRuntimeQueuePackView,
   buildRuntimeQueuePackViewFromSources,
   buildRuntimeQueuePackSummary,
+  buildRuntimeRolePackViewFromSources,
   buildRuntimeRolePackView,
   buildRuntimeReviewPackSummary,
   buildRuntimeRolePackSummary,
@@ -1393,7 +1394,7 @@ export function runtimeSessionPack(input = {}) {
 }
 
 export function runtimeRolePack(input = {}) {
-  return buildRuntimeRolePackView(
+  return buildRuntimeRolePackViewFromSources(
     input,
     {
       runtimeRoles,
@@ -1405,7 +1406,8 @@ export function runtimeRolePack(input = {}) {
     {
       deriveRuntimeRolePackSurface,
       deriveRuntimeRolePackReason,
-      buildRuntimeRolePackSummary
+      buildRuntimeRolePackSummary,
+      buildRuntimeRolePackView
     }
   );
 }
