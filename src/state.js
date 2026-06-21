@@ -271,6 +271,7 @@ import {
   buildRuntimeSummaryPackView,
   buildRuntimeSummaryPackSummary,
   buildRuntimeWorkspacePackViewFromSources,
+  buildRuntimeHandoffPackViewFromSources,
   buildRuntimeTriagePackView,
   buildRuntimeTriagePackSummary,
   buildRuntimeVerifierPackSummary,
@@ -1327,7 +1328,7 @@ export function runtimeSignalPack(input = {}) {
 }
 
 export function runtimeHandoffPack() {
-  return buildRuntimeHandoffPackView(
+  return buildRuntimeHandoffPackViewFromSources(
     {
       runtimeHandoffs,
       runtimeDispatch,
@@ -1337,7 +1338,8 @@ export function runtimeHandoffPack() {
     {
       deriveRuntimeHandoffPackSurface,
       deriveRuntimeHandoffPackReason,
-      buildRuntimeHandoffPackSummary
+      buildRuntimeHandoffPackSummary,
+      buildRuntimeHandoffPackView
     }
   );
 }

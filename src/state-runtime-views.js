@@ -2068,6 +2068,35 @@ export function buildRuntimeHandoffPackView(
   };
 }
 
+export function buildRuntimeHandoffPackViewFromSources(
+  {
+    runtimeHandoffs,
+    runtimeDispatch,
+    runtimeReview,
+    runtimeRecovery
+  },
+  {
+    deriveRuntimeHandoffPackSurface,
+    deriveRuntimeHandoffPackReason,
+    buildRuntimeHandoffPackSummary,
+    buildRuntimeHandoffPackView
+  }
+) {
+  return buildRuntimeHandoffPackView(
+    {
+      runtimeHandoffs,
+      runtimeDispatch,
+      runtimeReview,
+      runtimeRecovery
+    },
+    {
+      deriveRuntimeHandoffPackSurface,
+      deriveRuntimeHandoffPackReason,
+      buildRuntimeHandoffPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeTriagePackSurface({ focus, alerts, review, recovery }) {
   if (focus?.focus?.type === "blocked_task" || focus?.focus?.type === "review_task") {
     return "runtime:focus";
