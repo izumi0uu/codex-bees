@@ -250,6 +250,35 @@ export function buildRuntimeActivityView(
   };
 }
 
+export function buildRuntimeActivityViewFromState(
+  input,
+  {
+    loadState,
+    normalizeTask,
+    taskBrief,
+    buildRuntimeActivityEntry,
+    compareRuntimeActivityEntries
+  },
+  {
+    deriveRuntimeActivityReason,
+    buildRuntimeActivitySummary,
+    buildRuntimeActivityView
+  }
+) {
+  return buildRuntimeActivityView(
+    input,
+    {
+      loadState,
+      normalizeTask,
+      taskBrief,
+      buildRuntimeActivityEntry,
+      compareRuntimeActivityEntries,
+      deriveRuntimeActivityReason,
+      buildRuntimeActivitySummary
+    }
+  );
+}
+
 export function runtimeHandoffType(task) {
   if (task.queueStatus === "ready_for_review") {
     return "verifier_decision";

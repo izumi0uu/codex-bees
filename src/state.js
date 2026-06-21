@@ -123,6 +123,7 @@ import {
 } from "./state-reasons.js";
 import {
   buildRuntimeActivityView,
+  buildRuntimeActivityViewFromState,
   buildRuntimeCloseoutView,
   buildRuntimeFocusView,
   buildRuntimeActivityEntry,
@@ -1059,16 +1060,19 @@ export function runtimeFocus() {
 }
 
 export function runtimeActivity(input = {}) {
-  return buildRuntimeActivityView(
+  return buildRuntimeActivityViewFromState(
     input,
     {
       loadState,
       normalizeTask,
       taskBrief,
       buildRuntimeActivityEntry,
-      compareRuntimeActivityEntries,
+      compareRuntimeActivityEntries
+    },
+    {
       deriveRuntimeActivityReason,
-      buildRuntimeActivitySummary
+      buildRuntimeActivitySummary,
+      buildRuntimeActivityView
     }
   );
 }
