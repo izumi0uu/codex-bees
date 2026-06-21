@@ -61,6 +61,7 @@ rmSync(".codex-bees", { recursive: true, force: true });
 const checks = [
   ["help", ["./src/index.js", "--help"]],
   ["version", ["./src/index.js", "--version"]],
+  ["init-preview", ["./src/index.js", "init", "--preview"]],
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
   ["mcp-version", ["./src/index.js", "mcp", "--version"]],
   ["catalog", ["./src/index.js", "catalog"]],
@@ -737,7 +738,7 @@ const installedRuntimeReadyExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedRuntimeReadyExampleScript}\nconsole.log(JSON.stringify({ ok: ready.kind === "runtime_ready_view" && ready.status === "ready" && ready.contract?.kind === "runtime_contract_view" && ready.next?.[0] === "use \`codex-bees doctor\` to inspect runtime boundaries" }));`
+    `${documentedRuntimeReadyExampleScript}\nconsole.log(JSON.stringify({ ok: ready.kind === "runtime_ready_view" && ready.status === "ready" && ready.contract?.kind === "runtime_contract_view" && ready.next?.[0] === "use \`codex-bees init\` to materialize the shipped .codex project assets" }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -1000,7 +1001,7 @@ const installedRuntimeReadyImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/runtime-ready").then((m) => console.log(JSON.stringify({ ok: m.getRuntimeReadyView().kind === "runtime_ready_view" && m.getRuntimeReadyView().next?.[0] === "use `codex-bees doctor` to inspect runtime boundaries" })))'
+    'import("codex-bees/runtime-ready").then((m) => console.log(JSON.stringify({ ok: m.getRuntimeReadyView().kind === "runtime_ready_view" && m.getRuntimeReadyView().next?.[0] === "use `codex-bees init` to materialize the shipped .codex project assets" })))'
   ],
   {
     cwd: packedInstallAppDir,
@@ -1072,10 +1073,14 @@ if (
   console.error(installedStateImport.stderr || installedStateImport.stdout);
   process.exit(installedStateImport.status ?? 1);
 }
-function runInstalled(label, command, args) {
+function runInstalled(label, command, args, options = {}) {
   const result = spawnSync(command, args, {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
+    cwd: options.cwd ?? packedInstallAppDir,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      ...(options.env ?? {})
+    }
   });
   if (result.status !== 0) {
     console.error(`[smoke:${label}] failed`);
@@ -1088,6 +1093,7 @@ function runInstalled(label, command, args) {
 const installedHelp = runInstalled("installed-help", "npx", ["codex-bees", "--help"]);
 if (
   !installedHelp.stdout.includes("codex-bees") ||
+  !installedHelp.stdout.includes("codex-bees init") ||
   !installedHelp.stdout.includes("codex-bees catalog") ||
   !installedHelp.stdout.includes("codex-bees mcp")
 ) {
@@ -1117,6 +1123,7 @@ if (
 const installedDirectCliHelp = runInstalled("installed-direct-cli-help", "node", ["./node_modules/codex-bees/dist/index.js", "--help"]);
 if (
   !installedDirectCliHelp.stdout.includes("codex-bees") ||
+  !installedDirectCliHelp.stdout.includes("codex-bees init") ||
   !installedDirectCliHelp.stdout.includes("codex-bees catalog") ||
   !installedDirectCliHelp.stdout.includes("codex-bees mcp")
 ) {
@@ -1143,6 +1150,43 @@ if (
   console.error(installedDirectCliHelpImport.stderr || installedDirectCliHelpImport.stdout);
   process.exit(installedDirectCliHelpImport.status ?? 1);
 }
+
+const installedInitWorkspaceDir = mkdtempSync(join(tmpdir(), "codex-bees-installed-init-"));
+const installedInitPreview = JSON.parse(
+  runInstalled("installed-init-preview", "npx", ["codex-bees", "init", "--preview", "--dir", installedInitWorkspaceDir]).stdout
+).init;
+if (
+  installedInitPreview.kind !== "workspace_init_preview" ||
+  installedInitPreview.recommendedReason !== "init_changes_required" ||
+  !installedInitPreview.entries?.some((entry) => entry.path === ".codex/agents/executor.md")
+) {
+  console.error("[smoke:installed-init-preview] expected installed init preview to expose bundled workspace assets");
+  process.exit(1);
+}
+const installedInitApplied = JSON.parse(
+  runInstalled("installed-init-apply", "npx", ["codex-bees", "init", "--dir", installedInitWorkspaceDir]).stdout
+).init;
+if (
+  installedInitApplied.kind !== "workspace_init_result" ||
+  installedInitApplied.recommendedReason !== "init_applied" ||
+  !existsSync(join(installedInitWorkspaceDir, ".codex", "agents", "executor.md")) ||
+  !existsSync(join(installedInitWorkspaceDir, ".codex", "skills", "project-development", "SKILL.md"))
+) {
+  console.error("[smoke:installed-init-apply] expected installed init to materialize workspace assets");
+  process.exit(1);
+}
+const installedInitCatalog = JSON.parse(
+  runInCwd(
+    "installed-init-catalog",
+    [join(packedInstallAppDir, "node_modules", "codex-bees", "dist", "index.js"), "catalog"],
+    installedInitWorkspaceDir
+  ).stdout
+).catalog;
+if (installedInitCatalog.catalog?.source !== "workspace") {
+  console.error("[smoke:installed-init-catalog] expected installed init workspace to prefer workspace catalog assets");
+  process.exit(1);
+}
+rmSync(installedInitWorkspaceDir, { recursive: true, force: true });
 const installedDirectCliBad = spawnSync("node", ["./node_modules/codex-bees/dist/index.js", "nope"], {
   cwd: packedInstallAppDir,
   encoding: "utf8"
@@ -1175,7 +1219,7 @@ if (
   installedRun.counts?.nextSteps < 1 ||
   installedRun.contract?.kind !== "runtime_contract_view" ||
   !Array.isArray(installedRun.next) ||
-  installedRun.next[0] !== "use `codex-bees doctor` to inspect runtime boundaries"
+  installedRun.next[0] !== "use `codex-bees init` to materialize the shipped .codex project assets"
 ) {
   console.error("[smoke:installed-run] expected installed npx codex-bees run readiness surface");
   process.exit(1);
@@ -1210,7 +1254,7 @@ if (
   installedDirectCliRun.counts?.nextSteps < 1 ||
   installedDirectCliRun.contract?.kind !== "runtime_contract_view" ||
   !Array.isArray(installedDirectCliRun.next) ||
-  installedDirectCliRun.next[0] !== "use `codex-bees doctor` to inspect runtime boundaries"
+  installedDirectCliRun.next[0] !== "use `codex-bees init` to materialize the shipped .codex project assets"
 ) {
   console.error("[smoke:installed-direct-cli-run] expected direct packaged CLI run readiness surface");
   process.exit(1);
@@ -2096,9 +2140,9 @@ if (
   runtimeReadyView.kind !== "runtime_ready_view" ||
   runtimeReadyView.recommendedReason !== "runtime_entry_ready" ||
   runtimeReadyView.status !== "ready" ||
-  runtimeReadyView.counts?.nextSteps !== 5 ||
+  runtimeReadyView.counts?.nextSteps !== 6 ||
   runtimeReadyView.contract?.kind !== "runtime_contract_view" ||
-  runtimeReadyView.next?.[0] !== "use `codex-bees doctor` to inspect runtime boundaries"
+  runtimeReadyView.next?.[0] !== "use `codex-bees init` to materialize the shipped .codex project assets"
 ) {
   console.error("[smoke:run] expected runtime readiness view");
   process.exit(1);
