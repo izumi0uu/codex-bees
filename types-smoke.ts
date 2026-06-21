@@ -131,6 +131,8 @@ getCommandCatalogView().commands[0]?.command;
 getCommandCatalogView().commands.find((entry) => entry.command === "mcp")?.options?.[0]?.option;
 const commandCatalogReason: "command_catalog_loaded" | "command_catalog_empty" = getCommandCatalogView().recommendedReason;
 const initCatalogEntry: string | undefined = getCommandCatalogEntry("init")?.command;
+const taskAddCommandOption: string | undefined = getCommandCatalogEntry("task:add")?.options?.[0]?.option;
+const swarmInitCommandOption: string | undefined = getCommandCatalogEntry("swarm:init")?.options?.[0]?.option;
 const initCatalogViewReason: "command_catalog_entry_loaded" | "command_catalog_entry_missing" = getCommandCatalogEntryView("init").recommendedReason;
 const initCatalogViewMatched: string | null = getCommandCatalogEntryView("init").matchedCommand;
 const initCommandHelpReason: "command_help_loaded" | "command_help_fallback_loaded" = getCommandHelpView("init").recommendedReason;

@@ -514,6 +514,19 @@ function getCommandHelpSpec(command, entry) {
   };
 }
 
+function getStructuredCommandOptions(command, entry) {
+  if (command === "init") {
+    return getInitCommandCatalog();
+  }
+
+  if (command === "mcp") {
+    return getMcpCommandCatalog();
+  }
+
+  const helpSpec = getCommandHelpSpec(command, entry);
+  return helpSpec.options.length > 0 ? cloneEntries(helpSpec.options) : undefined;
+}
+
 function pushCommandHelpSection(lines, title, bodyLines) {
   if (bodyLines.length === 0) {
     return;
@@ -569,7 +582,7 @@ export function getInitCommandCatalogEntryView(option) {
 }
 
 export function getCommandCatalog() {
-  return [
+  const commands = [
     { command: "run", description: "Start the local Codex runtime shell contract" },
     { command: "ready", description: "Show the runtime readiness view" },
     { command: "commands", description: "Show the CLI command catalog view" },
@@ -691,6 +704,11 @@ export function getCommandCatalog() {
     { command: "--help", description: "Show help" },
     { command: "--version", description: "Show version" }
   ];
+
+  return commands.map((entry) => {
+    const options = getStructuredCommandOptions(entry.command, entry);
+    return options ? { ...entry, options } : entry;
+  });
 }
 
 export function getCommandCatalogView() {
