@@ -368,3 +368,43 @@ export function addTasksFromSources(
   saveState(state);
   return created;
 }
+
+export function annotateTaskFromSources(
+  input = {},
+  {
+    loadState,
+    saveState,
+    normalizeTask,
+    appendTaskAnnotation
+  }
+) {
+  if (!input.id) {
+    return null;
+  }
+
+  const state = loadState();
+  const index = state.tasks.findIndex((task) => task.id === input.id);
+  if (index < 0) {
+    return null;
+  }
+
+  const current = normalizeTask(state.tasks[index]);
+  if (!input.content?.trim()) {
+    return { error: "content is required for task annotation" };
+  }
+
+  const next = normalizeTask({
+    ...current,
+    annotations: appendTaskAnnotation(current, {
+      at: new Date().toISOString(),
+      actor: input.actor ?? current.claimedBy ?? null,
+      kind: input.kind ?? "note",
+      content: input.content.trim()
+    }),
+    updatedAt: new Date().toISOString()
+  });
+
+  state.tasks[index] = next;
+  saveState(state);
+  return next;
+}
