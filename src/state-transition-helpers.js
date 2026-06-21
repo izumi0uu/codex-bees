@@ -58,3 +58,24 @@ export function buildTaskReviewPatch(input, nextQueueStatus, isVerifierApproval,
     ...reviewerDecision
   };
 }
+
+export function buildTransitionedTaskState(
+  current,
+  input,
+  nextQueueStatus,
+  claimedBy,
+  reviewPatch,
+  historyEntry,
+  updatedAt = new Date().toISOString()
+) {
+  return {
+    ...current,
+    queueStatus: nextQueueStatus,
+    claimedBy,
+    ...(input.owner !== undefined ? { owner: input.owner } : {}),
+    ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    ...reviewPatch,
+    history: historyEntry,
+    updatedAt
+  };
+}

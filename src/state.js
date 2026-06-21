@@ -62,6 +62,7 @@ import {
   validateVerifierAction
 } from "./state-transition-guards.js";
 import {
+  buildTransitionedTaskState,
   buildTaskReviewPatch,
   deriveTaskTransitionContext,
   resolveTaskClaimedBy
@@ -4150,17 +4151,21 @@ function transitionTask(input) {
     isVerifierReturn,
     verifierActor
   );
+  const historyEntry = appendTaskHistoryEntry(
+    current,
+    buildTaskHistoryEntry(current, nextQueueStatus, input)
+  );
 
-  const next = normalizeTask({
-    ...current,
-    queueStatus: nextQueueStatus,
-    claimedBy,
-    ...(input.owner !== undefined ? { owner: input.owner } : {}),
-    ...(input.notes !== undefined ? { notes: input.notes } : {}),
-    ...reviewPatch,
-    history: appendTaskHistoryEntry(current, buildTaskHistoryEntry(current, nextQueueStatus, input)),
-    updatedAt: new Date().toISOString()
-  });
+  const next = normalizeTask(
+    buildTransitionedTaskState(
+      current,
+      input,
+      nextQueueStatus,
+      claimedBy,
+      reviewPatch,
+      historyEntry
+    )
+  );
 
   state.tasks[index] = next;
   if (next.swarmId) {
