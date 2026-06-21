@@ -243,3 +243,91 @@ export function dispatchLoadedSwarmLane(
     previousTask: currentTask
   };
 }
+
+export function buildQueuedSwarmLaneTaskInput(current, lane) {
+  return {
+    title: lane.summary,
+    status: "todo",
+    queueStatus: "queued",
+    owner: lane.owner,
+    verifier: lane.verifier,
+    objective: current.objective,
+    lane: lane.lane,
+    swarmId: current.id,
+    scope: lane.scope,
+    acceptance: lane.acceptance,
+    verification: lane.verification,
+    notes: `Queued from swarm ${current.id}${current.notes ? `: ${current.notes}` : ""}`
+  };
+}
+
+export function buildQueuedSwarmLaneState(lane, task, normalizeSwarmLane) {
+  return normalizeSwarmLane({
+    ...lane,
+    taskId: task.id
+  });
+}
+
+export function buildQueuedSwarmState(current, nextLanes, queuedAt = new Date().toISOString()) {
+  const nextStatus = current.status === "planned" ? "active" : current.status;
+  return {
+    ...current,
+    status: nextStatus,
+    lanes: nextLanes,
+    queuedAt,
+    updatedAt: queuedAt
+  };
+}
+
+export function queueLoadedSwarmTasks(
+  state,
+  input,
+  {
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeSwarmLane,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    buildTask,
+    buildQueuedSwarmLaneTaskInput,
+    buildQueuedSwarmLaneState,
+    buildQueuedSwarmState
+  }
+) {
+  const swarmIndex = findSwarmIndex(state, input.id);
+  if (swarmIndex < 0) {
+    return null;
+  }
+
+  const current = normalizeSwarm(state.swarms[swarmIndex]);
+  if (!Array.isArray(current.lanes) || current.lanes.length === 0) {
+    return { error: `Swarm ${current.id} has no lanes to queue` };
+  }
+
+  const validation = validateSwarmValue(current, runtimeRoleCatalog());
+  if (!validation.ready) {
+    return { error: `Swarm ${current.id} is not ready to queue`, validation };
+  }
+
+  if (current.lanes.some((lane) => lane.taskId)) {
+    return { error: `Swarm ${current.id} already has queued lane tasks` };
+  }
+
+  const created = [];
+  const nextLanes = [];
+  for (const lane of current.lanes) {
+    const task = buildTask(buildQueuedSwarmLaneTaskInput(current, lane), state.nextId);
+    state.tasks.push(task);
+    state.nextId += 1;
+    created.push(task);
+    nextLanes.push(buildQueuedSwarmLaneState(lane, task, normalizeSwarmLane));
+  }
+
+  const updated = normalizeSwarm(buildQueuedSwarmState(current, nextLanes));
+  updateSwarmAtIndex(state.swarms, swarmIndex, updated);
+
+  return {
+    swarm: updated,
+    created
+  };
+}

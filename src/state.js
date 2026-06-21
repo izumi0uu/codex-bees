@@ -46,11 +46,15 @@ import {
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
 import {
+  buildQueuedSwarmLaneState,
+  buildQueuedSwarmLaneTaskInput,
+  buildQueuedSwarmState,
   buildDispatchedSwarmState,
   buildDispatchedSwarmTaskState,
   buildSyncedSwarmState,
   dispatchLoadedSwarmLane,
   findDispatchableSwarmLane,
+  queueLoadedSwarmTasks,
   buildTransitionedSwarmState,
   syncLoadedSwarmState,
   syncLoadedSwarmLifecycle,
@@ -3652,75 +3656,33 @@ export function updateSwarmMutation(input) {
 
 export function queueSwarmTasks(input) {
   const state = loadState();
-  const index = state.swarms.findIndex((swarm) => swarm.id === input.id);
-  if (index < 0) {
+  const result = queueLoadedSwarmTasks(state, input, {
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeSwarmLane,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    buildTask,
+    buildQueuedSwarmLaneTaskInput,
+    buildQueuedSwarmLaneState,
+    buildQueuedSwarmState
+  });
+  if (!result) {
     return null;
   }
-
-  const current = normalizeSwarm(state.swarms[index]);
-  if (!Array.isArray(current.lanes) || current.lanes.length === 0) {
-    return { error: `Swarm ${current.id} has no lanes to queue` };
+  if (result.error) {
+    return result;
   }
-  const validation = validateSwarmValue(current, runtimeRoleCatalog());
-  if (!validation.ready) {
-    return { error: `Swarm ${current.id} is not ready to queue`, validation };
-  }
-  if (current.lanes.some((lane) => lane.taskId)) {
-    return { error: `Swarm ${current.id} already has queued lane tasks` };
-  }
-
-  const created = [];
-  const nextLanes = [];
-  for (const lane of current.lanes) {
-    const task = buildTask(
-      {
-        title: lane.summary,
-        status: "todo",
-        queueStatus: "queued",
-        owner: lane.owner,
-        verifier: lane.verifier,
-        objective: current.objective,
-        lane: lane.lane,
-        swarmId: current.id,
-        scope: lane.scope,
-        acceptance: lane.acceptance,
-        verification: lane.verification,
-        notes: `Queued from swarm ${current.id}${current.notes ? `: ${current.notes}` : ""}`
-      },
-      state.nextId
-    );
-    state.tasks.push(task);
-    state.nextId += 1;
-    created.push(task);
-    nextLanes.push(
-      normalizeSwarmLane({
-        ...lane,
-        taskId: task.id
-      })
-    );
-  }
-
-  const nextStatus = current.status === "planned" ? "active" : current.status;
-  const queuedAt = new Date().toISOString();
-  const updated = normalizeSwarm({
-    ...current,
-    status: nextStatus,
-    lanes: nextLanes,
-    queuedAt,
-    updatedAt: queuedAt
-  });
-
-  state.swarms[index] = updated;
   saveState(state);
   const recommendedReason = deriveSwarmQueueReason({
-    swarm: updated,
-    created
+    swarm: result.swarm,
+    created: result.created
   });
   return {
     kind: "swarm_queue",
     recommendedReason,
-    swarm: updated,
-    created
+    swarm: result.swarm,
+    created: result.created
   };
 }
 
