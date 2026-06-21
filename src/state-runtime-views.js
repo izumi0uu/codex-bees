@@ -821,6 +821,43 @@ export function buildRuntimeFocusSources(dashboard, alerts, review, dispatch, ro
   };
 }
 
+export function buildRuntimeFocusViewFromSources(
+  {
+    runtimeDashboard,
+    runtimeAlerts,
+    runtimeReview,
+    runtimeDispatch,
+    runtimeRoles,
+    taskBrief,
+    buildRuntimeFocusView
+  },
+  {
+    buildRuntimeFocusSources,
+    buildRuntimeFocusSummary
+  }
+) {
+  const dashboard = runtimeDashboard();
+  const alerts = runtimeAlerts();
+  const review = runtimeReview();
+  const dispatch = runtimeDispatch();
+  const roles = runtimeRoles();
+
+  return buildRuntimeFocusView(
+    {
+      dashboard,
+      alerts,
+      review,
+      dispatch,
+      roles
+    },
+    {
+      taskBrief,
+      buildRuntimeFocusSources,
+      buildRuntimeFocusSummary
+    }
+  );
+}
+
 export function deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard }) {
   if (focus?.focus?.type === "blocked_task") {
     return "runtime:focus";

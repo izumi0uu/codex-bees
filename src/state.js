@@ -228,6 +228,7 @@ import {
   buildRuntimeExecutionPackSummary,
   buildRuntimeExecutionPackView,
   buildRuntimeFocusSources,
+  buildRuntimeFocusViewFromSources,
   buildRuntimeHandoffPackView,
   buildRuntimeHandoffPackSummary,
   buildRuntimeCloseoutPackView,
@@ -1040,21 +1041,17 @@ export function runtimeReview() {
 }
 
 export function runtimeFocus() {
-  const dashboard = runtimeDashboard();
-  const alerts = runtimeAlerts();
-  const review = runtimeReview();
-  const dispatch = runtimeDispatch();
-  const roles = runtimeRoles();
-  return buildRuntimeFocusView(
+  return buildRuntimeFocusViewFromSources(
     {
-      dashboard,
-      alerts,
-      review,
-      dispatch,
-      roles
+      runtimeDashboard,
+      runtimeAlerts,
+      runtimeReview,
+      runtimeDispatch,
+      runtimeRoles,
+      taskBrief,
+      buildRuntimeFocusView
     },
     {
-      taskBrief,
       buildRuntimeFocusSources,
       buildRuntimeFocusSummary
     }
