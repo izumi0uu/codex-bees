@@ -245,6 +245,7 @@ import {
   buildRuntimeOperatorPackSummary,
   buildRuntimePickupPackSummary,
   buildRuntimePickupPackView,
+  buildRuntimeRecoveryPackViewFromSources,
   buildRuntimeRecoveryPackView,
   buildRuntimeRecoveryPackSummary,
   buildRuntimeReviewPackView,
@@ -1198,7 +1199,7 @@ export function runtimeDispatchPack(input = {}) {
 }
 
 export function runtimeRecoveryPack() {
-  return buildRuntimeRecoveryPackView(
+  return buildRuntimeRecoveryPackViewFromSources(
     {
       runtimeRecovery,
       runtimeHandoffs,
@@ -1207,7 +1208,8 @@ export function runtimeRecoveryPack() {
     {
       deriveRuntimeRecoveryPackSurface,
       deriveRuntimeRecoveryPackReason,
-      buildRuntimeRecoveryPackSummary
+      buildRuntimeRecoveryPackSummary,
+      buildRuntimeRecoveryPackView
     }
   );
 }

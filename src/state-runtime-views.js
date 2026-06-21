@@ -1189,6 +1189,33 @@ export function buildRuntimeRecoveryPackView(
   };
 }
 
+export function buildRuntimeRecoveryPackViewFromSources(
+  {
+    runtimeRecovery,
+    runtimeHandoffs,
+    runtimeFocus
+  },
+  {
+    deriveRuntimeRecoveryPackSurface,
+    deriveRuntimeRecoveryPackReason,
+    buildRuntimeRecoveryPackSummary,
+    buildRuntimeRecoveryPackView
+  }
+) {
+  return buildRuntimeRecoveryPackView(
+    {
+      runtimeRecovery,
+      runtimeHandoffs,
+      runtimeFocus
+    },
+    {
+      deriveRuntimeRecoveryPackSurface,
+      deriveRuntimeRecoveryPackReason,
+      buildRuntimeRecoveryPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack }) {
   if ((closeout?.counts?.totalReady ?? 0) > 0) {
     return "runtime:closeout";
