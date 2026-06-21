@@ -93,6 +93,7 @@ Official subpath exports are also available for narrower integrations:
 - `codex-bees/catalog`
 - `codex-bees/commands`
 - `codex-bees/doctor`
+- `codex-bees/init`
 - `codex-bees/metadata`
 - `codex-bees/mcp`
 - `codex-bees/planner`
@@ -112,6 +113,22 @@ import { getPackageMetadata, getRuntimeReadyView, getToolCatalogView } from "cod
 const metadata = getPackageMetadata();
 const ready = getRuntimeReadyView();
 const tools = getToolCatalogView();
+```
+
+The `codex-bees/init` subpath exposes the same workspace bootstrap helpers that power `codex-bees init`, so tooling can preview or apply the shipped `.codex` starter surface without shelling out through the CLI.
+
+Example:
+
+```js
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { initWorkspace, previewWorkspaceInit } from "codex-bees/init";
+
+const targetDirectory = mkdtempSync(join(tmpdir(), "codex-bees-init-example-"));
+const preview = previewWorkspaceInit({ targetDirectory });
+const applied = initWorkspace({ targetDirectory });
+rmSync(targetDirectory, { recursive: true, force: true });
 ```
 
 The `codex-bees/state` subpath is the smallest official programmatic bridge into persisted local coordination state. It exposes helpers such as `addTask`, `getTaskView`, `listTasksView`, `initSwarm`, `listSwarmsView`, `storeMemory`, `listMemoriesView`, `validateTask`, `validateSwarm`, and `stateFilePath`.
