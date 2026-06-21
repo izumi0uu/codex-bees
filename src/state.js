@@ -266,6 +266,7 @@ import {
   buildRuntimeRolePackSummary,
   buildRuntimeSessionPackView,
   buildRuntimeSessionPackSummary,
+  buildRuntimeSignalPackViewFromSources,
   buildRuntimeSignalPackView,
   buildRuntimeSignalPackSummary,
   buildRuntimeSummaryPackView,
@@ -1311,7 +1312,7 @@ export function runtimeControlPack(input = {}) {
 }
 
 export function runtimeSignalPack(input = {}) {
-  return buildRuntimeSignalPackView(
+  return buildRuntimeSignalPackViewFromSources(
     input,
     {
       runtimeFocus,
@@ -1322,7 +1323,8 @@ export function runtimeSignalPack(input = {}) {
     {
       deriveRuntimeSignalPackSurface,
       deriveRuntimeSignalPackReason,
-      buildRuntimeSignalPackSummary
+      buildRuntimeSignalPackSummary,
+      buildRuntimeSignalPackView
     }
   );
 }

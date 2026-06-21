@@ -1970,6 +1970,37 @@ export function buildRuntimeSignalPackView(
   };
 }
 
+export function buildRuntimeSignalPackViewFromSources(
+  input,
+  {
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeActivity,
+    runtimeRoles
+  },
+  {
+    deriveRuntimeSignalPackSurface,
+    deriveRuntimeSignalPackReason,
+    buildRuntimeSignalPackSummary,
+    buildRuntimeSignalPackView
+  }
+) {
+  return buildRuntimeSignalPackView(
+    input,
+    {
+      runtimeFocus,
+      runtimeAlerts,
+      runtimeActivity,
+      runtimeRoles
+    },
+    {
+      deriveRuntimeSignalPackSurface,
+      deriveRuntimeSignalPackReason,
+      buildRuntimeSignalPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeHandoffPackSurface({ handoffs, dispatch, review, recovery }) {
   if ((handoffs?.counts?.reviewDecisions ?? 0) > 0) {
     return "runtime:handoffs";
