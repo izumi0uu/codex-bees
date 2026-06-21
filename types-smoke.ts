@@ -102,7 +102,10 @@ import { addTask as addTaskStateSubpath, listTasksView as listTasksViewStateSubp
 import {
   getPackageMetadata as getApiPackageMetadata,
   getRuntimeReadyView as getApiRuntimeReadyView,
-  getToolCatalogView as getApiToolCatalogView
+  getToolCatalogView as getApiToolCatalogView,
+  runMcpCli as runMcpCliApi,
+  startMcpServer as startMcpServerApi,
+  toolCatalog as toolCatalogApi
 } from "codex-bees/api";
 import { getAgentCatalogListView as getCatalogSubpathAgentListView, getRuntimeCatalogView as getCatalogSubpathView } from "codex-bees/catalog";
 import { getRuntimeContractView as getContractSubpathView } from "codex-bees/runtime-contract";
@@ -221,6 +224,9 @@ const rootSwarmPlanLaneSource: "planner" = planSwarm("typed root swarm").swarm.l
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
 const rootStartMcpServer: () => Promise<void> = startMcpServer;
+const apiRunMcpCli: (args?: string[]) => Promise<void> = runMcpCliApi;
+const apiStartMcpServer: () => Promise<void> = startMcpServerApi;
+const apiToolCatalogEntryName: string | undefined = toolCatalogApi[0]?.name;
 const taskPlanReason: "multi_lane_plan_ready" | "single_lane_plan_ready" = planTask("typed smoke").recommendedReason;
 const plannerHasSrc: boolean = planTask("typed smoke").evidence.repoSignals.hasSrc;
 const plannerRolePath: string | undefined = planTask("typed smoke").evidence.roleFiles[0]?.path;

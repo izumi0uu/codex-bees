@@ -777,6 +777,31 @@ assertMatchingKeys(
   Object.fromEntries(installedImportPayload.keys.map((key) => [key, true])),
   Object.fromEntries(importedSourceApi.map((key) => [key, true]))
 );
+const installedApiImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/api").then((m) => console.log(JSON.stringify({ok:Array.isArray(m.toolCatalog) && typeof m.runMcpCli === "function" && typeof m.startMcpServer === "function", keys:Object.keys(m).sort()})))'
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+const installedApiImportPayload = JSON.parse(installedApiImport.stdout);
+if (
+  installedApiImport.status !== 0 ||
+  installedApiImportPayload.ok !== true
+) {
+  console.error("[smoke:installed-api-import] expected installed codex-bees/api subpath to mirror the working root library surface");
+  console.error(installedApiImport.stderr || installedApiImport.stdout);
+  process.exit(installedApiImport.status ?? 1);
+}
+assertMatchingKeys(
+  "installed-api-import",
+  Object.fromEntries(installedApiImportPayload.keys.map((key) => [key, true])),
+  Object.fromEntries(installedImportPayload.keys.map((key) => [key, true]))
+);
 const missingDocumentedRootImports = documentedRootImportExports.filter(
   (name) => !installedImportPayload.keys.includes(name)
 );
