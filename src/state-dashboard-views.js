@@ -712,6 +712,103 @@ export function buildRuntimeRolesSummary(roles, next) {
   return `Runtime roles is tracking ${roles.length} roles; ${next.role.id} is the next role to inspect.`;
 }
 
+export function buildRuntimeRolesView(
+  input,
+  {
+    getRuntimeCatalog,
+    leaderAssignments,
+    buildRuntimeRoleEntry,
+    describeRole,
+    loadState,
+    normalizeTask,
+    taskInbox,
+    taskNext,
+    isClaimableTask,
+    compareRuntimeRoleEntries
+  },
+  {
+    deriveRuntimeRolesReason,
+    buildRuntimeRolesSummary
+  }
+) {
+  const catalog = getRuntimeCatalog();
+  const roleMap = new Map((catalog?.agents ?? []).map((entry) => [entry.id, describeRole(entry.id)]));
+  const assignments = leaderAssignments();
+  const tasks = loadState().tasks.map(normalizeTask);
+
+  const roles = [...roleMap.values()]
+    .map((role) =>
+      buildRuntimeRoleEntry(
+        role,
+        tasks,
+        assignments,
+        taskInbox,
+        taskNext,
+        isClaimableTask,
+        input
+      )
+    )
+    .sort(compareRuntimeRoleEntries);
+  const next = roles[0] ?? null;
+  const recommendedReason = deriveRuntimeRolesReason({ roles, next });
+
+  return {
+    kind: "runtime_roles",
+    recommendedReason,
+    counts: {
+      totalRoles: roles.length,
+      withPendingReview: roles.filter((entry) => entry.counts.pendingReview > 0).length,
+      withBlockedOwnerWork: roles.filter((entry) => entry.counts.ownerBlocked > 0).length,
+      withClaimableOwnerWork: roles.filter((entry) => entry.counts.ownerClaimable > 0).length,
+      withActiveOwnerWork: roles.filter((entry) => entry.counts.ownerClaimed > 0).length
+    },
+    roles,
+    next,
+    summary: buildRuntimeRolesSummary(roles, next)
+  };
+}
+
+export function buildRuntimeRolesViewFromSources(
+  input,
+  {
+    getRuntimeCatalog,
+    leaderAssignments,
+    buildRuntimeRoleEntry,
+    describeRole,
+    loadState,
+    normalizeTask,
+    taskInbox,
+    taskNext,
+    isClaimableTask,
+    compareRuntimeRoleEntries
+  },
+  {
+    deriveRuntimeRolesReason,
+    buildRuntimeRolesSummary,
+    buildRuntimeRolesView
+  }
+) {
+  return buildRuntimeRolesView(
+    input,
+    {
+      getRuntimeCatalog,
+      leaderAssignments,
+      buildRuntimeRoleEntry,
+      describeRole,
+      loadState,
+      normalizeTask,
+      taskInbox,
+      taskNext,
+      isClaimableTask,
+      compareRuntimeRoleEntries
+    },
+    {
+      deriveRuntimeRolesReason,
+      buildRuntimeRolesSummary
+    }
+  );
+}
+
 export function buildRuntimeDispatchSummary(groups, next) {
   if (groups.length === 0) {
     return "Runtime dispatch has no owner-grouped work ready right now.";

@@ -193,6 +193,7 @@ import {
   buildRuntimeRecoverySummary,
   buildRuntimeReviewSummary,
   buildRuntimeReviewView,
+  buildRuntimeRolesViewFromSources,
   buildRuntimeRolesSummary
 } from "./state-dashboard-views.js";
 import {
@@ -1018,7 +1019,7 @@ export function runtimeAlerts() {
 }
 
 export function runtimeRoles(input = {}) {
-  return buildRuntimeRolesView(
+  return buildRuntimeRolesViewFromSources(
     input,
     {
       getRuntimeCatalog,
@@ -1034,7 +1035,8 @@ export function runtimeRoles(input = {}) {
     },
     {
       deriveRuntimeRolesReason,
-      buildRuntimeRolesSummary
+      buildRuntimeRolesSummary,
+      buildRuntimeRolesView
     }
   );
 }
