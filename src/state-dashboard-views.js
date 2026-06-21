@@ -867,6 +867,27 @@ export function buildRuntimeDispatchView(
   };
 }
 
+export function buildRuntimeDispatchViewFromSources(
+  {
+    leaderAssignments
+  },
+  {
+    deriveRuntimeDispatchReason,
+    buildRuntimeDispatchSummary,
+    buildRuntimeDispatchView
+  }
+) {
+  return buildRuntimeDispatchView(
+    {
+      leaderAssignments
+    },
+    {
+      deriveRuntimeDispatchReason,
+      buildRuntimeDispatchSummary
+    }
+  );
+}
+
 export function buildRuntimeReviewSummary(groups, next) {
   if (groups.length === 0) {
     return "Runtime review has no verifier-grouped work ready right now.";

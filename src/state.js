@@ -188,6 +188,7 @@ import {
   deriveRuntimeReviewReason,
   deriveRuntimeRolesReason,
   buildRuntimeDispatchSummary,
+  buildRuntimeDispatchViewFromSources,
   buildRuntimeDispatchView,
   buildRuntimeHandoffsSummary,
   buildRuntimeRecoverySummary,
@@ -1042,13 +1043,14 @@ export function runtimeRoles(input = {}) {
 }
 
 export function runtimeDispatch() {
-  return buildRuntimeDispatchView(
+  return buildRuntimeDispatchViewFromSources(
     {
       leaderAssignments
     },
     {
       deriveRuntimeDispatchReason,
-      buildRuntimeDispatchSummary
+      buildRuntimeDispatchSummary,
+      buildRuntimeDispatchView
     }
   );
 }
