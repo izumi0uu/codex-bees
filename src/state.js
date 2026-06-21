@@ -243,6 +243,7 @@ import {
   buildRuntimeDispatchPackViewFromSources,
   buildRuntimeDispatchPackView,
   buildRuntimeDispatchPackSummary,
+  buildRuntimeAssignmentPackViewFromSources,
   buildRuntimeAssignmentPackSummary,
   buildRuntimeAssignmentPackView,
   buildRuntimeOperatorPackView,
@@ -1455,7 +1456,7 @@ export function runtimePickupPack(input = {}) {
 }
 
 export function runtimeAssignmentPack(input = {}) {
-  return buildRuntimeAssignmentPackView(
+  return buildRuntimeAssignmentPackViewFromSources(
     input,
     {
       normalizeNextMode,
@@ -1469,7 +1470,8 @@ export function runtimeAssignmentPack(input = {}) {
     {
       deriveRuntimeAssignmentPackSurface,
       deriveRuntimeAssignmentPackReason,
-      buildRuntimeAssignmentPackSummary
+      buildRuntimeAssignmentPackSummary,
+      buildRuntimeAssignmentPackView
     }
   );
 }
