@@ -156,6 +156,7 @@ import {
 } from "./state-role-views.js";
 import {
   buildLeaderAssignmentsSummary,
+  buildLeaderQueueView,
   buildLeaderQueueSummary,
   buildRuntimeAlertsSummary,
   buildRuntimeAlertsView,
@@ -873,39 +874,16 @@ export function swarmDispatchBundle(id) {
 }
 
 export function leaderQueue(input = {}) {
-  const workspace = leaderWorkspace(input);
-  if (!workspace) {
-    return null;
-  }
-
-  const items = workspace.swarms.map((swarm, index) => ({
-    position: index + 1,
-    swarmId: swarm.id,
-    objective: swarm.objective,
-    status: swarm.status,
-    derivedStatus: swarm.derivedStatus,
-    readyToComplete: swarm.readyToComplete,
-    recommendedNextActor: swarm.recommendedNextActor,
-    recommendedNextAction: swarm.recommendedNextAction,
-    recommendedCommands: swarm.recommendedCommands,
-    summary: swarm.summary
-  }));
-  const next = items[0] ?? null;
-  const actionable = items.filter((item) => !["completed", "cancelled"].includes(item.status)).length;
-  const recommendedReason = deriveLeaderQueueReason({ items, actionable, next });
-
-  return {
-    kind: "leader_queue",
-    recommendedReason,
-    filters: workspace.filters,
-    counts: {
-      total: items.length,
-      actionable
+  return buildLeaderQueueView(
+    input,
+    {
+      leaderWorkspace
     },
-    items,
-    next,
-    summary: buildLeaderQueueSummary(items)
-  };
+    {
+      deriveLeaderQueueReason,
+      buildLeaderQueueSummary
+    }
+  );
 }
 
 export function leaderAssignments(input = {}) {

@@ -7,6 +7,51 @@ export function buildLeaderQueueSummary(items) {
   return `Leader queue is prioritized with ${next.swarmId} first for action ${next.recommendedNextAction ?? "observe"}.`;
 }
 
+export function buildLeaderQueueView(
+  input,
+  {
+    leaderWorkspace
+  },
+  {
+    deriveLeaderQueueReason,
+    buildLeaderQueueSummary
+  }
+) {
+  const workspace = leaderWorkspace(input);
+  if (!workspace) {
+    return null;
+  }
+
+  const items = workspace.swarms.map((swarm, index) => ({
+    position: index + 1,
+    swarmId: swarm.id,
+    objective: swarm.objective,
+    status: swarm.status,
+    derivedStatus: swarm.derivedStatus,
+    readyToComplete: swarm.readyToComplete,
+    recommendedNextActor: swarm.recommendedNextActor,
+    recommendedNextAction: swarm.recommendedNextAction,
+    recommendedCommands: swarm.recommendedCommands,
+    summary: swarm.summary
+  }));
+  const next = items[0] ?? null;
+  const actionable = items.filter((item) => !["completed", "cancelled"].includes(item.status)).length;
+  const recommendedReason = deriveLeaderQueueReason({ items, actionable, next });
+
+  return {
+    kind: "leader_queue",
+    recommendedReason,
+    filters: workspace.filters,
+    counts: {
+      total: items.length,
+      actionable
+    },
+    items,
+    next,
+    summary: buildLeaderQueueSummary(items)
+  };
+}
+
 export function buildLeaderAssignmentsSummary(assignments, groups) {
   if (assignments.length === 0) {
     return "Leader assignments has no dispatchable work right now.";
