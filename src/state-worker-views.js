@@ -84,6 +84,49 @@ export function buildWorkerHandoffSummary(session, focusTaskSnapshot) {
   return `Worker ${session.workerId} is idle with no current handoff target.`;
 }
 
+export function buildWorkerHandoffView(
+  input,
+  {
+    workerSession,
+    deriveWorkerHandoffReason,
+    buildWorkerHandoffSummary
+  }
+) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const session = workerSession(input);
+  if (!session) {
+    return null;
+  }
+
+  const focusTaskSnapshot =
+    session.activeOwned[0] ??
+    session.reviewQueue[0] ??
+    session.blockedOwned[0] ??
+    session.handoffsAwaitingReview[0] ??
+    null;
+  const focusBrief = focusTaskSnapshot?.brief ?? session.next?.brief ?? null;
+  const recommendedReason = deriveWorkerHandoffReason(session, focusTaskSnapshot);
+
+  return {
+    kind: "worker_handoff",
+    role: session.role,
+    workerId: session.workerId,
+    mode: session.mode,
+    recommendedReason,
+    focus: session.focus,
+    currentTask: focusTaskSnapshot?.summary ?? null,
+    brief: focusBrief,
+    recentHistory: focusTaskSnapshot?.recentHistory ?? [],
+    recentAnnotations: focusTaskSnapshot?.recentAnnotations ?? [],
+    nextCandidate: session.next?.candidate ?? null,
+    nextCommand: session.focus?.command ?? null,
+    summary: buildWorkerHandoffSummary(session, focusTaskSnapshot)
+  };
+}
+
 export function deriveWorkerCloseoutCommand(handoff, report) {
   if (!handoff.currentTask?.id) {
     return null;
