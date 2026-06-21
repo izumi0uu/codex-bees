@@ -67,7 +67,8 @@ import {
   buildTransitionedTaskState,
   buildTaskReviewPatch,
   deriveTaskTransitionContext,
-  resolveTaskClaimedBy
+  resolveTaskClaimedBy,
+  transitionLoadedTaskState
 } from "./state-transition-helpers.js";
 import {
   appendTaskAnnotation,
@@ -4071,96 +4072,32 @@ function syncSwarmInLoadedState(state, swarmId) {
 
 function transitionTask(input) {
   const state = loadState();
-  const index = findTaskIndex(state, input.id);
-  if (index < 0) {
+  const next = transitionLoadedTaskState(state, input, {
+    findTaskIndex,
+    normalizeTask,
+    deriveTaskTransitionContext,
+    validateNextQueueStatus,
+    validQueueStatuses: VALID_QUEUE_STATUSES,
+    validateTaskQueueTransition,
+    canTransitionTask,
+    validateRequiredClaimedBy,
+    validateTaskClaimReady,
+    validateTaskValue,
+    runtimeRoleCatalog,
+    validateVerifierAction,
+    validateTaskClaimConflict,
+    resolveTaskClaimedBy,
+    buildTaskReviewPatch,
+    appendTaskHistoryEntry,
+    buildTaskHistoryEntry,
+    buildTransitionedTaskState,
+    syncSwarmInLoadedState
+  });
+  if (!next) {
     return null;
   }
-
-  const current = normalizeTask(state.tasks[index]);
-  const {
-    nextQueueStatus,
-    isVerifierApproval,
-    isVerifierReturn,
-    verifierActor
-  } = deriveTaskTransitionContext(current, input);
-
-  const nextStatusError = validateNextQueueStatus(nextQueueStatus, VALID_QUEUE_STATUSES);
-  if (nextStatusError) {
-    return nextStatusError;
-  }
-
-  const transitionError = validateTaskQueueTransition(
-    current.queueStatus,
-    nextQueueStatus,
-    canTransitionTask
-  );
-  if (transitionError) {
-    return transitionError;
-  }
-
-  const requiredClaimError = validateRequiredClaimedBy(input);
-  if (requiredClaimError) {
-    return requiredClaimError;
-  }
-
-  const claimReadyError = validateTaskClaimReady(
-    current,
-    nextQueueStatus,
-    isVerifierReturn,
-    validateTaskValue,
-    runtimeRoleCatalog
-  );
-  if (claimReadyError) {
-    return claimReadyError;
-  }
-
-  const verifierActionError = validateVerifierAction(
-    current,
-    isVerifierApproval,
-    isVerifierReturn,
-    verifierActor
-  );
-  if (verifierActionError) {
-    return verifierActionError;
-  }
-
-  const claimConflictError = validateTaskClaimConflict(
-    current,
-    input,
-    nextQueueStatus,
-    isVerifierReturn
-  );
-  if (claimConflictError) {
-    return claimConflictError;
-  }
-
-  const claimedBy = resolveTaskClaimedBy(current, input, nextQueueStatus, isVerifierReturn);
-  const reviewPatch = buildTaskReviewPatch(
-    input,
-    nextQueueStatus,
-    isVerifierApproval,
-    isVerifierReturn,
-    verifierActor
-  );
-  const historyEntry = appendTaskHistoryEntry(
-    current,
-    buildTaskHistoryEntry(current, nextQueueStatus, input)
-  );
-
-  const next = normalizeTask(
-    buildTransitionedTaskState(
-      current,
-      input,
-      nextQueueStatus,
-      claimedBy,
-      reviewPatch,
-      historyEntry
-    )
-  );
-
-  state.tasks[index] = next;
-  if (next.swarmId) {
-    syncSwarmInLoadedState(state, next.swarmId);
+  if (next.error) {
+    return next;
   }
   saveState(state);
   return next;
