@@ -673,6 +673,8 @@ for (const entrypoint of PUBLIC_TYPE_ENTRYPOINTS) {
 const installedTypesPositiveFile = join(packedInstallAppDir, "subpath-types-positive.ts");
 const installedTypesNegativeCatalogFile = join(packedInstallAppDir, "subpath-types-negative-catalog.ts");
 const installedTypesNegativeContractFile = join(packedInstallAppDir, "subpath-types-negative-runtime-contract.ts");
+const installedTypesNegativeStateFile = join(packedInstallAppDir, "subpath-types-negative-state.ts");
+const installedTypesNegativeMcpFile = join(packedInstallAppDir, "subpath-types-negative-mcp.ts");
 writeFileSync(
   installedTypesPositiveFile,
   [
@@ -706,6 +708,14 @@ writeFileSync(
   installedTypesNegativeContractFile,
   'import { getRuntimeContract } from "codex-bees/runtime-contract";\ngetRuntimeContract;\n'
 );
+writeFileSync(
+  installedTypesNegativeStateFile,
+  'import { updateTask } from "codex-bees/state";\nupdateTask;\n'
+);
+writeFileSync(
+  installedTypesNegativeMcpFile,
+  'import { runMcpCli } from "codex-bees/mcp";\nrunMcpCli;\n'
+);
 const installedTypesPositive = runInstalledTypecheck("installed-types-positive", [
   installedTypesPositiveFile
 ]);
@@ -726,6 +736,20 @@ const installedTypesNegativeContract = runInstalledTypecheck("installed-types-ne
 ]);
 if (installedTypesNegativeContract.status === 0) {
   console.error("[smoke:installed-types-negative-runtime-contract] expected codex-bees/runtime-contract to reject internal-only type imports");
+  process.exit(1);
+}
+const installedTypesNegativeState = runInstalledTypecheck("installed-types-negative-state", [
+  installedTypesNegativeStateFile
+]);
+if (installedTypesNegativeState.status === 0) {
+  console.error("[smoke:installed-types-negative-state] expected codex-bees/state to reject internal-only type imports");
+  process.exit(1);
+}
+const installedTypesNegativeMcp = runInstalledTypecheck("installed-types-negative-mcp", [
+  installedTypesNegativeMcpFile
+]);
+if (installedTypesNegativeMcp.status === 0) {
+  console.error("[smoke:installed-types-negative-mcp] expected codex-bees/mcp to reject CLI-only type imports");
   process.exit(1);
 }
 const installedImport = spawnSync(
