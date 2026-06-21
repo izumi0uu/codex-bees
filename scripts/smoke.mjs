@@ -69,6 +69,7 @@ const checks = [
   ["metadata", ["./src/index.js", "metadata"]],
   ["status", ["./src/index.js", "status"]],
   ["capabilities", ["./src/index.js", "capabilities"]],
+  ["capability-get", ["./src/index.js", "capabilities:get", "--id", "memory"]],
   ["cli-tools", ["./src/index.js", "tools"]],
   ["cli-tool-get", ["./src/index.js", "tools:get", "--name", "runtime_contract"]],
   ["tools", ["./src/mcp.js", "--tools"]],
@@ -2346,6 +2347,20 @@ if (
   !runtimeCapabilities.capabilities.find((capability) => capability.id === "leader_orchestration")?.useCases?.includes("bring multiple workers online in leader-defined order")
 ) {
   console.error("[smoke:capabilities] expected runtime capability inventory");
+  process.exit(1);
+}
+const runtimeCapabilityView = JSON.parse(
+  run("capabilities-get-verify", ["./src/index.js", "capabilities:get", "--id", "memory"]).stdout
+).capability;
+if (
+  runtimeCapabilityView.kind !== "runtime_capability_view" ||
+  runtimeCapabilityView.recommendedReason !== "runtime_capability_loaded" ||
+  runtimeCapabilityView.matchedCapability !== "memory" ||
+  runtimeCapabilityView.capability?.id !== "memory" ||
+  !runtimeCapabilityView.capability?.cliCommands?.includes("memory:get") ||
+  !runtimeCapabilityView.capability?.mcpTools?.includes("memory_get")
+) {
+  console.error("[smoke:capabilities-get] expected runtime capability detail view");
   process.exit(1);
 }
 const runtimeActivityInitial = JSON.parse(
