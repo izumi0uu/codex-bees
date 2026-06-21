@@ -236,6 +236,7 @@ import {
   buildRuntimeHandoffPackView,
   buildRuntimeHandoffPackSummary,
   buildRuntimeCloseoutPackView,
+  buildRuntimeCloseoutPackViewFromSources,
   buildRuntimeCloseoutPackSummary,
   buildRuntimeDispatchPackView,
   buildRuntimeDispatchPackSummary,
@@ -1215,7 +1216,7 @@ export function runtimeRecoveryPack() {
 }
 
 export function runtimeCloseoutPack(input = {}) {
-  return buildRuntimeCloseoutPackView(
+  return buildRuntimeCloseoutPackViewFromSources(
     input,
     {
       runtimeCloseout,
@@ -1225,7 +1226,8 @@ export function runtimeCloseoutPack(input = {}) {
     {
       deriveRuntimeCloseoutPackSurface,
       deriveRuntimeCloseoutPackReason,
-      buildRuntimeCloseoutPackSummary
+      buildRuntimeCloseoutPackSummary,
+      buildRuntimeCloseoutPackView
     }
   );
 }

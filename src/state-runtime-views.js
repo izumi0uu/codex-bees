@@ -1304,6 +1304,35 @@ export function buildRuntimeCloseoutPackView(
   };
 }
 
+export function buildRuntimeCloseoutPackViewFromSources(
+  input,
+  {
+    runtimeCloseout,
+    runtimeSummaryPack,
+    runtimeLeaderPack
+  },
+  {
+    deriveRuntimeCloseoutPackSurface,
+    deriveRuntimeCloseoutPackReason,
+    buildRuntimeCloseoutPackSummary,
+    buildRuntimeCloseoutPackView
+  }
+) {
+  return buildRuntimeCloseoutPackView(
+    input,
+    {
+      runtimeCloseout,
+      runtimeSummaryPack,
+      runtimeLeaderPack
+    },
+    {
+      deriveRuntimeCloseoutPackSurface,
+      deriveRuntimeCloseoutPackReason,
+      buildRuntimeCloseoutPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeReviewPackSurface({ review, roles, verifierPack }) {
   if (verifierPack?.recommendedSurface) {
     return "runtime:verifier-pack";
