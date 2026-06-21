@@ -58,6 +58,7 @@ export function getCommandCatalog() {
     { command: "metadata", description: "Print package identity metadata" },
     { command: "status", description: "Print runtime state and surface summary" },
     { command: "capabilities", description: "Print the shipped runtime capability inventory" },
+    { command: "capabilities:get", description: "Show one runtime capability view" },
     { command: "runtime:alerts", description: "Build the top-level orchestration alert stream" },
     { command: "runtime:activity", description: "Build the recent runtime activity stream" },
     { command: "runtime:assignment-pack", description: "Build the leader-to-worker assignment package" },

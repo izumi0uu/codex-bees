@@ -7,7 +7,7 @@ import { renderHelpText, renderInitHelpText } from "./commands.js";
 import { getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getRuntimeCatalogView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
-import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
+import { getCapabilityCatalog, getCapabilityCatalogEntryView, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
 import { getRuntimeDoctorView } from "./doctor.js";
 import { getPackageMetadataView, PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
@@ -161,6 +161,11 @@ function printStatus() {
 
 function printCapabilities() {
   write(JSON.stringify({ capabilities: getCapabilityCatalogView() }, null, 2) + "\n");
+}
+
+function printCapabilityView() {
+  const id = requireOption("--id");
+  write(JSON.stringify({ capability: getCapabilityCatalogEntryView(id) }, null, 2) + "\n");
 }
 
 function printRuntimeActivity() {
@@ -1338,6 +1343,9 @@ async function runCommand(command) {
       return;
     case "capabilities":
       printCapabilities();
+      return;
+    case "capabilities:get":
+      printCapabilityView();
       return;
     case "runtime:activity":
       printRuntimeActivity();
