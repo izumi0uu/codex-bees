@@ -4,7 +4,7 @@ import { stdout, stderr, exit, argv, env } from "node:process";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { getCommandCatalogEntryView, getCommandHelpView, getInitCommandCatalogEntryView, getInitHelpView, renderHelpText, renderInitHelpText } from "./commands.js";
-import { getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
+import { getMcpCommandCatalogEntryView, getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntryView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogEntryView, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
@@ -156,6 +156,11 @@ function printInitOptionView() {
 function printInitHelpView() {
   const option = requireOption("--option");
   write(JSON.stringify({ help: getInitHelpView(option) }, null, 2) + "\n");
+}
+
+function printMcpOptionView() {
+  const option = requireOption("--option");
+  write(JSON.stringify({ option: getMcpCommandCatalogEntryView(option) }, null, 2) + "\n");
 }
 
 function printDoctor() {
@@ -1355,6 +1360,9 @@ async function runCommand(command) {
       return;
     case "mcp":
       await runMcpCli(argv.slice(3));
+      return;
+    case "mcp:option":
+      printMcpOptionView();
       return;
     case "init":
       handleInit();
