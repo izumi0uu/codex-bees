@@ -1119,6 +1119,37 @@ export function buildRuntimeOperatorPackView(
   };
 }
 
+export function buildRuntimeOperatorPackViewFromSources(
+  {
+    runtimeDashboard,
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeHandoffs,
+    runtimeCloseout
+  },
+  {
+    deriveRuntimeOperatorPackSurface,
+    deriveRuntimeOperatorPackReason,
+    buildRuntimeOperatorPackSummary,
+    buildRuntimeOperatorPackView
+  }
+) {
+  return buildRuntimeOperatorPackView(
+    {
+      runtimeDashboard,
+      runtimeFocus,
+      runtimeAlerts,
+      runtimeHandoffs,
+      runtimeCloseout
+    },
+    {
+      deriveRuntimeOperatorPackSurface,
+      deriveRuntimeOperatorPackReason,
+      buildRuntimeOperatorPackSummary
+    }
+  );
+}
+
 export function deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next }) {
   if ((groups?.length ?? 0) > 1) {
     return "parallel_owner_groups_ready";

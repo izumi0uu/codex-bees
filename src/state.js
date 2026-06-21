@@ -243,6 +243,7 @@ import {
   buildRuntimeAssignmentPackSummary,
   buildRuntimeAssignmentPackView,
   buildRuntimeOperatorPackView,
+  buildRuntimeOperatorPackViewFromSources,
   buildRuntimeOperatorPackSummary,
   buildRuntimePickupPackSummary,
   buildRuntimePickupPackView,
@@ -1172,7 +1173,7 @@ export function runtimeSummaryPack(input = {}) {
 }
 
 export function runtimeOperatorPack() {
-  return buildRuntimeOperatorPackView(
+  return buildRuntimeOperatorPackViewFromSources(
     {
       runtimeDashboard,
       runtimeFocus,
@@ -1183,7 +1184,8 @@ export function runtimeOperatorPack() {
     {
       deriveRuntimeOperatorPackSurface,
       deriveRuntimeOperatorPackReason,
-      buildRuntimeOperatorPackSummary
+      buildRuntimeOperatorPackSummary,
+      buildRuntimeOperatorPackView
     }
   );
 }
