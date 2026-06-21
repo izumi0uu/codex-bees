@@ -259,6 +259,7 @@ import {
   buildRuntimeOwnerPackSummary,
   buildRuntimeOwnerPackView,
   buildRuntimeQueuePackView,
+  buildRuntimeQueuePackViewFromSources,
   buildRuntimeQueuePackSummary,
   buildRuntimeRolePackView,
   buildRuntimeReviewPackSummary,
@@ -1252,7 +1253,7 @@ export function runtimeReviewPack(input = {}) {
 }
 
 export function runtimeQueuePack(input = {}) {
-  return buildRuntimeQueuePackView(
+  return buildRuntimeQueuePackViewFromSources(
     input,
     {
       leaderQueue,
@@ -1264,7 +1265,8 @@ export function runtimeQueuePack(input = {}) {
     {
       deriveRuntimeQueuePackSurface,
       deriveRuntimeQueuePackReason,
-      buildRuntimeQueuePackSummary
+      buildRuntimeQueuePackSummary,
+      buildRuntimeQueuePackView
     }
   );
 }

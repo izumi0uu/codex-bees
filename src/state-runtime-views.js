@@ -1564,6 +1564,39 @@ export function buildRuntimeQueuePackView(
   };
 }
 
+export function buildRuntimeQueuePackViewFromSources(
+  input,
+  {
+    leaderQueue,
+    runtimeDashboard,
+    runtimeFocus,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  },
+  {
+    deriveRuntimeQueuePackSurface,
+    deriveRuntimeQueuePackReason,
+    buildRuntimeQueuePackSummary,
+    buildRuntimeQueuePackView
+  }
+) {
+  return buildRuntimeQueuePackView(
+    input,
+    {
+      leaderQueue,
+      runtimeDashboard,
+      runtimeFocus,
+      leaderAssignmentDispatchBundle,
+      leaderAssignmentLaunchPlan
+    },
+    {
+      deriveRuntimeQueuePackSurface,
+      deriveRuntimeQueuePackReason,
+      buildRuntimeQueuePackSummary
+    }
+  );
+}
+
 export function deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";
