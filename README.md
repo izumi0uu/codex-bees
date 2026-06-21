@@ -330,6 +330,8 @@ node ./src/index.js catalog:agents
 node ./src/index.js catalog:agent --id executor
 node ./src/index.js catalog:skills
 node ./src/index.js catalog:skill --id project-development
+node ./src/index.js guidance:overview
+node ./src/index.js guidance:worker
 node ./src/index.js doctor
 node ./src/index.js metadata
 node ./src/index.js status
@@ -532,7 +534,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `tools` and `mcp --tools` expose the explicit tool catalog view for human and automation-side inspection of the shipped MCP surface. They emit `kind: "tool_catalog_view"` with a machine-readable `recommendedReason`, top-level tool counts grouped by tool prefix, and the nested tool inventory so consumers can branch on catalog presence and coarse tool families without reparsing the full list first. `tools:get` exposes the paired single-tool view, returning `kind: "mcp_tool_view"` with `recommendedReason` set to `mcp_tool_loaded` or `mcp_tool_missing` so automation can inspect one shipped tool contract without filtering the full catalog payload.
 
-`coordination_overview` and `worker_guidelines` expose explicit MCP guidance views for the shipped local coordination model. They emit `kind: "coordination_overview_view"` and `kind: "worker_guidelines_view"` with machine-readable `recommendedReason` values and small aggregate counts so MCP consumers can treat runtime guidance as stable product protocol instead of unstructured advisory prose.
+`coordination_overview` and `worker_guidelines` expose explicit MCP guidance views for the shipped local coordination model. They emit `kind: "coordination_overview_view"` and `kind: "worker_guidelines_view"` with machine-readable `recommendedReason` values and small aggregate counts so MCP consumers can treat runtime guidance as stable product protocol instead of unstructured advisory prose. `guidance:overview` and `guidance:worker` expose those same views directly on the CLI, so automation can fetch the shipped coordination contract without opening the MCP transport first.
 
 `run` now exposes the explicit runtime readiness view. It emits `kind: "runtime_ready_view"` with a machine-readable `recommendedReason`, a next-step count, the shared runtime contract view, and the concrete startup suggestions so automation can treat the default entrypoint as stable protocol instead of free-form startup text.
 
