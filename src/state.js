@@ -193,6 +193,7 @@ import {
   buildRuntimeHandoffsSummary,
   buildRuntimeRecoverySummary,
   buildRuntimeReviewSummary,
+  buildRuntimeReviewViewFromSources,
   buildRuntimeReviewView,
   buildRuntimeRolesViewFromSources,
   buildRuntimeRolesSummary
@@ -1056,7 +1057,7 @@ export function runtimeDispatch() {
 }
 
 export function runtimeReview() {
-  return buildRuntimeReviewView(
+  return buildRuntimeReviewViewFromSources(
     {
       loadState,
       normalizeTask,
@@ -1068,7 +1069,8 @@ export function runtimeReview() {
     },
     {
       deriveRuntimeReviewReason,
-      buildRuntimeReviewSummary
+      buildRuntimeReviewSummary,
+      buildRuntimeReviewView
     }
   );
 }

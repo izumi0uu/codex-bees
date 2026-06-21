@@ -950,6 +950,39 @@ export function buildRuntimeReviewView(
   };
 }
 
+export function buildRuntimeReviewViewFromSources(
+  {
+    loadState,
+    normalizeTask,
+    compareTasksByUpdatedAt,
+    describeRole,
+    taskBrief,
+    buildRuntimeReviewTaskEntry,
+    compareRuntimeReviewGroups
+  },
+  {
+    deriveRuntimeReviewReason,
+    buildRuntimeReviewSummary,
+    buildRuntimeReviewView
+  }
+) {
+  return buildRuntimeReviewView(
+    {
+      loadState,
+      normalizeTask,
+      compareTasksByUpdatedAt,
+      describeRole,
+      taskBrief,
+      buildRuntimeReviewTaskEntry,
+      compareRuntimeReviewGroups
+    },
+    {
+      deriveRuntimeReviewReason,
+      buildRuntimeReviewSummary
+    }
+  );
+}
+
 export function buildRuntimeActivitySummary(entries, next) {
   if (entries.length === 0) {
     return "Runtime activity has no recorded task events yet.";
