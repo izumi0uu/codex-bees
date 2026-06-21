@@ -963,7 +963,7 @@ const installedMcpImport = spawnSync(
     "node",
   [
     "-e",
-    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const ready = m.callMcpTool("runtime_ready"); const capability = m.callMcpTool("runtime_capability", { id: "memory" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); const runtimeReadyTool = m.getMcpToolEntry("runtime_ready"); const runtimeReadyToolView = m.getMcpToolView("runtime_ready"); const runtimeCapabilityTool = m.getMcpToolEntry("runtime_capability"); const runtimeCapabilityToolView = m.getMcpToolView("runtime_capability"); const runtimeContractTool = m.getMcpToolEntry("runtime_contract"); const runtimeContractToolView = m.getMcpToolView("runtime_contract"); const missingToolView = m.getMcpToolView("missing_tool"); const mcpOptions = m.getMcpCommandCatalog(); const mcpCatalog = m.getMcpCommandCatalogView(); const mcpHelp = m.renderMcpHelpText(); const toolsOption = m.getMcpCommandCatalogEntry("--tools"); const toolsOptionView = m.getMcpCommandCatalogEntryView("--tools"); const missingToolsOptionView = m.getMcpCommandCatalogEntryView("--missing"); const helpView = m.getMcpHelpView("--tools"); const fallbackHelpView = m.getMcpHelpView("--missing"); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "runtime_ready") && m.listMcpTools().some((tool) => tool.name === "runtime_capability") && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && runtimeReadyTool?.name === "runtime_ready" && runtimeReadyToolView?.kind === "mcp_tool_view" && runtimeReadyToolView?.matchedTool === "runtime_ready" && runtimeReadyToolView?.tool?.name === "runtime_ready" && runtimeCapabilityTool?.name === "runtime_capability" && runtimeCapabilityToolView?.kind === "mcp_tool_view" && runtimeCapabilityToolView?.matchedTool === "runtime_capability" && runtimeCapabilityToolView?.tool?.name === "runtime_capability" && runtimeContractTool?.name === "runtime_contract" && runtimeContractToolView?.kind === "mcp_tool_view" && runtimeContractToolView?.matchedTool === "runtime_contract" && runtimeContractToolView?.tool?.name === "runtime_contract" && missingToolView?.recommendedReason === "mcp_tool_missing" && listed.result?.tools?.some((tool) => tool.name === "runtime_ready") && listed.result?.tools?.some((tool) => tool.name === "runtime_capability") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(ready.content) && ready.content[0]?.type === "text" && Array.isArray(capability.content) && capability.content[0]?.type === "text" && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") && Array.isArray(mcpOptions) && mcpOptions.some((option) => option.option === "--capabilities") && toolsOption?.option === "--tools" && toolsOptionView?.kind === "mcp_command_option_view" && toolsOptionView?.matchedOption === "--tools" && missingToolsOptionView?.recommendedReason === "mcp_command_option_missing" && helpView.kind === "mcp_help_view" && helpView.matchedOption === "--tools" && helpView.text.includes("codex-bees mcp --tools") && fallbackHelpView.recommendedReason === "mcp_help_fallback_loaded" && mcpCatalog.kind === "mcp_command_catalog_view" && mcpCatalog.counts.totalOptions >= 5 && mcpCatalog.options.some((option) => option.option === "--capabilities") && mcpHelp.includes("codex-bees mcp --tools") && mcpHelp.includes("codex-bees mcp --capabilities"), keys: Object.keys(m).sort() })); })'
+    'import("codex-bees/mcp").then((m) => { const listed = m.handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" }); const metadata = m.callMcpTool("package_metadata"); const ready = m.callMcpTool("runtime_ready"); const capability = m.callMcpTool("runtime_capability", { id: "memory" }); const contract = m.callMcpTool("runtime_contract"); const serialized = m.serializeMcpMessage({ jsonrpc: "2.0", id: 2, method: "initialize" }); const packageMetadataTool = m.getMcpToolEntry("package_metadata"); const packageMetadataToolView = m.getMcpToolView("package_metadata"); const runtimeReadyTool = m.getMcpToolEntry("runtime_ready"); const runtimeReadyToolView = m.getMcpToolView("runtime_ready"); const runtimeCapabilityTool = m.getMcpToolEntry("runtime_capability"); const runtimeCapabilityToolView = m.getMcpToolView("runtime_capability"); const runtimeContractTool = m.getMcpToolEntry("runtime_contract"); const runtimeContractToolView = m.getMcpToolView("runtime_contract"); const missingToolView = m.getMcpToolView("missing_tool"); const mcpOptions = m.getMcpCommandCatalog(); const mcpCatalog = m.getMcpCommandCatalogView(); const mcpHelp = m.renderMcpHelpText(); const toolsOption = m.getMcpCommandCatalogEntry("--tools"); const toolsOptionView = m.getMcpCommandCatalogEntryView("--tools"); const missingToolsOptionView = m.getMcpCommandCatalogEntryView("--missing"); const helpView = m.getMcpHelpView("--tools"); const fallbackHelpView = m.getMcpHelpView("--missing"); console.log(JSON.stringify({ ok: Array.isArray(m.listMcpTools()) && m.listMcpTools().some((tool) => tool.name === "package_metadata") && m.listMcpTools().some((tool) => tool.name === "runtime_ready") && m.listMcpTools().some((tool) => tool.name === "runtime_capability") && m.listMcpTools().some((tool) => tool.name === "runtime_contract") && packageMetadataTool?.name === "package_metadata" && packageMetadataToolView?.kind === "mcp_tool_view" && packageMetadataToolView?.matchedTool === "package_metadata" && packageMetadataToolView?.tool?.name === "package_metadata" && runtimeReadyTool?.name === "runtime_ready" && runtimeReadyToolView?.kind === "mcp_tool_view" && runtimeReadyToolView?.matchedTool === "runtime_ready" && runtimeReadyToolView?.tool?.name === "runtime_ready" && runtimeCapabilityTool?.name === "runtime_capability" && runtimeCapabilityToolView?.kind === "mcp_tool_view" && runtimeCapabilityToolView?.matchedTool === "runtime_capability" && runtimeCapabilityToolView?.tool?.name === "runtime_capability" && runtimeContractTool?.name === "runtime_contract" && runtimeContractToolView?.kind === "mcp_tool_view" && runtimeContractToolView?.matchedTool === "runtime_contract" && runtimeContractToolView?.tool?.name === "runtime_contract" && missingToolView?.recommendedReason === "mcp_tool_missing" && listed.result?.tools?.some((tool) => tool.name === "package_metadata") && listed.result?.tools?.some((tool) => tool.name === "runtime_ready") && listed.result?.tools?.some((tool) => tool.name === "runtime_capability") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(metadata.content) && metadata.content[0]?.type === "text" && Array.isArray(ready.content) && ready.content[0]?.type === "text" && Array.isArray(capability.content) && capability.content[0]?.type === "text" && Array.isArray(contract.content) && contract.content[0]?.type === "text" && serialized.endsWith("\\n") && Array.isArray(mcpOptions) && mcpOptions.some((option) => option.option === "--capabilities") && toolsOption?.option === "--tools" && toolsOptionView?.kind === "mcp_command_option_view" && toolsOptionView?.matchedOption === "--tools" && missingToolsOptionView?.recommendedReason === "mcp_command_option_missing" && helpView.kind === "mcp_help_view" && helpView.matchedOption === "--tools" && helpView.text.includes("codex-bees mcp --tools") && fallbackHelpView.recommendedReason === "mcp_help_fallback_loaded" && mcpCatalog.kind === "mcp_command_catalog_view" && mcpCatalog.counts.totalOptions >= 5 && mcpCatalog.options.some((option) => option.option === "--capabilities") && mcpHelp.includes("codex-bees mcp --tools") && mcpHelp.includes("codex-bees mcp --capabilities"), keys: Object.keys(m).sort() })); })'
   ],
   {
     cwd: packedInstallAppDir,
@@ -992,7 +992,7 @@ const installedMcpExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedMcpExampleScript}\nconsole.log(JSON.stringify({ ok: Array.isArray(tools) && tools.some((tool) => tool.name === "runtime_ready") && tools.some((tool) => tool.name === "runtime_capability") && tools.some((tool) => tool.name === "runtime_contract") && runtimeReadyTool?.name === "runtime_ready" && runtimeReadyToolView?.kind === "mcp_tool_view" && runtimeReadyToolView?.matchedTool === "runtime_ready" && runtimeCapabilityTool?.name === "runtime_capability" && runtimeCapabilityToolView?.kind === "mcp_tool_view" && runtimeCapabilityToolView?.matchedTool === "runtime_capability" && runtimeContractTool?.name === "runtime_contract" && runtimeContractToolView?.kind === "mcp_tool_view" && runtimeContractToolView?.matchedTool === "runtime_contract" && Array.isArray(options) && options.some((option) => option.option === "--capabilities") && toolsOption?.option === "--tools" && toolsOptionView?.kind === "mcp_command_option_view" && toolsOptionView?.matchedOption === "--tools" && helpView?.kind === "mcp_help_view" && helpView?.matchedOption === "--tools" && listed.result?.tools?.some((tool) => tool.name === "runtime_ready") && listed.result?.tools?.some((tool) => tool.name === "runtime_capability") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(ready.content) && ready.content[0]?.type === "text" && Array.isArray(capability.content) && capability.content[0]?.type === "text" && Array.isArray(contract.content) && contract.content[0]?.type === "text" }));`
+    `${documentedMcpExampleScript}\nconsole.log(JSON.stringify({ ok: Array.isArray(tools) && tools.some((tool) => tool.name === "package_metadata") && tools.some((tool) => tool.name === "runtime_ready") && tools.some((tool) => tool.name === "runtime_capability") && tools.some((tool) => tool.name === "runtime_contract") && packageMetadataTool?.name === "package_metadata" && packageMetadataToolView?.kind === "mcp_tool_view" && packageMetadataToolView?.matchedTool === "package_metadata" && runtimeReadyTool?.name === "runtime_ready" && runtimeReadyToolView?.kind === "mcp_tool_view" && runtimeReadyToolView?.matchedTool === "runtime_ready" && runtimeCapabilityTool?.name === "runtime_capability" && runtimeCapabilityToolView?.kind === "mcp_tool_view" && runtimeCapabilityToolView?.matchedTool === "runtime_capability" && runtimeContractTool?.name === "runtime_contract" && runtimeContractToolView?.kind === "mcp_tool_view" && runtimeContractToolView?.matchedTool === "runtime_contract" && Array.isArray(options) && options.some((option) => option.option === "--capabilities") && toolsOption?.option === "--tools" && toolsOptionView?.kind === "mcp_command_option_view" && toolsOptionView?.matchedOption === "--tools" && helpView?.kind === "mcp_help_view" && helpView?.matchedOption === "--tools" && listed.result?.tools?.some((tool) => tool.name === "package_metadata") && listed.result?.tools?.some((tool) => tool.name === "runtime_ready") && listed.result?.tools?.some((tool) => tool.name === "runtime_capability") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(metadata.content) && metadata.content[0]?.type === "text" && Array.isArray(ready.content) && ready.content[0]?.type === "text" && Array.isArray(capability.content) && capability.content[0]?.type === "text" && Array.isArray(contract.content) && contract.content[0]?.type === "text" }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -8032,13 +8032,22 @@ const runtimeContractMcpInput = [
     id: 2,
     method: "tools/call",
     params: {
-      name: "runtime_ready",
+      name: "package_metadata",
       arguments: {}
     }
   }),
   JSON.stringify({
     jsonrpc: "2.0",
     id: 3,
+    method: "tools/call",
+    params: {
+      name: "runtime_ready",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
     method: "tools/call",
     params: {
       name: "runtime_contract",
@@ -8054,10 +8063,15 @@ const runtimeContractMcpLines = runtimeContractMcp.stdout
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-const runtimeReadyMcpPayload = JSON.parse(JSON.parse(runtimeContractMcpLines[1]).result.content[0].text);
-const runtimeContractMcpPayload = JSON.parse(JSON.parse(runtimeContractMcpLines[2]).result.content[0].text);
+const packageMetadataMcpPayload = JSON.parse(JSON.parse(runtimeContractMcpLines[1]).result.content[0].text);
+const runtimeReadyMcpPayload = JSON.parse(JSON.parse(runtimeContractMcpLines[2]).result.content[0].text);
+const runtimeContractMcpPayload = JSON.parse(JSON.parse(runtimeContractMcpLines[3]).result.content[0].text);
 if (
   runtimeContractMcp.status !== 0 ||
+  packageMetadataMcpPayload.metadata?.kind !== "package_metadata_view" ||
+  packageMetadataMcpPayload.metadata?.recommendedReason !== "package_metadata_loaded" ||
+  packageMetadataMcpPayload.metadata?.metadata?.product !== "codex-bees" ||
+  packageMetadataMcpPayload.metadata?.metadata?.mode !== "codex-only" ||
   runtimeReadyMcpPayload.ready?.kind !== "runtime_ready_view" ||
   runtimeReadyMcpPayload.ready?.recommendedReason !== "runtime_entry_ready" ||
   runtimeReadyMcpPayload.ready?.counts?.nextSteps !== 6 ||
@@ -8069,7 +8083,7 @@ if (
   runtimeContractMcpPayload.contract?.contract?.product !== "codex-bees" ||
   runtimeContractMcpPayload.contract?.contract?.transport?.cli !== "stdio"
 ) {
-  console.error("[smoke:runtime-ready-contract-mcp] expected MCP runtime readiness and contract views");
+  console.error("[smoke:metadata-ready-contract-mcp] expected MCP metadata, readiness, and contract views");
   console.error(runtimeContractMcp.stderr || runtimeContractMcp.stdout);
   process.exit(1);
 }
