@@ -7,6 +7,7 @@ import {
   getCommandHelpView,
   getCommandCatalogView,
   getInitCommandCatalog,
+  getInitCommandCatalogView,
   getInitCommandCatalogEntry,
   getInitCommandCatalogEntryView,
   getInitHelpView,
@@ -111,6 +112,8 @@ const initOptionEntry: string | undefined = getInitCommandCatalogEntry("--previe
 const initOptionViewReason: "init_command_option_loaded" | "init_command_option_missing" = getInitCommandCatalogEntryView("--preview").recommendedReason;
 const initOptionViewMatched: string | null = getInitCommandCatalogEntryView("--preview").matchedOption;
 const initCommandOptions: string | undefined = getInitCommandCatalog()[0]?.option;
+const initCommandCatalogViewReason: "init_command_catalog_loaded" | "init_command_catalog_empty" = getInitCommandCatalogView().recommendedReason;
+const initCommandCatalogViewKind: "init_command_catalog_view" = getInitCommandCatalogView().kind;
 const initHelpReason: "init_help_loaded" | "init_help_fallback_loaded" = getInitHelpView("--preview").recommendedReason;
 const initHelpMatched: string | null = getInitHelpView("--preview").matchedOption;
 const rootCommandName: string | undefined = getCommandCatalog()[0]?.command;
