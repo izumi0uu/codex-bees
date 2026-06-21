@@ -747,6 +747,137 @@ export interface TaskDetailMetadata {
   reviewState: TaskReviewState;
 }
 
+export interface TaskHistoryView {
+  kind: "task_history";
+  recommendedReason:
+    | "approved_event_latest"
+    | "changes_requested_event_latest"
+    | "ready_for_review_event_latest"
+    | "blocked_event_latest"
+    | "claimed_event_latest"
+    | "created_event_latest"
+    | "history_visible";
+  taskId: string;
+  title: string | undefined;
+  queueStatus: TaskQueueStatus;
+  counts: {
+    totalHistoryEntries: number;
+  };
+  history: TaskHistoryEntry[];
+}
+
+export interface RuntimeCatalogRoleReference {
+  id: string | null;
+  name: string | null;
+  description: string | null;
+  promptPath: string | null;
+  source: "workspace" | "bundled" | "missing";
+}
+
+export interface TaskExecutionBrief {
+  kind: "task_execution_brief";
+  recommendedReason:
+    | "completed_task_brief"
+    | "review_ready_task_brief"
+    | "blocked_task_brief"
+    | "claimed_task_brief"
+    | "claimable_execution_brief";
+  task: TaskRecord;
+  objective: string | undefined;
+  roles: {
+    owner: RuntimeCatalogRoleReference;
+    verifier: RuntimeCatalogRoleReference;
+  };
+  coordination: {
+    swarmId: string | null;
+    lane: string | null;
+    queueStatus: TaskQueueStatus;
+    claimedBy: string | null;
+    notes: string | null;
+  };
+  counts: {
+    scopeEntries: number;
+    acceptanceItems: number;
+    verificationSteps: number;
+    reviewEvidenceEntries: number;
+    historyEntries: number;
+    annotationEntries: number;
+  };
+  execution: {
+    scope: string[];
+    acceptance: string[];
+    verification: string[];
+  };
+  review: {
+    state: TaskReviewState;
+    reviewedBy: string | null;
+    reviewedAt: string | null;
+    outcome: string | null;
+    notes: string | null;
+    evidence: unknown[];
+  };
+  history: {
+    count: number;
+    entries: TaskHistoryEntry[];
+  };
+  annotations: {
+    count: number;
+    entries: TaskAnnotation[];
+  };
+  validation: TaskValidationView;
+  recommendedNextActor: string;
+  recommendedNextAction: string;
+  recommendedCommands: string[];
+}
+
+export interface TaskReportView {
+  kind: "task_report";
+  recommendedReason:
+    | "approved_closure_ready"
+    | "review_ready_report"
+    | "claimed_report_in_progress"
+    | "blocked_report_attention"
+    | "queued_report_pending";
+  task: {
+    id: string;
+    title?: string;
+    objective: string | null;
+    queueStatus: TaskQueueStatus;
+    owner: string | null;
+    verifier: string | null;
+    claimedBy: string | null;
+    swarmId: string | null;
+    lane: string | null;
+  };
+  closure: {
+    reviewState: TaskReviewState;
+    reviewedBy: string | null;
+    reviewedAt: string | null;
+    reviewOutcome: string | null;
+    reviewNotes: string | null;
+    closureReady: boolean;
+    nextGate: string;
+  };
+  counts: {
+    acceptanceItems: number;
+    verificationSteps: number;
+    reviewEvidenceEntries: number;
+    annotationEntries: number;
+    recentHistoryEntries: number;
+  };
+  acceptance: Array<{
+    item: string;
+    status: "verified" | "pending";
+  }>;
+  verification: string[];
+  evidence: {
+    reviewEvidence: unknown[];
+    annotations: TaskAnnotation[];
+    recentHistory: TaskHistoryEntry[];
+  };
+  brief: TaskExecutionBrief | null;
+}
+
 export interface SwarmDetailMetadata {
   derivedStatus: SwarmStatus;
   statusAligned: boolean;
@@ -979,6 +1110,9 @@ export declare function startMcpServer(): Promise<void>;
 export declare function addTask(input: TaskInput): TaskRecord;
 export declare function getTask(id: string): TaskRecord | null;
 export declare function getTaskView(id: string): TaskDetailView | null;
+export declare function taskHistory(id: string): TaskHistoryView | null;
+export declare function taskBrief(id: string): TaskExecutionBrief | null;
+export declare function taskReport(id: string): TaskReportView | null;
 export declare function initSwarm(input: SwarmInput): SwarmRecord;
 export declare function getSwarm(id: string): SwarmRecord | null;
 export declare function getSwarmView(id: string): SwarmDetailView | null;
