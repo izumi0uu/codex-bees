@@ -166,6 +166,41 @@ export function buildWorkerCloseoutSummary(handoff, report) {
   return `Task ${handoff.currentTask.id} has a closeout bundle ready for the next actor.`;
 }
 
+export function buildWorkerCloseoutView(
+  input,
+  {
+    workerHandoff,
+    taskReport,
+    deriveWorkerCloseoutReason,
+    deriveWorkerCloseoutCommand,
+    buildWorkerCloseoutSummary
+  }
+) {
+  if (!input.role || !input.workerId) {
+    return null;
+  }
+
+  const handoff = workerHandoff(input);
+  if (!handoff) {
+    return null;
+  }
+
+  const report = handoff.currentTask?.id ? taskReport(handoff.currentTask.id) : null;
+  const recommendedReason = deriveWorkerCloseoutReason(handoff, report);
+  return {
+    kind: "worker_closeout",
+    role: handoff.role,
+    workerId: handoff.workerId,
+    mode: handoff.mode,
+    recommendedReason,
+    focus: handoff.focus,
+    handoff,
+    report,
+    command: deriveWorkerCloseoutCommand(handoff, report),
+    summary: buildWorkerCloseoutSummary(handoff, report)
+  };
+}
+
 export function buildVerifierDecisionCommands(taskSummary, role) {
   if (!taskSummary?.id) {
     return {

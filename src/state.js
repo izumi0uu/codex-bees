@@ -193,6 +193,7 @@ import {
   deriveSwarmSyncReason
 } from "./state-swarm-views.js";
 import {
+  buildWorkerCloseoutView,
   buildWorkerHandoffView,
   buildVerifierBundleView,
   buildSessionTaskSnapshot,
@@ -3281,29 +3282,13 @@ export function workerHandoff(input = {}) {
 }
 
 export function workerCloseout(input = {}) {
-  if (!input.role || !input.workerId) {
-    return null;
-  }
-
-  const handoff = workerHandoff(input);
-  if (!handoff) {
-    return null;
-  }
-
-  const report = handoff.currentTask?.id ? taskReport(handoff.currentTask.id) : null;
-  const recommendedReason = deriveWorkerCloseoutReason(handoff, report);
-  return {
-    kind: "worker_closeout",
-    role: handoff.role,
-    workerId: handoff.workerId,
-    mode: handoff.mode,
-    recommendedReason,
-    focus: handoff.focus,
-    handoff,
-    report,
-    command: deriveWorkerCloseoutCommand(handoff, report),
-    summary: buildWorkerCloseoutSummary(handoff, report)
-  };
+  return buildWorkerCloseoutView(input, {
+    workerHandoff,
+    taskReport,
+    deriveWorkerCloseoutReason,
+    deriveWorkerCloseoutCommand,
+    buildWorkerCloseoutSummary
+  });
 }
 
 export function verifierBundle(input = {}) {
