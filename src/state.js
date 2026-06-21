@@ -263,6 +263,7 @@ import {
   buildLeaderWorkspaceView,
   buildLeaderWorkspaceSummary,
   buildLeaderWorkspaceSwarmEntry,
+  buildRuntimeOwnerPackViewFromSources,
   buildRuntimeOwnerPackSummary,
   buildRuntimeOwnerPackView,
   buildRuntimeQueuePackView,
@@ -1499,7 +1500,7 @@ export function runtimeLeaderPack(input = {}) {
 }
 
 export function runtimeOwnerPack(input = {}) {
-  return buildRuntimeOwnerPackView(
+  return buildRuntimeOwnerPackViewFromSources(
     input,
     {
       workerSession,
@@ -1511,7 +1512,8 @@ export function runtimeOwnerPack(input = {}) {
     {
       deriveRuntimeOwnerPackSurface,
       deriveRuntimeOwnerPackReason,
-      buildRuntimeOwnerPackSummary
+      buildRuntimeOwnerPackSummary,
+      buildRuntimeOwnerPackView
     }
   );
 }

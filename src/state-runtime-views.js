@@ -115,6 +115,39 @@ export function buildRuntimeOwnerPackView(
   };
 }
 
+export function buildRuntimeOwnerPackViewFromSources(
+  input,
+  {
+    workerSession,
+    workerHandoff,
+    workerCloseout,
+    taskNext,
+    describeRole
+  },
+  {
+    deriveRuntimeOwnerPackSurface,
+    deriveRuntimeOwnerPackReason,
+    buildRuntimeOwnerPackSummary,
+    buildRuntimeOwnerPackView
+  }
+) {
+  return buildRuntimeOwnerPackView(
+    input,
+    {
+      workerSession,
+      workerHandoff,
+      workerCloseout,
+      taskNext,
+      describeRole
+    },
+    {
+      deriveRuntimeOwnerPackSurface,
+      deriveRuntimeOwnerPackReason,
+      buildRuntimeOwnerPackSummary
+    }
+  );
+}
+
 export function deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next }) {
   if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
     return "worker:session";
