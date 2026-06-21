@@ -67,6 +67,7 @@ const checks = [
   ["init-option-help", ["./src/index.js", "init:help", "--option", "--preview"]],
   ["init-preview", ["./src/index.js", "init", "--preview"]],
 ["init-help", ["./src/index.js", "init", "--help"]],
+  ["mcp-option", ["./src/index.js", "mcp:option", "--option", "--tools"]],
   ["mcp-help", ["./src/index.js", "mcp", "--help"]],
   ["mcp-version", ["./src/index.js", "mcp", "--version"]],
   ["catalog", ["./src/index.js", "catalog"]],
@@ -2338,6 +2339,18 @@ if (
   !cliInitHelpView.text?.includes("codex-bees init")
 ) {
   console.error("[smoke:init-help-view] expected single init help view");
+  process.exit(1);
+}
+const cliMcpOptionView = JSON.parse(
+  run("mcp-option-verify", ["./src/index.js", "mcp:option", "--option", "--tools"]).stdout
+).option;
+if (
+  cliMcpOptionView.kind !== "mcp_command_option_view" ||
+  cliMcpOptionView.recommendedReason !== "mcp_command_option_loaded" ||
+  cliMcpOptionView.matchedOption !== "--tools" ||
+  cliMcpOptionView.entry?.option !== "--tools"
+) {
+  console.error("[smoke:mcp-option] expected single mcp option view");
   process.exit(1);
 }
 const cliToolsView = JSON.parse(run("tools-cli-verify", ["./src/index.js", "tools"]).stdout).tools;
