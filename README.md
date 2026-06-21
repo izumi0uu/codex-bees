@@ -183,15 +183,16 @@ const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" })
 const contract = callMcpTool("runtime_contract");
 ```
 
-The `codex-bees/catalog` subpath exposes the same runtime catalog view that powers `codex-bees catalog`, so tooling can inspect shipped agents, skills, asset source selection, and effective `.codex` paths without scraping CLI output. It also exposes direct agent/skill entry lookup helpers when you already know the catalog id you want.
+The `codex-bees/catalog` subpath exposes the same runtime catalog view that powers `codex-bees catalog`, so tooling can inspect shipped agents, skills, asset source selection, and effective `.codex` paths without scraping CLI output. It also exposes direct agent/skill entry lookup helpers, plus a machine-readable single-agent view when you already know the catalog id you want.
 
 Example:
 
 ```js
-import { getAgentCatalogEntry, getRuntimeCatalogView, getSkillCatalogEntry } from "codex-bees/catalog";
+import { getAgentCatalogEntry, getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntry } from "codex-bees/catalog";
 
 const catalog = getRuntimeCatalogView();
 const executorAgent = getAgentCatalogEntry("executor");
+const executorAgentView = getAgentCatalogEntryView("executor");
 const projectDevelopmentSkill = getSkillCatalogEntry("project-development");
 ```
 
