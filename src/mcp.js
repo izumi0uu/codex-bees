@@ -227,6 +227,25 @@ export const toolCatalog = [
     }
   },
   {
+    name: "tool_catalog",
+    description: "Return the shipped MCP tool catalog view.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "tool_catalog_entry",
+    description: "Return one shipped MCP tool catalog entry view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string" }
+      },
+      required: ["name"]
+    }
+  },
+  {
     name: "coordination_overview",
     description: "Describe the current local coordination model for Codex Bees.",
     inputSchema: {
@@ -1624,6 +1643,17 @@ function handleRequest(message) {
         return createError(id, -32602, "mcp_help requires arguments.option");
       }
       return createSuccess(id, createTextPayload({ help: getMcpHelpView(params.arguments.option) }));
+    }
+
+    if (name === "tool_catalog") {
+      return createSuccess(id, createTextPayload({ tools: getToolCatalogView() }));
+    }
+
+    if (name === "tool_catalog_entry") {
+      if (!params.arguments?.name) {
+        return createError(id, -32602, "tool_catalog_entry requires arguments.name");
+      }
+      return createSuccess(id, createTextPayload({ tool: getMcpToolView(params.arguments.name) }));
     }
 
     if (name === "worker_guidelines") {
