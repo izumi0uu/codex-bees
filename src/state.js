@@ -46,7 +46,11 @@ import {
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
 import {
+  buildDispatchedSwarmState,
+  buildDispatchedSwarmTaskState,
   buildSyncedSwarmState,
+  dispatchLoadedSwarmLane,
+  findDispatchableSwarmLane,
   buildTransitionedSwarmState,
   syncLoadedSwarmState,
   syncLoadedSwarmLifecycle,
@@ -3722,81 +3726,38 @@ export function queueSwarmTasks(input) {
 
 export function dispatchSwarmLane(input) {
   const state = loadState();
-  const swarmIndex = state.swarms.findIndex((swarm) => swarm.id === input.id);
-  if (swarmIndex < 0) {
+  const result = dispatchLoadedSwarmLane(state, input, {
+    findSwarmIndex,
+    findTaskIndex,
+    normalizeSwarm,
+    normalizeTask,
+    normalizeSwarmLane,
+    validateTaskValue,
+    runtimeRoleCatalog,
+    buildDispatchedSwarmTaskState,
+    buildDispatchedSwarmState,
+    findDispatchableSwarmLane,
+    syncSwarmInLoadedState
+  });
+  if (!result) {
     return null;
   }
-
-  const swarm = normalizeSwarm(state.swarms[swarmIndex]);
-  if (!input.claimedBy) {
-    return { error: "claimedBy is required for swarm dispatch" };
+  if (result.error) {
+    return result;
   }
-  if (swarm.status === "cancelled" || swarm.status === "completed") {
-    return { error: `Cannot dispatch lanes from swarm in status ${swarm.status}` };
-  }
-  if (!Array.isArray(swarm.lanes) || swarm.lanes.length === 0) {
-    return { error: `Swarm ${swarm.id} has no lanes to dispatch` };
-  }
-
-  const candidateLane = swarm.lanes.find((lane) => {
-    if (!lane.taskId) {
-      return false;
-    }
-    const task = state.tasks.map(normalizeTask).find((item) => item.id === lane.taskId);
-    if (!task) {
-      return false;
-    }
-    if (input.owner && lane.owner && lane.owner !== input.owner) {
-      return false;
-    }
-    return task.queueStatus === "queued" || task.queueStatus === "released";
-  });
-
-  if (!candidateLane) {
-    return { error: `No dispatchable lane available for swarm ${swarm.id}` };
-  }
-
-  const taskIndex = state.tasks.findIndex((task) => task.id === candidateLane.taskId);
-  if (taskIndex < 0) {
-    return { error: `Missing task for lane ${candidateLane.lane}` };
-  }
-
-  const currentTask = normalizeTask(state.tasks[taskIndex]);
-  const taskValidation = validateTaskValue(currentTask, runtimeRoleCatalog());
-  if (!taskValidation.ready) {
-    return { error: `Lane task ${currentTask.id} is not ready to dispatch`, validation: taskValidation };
-  }
-
-  const nextTask = normalizeTask({
-    ...currentTask,
-    queueStatus: "claimed",
-    claimedBy: input.claimedBy,
-    updatedAt: new Date().toISOString()
-  });
-  state.tasks[taskIndex] = nextTask;
-
-  const nextSwarm = normalizeSwarm({
-    ...swarm,
-    status: swarm.status === "planned" ? "active" : swarm.status,
-    ...(input.owner !== undefined ? { owner: input.owner } : {}),
-    updatedAt: new Date().toISOString()
-  });
-  state.swarms[swarmIndex] = nextSwarm;
-  const syncedSwarm = syncSwarmInLoadedState(state, swarm.id) ?? nextSwarm;
-
   saveState(state);
 
   const recommendedReason = deriveSwarmDispatchReason({
-    lane: candidateLane,
-    previousTask: currentTask,
-    task: nextTask
+    lane: result.lane,
+    previousTask: result.previousTask,
+    task: result.task
   });
   return {
     kind: "swarm_dispatch",
     recommendedReason,
-    swarm: syncedSwarm,
-    lane: normalizeSwarmLane(candidateLane),
-    task: nextTask
+    swarm: result.swarm,
+    lane: result.lane,
+    task: result.task
   };
 }
 
