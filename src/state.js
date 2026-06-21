@@ -102,6 +102,8 @@ import {
   describeRole
 } from "./state-task-core.js";
 import {
+  buildTaskBriefView,
+  buildTaskBriefViewFromSources,
   buildRuntimeReviewTaskEntry,
   buildSwarmHandoff,
   buildTaskReportEntries,
@@ -667,72 +669,22 @@ export function getSwarmView(id) {
 }
 
 export function taskBrief(id) {
-  const task = getTask(id);
-  if (!task) {
-    return null;
-  }
-
-  const validation = validateTaskValue(task, runtimeRoleCatalog());
-  const catalog = getRuntimeCatalog();
-  const recommended = recommendTaskAction(task);
-  const recommendedReason = deriveTaskBriefReason(task, recommended);
-  const scope = task.scope ?? [];
-  const acceptance = task.acceptance ?? [];
-  const verification = task.verification ?? [];
-  const reviewEvidence = task.reviewEvidence ?? [];
-  const historyEntries = task.history ?? [];
-  const annotationEntries = task.annotations ?? [];
-
-  return {
-    kind: "task_execution_brief",
-    recommendedReason,
-    task,
-    objective: task.objective ?? task.title,
-    roles: {
-      owner: describeRole(task.owner, catalog),
-      verifier: describeRole(task.verifier, catalog)
+  return buildTaskBriefViewFromSources(
+    id,
+    {
+      getTask,
+      runtimeRoleCatalog,
+      validateTaskValue,
+      getRuntimeCatalog,
+      recommendTaskAction,
+      deriveTaskBriefReason,
+      describeRole,
+      deriveReviewState
     },
-    coordination: {
-      swarmId: task.swarmId,
-      lane: task.lane,
-      queueStatus: task.queueStatus,
-      claimedBy: task.claimedBy,
-      notes: task.notes
-    },
-    counts: {
-      scopeEntries: scope.length,
-      acceptanceItems: acceptance.length,
-      verificationSteps: verification.length,
-      reviewEvidenceEntries: reviewEvidence.length,
-      historyEntries: historyEntries.length,
-      annotationEntries: annotationEntries.length
-    },
-    execution: {
-      scope,
-      acceptance,
-      verification
-    },
-    review: {
-      state: deriveReviewState(task),
-      reviewedBy: task.reviewedBy,
-      reviewedAt: task.reviewedAt,
-      outcome: task.reviewOutcome,
-      notes: task.reviewNotes,
-      evidence: reviewEvidence
-    },
-    history: {
-      count: historyEntries.length,
-      entries: historyEntries
-    },
-    annotations: {
-      count: annotationEntries.length,
-      entries: annotationEntries.slice(-5)
-    },
-    validation,
-    recommendedNextActor: recommended.actor,
-    recommendedNextAction: recommended.action,
-    recommendedCommands: recommended.commands
-  };
+    {
+      buildTaskBriefView
+    }
+  );
 }
 
 export function swarmBrief(id) {
