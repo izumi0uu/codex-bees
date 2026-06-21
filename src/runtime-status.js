@@ -8,7 +8,7 @@ const CAPABILITY_CATALOG = [
     id: "cli_runtime",
     category: "runtime",
     description: "Local CLI surface for planning, coordination, diagnostics, and memory.",
-    cliCommands: ["run", "tools", "catalog", "doctor", "status", "capabilities"],
+    cliCommands: ["run", "init", "tools", "catalog", "doctor", "status", "capabilities"],
     mcpTools: []
   },
   {

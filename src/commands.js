@@ -4,6 +4,7 @@ import { getMcpCommandCatalog } from "./mcp.js";
 export function getCommandCatalog() {
   return [
     { command: "run", description: "Start the local Codex runtime shell contract" },
+    { command: "init", description: "Materialize the shipped .codex runtime assets into the current project" },
     { command: "mcp", description: "Start the local Codex MCP stdio runtime or inspect its subcommands", options: getMcpCommandCatalog() },
     { command: "tools", description: "Print the current MCP tool catalog" },
     { command: "catalog", description: "Print the shipped local agent and skill catalog" },

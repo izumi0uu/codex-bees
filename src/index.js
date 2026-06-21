@@ -12,6 +12,7 @@ import { getRuntimeContractView } from "./runtime-contract.js";
 import { getRuntimeDoctorView } from "./doctor.js";
 import { getPackageMetadataView, PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
+import { initWorkspace, previewWorkspaceInit } from "./init.js";
 import {
   activateSwarm,
   addTask,
@@ -479,6 +480,19 @@ function readPositiveIntegerOption(flag) {
     exit(1);
   }
   return parsed;
+}
+
+function handleInit() {
+  const preview = argv.includes("--preview");
+  const force = argv.includes("--force");
+  const targetDirectory = readOption("--dir") ?? readOption("--target") ?? undefined;
+
+  if (preview) {
+    write(JSON.stringify({ init: previewWorkspaceInit({ targetDirectory, force }) }, null, 2) + "\n");
+    return;
+  }
+
+  write(JSON.stringify({ init: initWorkspace({ targetDirectory, force }) }, null, 2) + "\n");
 }
 
 function printTasks() {
@@ -1279,6 +1293,9 @@ async function runCommand(command) {
       return;
     case "mcp":
       await runMcpCli(argv.slice(3));
+      return;
+    case "init":
+      handleInit();
       return;
     case "tools":
       write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");

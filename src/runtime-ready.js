@@ -6,10 +6,11 @@ export function getRuntimeReadyView() {
     recommendedReason: "runtime_entry_ready",
     status: "ready",
     counts: {
-      nextSteps: 5
+      nextSteps: 6
     },
     contract: getRuntimeContractView(),
     next: [
+      "use `codex-bees init` to materialize the shipped .codex project assets",
       "use `codex-bees doctor` to inspect runtime boundaries",
       "use `codex-bees tools` to inspect current MCP tool catalog",
       "use `codex-bees task:add --title ...` to create local work items",
