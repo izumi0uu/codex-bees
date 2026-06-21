@@ -97,3 +97,48 @@ export function transitionLoadedSwarmState(
   updateSwarmAtIndex(state.swarms, swarmIndex, next);
   return next;
 }
+
+export function syncLoadedSwarmLifecycle(
+  state,
+  swarmId,
+  {
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask,
+    deriveSwarmStatus,
+    buildSyncedSwarmState,
+    deriveSwarmSyncReason
+  }
+) {
+  const swarmIndex = findSwarmIndex(state, swarmId);
+  if (swarmIndex < 0) {
+    return null;
+  }
+
+  const current = normalizeSwarm(state.swarms[swarmIndex]);
+  if (isCancelledSwarm(current)) {
+    return {
+      swarm: current,
+      derivedStatus: "cancelled",
+      changed: false,
+      recommendedReason: "cancelled_swarm_unchanged"
+    };
+  }
+
+  const swarmTasks = collectSwarmTasks(state.tasks, current.id, normalizeTask);
+  const derivedStatus = deriveSwarmStatus(current, swarmTasks);
+  const next = normalizeSwarm(buildSyncedSwarmState(current, derivedStatus));
+  updateSwarmAtIndex(state.swarms, swarmIndex, next);
+
+  const changed = next.status !== current.status;
+  return {
+    swarm: next,
+    derivedStatus,
+    changed,
+    recommendedReason: deriveSwarmSyncReason({
+      previousStatus: current.status,
+      derivedStatus,
+      changed
+    })
+  };
+}

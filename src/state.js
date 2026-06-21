@@ -49,6 +49,7 @@ import {
   buildSyncedSwarmState,
   buildTransitionedSwarmState,
   syncLoadedSwarmState,
+  syncLoadedSwarmLifecycle,
   transitionLoadedSwarmState,
 } from "./state-swarm-core.js";
 import {
@@ -3393,45 +3394,24 @@ export function runtimeRoleCatalog() {
 
 export function syncSwarmStatus(id) {
   const state = loadState();
-  const index = state.swarms.findIndex((item) => item.id === id);
-  if (index < 0) {
+  const result = syncLoadedSwarmLifecycle(state, id, {
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask,
+    deriveSwarmStatus,
+    buildSyncedSwarmState,
+    deriveSwarmSyncReason
+  });
+  if (!result) {
     return null;
   }
-
-  const current = normalizeSwarm(state.swarms[index]);
-  if (current.status === "cancelled") {
-    return {
-      kind: "swarm_sync",
-      recommendedReason: "cancelled_swarm_unchanged",
-      swarm: current,
-      derivedStatus: "cancelled",
-      changed: false
-    };
-  }
-
-  const swarmTasks = state.tasks
-    .map(normalizeTask)
-    .filter((task) => task.swarmId === current.id);
-  const derivedStatus = deriveSwarmStatus(current, swarmTasks);
-  const next = normalizeSwarm({
-    ...current,
-    status: derivedStatus,
-    updatedAt: new Date().toISOString()
-  });
-
-  state.swarms[index] = next;
   saveState(state);
-  const changed = next.status !== current.status;
   return {
     kind: "swarm_sync",
-    recommendedReason: deriveSwarmSyncReason({
-      previousStatus: current.status,
-      derivedStatus,
-      changed
-    }),
-    swarm: next,
-    derivedStatus,
-    changed
+    recommendedReason: result.recommendedReason,
+    swarm: result.swarm,
+    derivedStatus: result.derivedStatus,
+    changed: result.changed
   };
 }
 
