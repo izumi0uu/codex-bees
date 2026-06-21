@@ -270,6 +270,7 @@ import {
   buildRuntimeSignalPackSummary,
   buildRuntimeSummaryPackView,
   buildRuntimeSummaryPackSummary,
+  buildRuntimeWorkspacePackViewFromSources,
   buildRuntimeTriagePackView,
   buildRuntimeTriagePackSummary,
   buildRuntimeVerifierPackSummary,
@@ -1272,7 +1273,7 @@ export function runtimeQueuePack(input = {}) {
 }
 
 export function runtimeWorkspacePack(input = {}) {
-  return buildRuntimeWorkspacePackView(
+  return buildRuntimeWorkspacePackViewFromSources(
     input,
     {
       runtimeDashboard,
@@ -1285,7 +1286,8 @@ export function runtimeWorkspacePack(input = {}) {
     {
       deriveRuntimeWorkspacePackSurface,
       deriveRuntimeWorkspacePackReason,
-      buildRuntimeWorkspacePackSummary
+      buildRuntimeWorkspacePackSummary,
+      buildRuntimeWorkspacePackView
     }
   );
 }

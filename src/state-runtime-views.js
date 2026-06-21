@@ -1728,6 +1728,41 @@ export function buildRuntimeWorkspacePackView(
   };
 }
 
+export function buildRuntimeWorkspacePackViewFromSources(
+  input,
+  {
+    runtimeDashboard,
+    runtimeDispatch,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeReview,
+    runtimeRecovery
+  },
+  {
+    deriveRuntimeWorkspacePackSurface,
+    deriveRuntimeWorkspacePackReason,
+    buildRuntimeWorkspacePackSummary,
+    buildRuntimeWorkspacePackView
+  }
+) {
+  return buildRuntimeWorkspacePackView(
+    input,
+    {
+      runtimeDashboard,
+      runtimeDispatch,
+      leaderAssignmentDispatchBundle,
+      leaderAssignmentLaunchPlan,
+      runtimeReview,
+      runtimeRecovery
+    },
+    {
+      deriveRuntimeWorkspacePackSurface,
+      deriveRuntimeWorkspacePackReason,
+      buildRuntimeWorkspacePackSummary
+    }
+  );
+}
+
 export function deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack }) {
   if (summaryPack?.recommendedSurface) {
     return "runtime:summary-pack";
