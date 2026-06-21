@@ -274,6 +274,8 @@ import {
 import {
   VALID_QUEUE_STATUSES,
   VALID_SWARM_STATUSES,
+  buildSwarmValidationView,
+  buildTaskValidationView,
   canTransitionSwarm,
   canTransitionTask,
   deriveSwarmStatus,
@@ -3378,12 +3380,7 @@ export function validateTask(id) {
   if (!task) {
     return null;
   }
-  const validation = validateTaskValue(task, runtimeRoleCatalog());
-  return {
-    kind: "task_validation",
-    recommendedReason: deriveTaskValidationReason(validation),
-    ...validation
-  };
+  return buildTaskValidationView(task, runtimeRoleCatalog());
 }
 
 export function validateSwarm(id) {
@@ -3391,12 +3388,7 @@ export function validateSwarm(id) {
   if (!swarm) {
     return null;
   }
-  const validation = validateSwarmValue(swarm, runtimeRoleCatalog());
-  return {
-    kind: "swarm_validation",
-    recommendedReason: deriveSwarmValidationReason(validation),
-    ...validation
-  };
+  return buildSwarmValidationView(swarm, runtimeRoleCatalog());
 }
 
 export function runtimeRoleCatalog() {

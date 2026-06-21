@@ -191,6 +191,24 @@ export function deriveSwarmValidationReason(validation) {
   return "swarm_validation_visible";
 }
 
+export function buildTaskValidationView(task, roleCatalog) {
+  const validation = validateTaskValue(task, roleCatalog);
+  return {
+    kind: "task_validation",
+    recommendedReason: deriveTaskValidationReason(validation),
+    ...validation
+  };
+}
+
+export function buildSwarmValidationView(swarm, roleCatalog) {
+  const validation = validateSwarmValue(swarm, roleCatalog);
+  return {
+    kind: "swarm_validation",
+    recommendedReason: deriveSwarmValidationReason(validation),
+    ...validation
+  };
+}
+
 export function deriveSwarmStatus(swarm, tasks) {
   if (swarm.status === "cancelled") {
     return "cancelled";
