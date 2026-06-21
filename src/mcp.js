@@ -4,7 +4,7 @@ import { PRODUCT_NAME } from "./metadata.js";
 import { getAgentCatalogEntryView, getAgentCatalogListView, getRuntimeCatalogView, getSkillCatalogEntryView, getSkillCatalogListView } from "./catalog.js";
 import { getPackageMetadata, PACKAGE_VERSION } from "./metadata.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
-import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
+import { getCapabilityCatalog, getCapabilityCatalogEntryView, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
 import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
@@ -210,6 +210,17 @@ export const toolCatalog = [
     inputSchema: {
       type: "object",
       properties: {}
+    }
+  },
+  {
+    name: "runtime_capability",
+    description: "Return one shipped runtime capability view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" }
+      },
+      required: ["id"]
     }
   },
   {
@@ -1492,6 +1503,13 @@ function handleRequest(message) {
 
     if (name === "runtime_capabilities") {
       return createSuccess(id, createTextPayload({ capabilities: getCapabilityCatalogView() }));
+    }
+
+    if (name === "runtime_capability") {
+      if (!params.arguments?.id) {
+        return createError(id, -32602, "runtime_capability requires arguments.id");
+      }
+      return createSuccess(id, createTextPayload({ capability: getCapabilityCatalogEntryView(params.arguments.id) }));
     }
 
     if (name === "runtime_activity") {

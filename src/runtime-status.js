@@ -16,7 +16,7 @@ const CAPABILITY_CATALOG = [
     category: "runtime",
     description: "Local MCP stdio server exposing coordination and runtime inspection tools.",
     cliCommands: ["mcp"],
-    mcpTools: ["runtime_ready", "runtime_contract", "runtime_catalog", "runtime_status", "runtime_capabilities"]
+    mcpTools: ["runtime_ready", "runtime_contract", "runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_capability"]
   },
   {
     id: "planning",
@@ -119,7 +119,7 @@ const CAPABILITY_CATALOG = [
       "read compact launch context without opening larger leader packs"
     ],
     cliCommands: ["catalog", "status", "capabilities", "doctor", "runtime:activity", "runtime:assignment-pack", "runtime:closeout", "runtime:closeout-pack", "runtime:control-pack", "runtime:dashboard", "runtime:dispatch", "runtime:dispatch-pack", "runtime:execution-pack", "runtime:focus", "runtime:handoff-pack", "runtime:handoffs", "runtime:leader-pack", "runtime:operator-pack", "runtime:owner-pack", "runtime:pickup-pack", "runtime:queue-pack", "runtime:recovery", "runtime:recovery-pack", "runtime:review", "runtime:review-pack", "runtime:role-pack", "runtime:session-pack", "runtime:signal-pack", "runtime:summary-pack", "runtime:triage-pack", "runtime:verifier-pack", "runtime:workspace-pack", "runtime:worker-pack", "runtime:alerts", "runtime:roles", "task:assignment-preview", "task:assignment-pickup", "task:pickup-preview"],
-    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_activity", "runtime_assignment_pack", "runtime_closeout", "runtime_closeout_pack", "runtime_control_pack", "runtime_dashboard", "runtime_dispatch", "runtime_dispatch_pack", "runtime_execution_pack", "runtime_focus", "runtime_handoff_pack", "runtime_handoffs", "runtime_leader_pack", "runtime_operator_pack", "runtime_owner_pack", "runtime_pickup_pack", "runtime_queue_pack", "runtime_recovery", "runtime_recovery_pack", "runtime_review", "runtime_review_pack", "runtime_role_pack", "runtime_session_pack", "runtime_signal_pack", "runtime_summary_pack", "runtime_triage_pack", "runtime_verifier_pack", "runtime_workspace_pack", "runtime_worker_pack", "runtime_alerts", "runtime_roles", "task_assignment_preview", "task_assignment_pickup", "task_pickup_preview"]
+    mcpTools: ["runtime_catalog", "runtime_status", "runtime_capabilities", "runtime_capability", "runtime_activity", "runtime_assignment_pack", "runtime_closeout", "runtime_closeout_pack", "runtime_control_pack", "runtime_dashboard", "runtime_dispatch", "runtime_dispatch_pack", "runtime_execution_pack", "runtime_focus", "runtime_handoff_pack", "runtime_handoffs", "runtime_leader_pack", "runtime_operator_pack", "runtime_owner_pack", "runtime_pickup_pack", "runtime_queue_pack", "runtime_recovery", "runtime_recovery_pack", "runtime_review", "runtime_review_pack", "runtime_role_pack", "runtime_session_pack", "runtime_signal_pack", "runtime_summary_pack", "runtime_triage_pack", "runtime_verifier_pack", "runtime_workspace_pack", "runtime_worker_pack", "runtime_alerts", "runtime_roles", "task_assignment_preview", "task_assignment_pickup", "task_pickup_preview"]
   }
 ];
 
