@@ -123,6 +123,74 @@ export function buildSwarmOverviewData(
   };
 }
 
+export function buildSwarmOverviewView(
+  id,
+  {
+    loadState,
+    normalizeSwarm,
+    normalizeTask,
+    buildSwarmOverviewData,
+    deriveSwarmStatus,
+    deriveSwarmOverviewReason
+  }
+) {
+  const state = loadState();
+  const swarm = state.swarms.find((item) => item.id === id);
+  if (!swarm) {
+    return null;
+  }
+
+  const normalizedSwarm = normalizeSwarm(swarm);
+  const swarmTasks = state.tasks
+    .map(normalizeTask)
+    .filter((task) => task.swarmId === normalizedSwarm.id);
+  const overview = buildSwarmOverviewData(normalizedSwarm, swarmTasks, {
+    deriveSwarmStatus,
+    deriveSwarmOverviewReason
+  });
+
+  return {
+    kind: "swarm_overview",
+    recommendedReason: overview.recommendedReason,
+    swarm: normalizedSwarm,
+    counts: overview.counts,
+    lanes: overview.lanes,
+    tasks: overview.tasks,
+    nextLane: overview.nextLane,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    readyToComplete: overview.readyToComplete,
+    dispatchableCount: overview.dispatchableCount
+  };
+}
+
+export function buildSwarmOverviewViewFromSources(
+  id,
+  {
+    loadState,
+    normalizeSwarm,
+    normalizeTask,
+    buildSwarmOverviewData,
+    deriveSwarmStatus,
+    deriveSwarmOverviewReason
+  },
+  {
+    buildSwarmOverviewView
+  }
+) {
+  return buildSwarmOverviewView(
+    id,
+    {
+      loadState,
+      normalizeSwarm,
+      normalizeTask,
+      buildSwarmOverviewData,
+      deriveSwarmStatus,
+      deriveSwarmOverviewReason
+    }
+  );
+}
+
 export function buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout) {
   const closeout = swarmCloseout(overview.swarm.id);
   return {

@@ -224,6 +224,8 @@ import {
 } from "./state-dashboard-views.js";
 import {
   buildSwarmOverviewData,
+  buildSwarmOverviewView,
+  buildSwarmOverviewViewFromSources,
   buildSwarmBlockersSummary,
   buildSwarmCloseoutSummary,
   buildSwarmDispatchBundleSummary,
@@ -1716,34 +1718,20 @@ export function syncSwarmStatus(id) {
 }
 
 export function swarmOverview(id) {
-  const state = loadState();
-  const swarm = state.swarms.find((item) => item.id === id);
-  if (!swarm) {
-    return null;
-  }
-
-  const normalizedSwarm = normalizeSwarm(swarm);
-  const swarmTasks = state.tasks
-    .map(normalizeTask)
-    .filter((task) => task.swarmId === normalizedSwarm.id);
-  const overview = buildSwarmOverviewData(normalizedSwarm, swarmTasks, {
-    deriveSwarmStatus,
-    deriveSwarmOverviewReason
-  });
-
-  return {
-    kind: "swarm_overview",
-    recommendedReason: overview.recommendedReason,
-    swarm: normalizedSwarm,
-    counts: overview.counts,
-    lanes: overview.lanes,
-    tasks: overview.tasks,
-    nextLane: overview.nextLane,
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
-    readyToComplete: overview.readyToComplete,
-    dispatchableCount: overview.dispatchableCount
-  };
+  return buildSwarmOverviewViewFromSources(
+    id,
+    {
+      loadState,
+      normalizeSwarm,
+      normalizeTask,
+      buildSwarmOverviewData,
+      deriveSwarmStatus,
+      deriveSwarmOverviewReason
+    },
+    {
+      buildSwarmOverviewView
+    }
+  );
 }
 
 export function addTask(input) {
