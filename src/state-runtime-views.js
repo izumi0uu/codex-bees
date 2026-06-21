@@ -2232,6 +2232,35 @@ export function buildRuntimeTriagePackView(
   };
 }
 
+export function buildRuntimeTriagePackViewFromSources(
+  {
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeReview,
+    runtimeRecovery
+  },
+  {
+    deriveRuntimeTriagePackSurface,
+    deriveRuntimeTriagePackReason,
+    buildRuntimeTriagePackSummary,
+    buildRuntimeTriagePackView
+  }
+) {
+  return buildRuntimeTriagePackView(
+    {
+      runtimeFocus,
+      runtimeAlerts,
+      runtimeReview,
+      runtimeRecovery
+    },
+    {
+      deriveRuntimeTriagePackSurface,
+      deriveRuntimeTriagePackReason,
+      buildRuntimeTriagePackSummary
+    }
+  );
+}
+
 export function deriveRuntimeSessionPackSurface({ workerPack, ownerPack, verifierPack, roleEntry, role, workerId }) {
   if (workerPack?.recommendedSurface && workerPack.recommendedSurface !== "worker:session") {
     return workerPack.recommendedSurface;

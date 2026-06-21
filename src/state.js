@@ -273,6 +273,7 @@ import {
   buildRuntimeSummaryPackSummary,
   buildRuntimeWorkspacePackViewFromSources,
   buildRuntimeHandoffPackViewFromSources,
+  buildRuntimeTriagePackViewFromSources,
   buildRuntimeTriagePackView,
   buildRuntimeTriagePackSummary,
   buildRuntimeVerifierPackSummary,
@@ -1347,7 +1348,7 @@ export function runtimeHandoffPack() {
 }
 
 export function runtimeTriagePack() {
-  return buildRuntimeTriagePackView(
+  return buildRuntimeTriagePackViewFromSources(
     {
       runtimeFocus,
       runtimeAlerts,
@@ -1357,7 +1358,8 @@ export function runtimeTriagePack() {
     {
       deriveRuntimeTriagePackSurface,
       deriveRuntimeTriagePackReason,
-      buildRuntimeTriagePackSummary
+      buildRuntimeTriagePackSummary,
+      buildRuntimeTriagePackView
     }
   );
 }
