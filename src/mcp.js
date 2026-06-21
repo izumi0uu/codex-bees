@@ -1,6 +1,6 @@
 import { argv, stdin, stdout, stderr, exit } from "node:process";
 import { fileURLToPath } from "node:url";
-import { PRODUCT_NAME } from "./metadata.js";
+import { getPackageMetadataView, PRODUCT_NAME } from "./metadata.js";
 import { getAgentCatalogEntryView, getAgentCatalogListView, getRuntimeCatalogView, getSkillCatalogEntryView, getSkillCatalogListView } from "./catalog.js";
 import { getPackageMetadata, PACKAGE_VERSION } from "./metadata.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
@@ -118,6 +118,14 @@ import {
 } from "./state.js";
 
 export const toolCatalog = [
+  {
+    name: "package_metadata",
+    description: "Return the shipped package identity contract for the local runtime.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
   {
     name: "coordination_overview",
     description: "Describe the current local coordination model for Codex Bees.",
@@ -1454,6 +1462,10 @@ function handleRequest(message) {
 
     if (name === "coordination_overview") {
       return createSuccess(id, createTextPayload({ overview: getCoordinationOverviewView() }));
+    }
+
+    if (name === "package_metadata") {
+      return createSuccess(id, createTextPayload({ metadata: getPackageMetadataView() }));
     }
 
     if (name === "worker_guidelines") {
