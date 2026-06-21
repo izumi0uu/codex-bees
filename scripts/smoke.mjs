@@ -8077,6 +8077,24 @@ const runtimeGuidanceMcpInput = [
       name: "worker_guidelines",
       arguments: {}
     }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "runtime_catalog_agents",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "runtime_catalog_skills",
+      arguments: {}
+    }
   })
 ].join("\n") + "\n";
 const runtimeGuidanceMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
@@ -8089,6 +8107,8 @@ const runtimeGuidanceMcpLines = runtimeGuidanceMcp.stdout
   .filter(Boolean);
 const coordinationOverviewMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[1]).result.content[0].text);
 const workerGuidelinesMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[2]).result.content[0].text);
+const runtimeCatalogAgentsMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[3]).result.content[0].text);
+const runtimeCatalogSkillsMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[4]).result.content[0].text);
 if (
   runtimeGuidanceMcp.status !== 0 ||
   coordinationOverviewMcpPayload.overview?.kind !== "coordination_overview_view" ||
@@ -8098,9 +8118,15 @@ if (
   workerGuidelinesMcpPayload.guidelines?.kind !== "worker_guidelines_view" ||
   workerGuidelinesMcpPayload.guidelines?.recommendedReason !== "worker_guidelines_loaded" ||
   workerGuidelinesMcpPayload.guidelines?.counts?.validationSteps !== 3 ||
-  workerGuidelinesMcpPayload.guidelines?.guidelines?.fileOwnership !== "one active writer per file"
+  workerGuidelinesMcpPayload.guidelines?.guidelines?.fileOwnership !== "one active writer per file" ||
+  runtimeCatalogAgentsMcpPayload.agents?.kind !== "runtime_catalog_lane_view" ||
+  runtimeCatalogAgentsMcpPayload.agents?.entryType !== "agent" ||
+  !runtimeCatalogAgentsMcpPayload.agents?.entries?.some((entry) => entry.id === "executor") ||
+  runtimeCatalogSkillsMcpPayload.skills?.kind !== "runtime_catalog_lane_view" ||
+  runtimeCatalogSkillsMcpPayload.skills?.entryType !== "skill" ||
+  !runtimeCatalogSkillsMcpPayload.skills?.entries?.some((entry) => entry.id === "project-development")
 ) {
-  console.error("[smoke:runtime-guidance-mcp] expected MCP coordination and worker guidance views");
+  console.error("[smoke:runtime-guidance-mcp] expected MCP guidance and runtime catalog lane views");
   console.error(runtimeGuidanceMcp.stderr || runtimeGuidanceMcp.stdout);
   process.exit(1);
 }
