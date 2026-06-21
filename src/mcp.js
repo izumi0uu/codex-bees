@@ -1,7 +1,7 @@
 import { argv, stdin, stdout, stderr, exit } from "node:process";
 import { fileURLToPath } from "node:url";
 import { PRODUCT_NAME } from "./metadata.js";
-import { getRuntimeCatalogView } from "./catalog.js";
+import { getAgentCatalogListView, getRuntimeCatalogView, getSkillCatalogListView } from "./catalog.js";
 import { getPackageMetadata, PACKAGE_VERSION } from "./metadata.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { getCapabilityCatalog, getCapabilityCatalogView, getRuntimeStatus, getRuntimeStatusView } from "./runtime-status.js";
@@ -144,6 +144,22 @@ export const toolCatalog = [
   {
     name: "runtime_catalog",
     description: "Return the shipped local agent and skill catalog.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_catalog_agents",
+    description: "Return the shipped local agent catalog lane view.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_catalog_skills",
+    description: "Return the shipped local skill catalog lane view.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1408,6 +1424,14 @@ function handleRequest(message) {
 
     if (name === "runtime_catalog") {
       return createSuccess(id, createTextPayload({ catalog: getRuntimeCatalogView() }));
+    }
+
+    if (name === "runtime_catalog_agents") {
+      return createSuccess(id, createTextPayload({ agents: getAgentCatalogListView() }));
+    }
+
+    if (name === "runtime_catalog_skills") {
+      return createSuccess(id, createTextPayload({ skills: getSkillCatalogListView() }));
     }
 
     if (name === "runtime_status") {
