@@ -187,6 +187,107 @@ export function buildTaskBriefViewFromSources(
   );
 }
 
+export function buildSwarmBriefView(
+  id,
+  {
+    swarmOverview,
+    getRuntimeCatalog,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    recommendLaneAction,
+    recommendSwarmAction,
+    describeRole,
+    buildSwarmHandoff,
+    deriveSwarmBriefReason
+  }
+) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const catalog = getRuntimeCatalog();
+  const validation = validateSwarmValue(overview.swarm, runtimeRoleCatalog());
+  const lanes = overview.lanes.map((laneSummary) => {
+    const task = laneSummary.taskId
+      ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
+      : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
+    const recommended = recommendLaneAction(laneSummary, task);
+
+    return {
+      lane: laneSummary.lane,
+      summary: laneSummary.summary,
+      owner: describeRole(laneSummary.owner, catalog),
+      verifier: describeRole(laneSummary.verifier, catalog),
+      taskId: laneSummary.taskId,
+      taskQueueStatus: task?.queueStatus ?? null,
+      claimedBy: task?.claimedBy ?? null,
+      scope: laneSummary.scope ?? [],
+      acceptance: task?.acceptance ?? [],
+      verification: task?.verification ?? [],
+      ready: laneSummary.ready,
+      done: laneSummary.done,
+      recommendedNextActor: recommended.actor,
+      recommendedNextAction: recommended.action,
+      recommendedCommands: recommended.commands
+    };
+  });
+  const recommended = recommendSwarmAction(overview, lanes);
+  const recommendedReason = deriveSwarmBriefReason(recommended);
+
+  return {
+    kind: "swarm_execution_brief",
+    recommendedReason,
+    swarm: overview.swarm,
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    counts: overview.counts,
+    readyToComplete: overview.readyToComplete,
+    dispatchableCount: overview.dispatchableCount,
+    owner: describeRole(overview.swarm.owner, catalog),
+    lanes,
+    nextLane: lanes.find((lane) => lane.lane === overview.nextLane?.lane) ?? null,
+    validation,
+    leaderHandoff: buildSwarmHandoff(overview, recommended),
+    recommendedNextActor: recommended.actor,
+    recommendedNextAction: recommended.action,
+    recommendedCommands: recommended.commands
+  };
+}
+
+export function buildSwarmBriefViewFromSources(
+  id,
+  {
+    swarmOverview,
+    getRuntimeCatalog,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    recommendLaneAction,
+    recommendSwarmAction,
+    describeRole,
+    buildSwarmHandoff,
+    deriveSwarmBriefReason
+  },
+  {
+    buildSwarmBriefView
+  }
+) {
+  return buildSwarmBriefView(
+    id,
+    {
+      swarmOverview,
+      getRuntimeCatalog,
+      validateSwarmValue,
+      runtimeRoleCatalog,
+      recommendLaneAction,
+      recommendSwarmAction,
+      describeRole,
+      buildSwarmHandoff,
+      deriveSwarmBriefReason
+    }
+  );
+}
+
 export function recommendTaskAction(task) {
   if (task.queueStatus === "done") {
     return {
