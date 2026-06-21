@@ -1,10 +1,7 @@
 import {
   existsSync,
   mkdirSync,
-  readFileSync,
-  renameSync,
-  unlinkSync,
-  writeFileSync
+  readFileSync
 } from "node:fs";
 import { join } from "node:path";
 import { cwd } from "node:process";
@@ -52,6 +49,18 @@ import {
   buildSyncedSwarmState,
   buildTransitionedSwarmState
 } from "./state-swarm-core.js";
+import {
+  findSwarmIndex,
+  findTaskIndex,
+  validateNextQueueStatus,
+  validateNextSwarmStatus,
+  validateRequiredClaimedBy,
+  validateSwarmStatusTransition,
+  validateTaskClaimConflict,
+  validateTaskClaimReady,
+  validateTaskQueueTransition,
+  validateVerifierAction
+} from "./state-transition-guards.js";
 import {
   buildTaskReviewPatch,
   deriveTaskTransitionContext,
@@ -4048,7 +4057,7 @@ export function cancelSwarm(input) {
 }
 
 function syncSwarmInLoadedState(state, swarmId) {
-  const swarmIndex = state.swarms.findIndex((item) => item.id === swarmId);
+  const swarmIndex = findSwarmIndex(state, swarmId);
   if (swarmIndex < 0) {
     return null;
   }
@@ -4070,7 +4079,7 @@ function syncSwarmInLoadedState(state, swarmId) {
 
 function transitionTask(input) {
   const state = loadState();
-  const index = state.tasks.findIndex((task) => task.id === input.id);
+  const index = findTaskIndex(state, input.id);
   if (index < 0) {
     return null;
   }
@@ -4083,46 +4092,54 @@ function transitionTask(input) {
     verifierActor
   } = deriveTaskTransitionContext(current, input);
 
-  if (!VALID_QUEUE_STATUSES.has(nextQueueStatus)) {
-    return { error: `Invalid queue status: ${nextQueueStatus}` };
+  const nextStatusError = validateNextQueueStatus(nextQueueStatus, VALID_QUEUE_STATUSES);
+  if (nextStatusError) {
+    return nextStatusError;
   }
 
-  if (
-    current.queueStatus !== nextQueueStatus &&
-    !canTransitionTask(current.queueStatus, nextQueueStatus)
-  ) {
-    return {
-      error: `Cannot transition task from ${current.queueStatus} to ${nextQueueStatus}`
-    };
+  const transitionError = validateTaskQueueTransition(
+    current.queueStatus,
+    nextQueueStatus,
+    canTransitionTask
+  );
+  if (transitionError) {
+    return transitionError;
   }
 
-  if (input.requireClaimedBy && !input.claimedBy) {
-    return { error: "claimedBy is required for this transition" };
+  const requiredClaimError = validateRequiredClaimedBy(input);
+  if (requiredClaimError) {
+    return requiredClaimError;
   }
 
-  if (nextQueueStatus === "claimed" && !isVerifierReturn) {
-    const validation = validateTaskValue(current, runtimeRoleCatalog());
-    if (!validation.ready) {
-      return { error: `Task ${current.id} is not ready to claim`, validation };
-    }
+  const claimReadyError = validateTaskClaimReady(
+    current,
+    nextQueueStatus,
+    isVerifierReturn,
+    validateTaskValue,
+    runtimeRoleCatalog
+  );
+  if (claimReadyError) {
+    return claimReadyError;
   }
 
-  if (isVerifierApproval || isVerifierReturn) {
-    if (current.queueStatus !== "ready_for_review") {
-      return { error: `Task ${current.id} must be ready_for_review before verifier action` };
-    }
-    if (!verifierActor) {
-      return { error: "reviewedBy is required for verifier action" };
-    }
-    if (!current.verifier || current.verifier !== verifierActor) {
-      return { error: `Task ${current.id} must be reviewed by verifier ${current.verifier ?? "unknown"}` };
-    }
+  const verifierActionError = validateVerifierAction(
+    current,
+    isVerifierApproval,
+    isVerifierReturn,
+    verifierActor
+  );
+  if (verifierActionError) {
+    return verifierActionError;
   }
 
-  if (current.claimedBy && current.claimedBy !== input.claimedBy) {
-    if (!isVerifierReturn && (nextQueueStatus === "claimed" || input.claimedBy)) {
-      return { error: `Task already claimed by ${current.claimedBy}` };
-    }
+  const claimConflictError = validateTaskClaimConflict(
+    current,
+    input,
+    nextQueueStatus,
+    isVerifierReturn
+  );
+  if (claimConflictError) {
+    return claimConflictError;
   }
 
   const claimedBy = resolveTaskClaimedBy(current, input, nextQueueStatus, isVerifierReturn);
@@ -4155,7 +4172,7 @@ function transitionTask(input) {
 
 function transitionSwarm(input) {
   const state = loadState();
-  const index = state.swarms.findIndex((swarm) => swarm.id === input.id);
+  const index = findSwarmIndex(state, input.id);
   if (index < 0) {
     return null;
   }
@@ -4163,14 +4180,18 @@ function transitionSwarm(input) {
   const current = normalizeSwarm(state.swarms[index]);
   const nextStatus = input.nextStatus;
 
-  if (!VALID_SWARM_STATUSES.has(nextStatus)) {
-    return { error: `Invalid swarm status: ${nextStatus}` };
+  const nextStatusError = validateNextSwarmStatus(nextStatus, VALID_SWARM_STATUSES);
+  if (nextStatusError) {
+    return nextStatusError;
   }
 
-  if (current.status !== nextStatus && !canTransitionSwarm(current.status, nextStatus)) {
-    return {
-      error: `Cannot transition swarm from ${current.status} to ${nextStatus}`
-    };
+  const transitionError = validateSwarmStatusTransition(
+    current.status,
+    nextStatus,
+    canTransitionSwarm
+  );
+  if (transitionError) {
+    return transitionError;
   }
 
   const next = normalizeSwarm(buildTransitionedSwarmState(current, input));
