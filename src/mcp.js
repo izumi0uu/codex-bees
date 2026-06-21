@@ -8,6 +8,7 @@ import { getCapabilityCatalog, getCapabilityCatalogEntryView, getCapabilityCatal
 import { getRuntimeContractView } from "./runtime-contract.js";
 import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-guidance.js";
 import { getRuntimeReadyView } from "./runtime-ready.js";
+import { getRuntimeDoctorView } from "./doctor.js";
 import {
   activateSwarm,
   addTask,
@@ -121,6 +122,14 @@ export const toolCatalog = [
   {
     name: "package_metadata",
     description: "Return the shipped package identity contract for the local runtime.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_doctor",
+    description: "Return the runtime doctor diagnostics view for the local entrypoint.",
     inputSchema: {
       type: "object",
       properties: {}
@@ -1466,6 +1475,10 @@ function handleRequest(message) {
 
     if (name === "package_metadata") {
       return createSuccess(id, createTextPayload({ metadata: getPackageMetadataView() }));
+    }
+
+    if (name === "runtime_doctor") {
+      return createSuccess(id, createTextPayload({ doctor: getRuntimeDoctorView(import.meta.url) }));
     }
 
     if (name === "worker_guidelines") {
