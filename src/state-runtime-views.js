@@ -694,6 +694,43 @@ export function buildRuntimeLeaderPackView(
   };
 }
 
+export function buildRuntimeLeaderPackViewFromSources(
+  input,
+  {
+    leaderWorkspace,
+    leaderQueue,
+    runtimeDispatch,
+    leaderAssignmentDispatchPack,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeCloseout
+  },
+  {
+    deriveRuntimeLeaderPackSurface,
+    deriveRuntimeLeaderPackReason,
+    buildRuntimeLeaderPackSummary,
+    buildRuntimeLeaderPackView
+  }
+) {
+  return buildRuntimeLeaderPackView(
+    input,
+    {
+      leaderWorkspace,
+      leaderQueue,
+      runtimeDispatch,
+      leaderAssignmentDispatchPack,
+      leaderAssignmentDispatchBundle,
+      leaderAssignmentLaunchPlan,
+      runtimeCloseout
+    },
+    {
+      deriveRuntimeLeaderPackSurface,
+      deriveRuntimeLeaderPackReason,
+      buildRuntimeLeaderPackSummary
+    }
+  );
+}
+
 export function buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts) {
   const detail =
     focus?.summary ??

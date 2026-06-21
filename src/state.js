@@ -258,6 +258,7 @@ import {
   buildRuntimeReviewPackViewFromSources,
   buildRuntimeReviewPackView,
   buildRuntimeLeaderPackSummary,
+  buildRuntimeLeaderPackViewFromSources,
   buildRuntimeLeaderPackView,
   buildLeaderWorkspaceView,
   buildLeaderWorkspaceSummary,
@@ -1477,7 +1478,7 @@ export function runtimeAssignmentPack(input = {}) {
 }
 
 export function runtimeLeaderPack(input = {}) {
-  return buildRuntimeLeaderPackView(
+  return buildRuntimeLeaderPackViewFromSources(
     input,
     {
       leaderWorkspace,
@@ -1491,7 +1492,8 @@ export function runtimeLeaderPack(input = {}) {
     {
       deriveRuntimeLeaderPackSurface,
       deriveRuntimeLeaderPackReason,
-      buildRuntimeLeaderPackSummary
+      buildRuntimeLeaderPackSummary,
+      buildRuntimeLeaderPackView
     }
   );
 }
