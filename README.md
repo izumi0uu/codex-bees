@@ -315,6 +315,7 @@ The package now also ships lightweight TypeScript declarations for the public AP
 
 ```bash
 node ./src/index.js run
+node ./src/index.js ready
 node ./src/index.js commands
 node ./src/index.js command:get --name init
 node ./src/index.js command:help --name init
@@ -539,7 +540,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `coordination_overview` and `worker_guidelines` expose explicit MCP guidance views for the shipped local coordination model. They emit `kind: "coordination_overview_view"` and `kind: "worker_guidelines_view"` with machine-readable `recommendedReason` values and small aggregate counts so MCP consumers can treat runtime guidance as stable product protocol instead of unstructured advisory prose. `guidance:overview` and `guidance:worker` expose those same views directly on the CLI, so automation can fetch the shipped coordination contract without opening the MCP transport first.
 
-`run` now exposes the explicit runtime readiness view. It emits `kind: "runtime_ready_view"` with a machine-readable `recommendedReason`, a next-step count, the shared runtime contract view, and the concrete startup suggestions so automation can treat the default entrypoint as stable protocol instead of free-form startup text.
+`run` now exposes the explicit runtime readiness view. It emits `kind: "runtime_ready_view"` with a machine-readable `recommendedReason`, a next-step count, the shared runtime contract view, and the concrete startup suggestions so automation can treat the default entrypoint as stable protocol instead of free-form startup text. `ready` exposes that same view through an explicit CLI command, so automation can bind to a named readiness surface instead of relying on the default entrypoint behavior.
 
 `status` and the MCP `runtime_status` tool expose the explicit runtime status view. They emit `kind: "runtime_status_view"` with a machine-readable `recommendedReason`, top-level aggregate counts, and the nested runtime summary so automation can distinguish an empty local state from a stateful runtime without inferring that only from the nested task/swarm/memory maps. `capabilities` and `runtime_capabilities` expose the explicit runtime capabilities view. They emit `kind: "runtime_capabilities_view"` with a machine-readable `recommendedReason`, category counts, and the nested capability inventory so automation can distinguish a loaded capability surface from an empty one without reparsing the full array first. `capabilities:get` exposes the paired single-capability view, returning `kind: "runtime_capability_view"` with `recommendedReason` set to `runtime_capability_loaded` or `runtime_capability_missing` so automation can inspect one shipped capability contract without walking the full list.
 
