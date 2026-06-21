@@ -101,6 +101,17 @@ const report = taskReport(releaseTask.id);
 
 The package manifest now aligns with that contract too: the root export and `main` entry both point at the library surface (`dist/api.js`), while the `codex-bees` bin continues to point at the CLI entrypoint. It also ships npm-facing project metadata for the public GitHub home, issue tracker, and searchable package keywords, so installed consumers get a package surface that behaves like a real maintained product instead of a bare internal tarball.
 
+The broader root / `codex-bees/api` surface is organized into a few stable helper families so consumers do not have to treat the 80+ exports as one undifferentiated blob:
+
+- catalog helpers: runtime catalog, agent catalog, skill catalog, and catalog path resolution
+- status helpers: runtime status, capability catalog, and runtime capability lookups
+- command helpers: top-level command catalog, init option catalog, and rendered help contracts
+- init helpers: workspace preview/apply bootstrap helpers
+- guidance helpers: coordination overview and worker guideline contracts
+- planner helpers: bounded task/swarm planning and planner-to-queue shaping
+- MCP runtime helpers: request handling, tool lookup, MCP help, and the advanced runtime boot helpers that stay root-only / api-only
+- state helpers: task, swarm, and memory lifecycle helpers for local bounded coordination
+
 Official subpath exports are also available for narrower integrations:
 
 - `codex-bees/api`
