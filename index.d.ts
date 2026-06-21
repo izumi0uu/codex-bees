@@ -47,6 +47,15 @@ export interface CommandHelpView {
   entry: CommandCatalogEntry | null;
 }
 
+export interface InitHelpView {
+  kind: "init_help_view";
+  recommendedReason: "init_help_loaded" | "init_help_fallback_loaded";
+  option: string | null;
+  matchedOption: string | null;
+  text: string;
+  entry: CommandOptionCatalogEntry | null;
+}
+
 export interface McpCommandCatalogView {
   kind: "mcp_command_catalog_view";
   recommendedReason: "mcp_command_catalog_loaded" | "mcp_command_catalog_empty";
@@ -835,6 +844,8 @@ export declare function getCommandCatalogEntry(command: string): CommandCatalogE
 export declare function getCommandHelpView(command?: string): CommandHelpView;
 export declare function getCommandCatalogView(): CommandCatalogView;
 export declare function getInitCommandCatalog(): CommandOptionCatalogEntry[];
+export declare function getInitCommandCatalogEntry(option: string): CommandOptionCatalogEntry | undefined;
+export declare function getInitHelpView(option?: string): InitHelpView;
 export declare function renderCommandHelpText(command: string): string;
 export declare function renderHelpText(): string;
 export declare function renderInitHelpText(): string;

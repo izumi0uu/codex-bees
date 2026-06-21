@@ -25,6 +25,8 @@ export {
   getCommandHelpView,
   getCommandCatalogView,
   getInitCommandCatalog,
+  getInitCommandCatalogEntry,
+  getInitHelpView,
   renderCommandHelpText,
   renderHelpText,
   renderInitHelpText

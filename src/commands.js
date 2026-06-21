@@ -13,6 +13,14 @@ export function getInitCommandCatalog() {
   return INIT_COMMAND_OPTIONS.map((entry) => ({ ...entry }));
 }
 
+export function getInitCommandCatalogEntry(option) {
+  if (!option) {
+    return undefined;
+  }
+
+  return getInitCommandCatalog().find((entry) => entry.option === option);
+}
+
 export function getCommandCatalog() {
   return [
     { command: "run", description: "Start the local Codex runtime shell contract" },
@@ -166,6 +174,20 @@ export function renderInitHelpText() {
     "Options:",
     ...getInitCommandCatalog().map((entry) => `  ${entry.option.padEnd(15)} ${entry.description}`)
   ].join("\n") + "\n";
+}
+
+export function getInitHelpView(option) {
+  const matchedOption = getInitCommandCatalogEntry(option);
+  const text = renderInitHelpText();
+
+  return {
+    kind: "init_help_view",
+    recommendedReason: matchedOption ? "init_help_loaded" : "init_help_fallback_loaded",
+    option: option ?? null,
+    matchedOption: matchedOption?.option ?? null,
+    text,
+    entry: matchedOption ?? null
+  };
 }
 
 export function renderCommandHelpText(command) {
