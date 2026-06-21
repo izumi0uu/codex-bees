@@ -33,6 +33,7 @@ export {
   getCommandCatalogView,
   getInitCommandCatalog,
   getInitCommandCatalogEntry,
+  getInitCommandCatalogEntryView,
   getInitHelpView,
   renderCommandHelpText,
   renderHelpText,

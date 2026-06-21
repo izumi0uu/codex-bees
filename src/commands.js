@@ -21,6 +21,18 @@ export function getInitCommandCatalogEntry(option) {
   return getInitCommandCatalog().find((entry) => entry.option === option);
 }
 
+export function getInitCommandCatalogEntryView(option) {
+  const matchedEntry = getInitCommandCatalogEntry(option);
+
+  return {
+    kind: "init_command_option_view",
+    recommendedReason: matchedEntry ? "init_command_option_loaded" : "init_command_option_missing",
+    option: option ?? null,
+    matchedOption: matchedEntry?.option ?? null,
+    entry: matchedEntry ?? null
+  };
+}
+
 export function getCommandCatalog() {
   return [
     { command: "run", description: "Start the local Codex runtime shell contract" },
