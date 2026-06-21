@@ -193,16 +193,18 @@ const listed = handleMcpRequest({ jsonrpc: "2.0", id: 1, method: "tools/list" })
 const contract = callMcpTool("runtime_contract");
 ```
 
-The `codex-bees/catalog` subpath exposes the same runtime catalog view that powers `codex-bees catalog`, so tooling can inspect shipped agents, skills, asset source selection, and effective `.codex` paths without scraping CLI output. It also exposes direct agent/skill entry lookup helpers, plus machine-readable single-agent and single-skill views when you already know the catalog id you want.
+The `codex-bees/catalog` subpath exposes the same runtime catalog view that powers `codex-bees catalog`, so tooling can inspect shipped agents, skills, asset source selection, and effective `.codex` paths without scraping CLI output. It also exposes direct agent/skill entry lookup helpers, machine-readable agent/skill lane list views, plus single-agent and single-skill views when you already know the catalog id you want.
 
 Example:
 
 ```js
-import { getAgentCatalogEntry, getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntry, getSkillCatalogEntryView } from "codex-bees/catalog";
+import { getAgentCatalogEntry, getAgentCatalogEntryView, getAgentCatalogListView, getRuntimeCatalogView, getSkillCatalogEntry, getSkillCatalogEntryView, getSkillCatalogListView } from "codex-bees/catalog";
 
 const catalog = getRuntimeCatalogView();
+const agents = getAgentCatalogListView();
 const executorAgent = getAgentCatalogEntry("executor");
 const executorAgentView = getAgentCatalogEntryView("executor");
+const skills = getSkillCatalogListView();
 const projectDevelopmentSkill = getSkillCatalogEntry("project-development");
 const projectDevelopmentSkillView = getSkillCatalogEntryView("project-development");
 ```
@@ -529,7 +531,7 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `plan:swarm:queue` / `queue_plan_swarm` return the explicit planner swarm queue result: the generated swarm contract plus the local lane tasks created from it. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane swarm queue events without inferring from the created-task array length alone.
 
-`catalog` and the MCP `runtime_catalog` tool expose the explicit runtime catalog view for shipped local agents and skills. They emit `kind: "runtime_catalog_view"` with a machine-readable `recommendedReason` plus inventory counts so automation can distinguish a loaded catalog from an empty one without inferring state only from nested arrays. `catalog:agents` and `catalog:skills` expose the narrower shipped local agent and skill inventories as direct CLI list surfaces, so automation can stay inside just one lane without unpacking the broader combined catalog payload first. `catalog:agent` and `catalog:skill` expose the paired single-entry views, returning `kind: "runtime_catalog_entry_view"` with `recommendedReason` set to `catalog_entry_loaded` or `catalog_entry_missing` so automation can inspect one shipped worker or skill contract without walking the full catalog. `doctor` now exposes the explicit runtime doctor view, embedding the public catalog and contract views so operators can confirm executable entrypoint health, state-file location, shipped roles/skills, and runtime delivery boundaries from one product-facing payload.
+`catalog` and the MCP `runtime_catalog` tool expose the explicit runtime catalog view for shipped local agents and skills. They emit `kind: "runtime_catalog_view"` with a machine-readable `recommendedReason` plus inventory counts so automation can distinguish a loaded catalog from an empty one without inferring state only from nested arrays. `catalog:agents` and `catalog:skills` now expose explicit lane views, returning `kind: "runtime_catalog_lane_view"` with `recommendedReason` set to `catalog_lane_loaded` or `catalog_lane_empty`, plus `entryType` and `counts.totalEntries`, so automation can stay inside just one lane without unpacking the broader combined catalog payload first. `catalog:agent` and `catalog:skill` expose the paired single-entry views, returning `kind: "runtime_catalog_entry_view"` with `recommendedReason` set to `catalog_entry_loaded` or `catalog_entry_missing` so automation can inspect one shipped worker or skill contract without walking the full catalog. `doctor` now exposes the explicit runtime doctor view, embedding the public catalog and contract views so operators can confirm executable entrypoint health, state-file location, shipped roles/skills, and runtime delivery boundaries from one product-facing payload.
 
 `runtime_contract` exposes the explicit runtime contract view. It emits `kind: "runtime_contract_view"` with a machine-readable `recommendedReason`, transport and responsibility counts, and the nested contract payload so automation can distinguish a loaded contract surface from ad hoc prose while sharing one stable contract shape across CLI doctor diagnostics and MCP. `contract` exposes that same view directly on the CLI, so automation can fetch the shipped runtime boundary without going through the larger `doctor` surface first.
 
