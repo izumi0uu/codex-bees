@@ -5,7 +5,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { cwd } from "node:process";
-import { getRuntimeCatalog, listAgentRoleIds } from "./catalog.js";
+import { getRuntimeCatalog } from "./catalog.js";
 import {
   buildMemory,
   buildSwarm,
@@ -389,6 +389,7 @@ import {
   validateSwarmValue,
   validateTaskValue
 } from "./state-rules.js";
+import { runtimeRoleCatalog } from "./state-role-catalog.js";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
@@ -1689,11 +1690,7 @@ export function validateSwarm(id) {
   );
 }
 
-export function runtimeRoleCatalog() {
-  return {
-    agents: listAgentRoleIds()
-  };
-}
+export { runtimeRoleCatalog };
 
 export function syncSwarmStatus(id) {
   const state = loadState();
