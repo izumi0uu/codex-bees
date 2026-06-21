@@ -3,7 +3,7 @@
 import { stdout, stderr, exit, argv, env } from "node:process";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { getCommandCatalogEntryView, getCommandHelpView, getInitCommandCatalogEntryView, getInitCommandCatalogView, getInitHelpView, renderHelpText, renderInitHelpText } from "./commands.js";
+import { getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalogEntryView, getInitCommandCatalogView, getInitHelpView, renderHelpText, renderInitHelpText } from "./commands.js";
 import { getMcpCommandCatalogEntryView, getMcpCommandCatalogView, getMcpHelpView, getMcpToolView, getToolCatalogView, runMcpCli, toolCatalog } from "./mcp.js";
 import { getAgentCatalogEntryView, getRuntimeCatalogView, getSkillCatalogEntryView } from "./catalog.js";
 import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
@@ -141,6 +141,10 @@ function printHelp() {
 function printCommandView() {
   const name = requireOption("--name");
   write(JSON.stringify({ command: getCommandCatalogEntryView(name) }, null, 2) + "\n");
+}
+
+function printCommandsView() {
+  write(JSON.stringify({ commands: getCommandCatalogView() }, null, 2) + "\n");
 }
 
 function printCommandHelpView() {
@@ -1364,6 +1368,9 @@ async function runCommand(command) {
     case undefined:
     case "run":
       write(JSON.stringify(getRuntimeReadyView(), null, 2) + "\n");
+      return;
+    case "commands":
+      printCommandsView();
       return;
     case "command:get":
       printCommandView();
