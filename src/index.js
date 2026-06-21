@@ -220,6 +220,10 @@ function printGuidanceWorkerView() {
   write(JSON.stringify({ guidelines: getWorkerGuidelinesView() }, null, 2) + "\n");
 }
 
+function printContractView() {
+  write(JSON.stringify({ contract: getRuntimeContractView() }, null, 2) + "\n");
+}
+
 function printMetadata() {
   write(JSON.stringify({ metadata: getPackageMetadataView() }, null, 2) + "\n");
 }
@@ -1448,6 +1452,9 @@ async function runCommand(command) {
       return;
     case "guidance:worker":
       printGuidanceWorkerView();
+      return;
+    case "contract":
+      printContractView();
       return;
     case "metadata":
       printMetadata();

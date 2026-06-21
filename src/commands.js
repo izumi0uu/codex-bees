@@ -69,6 +69,7 @@ export function getCommandCatalog() {
     { command: "catalog:skill", description: "Show one shipped local skill view" },
     { command: "guidance:overview", description: "Show the runtime coordination overview view" },
     { command: "guidance:worker", description: "Show the worker guidance view" },
+    { command: "contract", description: "Show the runtime contract view" },
     { command: "doctor", description: "Print runtime contract diagnostics" },
     { command: "metadata", description: "Print package identity metadata" },
     { command: "status", description: "Print runtime state and surface summary" },
