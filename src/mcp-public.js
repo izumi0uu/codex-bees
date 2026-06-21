@@ -12,4 +12,4 @@ export {
   listMcpTools,
   renderMcpHelpText,
   serializeMcpMessage
-} from "./api.js";
+} from "./mcp.js";

@@ -45,7 +45,7 @@
     },
     "./mcp": {
       "types": "./dist/mcp.d.ts",
-      "default": "./dist/mcp.js"
+      "default": "./dist/mcp-public.js"
     },
     "./planner": {
       "types": "./dist/planner.d.ts",

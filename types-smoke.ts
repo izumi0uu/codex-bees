@@ -87,7 +87,11 @@ import {
 import { renderHelpText as renderHelpTextCommands } from "codex-bees/commands";
 import { getRuntimeDoctorView as getDoctorSubpathView } from "codex-bees/doctor";
 import { initWorkspace as initWorkspaceSubpath, previewWorkspaceInit as previewWorkspaceInitSubpath } from "codex-bees/init";
-import { callMcpTool as callMcpToolSubpath, handleMcpRequest as handleMcpRequestSubpath } from "codex-bees/mcp";
+import {
+  callMcpTool as callMcpToolSubpath,
+  handleMcpRequest as handleMcpRequestSubpath,
+  serializeMcpMessage as serializeMcpMessageSubpath
+} from "codex-bees/mcp";
 import {
   getPackageMetadata as getMetadataSubpath,
   getPackageMetadataView as getMetadataSubpathView,
@@ -158,6 +162,7 @@ const subpathCatalogKind: "runtime_catalog_view" = getCatalogSubpathView().kind;
 const subpathCatalogAgentLaneKind: "runtime_catalog_lane_view" = getCatalogSubpathAgentListView().kind;
 const subpathRuntimeContractKind: "runtime_contract_view" = getContractSubpathView().kind;
 const subpathDoctorKind: "runtime_doctor_view" = getDoctorSubpathView().kind;
+const subpathMcpSerialized: string = serializeMcpMessageSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const subpathMetadataProduct: "codex-bees" = getMetadataSubpath().product;
 const subpathMetadataViewKind: "package_metadata_view" = getMetadataSubpathView().kind;
 const subpathMetadataVersion: "0.1.0" = metadataSubpathVersion;
