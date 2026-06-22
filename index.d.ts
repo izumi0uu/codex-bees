@@ -379,6 +379,16 @@ export interface PlannerProfile {
   constraints: string[];
 }
 
+export interface PlannerProfileListView {
+  kind: "planner_profile_list_view";
+  recommendedReason: "planner_profiles_loaded" | "planner_profiles_empty";
+  counts: {
+    totalProfiles: number;
+  };
+  defaultProfile: string;
+  profiles: PlannerProfile[];
+}
+
 export interface PlannerProfileView {
   kind: "planner_profile_view";
   recommendedReason: "planner_profile_loaded" | "planner_profile_missing";
@@ -387,11 +397,19 @@ export interface PlannerProfileView {
   profile: PlannerProfile | null;
 }
 
+export interface PlannerSelection {
+  requestedProfile: string;
+  resolvedProfile: string;
+  usedDefaultProfile: boolean;
+}
+
 export interface TaskPlan {
   kind: "task_plan";
   recommendedReason: "multi_lane_plan_ready" | "single_lane_plan_ready";
   objective: string;
+  requestedProfile: string;
   planner: PlannerProfile;
+  plannerSelection: PlannerSelection;
   evidence: PlannerEvidence;
   lanes: TaskPlanLane[];
 }
@@ -400,7 +418,9 @@ export interface PlannedSwarm {
   kind: "planned_swarm";
   recommendedReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready";
   objective: string;
+  requestedProfile: string;
   planner: PlannerProfile;
+  plannerSelection: PlannerSelection;
   evidence: PlannerEvidence;
   swarm: PlannedSwarmShape;
 }
@@ -409,7 +429,9 @@ export interface QueuedPlan {
   kind: "queued_plan";
   recommendedReason: "multiple_plan_tasks_queued" | "single_plan_task_queued";
   objective: string;
+  requestedProfile: string;
   planner: PlannerProfile;
+  plannerSelection: PlannerSelection;
   lanes: TaskPlanLane[];
   created: TaskRecord[];
 }
@@ -1196,11 +1218,12 @@ export declare function getRuntimeStatus(input?: { version?: string; toolCount?:
 export declare function getRuntimeStatusView(input?: { version?: string; toolCount?: number }): RuntimeStatusView;
 
 export declare function getPlannerProfiles(): PlannerProfile[];
+export declare function getPlannerProfilesView(): PlannerProfileListView;
 export declare function getPlannerProfile(id?: string): PlannerProfile | undefined;
 export declare function getPlannerProfileView(id?: string): PlannerProfileView;
-export declare function planTask(task: string): TaskPlan;
-export declare function planSwarm(task: string): PlannedSwarm;
-export declare function queueTasksFromPlan(task: string, addTasksFn?: (tasks: TaskInput[]) => TaskRecord[]): QueuedPlan;
+export declare function planTask(task: string, options?: { profileId?: string }): TaskPlan;
+export declare function planSwarm(task: string, options?: { profileId?: string }): PlannedSwarm;
+export declare function queueTasksFromPlan(task: string, addTasksFn: (tasks: TaskInput[]) => TaskRecord[], options?: { profileId?: string }): QueuedPlan;
 
 export declare function listMcpTools(): ToolCatalogEntry[];
 export declare function getMcpToolEntry(name: string): ToolCatalogEntry | undefined;

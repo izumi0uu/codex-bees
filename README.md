@@ -67,6 +67,7 @@ import {
   addTask,
   getPackageMetadata,
   getPlannerProfile,
+  getPlannerProfilesView,
   getRuntimeCatalogView,
   getRuntimeDoctorView,
   getRuntimeReadyView,
@@ -85,6 +86,7 @@ import {
 
 const metadata = getPackageMetadata();
 const planner = getPlannerProfile();
+const plannerProfiles = getPlannerProfilesView();
 const releaseTask = addTask({
   title: "Ship the public root contract",
   owner: "executor",
@@ -93,6 +95,8 @@ const releaseTask = addTask({
   acceptance: ["root api stays transport-symmetric"],
   verification: ["npm run smoke"]
 });
+const taskPlan = planTask("Ship a bounded runtime slice", { profileId: "bounded-local" });
+const swarmPlan = planSwarm("Parallelize a bounded runtime slice", { profileId: "bounded-local" });
 const status = getRuntimeStatusView({
   version: metadata.version,
   toolCount: getToolCatalogView().tools.length
@@ -368,16 +372,17 @@ const metadata = getPackageMetadata();
 const view = getPackageMetadataView();
 ```
 
-The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI. The default exported planner profile stays local and bounded, but it now adapts lane count to the task: simple docs work can collapse to one reviewer lane, while runtime or coordination work expands into discovery, implementation, verification, and docs sidecars as needed.
+The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI. The default exported planner profile stays local and bounded, but it now adapts lane count to the task: simple docs work can collapse to one reviewer lane, while runtime or coordination work expands into discovery, implementation, verification, and docs sidecars as needed. Planner profiles are now also explicitly inspectable from CLI, MCP, and the public JS surface, and the planning entrypoints accept an explicit `profileId` / `--profile` selector so automation can pin the shipped planner profile it expects instead of assuming the current default implicitly.
 
 Example:
 
 ```js
-import { getPlannerProfile, planSwarm, planTask } from "codex-bees/planner";
+import { getPlannerProfile, getPlannerProfilesView, planSwarm, planTask } from "codex-bees/planner";
 
 const planner = getPlannerProfile();
-const taskPlan = planTask("document a planner example");
-const swarmPlan = planSwarm("stage a planner example");
+const profiles = getPlannerProfilesView();
+const taskPlan = planTask("document a planner example", { profileId: "bounded-local" });
+const swarmPlan = planSwarm("stage a planner example", { profileId: "bounded-local" });
 ```
 
 The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` and `init` command entries both carry structured option lists, and it now also exposes direct command lookup plus machine-readable single-command and help views, so one command-catalog read is enough to discover the top-level runtime bootstrap surface as well as the shipped MCP flags. Those single-command help views now render command-specific usage, description, alias, and option sections for normal CLI commands instead of falling back to the top-level catalog for every non-`init` command. The broader command catalog now also promotes those same usage lines, aliases, option lists, and notes into machine-readable command entries for core orchestration commands such as `task:add`, `swarm:init`, `leader:assignment-launch-plan`, and `memory:search`, so automation can discover required flags, alternative spellings, and operator notes without parsing rendered help text. For the bootstrap path specifically, it also exposes a machine-readable `init` option catalog, direct `init` option lookup, a machine-readable single-option view, and an `init` help view so tooling can stay inside the init surface without first traversing the broader command catalog. For the shipped MCP flag surface, it also exposes the dedicated `mcp` option catalog, single-option lookup, single-option view, paired `mcp` help view, and rendered MCP help text directly from the same `commands` subpath.
@@ -481,9 +486,12 @@ node ./src/index.js runtime:worker-pack --role executor --worker worker-1
 node ./src/index.js runtime:review
 node ./src/index.js runtime:roles
 node ./src/index.js plan --task "Add a doctor smoke check to the CLI"
-node ./src/index.js plan:queue --task "Queue a runtime change"
-node ./src/index.js plan:swarm --task "Parallelize a runtime change"
-node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm"
+node ./src/index.js plan:profiles
+node ./src/index.js plan:profile --profile bounded-local
+node ./src/index.js plan --task "Map a runtime change" --profile bounded-local
+node ./src/index.js plan:queue --task "Queue a runtime change" --profile bounded-local
+node ./src/index.js plan:swarm --task "Parallelize a runtime change" --profile bounded-local
+node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm" --profile bounded-local
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js --depends-on task-7
 node ./src/index.js task:get --id task-1
 node ./src/index.js task:pickup-preview --role executor --worker worker-1 --mode owner
@@ -627,6 +635,12 @@ Swarm contracts can carry bounded parallel execution detail:
 `swarm:dispatch-bundle` / `swarm_dispatch_bundle` add the dispatch layer for swarm leadership: the next runnable lane, its task brief, and the concrete dispatch command. They also emit lightweight `metadata` (`hasNextLane`, `hasTaskBrief`, `nextLaneId`) and compact `counts` for dispatchable lanes and next-lane commands, plus a machine-readable `recommendedReason` so automation can distinguish runnable dispatch lanes, ready-to-complete swarms, passive dispatchable visibility, and empty dispatch state without reparsing lane payloads.
 
 `plan` / `plan_task` return the explicit planner task payload. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane planning outcomes without inferring that only from the returned lane array length.
+
+`plan:profiles` / `planner_profiles` return the shipped planner profile catalog, including the current default profile and total profile count, so automation can discover which bounded planning profiles are actually available before selecting one.
+
+`plan:profile` / `planner_profile` return one shipped planner profile view by id, so automation can inspect the selected planner's topology, lane model, roles, and constraints without shelling into the implementation module.
+
+`plan`, `plan:queue`, `plan:swarm`, and `plan:swarm:queue` all accept `--profile <planner-profile-id>` on CLI and `profile` over MCP. Their returned payloads now echo `requestedProfile` and `plannerSelection`, so callers can tell whether the requested planner id was used directly or fell back to the shipped default profile.
 
 `plan:queue` / `queue_plan` return the explicit planner queue result: the planned lanes plus the local tasks created from them. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane planner queue events without inferring from the created-task array length alone.
 

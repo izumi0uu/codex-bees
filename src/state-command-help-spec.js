@@ -5,6 +5,7 @@ import {
   AGENT_FILTER_OPTION,
   AGENT_ID_OPTION,
   CAPABILITY_ID_OPTION,
+  PLANNER_PROFILE_ID_OPTION,
   cloneEntries,
   COMMAND_NAME_OPTION,
   CONTENT_OPTION,
@@ -181,21 +182,29 @@ export const COMMAND_HELP_OVERRIDES = {
     usage: [commandUsage("runtime:roles", "[--limit <number>]")],
     options: [LIMIT_OPTION]
   },
+  "plan:profiles": {
+    usage: [commandUsage("plan:profiles")],
+    options: []
+  },
+  "plan:profile": {
+    usage: [commandUsage("plan:profile", "--profile <planner-profile-id>")],
+    options: [PLANNER_PROFILE_ID_OPTION]
+  },
   plan: {
-    usage: [commandUsage("plan", "--task <task>")],
-    options: [option("--task <task>", "Task brief to turn into a bounded execution plan")]
+    usage: [commandUsage("plan", "--task <task> [--profile <planner-profile-id>]")],
+    options: [option("--task <task>", "Task brief to turn into a bounded execution plan"), PLANNER_PROFILE_ID_OPTION]
   },
   "plan:queue": {
-    usage: [commandUsage("plan:queue", "--task <task>")],
-    options: [option("--task <task>", "Task brief to plan and immediately queue as local tasks")]
+    usage: [commandUsage("plan:queue", "--task <task> [--profile <planner-profile-id>]")],
+    options: [option("--task <task>", "Task brief to plan and immediately queue as local tasks"), PLANNER_PROFILE_ID_OPTION]
   },
   "plan:swarm": {
-    usage: [commandUsage("plan:swarm", "--task <task>")],
-    options: [option("--task <task>", "Task brief to turn into a bounded swarm contract")]
+    usage: [commandUsage("plan:swarm", "--task <task> [--profile <planner-profile-id>]")],
+    options: [option("--task <task>", "Task brief to turn into a bounded swarm contract"), PLANNER_PROFILE_ID_OPTION]
   },
   "plan:swarm:queue": {
-    usage: [commandUsage("plan:swarm:queue", "--task <task>")],
-    options: [option("--task <task>", "Task brief to turn into a swarm and immediately queue as local tasks")]
+    usage: [commandUsage("plan:swarm:queue", "--task <task> [--profile <planner-profile-id>]")],
+    options: [option("--task <task>", "Task brief to turn into a swarm and immediately queue as local tasks"), PLANNER_PROFILE_ID_OPTION]
   },
   "task:add": {
     usage: [commandUsage("task:add", "--title <title> [options]")],

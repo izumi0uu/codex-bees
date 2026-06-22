@@ -22,8 +22,8 @@ const CAPABILITY_CATALOG = [
     id: "planning",
     category: "planning",
     description: "Bounded plan and planner-to-swarm generation for Codex-only work.",
-    cliCommands: ["plan", "plan:queue", "plan:swarm", "plan:swarm:queue"],
-    mcpTools: ["plan", "queue_plan", "plan_swarm", "queue_plan_swarm"]
+    cliCommands: ["plan:profiles", "plan:profile", "plan", "plan:queue", "plan:swarm", "plan:swarm:queue"],
+    mcpTools: ["planner_profiles", "planner_profile", "plan_task", "queue_plan", "plan_swarm", "queue_plan_swarm"]
   },
   {
     id: "task_coordination",

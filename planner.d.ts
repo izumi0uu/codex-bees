@@ -1,6 +1,7 @@
 export {
   getPlannerProfile,
   getPlannerProfiles,
+  getPlannerProfilesView,
   getPlannerProfileView,
   planSwarm,
   planTask,

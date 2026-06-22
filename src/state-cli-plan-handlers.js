@@ -1,5 +1,5 @@
 import { argv, exit, readJsonOption, readListOption, readOption, readPositiveIntegerOption, requireOption, write, writeErr } from "./state-cli-helpers.js";
-import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
+import { getPlannerProfileView, getPlannerProfilesView, planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import {
   activateSwarm,
   addTasks,
@@ -27,24 +27,41 @@ import {
   validateSwarm
 } from "./state.js";
 
+function readPlannerProfileOption() {
+  return readOption("--profile");
+}
+
+function handlePlanProfiles() {
+  write(JSON.stringify({ profiles: getPlannerProfilesView() }, null, 2) + "\n");
+}
+
+function handlePlanProfile() {
+  const profile = requireOption("--profile");
+  write(JSON.stringify({ profile: getPlannerProfileView(profile) }, null, 2) + "\n");
+}
+
 function handlePlan() {
   const task = requireOption("--task");
-  write(JSON.stringify(planTask(task), null, 2) + "\n");
+  const profileId = readPlannerProfileOption();
+  write(JSON.stringify(planTask(task, { profileId }), null, 2) + "\n");
 }
 
 function handlePlanQueue() {
   const task = requireOption("--task");
-  write(JSON.stringify(queueTasksFromPlan(task, addTasks), null, 2) + "\n");
+  const profileId = readPlannerProfileOption();
+  write(JSON.stringify(queueTasksFromPlan(task, addTasks, { profileId }), null, 2) + "\n");
 }
 
 function handlePlanSwarm() {
   const task = requireOption("--task");
-  write(JSON.stringify(planSwarm(task), null, 2) + "\n");
+  const profileId = readPlannerProfileOption();
+  write(JSON.stringify(planSwarm(task, { profileId }), null, 2) + "\n");
 }
 
 function handlePlanSwarmQueue() {
   const task = requireOption("--task");
-  const planned = planSwarm(task);
+  const profileId = readPlannerProfileOption();
+  const planned = planSwarm(task, { profileId });
   const created = initSwarm(planned.swarm);
   const queued = queueSwarmTasks({ id: created.id });
   if (!queued) {
@@ -61,6 +78,8 @@ function handlePlanSwarmQueue() {
         kind: "queued_plan_swarm",
         recommendedReason: queued.created.length > 1 ? "multiple_swarm_lane_tasks_queued" : "single_swarm_lane_task_queued",
         objective: task,
+        requestedProfile: planned.requestedProfile,
+        plannerSelection: planned.plannerSelection,
         evidence: planned.evidence,
         swarm: queued.swarm,
         created: queued.created
@@ -73,6 +92,8 @@ function handlePlanSwarmQueue() {
 
 export {
   handlePlan,
+  handlePlanProfile,
+  handlePlanProfiles,
   handlePlanQueue,
   handlePlanSwarm,
   handlePlanSwarmQueue

@@ -371,6 +371,10 @@ function getPlannerProfileRecord(id = DEFAULT_PLANNER_PROFILE_ID) {
   return profile ?? PLANNER_PROFILES[DEFAULT_PLANNER_PROFILE_ID];
 }
 
+function resolvePlannerProfileId(id = DEFAULT_PLANNER_PROFILE_ID) {
+  return PLANNER_PROFILES[id] ? id : DEFAULT_PLANNER_PROFILE_ID;
+}
+
 export function getPlannerProfiles() {
   return Object.values(PLANNER_PROFILES).map(toPlannerProfile);
 }
@@ -378,6 +382,19 @@ export function getPlannerProfiles() {
 export function getPlannerProfile(id = DEFAULT_PLANNER_PROFILE_ID) {
   const profile = PLANNER_PROFILES[id];
   return profile ? toPlannerProfile(profile) : undefined;
+}
+
+export function getPlannerProfilesView() {
+  const profiles = getPlannerProfiles();
+  return {
+    kind: "planner_profile_list_view",
+    recommendedReason: profiles.length > 0 ? "planner_profiles_loaded" : "planner_profiles_empty",
+    counts: {
+      totalProfiles: profiles.length
+    },
+    defaultProfile: DEFAULT_PLANNER_PROFILE_ID,
+    profiles
+  };
 }
 
 export function getPlannerProfileView(id = DEFAULT_PLANNER_PROFILE_ID) {
@@ -396,8 +413,10 @@ function laneCountToWorkers(lanes) {
   return Math.max(owners.size, lanes.length > 0 ? 1 : 0);
 }
 
-export function planTask(task) {
-  const profile = getPlannerProfileRecord();
+export function planTask(task, options = {}) {
+  const requestedProfileId = options.profileId ?? DEFAULT_PLANNER_PROFILE_ID;
+  const resolvedProfileId = resolvePlannerProfileId(requestedProfileId);
+  const profile = getPlannerProfileRecord(requestedProfileId);
   const planner = toPlannerProfile(profile);
   const lanes = profile.buildLanes(task);
   const recommendedReason = lanes.length > 1 ? "multi_lane_plan_ready" : "single_lane_plan_ready";
@@ -406,20 +425,28 @@ export function planTask(task) {
     kind: "task_plan",
     recommendedReason,
     objective: task,
+    requestedProfile: requestedProfileId,
     planner,
+    plannerSelection: {
+      requestedProfile: requestedProfileId,
+      resolvedProfile: resolvedProfileId,
+      usedDefaultProfile: resolvedProfileId !== requestedProfileId
+    },
     evidence: plannerEvidence(task),
     lanes
   };
 }
 
-export function planSwarm(task) {
-  const plan = planTask(task);
+export function planSwarm(task, options = {}) {
+  const plan = planTask(task, options);
   const recommendedReason = plan.lanes.length > 1 ? "multi_lane_swarm_ready" : "single_lane_swarm_ready";
   return {
     kind: "planned_swarm",
     recommendedReason,
     objective: task,
+    requestedProfile: plan.requestedProfile,
     planner: plan.planner,
+    plannerSelection: plan.plannerSelection,
     evidence: plan.evidence,
     swarm: {
       objective: task,
@@ -432,8 +459,8 @@ export function planSwarm(task) {
   };
 }
 
-export function queueTasksFromPlan(task, addTasks) {
-  const plan = planTask(task);
+export function queueTasksFromPlan(task, addTasks, options = {}) {
+  const plan = planTask(task, options);
   const tasks = plan.lanes.map((lane) => ({
     title: lane.summary,
     status: "todo",
@@ -455,7 +482,9 @@ export function queueTasksFromPlan(task, addTasks) {
     kind: "queued_plan",
     recommendedReason,
     objective: task,
+    requestedProfile: plan.requestedProfile,
     planner: plan.planner,
+    plannerSelection: plan.plannerSelection,
     lanes: plan.lanes,
     created
   };

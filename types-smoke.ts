@@ -40,6 +40,7 @@ import {
   getPlannerProfile,
   getPlannerProfileView,
   getPlannerProfiles,
+  getPlannerProfilesView,
   getRuntimeReadyView,
   getRuntimeStatus,
   getRuntimeStatusView,
@@ -107,6 +108,7 @@ import {
   getPlannerProfile as getApiPlannerProfile,
   getPlannerProfileView as getApiPlannerProfileView,
   getPlannerProfiles as getApiPlannerProfiles,
+  getPlannerProfilesView as getApiPlannerProfilesView,
   getRuntimeReadyView as getApiRuntimeReadyView,
   getToolCatalogView as getApiToolCatalogView,
   runMcpCli as runMcpCliApi,
@@ -119,6 +121,7 @@ import {
   getPlannerProfile as getPlannerProfileSubpath,
   getPlannerProfileView as getPlannerProfileViewSubpath,
   getPlannerProfiles as getPlannerProfilesSubpath,
+  getPlannerProfilesView as getPlannerProfilesViewSubpath,
   planSwarm as planSwarmSubpath,
   planTask as planTaskSubpath,
   queueTasksFromPlan as queueTasksFromPlanSubpath
@@ -192,8 +195,8 @@ const subpathMetadataProduct: "codex-bees" = getMetadataSubpath().product;
 const subpathMetadataViewKind: "package_metadata_view" = getMetadataSubpathView().kind;
 const subpathMetadataVersion: "0.1.0" = metadataSubpathVersion;
 const subpathMetadataProductName: "codex-bees" = metadataSubpathProductName;
-const subpathPlannerQueuedKind: "queued_plan" = queueTasksFromPlanSubpath("typed queue").kind;
-const subpathPlannerQueuedLane: string | undefined = queueTasksFromPlanSubpath("typed queue").lanes[0]?.lane;
+const subpathPlannerQueuedKind: "queued_plan" = queueTasksFromPlanSubpath("typed queue", (tasks) => tasks as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).kind;
+const subpathPlannerQueuedLane: string | undefined = queueTasksFromPlanSubpath("typed queue", (tasks) => tasks as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).lanes[0]?.lane;
 const subpathGuidanceOverviewKind: "coordination_overview_view" = getRuntimeGuidanceSubpathOverviewView().kind;
 const subpathGuidanceWorkerKind: "worker_guidelines_view" = getRuntimeGuidanceSubpathWorkerView().kind;
 const subpathRuntimeReadyKind: "runtime_ready_view" = getRuntimeReadySubpathView().kind;
@@ -248,17 +251,22 @@ const rootMcpToolViewMatched: string | null = getMcpToolView("runtime_contract")
 const rootToolName: string | undefined = toolCatalog[0]?.name;
 const rootToolSchemaType: string | undefined = getToolCatalogView().tools[0]?.inputSchema.type as string | undefined;
 const rootPlannerProfileId: string | undefined = getPlannerProfiles()[0]?.id;
+const rootPlannerProfilesViewKind: "planner_profile_list_view" = getPlannerProfilesView().kind;
+const rootPlannerProfilesViewReason: "planner_profiles_loaded" | "planner_profiles_empty" = getPlannerProfilesView().recommendedReason;
+const rootPlannerDefaultProfile: string = getPlannerProfilesView().defaultProfile;
 const rootPlannerProfileTopology: "bounded-local" | undefined = getPlannerProfile()?.topology;
 const rootPlannerProfileLaneSource: "planner" | undefined = getPlannerProfile()?.laneSource;
 const rootPlannerProfileAdaptive: boolean | undefined = getPlannerProfile()?.adaptive;
 const rootPlannerProfileViewReason: "planner_profile_loaded" | "planner_profile_missing" = getPlannerProfileView().recommendedReason;
 const rootPlannerProfileViewKind: "planner_profile_view" = getPlannerProfileView().kind;
-const plannedSwarmReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready" = planSwarm("typed root swarm").recommendedReason;
-const rootSwarmPlanWorkers: number = planSwarm("typed root swarm").swarm.maxWorkers;
-const rootSwarmPlanTopology: "bounded-local" = planSwarm("typed root swarm").swarm.topology;
-const rootSwarmPlanLaneSource: "planner" = planSwarm("typed root swarm").swarm.laneSource;
-const rootTaskPlanPlannerTopology: "bounded-local" = planTask("typed smoke").planner.topology;
-const rootTaskPlanPlannerLaneSource: "planner" = planTask("typed smoke").planner.laneSource;
+const rootPlanRequestedProfile: string = planTask("typed smoke", { profileId: "bounded-local" }).requestedProfile;
+const rootPlanResolvedProfile: string = planTask("typed smoke", { profileId: "missing-profile" }).plannerSelection.resolvedProfile;
+const plannedSwarmReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready" = planSwarm("typed root swarm", { profileId: "bounded-local" }).recommendedReason;
+const rootSwarmPlanWorkers: number = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.maxWorkers;
+const rootSwarmPlanTopology: "bounded-local" = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.topology;
+const rootSwarmPlanLaneSource: "planner" = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.laneSource;
+const rootTaskPlanPlannerTopology: "bounded-local" = planTask("typed smoke", { profileId: "bounded-local" }).planner.topology;
+const rootTaskPlanPlannerLaneSource: "planner" = planTask("typed smoke", { profileId: "bounded-local" }).planner.laneSource;
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
 const rootRunMcpCli: (args?: string[]) => Promise<void> = runMcpCli;
 const rootStartMcpServer: () => Promise<void> = startMcpServer;
@@ -269,6 +277,7 @@ const taskPlanReason: "multi_lane_plan_ready" | "single_lane_plan_ready" = planT
 const plannerHasSrc: boolean = planTask("typed smoke").evidence.repoSignals.hasSrc;
 const plannerRolePath: string | undefined = planTask("typed smoke").evidence.roleFiles[0]?.path;
 const apiPlannerProfileId: string | undefined = getApiPlannerProfiles()[0]?.id;
+const apiPlannerProfilesViewKind: "planner_profile_list_view" = getApiPlannerProfilesView().kind;
 const apiPlannerProfileTopology: "bounded-local" | undefined = getApiPlannerProfile()?.topology;
 const apiPlannerProfileViewKind: "planner_profile_view" = getApiPlannerProfileView().kind;
 
@@ -540,10 +549,11 @@ const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.ma
 const plannedSwarmTopology: "bounded-local" = planSwarmSubpath("typed downstream swarm").swarm.topology;
 const plannedSwarmLaneSource: "planner" = planSwarmSubpath("typed downstream swarm").swarm.laneSource;
 const subpathPlannerProfileId: string | undefined = getPlannerProfilesSubpath()[0]?.id;
+const subpathPlannerProfilesViewKind: "planner_profile_list_view" = getPlannerProfilesViewSubpath().kind;
 const subpathPlannerProfileTopology: "bounded-local" | undefined = getPlannerProfileSubpath()?.topology;
 const subpathPlannerProfileViewKind: "planner_profile_view" = getPlannerProfileViewSubpath().kind;
-const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[]).kind;
-const queuedPlanReason: "multiple_plan_tasks_queued" | "single_plan_task_queued" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[]).recommendedReason;
+const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).kind;
+const queuedPlanReason: "multiple_plan_tasks_queued" | "single_plan_task_queued" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).recommendedReason;
 const memorySearchReason: "memory_search_has_results" | "memory_search_empty" = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).recommendedReason;
 const memorySearchQuery: string = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).query;
 const memorySearchScore: number | undefined = searchMemoriesView("typed", { namespace: "types", agent: "tester", tags: ["types"] }, 5).results[0]?.score;

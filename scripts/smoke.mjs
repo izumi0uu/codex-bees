@@ -712,7 +712,7 @@ writeFileSync(
     'import { initWorkspace, previewWorkspaceInit } from "codex-bees/init";',
     'import { getPackageMetadataView } from "codex-bees/metadata";',
     'import { getMcpToolView, serializeMcpMessage } from "codex-bees/mcp";',
-    'import { planSwarm, queueTasksFromPlan } from "codex-bees/planner";',
+    'import { getPlannerProfilesView, planSwarm, queueTasksFromPlan } from "codex-bees/planner";',
     'import { getCoordinationOverviewView } from "codex-bees/runtime-guidance";',
     'import { getRuntimeContractView } from "codex-bees/runtime-contract";',
     'import { getRuntimeReadyView } from "codex-bees/runtime-ready";',
@@ -729,8 +729,8 @@ writeFileSync(
     'getPackageMetadataView().kind;',
     'getMcpToolView("package_metadata")?.kind;',
     'serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "initialize" });',
-    'planSwarm("typed installed swarm").kind;',
-    'queueTasksFromPlan("typed installed queue").kind;',
+    'getPlannerProfilesView().kind;','planSwarm("typed installed swarm", { profileId: "bounded-local" }).kind;',
+    'queueTasksFromPlan("typed installed queue", (tasks) => tasks as unknown as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).kind;',
     'getCoordinationOverviewView().kind;',
     'getRuntimeContractView().kind;',
     'getRuntimeReadyView().kind;',
@@ -2632,6 +2632,50 @@ if (
   process.exit(1);
 }
 const cliCommandsView = JSON.parse(run("commands-verify", ["./src/index.js", "commands"]).stdout).commands;
+const plannerProfilesView = JSON.parse(run("plan-profiles-verify", ["./src/index.js", "plan:profiles"]).stdout).profiles;
+if (
+  plannerProfilesView.kind !== "planner_profile_list_view" ||
+  plannerProfilesView.recommendedReason !== "planner_profiles_loaded" ||
+  plannerProfilesView.defaultProfile !== "bounded-local" ||
+  plannerProfilesView.counts?.totalProfiles < 1 ||
+  !Array.isArray(plannerProfilesView.profiles) ||
+  !plannerProfilesView.profiles.some((profile) => profile.id === "bounded-local")
+) {
+  console.error("[smoke:plan-profiles] expected planner profile catalog view");
+  process.exit(1);
+}
+const plannerProfileView = JSON.parse(run("plan-profile-verify", ["./src/index.js", "plan:profile", "--profile", "bounded-local"]).stdout).profile;
+if (
+  plannerProfileView.kind !== "planner_profile_view" ||
+  plannerProfileView.recommendedReason !== "planner_profile_loaded" ||
+  plannerProfileView.matchedProfile !== "bounded-local" ||
+  plannerProfileView.profile?.laneModel !== "adaptive-bounded-lanes"
+) {
+  console.error("[smoke:plan-profile] expected planner profile detail view");
+  process.exit(1);
+}
+const explicitProfilePlan = JSON.parse(run("plan-explicit-profile", ["./src/index.js", "plan", "--task", "explicit profile runtime change", "--profile", "bounded-local"]).stdout);
+if (
+  explicitProfilePlan.kind !== "task_plan" ||
+  explicitProfilePlan.requestedProfile !== "bounded-local" ||
+  explicitProfilePlan.plannerSelection?.requestedProfile !== "bounded-local" ||
+  explicitProfilePlan.plannerSelection?.resolvedProfile !== "bounded-local" ||
+  explicitProfilePlan.plannerSelection?.usedDefaultProfile !== false
+) {
+  console.error("[smoke:plan-explicit-profile] expected explicit profile selection to round-trip");
+  process.exit(1);
+}
+const fallbackProfilePlan = JSON.parse(run("plan-fallback-profile", ["./src/index.js", "plan", "--task", "fallback profile runtime change", "--profile", "missing-profile"]).stdout);
+if (
+  fallbackProfilePlan.kind !== "task_plan" ||
+  fallbackProfilePlan.requestedProfile !== "missing-profile" ||
+  fallbackProfilePlan.plannerSelection?.requestedProfile !== "missing-profile" ||
+  fallbackProfilePlan.plannerSelection?.resolvedProfile !== "bounded-local" ||
+  fallbackProfilePlan.plannerSelection?.usedDefaultProfile !== true
+) {
+  console.error("[smoke:plan-fallback-profile] expected missing profile to fall back to default planner");
+  process.exit(1);
+}
 if (
   cliCommandsView.kind !== "command_catalog_view" ||
   cliCommandsView.recommendedReason !== "command_catalog_loaded" ||

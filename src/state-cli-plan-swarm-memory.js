@@ -1,5 +1,7 @@
 export {
   handlePlan,
+  handlePlanProfile,
+  handlePlanProfiles,
   handlePlanQueue,
   handlePlanSwarm,
   handlePlanSwarmQueue

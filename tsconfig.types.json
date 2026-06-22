@@ -3,6 +3,12 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "codex-bees": ["./index.d.ts"],
+      "codex-bees/*": ["./*.d.ts"]
+    },
     "strict": false,
     "noEmit": true,
     "skipLibCheck": true

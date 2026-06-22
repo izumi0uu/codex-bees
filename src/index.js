@@ -109,6 +109,8 @@ import {
   handleMemorySearch,
   handleMemoryStore,
   handlePlan,
+  handlePlanProfile,
+  handlePlanProfiles,
   handlePlanQueue,
   handlePlanSwarm,
   handlePlanSwarmQueue,
@@ -314,6 +316,12 @@ async function runCommand(command) {
       return;
     case "runtime:roles":
       printRuntimeRoles();
+      return;
+    case "plan:profiles":
+      handlePlanProfiles();
+      return;
+    case "plan:profile":
+      handlePlanProfile();
       return;
     case "plan":
       handlePlan();

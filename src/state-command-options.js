@@ -18,6 +18,7 @@ export const TOOL_NAME_OPTION = option("--name <tool>", "Tool name from the ship
 export const AGENT_ID_OPTION = option("--id <agent-id>", "Agent id from the shipped local agent catalog");
 export const SKILL_ID_OPTION = option("--id <skill-id>", "Skill id from the shipped local skill catalog");
 export const CAPABILITY_ID_OPTION = option("--id <capability-id>", "Capability id from the shipped runtime capability inventory");
+export const PLANNER_PROFILE_ID_OPTION = option("--profile <planner-profile-id>", "Planner profile id from the shipped planner profile catalog");
 export const ROLE_OPTION = option("--role <role>", "Role id to scope the view or action to");
 export const OWNER_OPTION = option("--owner <owner>", "Owner role to filter, assign, or reconcile against");
 export const WORKER_OPTION = option("--worker <worker-id>", "Worker id to bind the view or action to");

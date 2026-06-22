@@ -253,13 +253,33 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "planner_profiles",
+    description: "Return the shipped planner profile catalog view.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "planner_profile",
+    description: "Return one shipped planner profile view.",
+    inputSchema: {
+      type: "object",
+      required: ["profile"],
+      properties: {
+        profile: { type: "string" }
+      }
+    }
+  },
+  {
     name: "plan_task",
     description: "Generate a bounded read-only execution plan for a task brief.",
     inputSchema: {
       type: "object",
       required: ["task"],
       properties: {
-        task: { type: "string" }
+        task: { type: "string" },
+        profile: { type: "string" }
       }
     }
   },
@@ -270,7 +290,8 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
       type: "object",
       required: ["task"],
       properties: {
-        task: { type: "string" }
+        task: { type: "string" },
+        profile: { type: "string" }
       }
     }
   },
@@ -281,7 +302,8 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
       type: "object",
       required: ["task"],
       properties: {
-        task: { type: "string" }
+        task: { type: "string" },
+        profile: { type: "string" }
       }
     }
   },
@@ -292,7 +314,8 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
       type: "object",
       required: ["task"],
       properties: {
-        task: { type: "string" }
+        task: { type: "string" },
+        profile: { type: "string" }
       }
     }
   },
