@@ -18,30 +18,6 @@ import {
   normalizeTaskHistoryEntry
 } from "./state-normalize.js";
 import {
-  assignmentFollowupCommand,
-  assignmentPickupOutcome,
-  buildTaskAssignmentPickupViewFromSources,
-  buildTaskAssignmentPickupView,
-  buildTaskPickupViewFromSources,
-  buildTaskPickupView,
-  buildPreviewTaskAssignmentViewFromSources,
-  buildPreviewTaskAssignmentView,
-  buildPreviewTaskPickupViewFromSources,
-  buildPreviewTaskPickupView,
-  buildTaskInboxViewFromSources,
-  buildTaskInboxView,
-  buildTaskNextViewFromSources,
-  buildTaskNextView,
-  compareTasksByUpdatedAt,
-  isClaimableTask,
-  normalizeNextMode,
-  pickupFollowupCommand,
-  pickupOutcome,
-  sortInboxTasks,
-  sortNextCandidates,
-  summarizeInboxTask
-} from "./state-queue-views.js";
-import {
   filterMemories,
   filterSwarms,
   scoreMemory,
@@ -167,19 +143,7 @@ import {
   recommendTaskAction,
   taskReportNextGate
 } from "./state-task-views.js";
-import {
-  deriveTaskAssignmentPickupReason,
-  deriveTaskAssignmentPreviewReason,
-  deriveTaskHistoryReason,
-  deriveTaskInboxReason,
-  deriveTaskNextReason,
-  deriveTaskPickupPreviewReason,
-  deriveTaskPickupReason,
-  deriveVerifierBundleReason,
-  deriveWorkerCloseoutReason,
-  deriveWorkerHandoffReason,
-  deriveWorkerSessionReason
-} from "./state-reasons.js";
+import { deriveTaskHistoryReason } from "./state-reasons.js";
 import {
   runtimeActivityFromSources,
   runtimeAlertsFromSources,
@@ -225,6 +189,18 @@ import {
   leaderWorkspaceFromSources
 } from "./state-leader-surfaces.js";
 import {
+  previewTaskAssignmentFromSources,
+  previewTaskPickupFromSources,
+  taskAssignmentPickupFromSources,
+  taskInboxFromSources,
+  taskNextFromSources,
+  taskPickupFromSources,
+  verifierBundleFromSources,
+  workerCloseoutFromSources,
+  workerHandoffFromSources,
+  workerSessionFromSources
+} from "./state-worker-surfaces.js";
+import {
   buildSwarmOverviewData,
   buildSwarmOverviewView,
   buildSwarmOverviewViewFromSources,
@@ -246,23 +222,6 @@ import {
   deriveSwarmQueueReason,
   deriveSwarmSyncReason
 } from "./state-swarm-views.js";
-import {
-  buildWorkerSessionViewFromSources,
-  buildWorkerSessionView,
-  buildWorkerCloseoutViewFromSources,
-  buildWorkerCloseoutView,
-  buildWorkerHandoffViewFromSources,
-  buildWorkerHandoffView,
-  buildVerifierBundleViewFromSources,
-  buildVerifierBundleView,
-  buildSessionTaskSnapshot,
-  buildVerifierBundleSummary,
-  buildVerifierDecisionCommands,
-  buildWorkerCloseoutSummary,
-  buildWorkerHandoffSummary,
-  deriveWorkerCloseoutCommand,
-  recommendWorkerSessionFocus
-} from "./state-worker-views.js";
 import {
   VALID_QUEUE_STATUSES,
   VALID_SWARM_STATUSES,
@@ -919,191 +878,111 @@ export function leaderWorkspace(input = {}) {
 }
 
 export function taskInbox(input = {}) {
-  return buildTaskInboxViewFromSources(
+  return taskInboxFromSources(
     input,
     {
-      getRuntimeCatalog,
       loadState,
       normalizeTask,
-      sortInboxTasks,
-      summarizeInboxTask,
-      taskNext,
-      isClaimableTask,
-      describeRole
-    },
-    {
-      deriveTaskInboxReason,
-      buildTaskInboxView
+      taskNext
     }
   );
 }
 
 export function taskNext(input = {}) {
-  return buildTaskNextViewFromSources(
+  return taskNextFromSources(
     input,
     {
-      normalizeNextMode,
       loadState,
       normalizeTask,
-      sortNextCandidates,
-      describeRole,
-      summarizeInboxTask,
       taskBrief
-    },
-    {
-      deriveTaskNextReason,
-      buildTaskNextView
     }
   );
 }
 
 export function taskPickup(input = {}) {
-  return buildTaskPickupViewFromSources(
+  return taskPickupFromSources(
     input,
     {
       taskNext,
       claimTask,
-      describeRole,
-      summarizeInboxTask,
       taskBrief,
-      getTask,
-      pickupFollowupCommand,
-      pickupOutcome,
-      normalizeNextMode
-    },
-    {
-      deriveTaskPickupReason,
-      buildTaskPickupView
+      getTask
     }
   );
 }
 
 export function taskAssignmentPickup(input = {}) {
-  return buildTaskAssignmentPickupViewFromSources(
+  return taskAssignmentPickupFromSources(
     input,
     {
       leaderAssignments,
-      describeRole,
-      normalizeNextMode,
       getTask,
       taskBrief,
-      summarizeInboxTask,
-      claimTask,
-      assignmentPickupOutcome,
-      assignmentFollowupCommand
-    },
-    {
-      deriveTaskAssignmentPickupReason,
-      buildTaskAssignmentPickupView
+      claimTask
     }
   );
 }
 
 export function previewTaskAssignment(input = {}) {
-  return buildPreviewTaskAssignmentViewFromSources(
+  return previewTaskAssignmentFromSources(
     input,
     {
       leaderAssignments,
-      describeRole,
-      normalizeNextMode,
       getTask,
-      summarizeInboxTask,
-      taskBrief,
-      assignmentPickupOutcome,
-      assignmentFollowupCommand
-    },
-    {
-      deriveTaskAssignmentPreviewReason,
-      buildPreviewTaskAssignmentView
+      taskBrief
     }
   );
 }
 
 export function previewTaskPickup(input = {}) {
-  return buildPreviewTaskPickupViewFromSources(
+  return previewTaskPickupFromSources(
     input,
     {
       taskNext,
-      describeRole,
-      normalizeNextMode,
-      getTask,
-      pickupOutcome,
-      pickupFollowupCommand
-    },
-    {
-      deriveTaskPickupPreviewReason,
-      buildPreviewTaskPickupView
+      getTask
     }
   );
 }
 
 export function workerSession(input = {}) {
-  return buildWorkerSessionViewFromSources(
+  return workerSessionFromSources(
     input,
     {
       loadState,
       normalizeTask,
-      normalizeNextMode,
-      compareTasksByUpdatedAt,
       taskInbox,
       taskNext,
-      recommendWorkerSessionFocus,
-      deriveWorkerSessionReason,
-      describeRole,
-      buildSessionTaskSnapshot,
-      summarizeInboxTask,
       taskBrief
-    },
-    {
-      buildWorkerSessionView
     }
   );
 }
 
 export function workerHandoff(input = {}) {
-  return buildWorkerHandoffViewFromSources(
+  return workerHandoffFromSources(
     input,
     {
-      workerSession,
-      deriveWorkerHandoffReason,
-      buildWorkerHandoffSummary
-    },
-    {
-      buildWorkerHandoffView
+      workerSession
     }
   );
 }
 
 export function workerCloseout(input = {}) {
-  return buildWorkerCloseoutViewFromSources(
+  return workerCloseoutFromSources(
     input,
     {
       workerHandoff,
-      taskReport,
-      deriveWorkerCloseoutReason,
-      deriveWorkerCloseoutCommand,
-      buildWorkerCloseoutSummary
-    },
-    {
-      buildWorkerCloseoutView
+      taskReport
     }
   );
 }
 
 export function verifierBundle(input = {}) {
-  return buildVerifierBundleViewFromSources(
+  return verifierBundleFromSources(
     input,
     {
       workerSession,
       workerHandoff,
-      taskReport,
-      describeRole,
-      deriveVerifierBundleReason,
-      buildVerifierDecisionCommands,
-      buildVerifierBundleSummary
-    },
-    {
-      buildVerifierBundleView
+      taskReport
     }
   );
 }
