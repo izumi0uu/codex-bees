@@ -40,6 +40,31 @@ export function buildRuntimeControlPackSummary(recommendedSurface, summaryPack, 
   return `Runtime control pack recommends ${recommendedSurface} next. ${detail}`;
 }
 
+function stripRoleContractsDeep(value) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => stripRoleContractsDeep(entry));
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  const result = Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, stripRoleContractsDeep(entry)])
+  );
+
+  if (
+    "contract" in result &&
+    "id" in result &&
+    "promptPath" in result &&
+    "source" in result
+  ) {
+    delete result.contract;
+  }
+
+  return result;
+}
+
 export function buildRuntimeControlPackView(
   input,
   {
@@ -67,7 +92,7 @@ export function buildRuntimeControlPackView(
     leader: leaderPack?.next ?? null
   };
 
-  return {
+  return stripRoleContractsDeep({
     kind: "runtime_control_pack",
     recommendedSurface,
     recommendedReason,
@@ -94,7 +119,7 @@ export function buildRuntimeControlPackView(
       leaderPack
     },
     summary: buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack)
-  };
+  });
 }
 
 export function buildRuntimeControlPackViewFromSources(
@@ -266,4 +291,3 @@ export function buildRuntimeSignalPackViewFromSources(
     }
   );
 }
-

@@ -35,7 +35,7 @@ import {
   deriveWorkerHandoffReason,
   deriveWorkerSessionReason
 } from "./state-reasons.js";
-import { describeRole } from "./state-task-core.js";
+import { describeRole, describeRoleWithContract } from "./state-task-core.js";
 import {
   buildSessionTaskSnapshot,
   buildVerifierBundleSummary,
@@ -177,7 +177,7 @@ export function previewTaskAssignmentFromSources(
     input,
     {
       leaderAssignments,
-      describeRole,
+      describeRole: describeRoleWithContract,
       normalizeNextMode,
       getTask,
       summarizeInboxTask,
@@ -203,7 +203,7 @@ export function previewTaskPickupFromSources(
     input,
     {
       taskNext,
-      describeRole,
+      describeRole: describeRoleWithContract,
       normalizeNextMode,
       getTask,
       pickupOutcome,
@@ -237,7 +237,7 @@ export function workerSessionFromSources(
       taskNext,
       recommendWorkerSessionFocus,
       deriveWorkerSessionReason,
-      describeRole,
+      describeRole: describeRoleWithContract,
       buildSessionTaskSnapshot,
       summarizeInboxTask,
       taskBrief

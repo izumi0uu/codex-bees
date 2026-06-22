@@ -334,7 +334,12 @@ const taskBriefReason:
   | "claimable_execution_brief"
   | "queued_execution_brief"
   | undefined = taskBrief(task.id)?.recommendedReason;
+const taskBriefOwnerExists: boolean | undefined = taskBrief(task.id)?.roles.owner.exists;
 const taskBriefOwnerPromptPath: string | null | undefined = taskBrief(task.id)?.roles.owner.promptPath;
+const taskBriefOwnerSource: "workspace" | "bundled" | "missing" | undefined = taskBrief(task.id)?.roles.owner.source;
+const taskBriefOwnerContractTitle: string | null | undefined = taskBrief(task.id)?.roles.owner.contract?.title;
+const taskBriefOwnerContractRule: string | undefined = taskBrief(task.id)?.roles.owner.contract?.workingRules[0];
+const taskBriefVerifierStopCondition: string | undefined = taskBrief(task.id)?.roles.verifier.contract?.stopAndEscalate[0];
 const taskBriefNextCommand: string | undefined = taskBrief(task.id)?.recommendedCommands[0];
 const taskReportReason:
   | "approved_closure_ready"

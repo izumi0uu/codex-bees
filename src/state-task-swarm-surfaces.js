@@ -15,7 +15,7 @@ import {
   deriveSwarmCloseoutReason,
   deriveSwarmDispatchBundleReason
 } from "./state-swarm-views.js";
-import { deriveReviewState, describeRole } from "./state-task-core.js";
+import { deriveReviewState, describeRole, describeRoleWithContract } from "./state-task-core.js";
 import {
   buildSwarmBlockersView,
   buildSwarmBlockersViewFromSources,
@@ -112,7 +112,7 @@ export function taskBriefFromSources(id, { getTask, listTasks }) {
       getRuntimeCatalog,
       recommendTaskAction,
       deriveTaskBriefReason,
-      describeRole,
+      describeRole: describeRoleWithContract,
       deriveReviewState,
       dependencyTasks: listTasks()
     },

@@ -3440,7 +3440,20 @@ if (
   taskExecutionBrief.counts?.reviewEvidenceEntries !== taskExecutionBrief.review?.evidence.length ||
   taskExecutionBrief.counts?.historyEntries !== taskExecutionBrief.history?.entries.length ||
   taskExecutionBrief.counts?.annotationEntries !== taskExecutionBrief.annotations?.count ||
+  taskExecutionBrief.roles?.owner?.exists !== true ||
+  taskExecutionBrief.roles?.owner?.source !== "workspace" ||
   taskExecutionBrief.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
+  taskExecutionBrief.roles?.owner?.contract?.title !== "Executor" ||
+  !taskExecutionBrief.roles?.owner?.contract?.workingRules?.some((rule) =>
+    rule.includes("Implement against the task brief, not against chat drift.")
+  ) ||
+  !taskExecutionBrief.roles?.owner?.contract?.boundaries?.some((item) =>
+    item.includes("expanding the task beyond its current agreed scope")
+  ) ||
+  taskExecutionBrief.roles?.verifier?.contract?.title !== "Tester" ||
+  !taskExecutionBrief.roles?.verifier?.contract?.verificationFocus?.some((rule) =>
+    rule.includes("Run the smallest fresh checks that can prove or disprove acceptance.")
+  ) ||
   taskExecutionBrief.roles?.verifier?.promptPath !== ".codex/agents/tester.md" ||
   taskExecutionBrief.recommendedNextAction !== "complete"
 ) {
@@ -4932,6 +4945,7 @@ if (
   assignmentPreviewExecutorCli.metadata?.hasTask !== true ||
   assignmentPreviewExecutorCli.metadata?.hasBrief !== true ||
   assignmentPreviewExecutorCli.metadata?.taskId !== "task-2" ||
+  assignmentPreviewExecutorCli.brief?.roles?.owner?.contract?.title !== "Executor" ||
   assignmentPreviewExecutorCli.assignment?.taskId !== "task-2" ||
   assignmentPreviewExecutorCli.task?.id !== "task-2" ||
   assignmentPreviewExecutorCli.command !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2"
@@ -8508,6 +8522,7 @@ if (
   taskGetPayload?.task?.metadata?.reviewState !== "not_started" ||
   taskGetPayload?.task?.task?.id !== "task-1" ||
   taskBriefPayload?.brief?.recommendedReason !== "claimable_execution_brief" ||
+  taskBriefPayload?.brief?.roles?.owner?.contract?.title !== "Executor" ||
   taskBriefPayload?.brief?.roles?.owner?.promptPath !== ".codex/agents/executor.md" ||
   taskHistoryMcp.status !== 0 ||
   taskHistoryMcpPayload.history?.recommendedReason !== "approved_event_latest" ||
@@ -9078,6 +9093,7 @@ if (
   pickupPreviewVerifier.metadata?.hasTask !== true ||
   pickupPreviewVerifier.metadata?.hasBrief !== true ||
   pickupPreviewVerifier.metadata?.taskId !== "task-2" ||
+  pickupPreviewVerifier.brief?.roles?.verifier?.contract?.title !== "Tester" ||
   pickupPreviewVerifier.candidate?.id !== "task-2" ||
   pickupPreviewVerifier.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {
@@ -9330,6 +9346,7 @@ if (
   workerSessionMcp.status !== 0 ||
   workerSessionMcpPayload.session?.recommendedReason !== "review_task_focus" ||
   workerSessionMcpPayload.session?.focus?.kind !== "review_task" ||
+  workerSessionMcpPayload.session?.role?.contract?.title !== "Tester" ||
   workerSessionMcpPayload.session?.reviewQueue?.[0]?.summary?.id !== "task-2"
 ) {
   console.error("[smoke:worker-session-mcp] expected review-focused worker session");
@@ -9361,6 +9378,9 @@ if (
   workerHandoffMcp.status !== 0 ||
   workerHandoffMcpPayload.handoff?.recommendedReason !== "review_task_handoff" ||
   workerHandoffMcpPayload.handoff?.focus?.kind !== "review_task" ||
+  workerHandoffMcpPayload.handoff?.role?.contract?.verificationFocus?.some((rule) =>
+    rule.includes("Run the smallest fresh checks that can prove or disprove acceptance.")
+  ) !== true ||
   workerHandoffMcpPayload.handoff?.currentTask?.id !== "task-2"
 ) {
   console.error("[smoke:worker-handoff-mcp] expected verifier handoff payload");

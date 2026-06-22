@@ -200,6 +200,16 @@ export interface RuntimeCatalogDocumentView {
   document: RuntimeCatalogDocument | null;
 }
 
+export interface RuntimeCatalogRoleContractSummary {
+  title: string | null;
+  summary: string | null;
+  boundaries: string[];
+  workingRules: string[];
+  handoffExpectations: string[];
+  verificationFocus: string[];
+  stopAndEscalate: string[];
+}
+
 export interface RuntimeContractView {
   kind: "runtime_contract_view";
   recommendedReason: "contract_loaded";
@@ -898,10 +908,12 @@ export interface TaskHistoryView {
 
 export interface RuntimeCatalogRoleReference {
   id: string | null;
+  exists: boolean;
   name: string | null;
   description: string | null;
   promptPath: string | null;
   source: "workspace" | "bundled" | "missing";
+  contract: RuntimeCatalogRoleContractSummary | null;
 }
 
 export interface TaskRecommendedActor {
