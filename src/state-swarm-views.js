@@ -227,6 +227,39 @@ export function buildSwarmDetailViewFromSources(
   });
 }
 
+
+export function buildSwarmListView(filters = {}, options = {}, { listSwarms, listSwarmOverviews }) {
+  const detailed = options.detailed === true;
+  const swarms = detailed ? listSwarmOverviews(filters) : listSwarms(filters);
+  const recommendedReason = swarms.length > 0 ? "swarm_list_has_results" : "swarm_list_empty";
+  return {
+    kind: "swarm_view",
+    recommendedReason,
+    detailed,
+    counts: {
+      totalSwarms: swarms.length
+    },
+    swarms
+  };
+}
+
+export function buildSwarmListViewFromSources(
+  filters = {},
+  options = {},
+  {
+    listSwarms,
+    listSwarmOverviews
+  },
+  {
+    buildSwarmListView
+  }
+) {
+  return buildSwarmListView(filters, options, {
+    listSwarms,
+    listSwarmOverviews
+  });
+}
+
 export function buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout) {
   const closeout = swarmCloseout(overview.swarm.id);
   return {

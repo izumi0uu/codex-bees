@@ -68,6 +68,14 @@ import {
   buildMemorySearchViewFromSources
 } from "./state-memory-views.js";
 import {
+  buildMemoryMutationResult,
+  buildRejectedTaskLifecycleResult,
+  buildSwarmLifecycleResult,
+  buildSwarmMutationResult,
+  buildTaskLifecycleResult,
+  buildTaskMutationResult
+} from "./state-lifecycle-views.js";
+import {
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
@@ -256,6 +264,8 @@ import {
   buildSwarmOverviewViewFromSources,
   buildSwarmDetailView,
   buildSwarmDetailViewFromSources,
+  buildSwarmListView,
+  buildSwarmListViewFromSources,
   buildSwarmBlockersSummary,
   buildSwarmCloseoutSummary,
   buildSwarmDispatchBundleSummary,
@@ -527,18 +537,17 @@ export function listSwarmOverviews(filters = {}) {
 }
 
 export function listSwarmsView(filters = {}, options = {}) {
-  const detailed = options.detailed === true;
-  const swarms = detailed ? listSwarmOverviews(filters) : listSwarms(filters);
-  const recommendedReason = swarms.length > 0 ? "swarm_list_has_results" : "swarm_list_empty";
-  return {
-    kind: "swarm_view",
-    recommendedReason,
-    detailed,
-    counts: {
-      totalSwarms: swarms.length
+  return buildSwarmListViewFromSources(
+    filters,
+    options,
+    {
+      listSwarms,
+      listSwarmOverviews
     },
-    swarms
-  };
+    {
+      buildSwarmListView
+    }
+  );
 }
 
 export function getTask(id) {
@@ -599,15 +608,7 @@ export function annotateTask(input = {}) {
 }
 
 export function annotateTaskMutation(input) {
-  const result = annotateTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_mutation",
-    recommendedReason: "task_annotated",
-    task: result
-  };
+  return buildTaskMutationResult(annotateTask(input), "task_annotated");
 }
 
 export function getSwarm(id) {
@@ -1690,15 +1691,7 @@ export function addTask(input) {
 }
 
 export function addTaskLifecycle(input) {
-  const result = addTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_mutation",
-    recommendedReason: "task_created",
-    task: result
-  };
+  return buildTaskMutationResult(addTask(input), "task_created");
 }
 
 export function addTasks(inputs) {
@@ -1718,15 +1711,7 @@ export function storeMemory(input) {
 }
 
 export function storeMemoryMutation(input) {
-  const result = storeMemory(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "memory_mutation",
-    recommendedReason: "memory_stored",
-    memory: result
-  };
+  return buildMemoryMutationResult(storeMemory(input), "memory_stored");
 }
 
 export function initSwarm(input) {
@@ -1738,15 +1723,7 @@ export function initSwarm(input) {
 }
 
 export function initSwarmMutation(input) {
-  const result = initSwarm(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "swarm_mutation",
-    recommendedReason: "swarm_created",
-    swarm: result
-  };
+  return buildSwarmMutationResult(initSwarm(input), "swarm_created");
 }
 
 export function searchMemories(query, filters = {}) {
@@ -1782,15 +1759,7 @@ export function updateTask(input) {
 }
 
 export function updateTaskMutation(input) {
-  const result = updateTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_mutation",
-    recommendedReason: "task_updated",
-    task: result
-  };
+  return buildTaskMutationResult(updateTask(input), "task_updated");
 }
 
 export function updateSwarm(input) {
@@ -1804,15 +1773,7 @@ export function updateSwarm(input) {
 }
 
 export function updateSwarmMutation(input) {
-  const result = updateSwarm(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "swarm_mutation",
-    recommendedReason: "swarm_updated",
-    swarm: result
-  };
+  return buildSwarmMutationResult(updateSwarm(input), "swarm_updated");
 }
 
 export function queueSwarmTasks(input) {
@@ -1864,15 +1825,7 @@ export function claimTask(input) {
 }
 
 export function claimTaskLifecycle(input) {
-  const result = claimTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_lifecycle",
-    recommendedReason: "task_claimed",
-    task: result
-  };
+  return buildTaskLifecycleResult(claimTask(input), "task_claimed");
 }
 
 export function blockTask(input) {
@@ -1883,15 +1836,7 @@ export function blockTask(input) {
 }
 
 export function blockTaskLifecycle(input) {
-  const result = blockTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_lifecycle",
-    recommendedReason: "task_blocked",
-    task: result
-  };
+  return buildTaskLifecycleResult(blockTask(input), "task_blocked");
 }
 
 export function markTaskReadyForReview(input) {
@@ -1902,15 +1847,7 @@ export function markTaskReadyForReview(input) {
 }
 
 export function markTaskReadyForReviewLifecycle(input) {
-  const result = markTaskReadyForReview(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_lifecycle",
-    recommendedReason: "task_ready_for_review",
-    task: result
-  };
+  return buildTaskLifecycleResult(markTaskReadyForReview(input), "task_ready_for_review");
 }
 
 export function completeTask(input) {
@@ -1921,15 +1858,7 @@ export function completeTask(input) {
 }
 
 export function completeTaskLifecycle(input) {
-  const result = completeTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_lifecycle",
-    recommendedReason: "task_completed",
-    task: result
-  };
+  return buildTaskLifecycleResult(completeTask(input), "task_completed");
 }
 
 export function approveTask(input) {
@@ -1940,15 +1869,7 @@ export function approveTask(input) {
 }
 
 export function approveTaskLifecycle(input) {
-  const result = approveTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_lifecycle",
-    recommendedReason: "task_approved",
-    task: result
-  };
+  return buildTaskLifecycleResult(approveTask(input), "task_approved");
 }
 
 export function rejectTask(input) {
@@ -1959,21 +1880,7 @@ export function rejectTask(input) {
 }
 
 export function rejectTaskLifecycle(input) {
-  const result = rejectTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  let recommendedReason = "task_changes_requested";
-  if (result.queueStatus === "released") {
-    recommendedReason = "task_released_for_rework";
-  } else if (result.queueStatus === "blocked") {
-    recommendedReason = "task_blocked_for_rework";
-  }
-  return {
-    kind: "task_lifecycle",
-    recommendedReason,
-    task: result
-  };
+  return buildRejectedTaskLifecycleResult(rejectTask(input));
 }
 
 export function releaseTask(input) {
@@ -1984,75 +1891,47 @@ export function releaseTask(input) {
 }
 
 export function releaseTaskLifecycle(input) {
-  const result = releaseTask(input);
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "task_lifecycle",
-    recommendedReason: "task_released",
-    task: result
-  };
+  return buildTaskLifecycleResult(releaseTask(input), "task_released");
 }
 
 export function activateSwarm(input) {
-  const result = transitionSwarm({
-    ...input,
-    nextStatus: "active"
-  });
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "swarm_lifecycle",
-    recommendedReason: "swarm_activated",
-    swarm: result
-  };
+  return buildSwarmLifecycleResult(
+    transitionSwarm({
+      ...input,
+      nextStatus: "active"
+    }),
+    "swarm_activated"
+  );
 }
 
 export function blockSwarm(input) {
-  const result = transitionSwarm({
-    ...input,
-    nextStatus: "blocked"
-  });
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "swarm_lifecycle",
-    recommendedReason: "swarm_blocked",
-    swarm: result
-  };
+  return buildSwarmLifecycleResult(
+    transitionSwarm({
+      ...input,
+      nextStatus: "blocked"
+    }),
+    "swarm_blocked"
+  );
 }
 
 export function completeSwarm(input) {
-  const result = transitionSwarm({
-    ...input,
-    nextStatus: "completed"
-  });
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "swarm_lifecycle",
-    recommendedReason: "swarm_completed",
-    swarm: result
-  };
+  return buildSwarmLifecycleResult(
+    transitionSwarm({
+      ...input,
+      nextStatus: "completed"
+    }),
+    "swarm_completed"
+  );
 }
 
 export function cancelSwarm(input) {
-  const result = transitionSwarm({
-    ...input,
-    nextStatus: "cancelled"
-  });
-  if (!result || result.error) {
-    return result;
-  }
-  return {
-    kind: "swarm_lifecycle",
-    recommendedReason: "swarm_cancelled",
-    swarm: result
-  };
+  return buildSwarmLifecycleResult(
+    transitionSwarm({
+      ...input,
+      nextStatus: "cancelled"
+    }),
+    "swarm_cancelled"
+  );
 }
 
 function syncSwarmInLoadedState(state, swarmId) {
