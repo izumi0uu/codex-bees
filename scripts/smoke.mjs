@@ -4758,7 +4758,8 @@ if (
   leaderAssignmentsCli.counts?.ownerGroups !== 2 ||
   !leaderAssignmentsCli.groups?.some((group) => group.owner?.id === "explore") ||
   !leaderAssignmentsCli.groups?.some((group) => group.owner?.id === "executor") ||
-  !leaderAssignmentsCli.groups?.flatMap((group) => group.assignments ?? []).some((assignment) => assignment.taskBrief?.task?.id === "task-1")
+  !leaderAssignmentsCli.groups?.flatMap((group) => group.assignments ?? []).some((assignment) => assignment.taskBrief?.task?.id === "task-1") ||
+  !leaderAssignmentsCli.groups?.flatMap((group) => group.assignments ?? []).every((assignment) => assignment.purpose === null)
 ) {
   console.error("[smoke:leader-assignments] expected CLI leader assignments grouped by owner");
   process.exit(1);
@@ -5010,6 +5011,7 @@ if (
   assignmentPreviewExecutorCli.metadata?.hasBrief !== true ||
   assignmentPreviewExecutorCli.metadata?.taskId !== "task-2" ||
   assignmentPreviewExecutorCli.brief?.roles?.owner?.contract?.title !== "Executor" ||
+  assignmentPreviewExecutorCli.purposeGuidance?.label !== "implementation" ||
   assignmentPreviewExecutorCli.assignment?.taskId !== "task-2" ||
   assignmentPreviewExecutorCli.task?.id !== "task-2" ||
   assignmentPreviewExecutorCli.command !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor --task task-2"
@@ -6579,6 +6581,7 @@ if (
   runtimeDispatchCli.counts?.ownerGroups !== 1 ||
   runtimeDispatchCli.counts?.totalAssignments !== 1 ||
   runtimeDispatchCli.next?.lane !== "lane-dashboard" ||
+  runtimeDispatchCli.next?.purpose !== null ||
   runtimeDispatchCli.groups?.[0]?.owner?.id !== "executor" ||
   runtimeDispatchCli.groups?.[0]?.assignments?.[0]?.taskBrief?.task?.id !== "task-4"
 ) {
@@ -8985,6 +8988,212 @@ if (
 }
 
 rmSync(".codex-bees", { recursive: true, force: true });
+run("purpose-task-add-docs", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "document public contract",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--lane-purpose",
+  "documentation",
+  "--scope",
+  "README.md",
+  "--acceptance",
+  "docs task visible",
+  "--verification",
+  "inbox can compare purposes"
+]);
+run("purpose-task-add-verify", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "verify runtime contract",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--lane-purpose",
+  "verification",
+  "--scope",
+  "scripts/smoke.mjs",
+  "--acceptance",
+  "verification task visible",
+  "--verification",
+  "inbox can compare purposes"
+]);
+run("purpose-task-add-impl", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "implement runtime contract",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--lane-purpose",
+  "implementation",
+  "--scope",
+  "src/index.js",
+  "--acceptance",
+  "implementation task visible",
+  "--verification",
+  "inbox can compare purposes"
+]);
+const purposeInbox = JSON.parse(
+  run("task-inbox-purpose-order", ["./src/index.js", "task:inbox", "--role", "executor", "--worker", "purpose-worker"]).stdout
+).inbox;
+if (
+  purposeInbox.recommendedReason !== "claimable_work_visible" ||
+  purposeInbox.tasks?.[0]?.lanePurpose !== "implementation" ||
+  purposeInbox.tasks?.[1]?.lanePurpose !== "verification" ||
+  purposeInbox.tasks?.[2]?.lanePurpose !== "documentation"
+) {
+  console.error("[smoke:task-inbox-purpose-order] expected implementation before verification before documentation");
+  process.exit(1);
+}
+const purposeNext = JSON.parse(
+  run("task-next-purpose-order", ["./src/index.js", "task:next", "--role", "executor", "--worker", "purpose-worker", "--mode", "owner"]).stdout
+).next;
+if (
+  purposeNext.recommendedReason !== "claimable_owner_candidate" ||
+  purposeNext.candidate?.lanePurpose !== "implementation" ||
+  purposeNext.candidate?.id !== "task-3"
+) {
+  console.error("[smoke:task-next-purpose-order] expected implementation task to win owner next candidate");
+  process.exit(1);
+}
+const purposePickupPreview = JSON.parse(
+  run("task-pickup-preview-purpose-order", ["./src/index.js", "task:pickup-preview", "--role", "executor", "--worker", "purpose-worker", "--mode", "owner"]).stdout
+).pickupPreview;
+if (
+  purposePickupPreview.purposeGuidance?.purpose !== "implementation" ||
+  purposePickupPreview.purposeGuidance?.executionHint?.includes("edit only the planned scope") !== true ||
+  purposePickupPreview.candidate?.lanePurpose !== "implementation"
+) {
+  console.error("[smoke:task-pickup-preview-purpose-order] expected implementation purpose guidance on pickup preview");
+  process.exit(1);
+}
+run("purpose-task-claim-impl", ["./src/index.js", "task:claim", "--id", "task-3", "--by", "purpose-worker"]);
+const purposeSession = JSON.parse(
+  run("worker-session-purpose-order", ["./src/index.js", "worker:session", "--role", "executor", "--worker", "purpose-worker", "--mode", "owner"]).stdout
+).session;
+if (
+  purposeSession.focus?.purpose !== "implementation" ||
+  purposeSession.purposeGuidance?.purpose !== "implementation" ||
+  purposeSession.purposeGuidance?.executionHint?.includes("edit only the planned scope") !== true ||
+  purposeSession.activeOwned?.[0]?.purposeGuidance?.purpose !== "implementation"
+) {
+  console.error("[smoke:worker-session-purpose-order] expected implementation purpose guidance in worker session");
+  process.exit(1);
+}
+const purposeHandoff = JSON.parse(
+  run("worker-handoff-purpose-order", ["./src/index.js", "worker:handoff", "--role", "executor", "--worker", "purpose-worker", "--mode", "owner"]).stdout
+).handoff;
+if (
+  purposeHandoff.purposeGuidance?.purpose !== "implementation" ||
+  purposeHandoff.summary?.includes("This is implementation work") !== true
+) {
+  console.error("[smoke:worker-handoff-purpose-order] expected implementation purpose guidance in worker handoff");
+  process.exit(1);
+}
+run("purpose-task-review-impl", ["./src/index.js", "task:review", "--id", "task-3", "--by", "purpose-worker"]);
+const purposeReviewPreview = JSON.parse(
+  run("task-pickup-preview-purpose-review", ["./src/index.js", "task:pickup-preview", "--role", "tester", "--worker", "purpose-verifier", "--mode", "verifier"]).stdout
+).pickupPreview;
+if (
+  purposeReviewPreview.purposeGuidance?.purpose !== "implementation" ||
+  purposeReviewPreview.purposeGuidance?.followupHint?.includes("review handoff") !== true
+) {
+  console.error("[smoke:task-pickup-preview-purpose-review] expected implementation guidance to survive review queue");
+  process.exit(1);
+}
+const purposeVerifierSession = JSON.parse(
+  run("worker-session-purpose-review", ["./src/index.js", "worker:session", "--role", "tester", "--worker", "purpose-verifier", "--mode", "verifier"]).stdout
+).session;
+if (
+  purposeVerifierSession.focus?.purpose !== "implementation" ||
+  purposeVerifierSession.purposeGuidance?.purpose !== "implementation"
+) {
+  console.error("[smoke:worker-session-purpose-review] expected implementation purpose to remain visible to verifier session");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("purpose-task-add-discovery", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "map runtime scope",
+  "--owner",
+  "explore",
+  "--verifier",
+  "reviewer",
+  "--lane-purpose",
+  "discovery",
+  "--scope",
+  "src/index.js",
+  "--acceptance",
+  "discovery task visible",
+  "--verification",
+  "pickup shows discovery guidance"
+]);
+const purposeDiscoveryPreview = JSON.parse(
+  run("task-pickup-preview-purpose-discovery", ["./src/index.js", "task:pickup-preview", "--role", "explore", "--worker", "purpose-explore", "--mode", "owner"]).stdout
+).pickupPreview;
+if (
+  purposeDiscoveryPreview.purposeGuidance?.purpose !== "discovery" ||
+  purposeDiscoveryPreview.purposeGuidance?.executionHint?.includes("inspect target files") !== true
+) {
+  console.error("[smoke:task-pickup-preview-purpose-discovery] expected discovery purpose guidance");
+  process.exit(1);
+}
+run("purpose-task-claim-discovery", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "purpose-explore"]);
+const purposeDiscoverySession = JSON.parse(
+  run("worker-session-purpose-discovery", ["./src/index.js", "worker:session", "--role", "explore", "--worker", "purpose-explore", "--mode", "owner"]).stdout
+).session;
+if (
+  purposeDiscoverySession.focus?.purpose !== "discovery" ||
+  purposeDiscoverySession.purposeGuidance?.purpose !== "discovery" ||
+  purposeDiscoverySession.purposeGuidance?.summary?.includes("map scope") !== true
+) {
+  console.error("[smoke:worker-session-purpose-discovery] expected discovery purpose guidance in worker session");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("purpose-task-add-verification-lane", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "prove bounded contract",
+  "--owner",
+  "tester",
+  "--verifier",
+  "reviewer",
+  "--lane-purpose",
+  "verification",
+  "--scope",
+  "scripts/smoke.mjs",
+  "--acceptance",
+  "verification lane visible",
+  "--verification",
+  "verifier preview shows verification guidance"
+]);
+const purposeVerificationPreview = JSON.parse(
+  run("task-pickup-preview-purpose-verification", ["./src/index.js", "task:pickup-preview", "--role", "tester", "--worker", "purpose-tester", "--mode", "owner"]).stdout
+).pickupPreview;
+if (
+  purposeVerificationPreview.purposeGuidance?.purpose !== "verification" ||
+  purposeVerificationPreview.purposeGuidance?.executionHint?.includes("run targeted checks") !== true
+) {
+  console.error("[smoke:task-pickup-preview-purpose-verification] expected verification purpose guidance");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
 run("inbox-task-add-1", [
   "./src/index.js",
   "task:add",
@@ -9158,6 +9367,8 @@ if (
   pickupPreviewVerifier.metadata?.hasBrief !== true ||
   pickupPreviewVerifier.metadata?.taskId !== "task-2" ||
   pickupPreviewVerifier.brief?.roles?.verifier?.contract?.title !== "Tester" ||
+  pickupPreviewVerifier.purposeGuidance?.label !== "implementation" ||
+  pickupPreviewVerifier.purposeGuidance?.executionHint?.includes("edit only the planned scope") !== true ||
   pickupPreviewVerifier.candidate?.id !== "task-2" ||
   pickupPreviewVerifier.command !== "node ./src/index.js task:approve --id task-2 --by tester"
 ) {

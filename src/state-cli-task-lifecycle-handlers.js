@@ -42,6 +42,7 @@ function handleTaskAdd() {
   const verifier = readOption("--verifier");
   const objective = readOption("--objective");
   const lane = readOption("--lane");
+  const lanePurpose = readOption("--lane-purpose");
   const swarmId = readOption("--swarm-id");
   const scope = readListOption("--scope");
   const dependsOn = readListOption("--depends-on");
@@ -55,6 +56,7 @@ function handleTaskAdd() {
     verifier,
     objective,
     lane,
+    lanePurpose,
     swarmId,
     scope,
     dependsOn,
@@ -75,6 +77,7 @@ function handleTaskUpdate() {
     verifier: readOption("--verifier"),
     objective: readOption("--objective"),
     lane: readOption("--lane"),
+    lanePurpose: readOption("--lane-purpose"),
     swarmId: readOption("--swarm-id"),
     scope: readListOption("--scope"),
     dependsOn: readListOption("--depends-on"),

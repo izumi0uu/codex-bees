@@ -1,4 +1,5 @@
 import { annotateTasksWithDependencyState } from "./state-task-core.js";
+import { pickPriorityEntry } from "./state-queue-views.js";
 
 export function findSwarmLaneTask(lane, swarmTasks) {
   if (lane.taskId) {
@@ -68,7 +69,7 @@ export function buildSwarmOverviewData(
   const laneSummaries = normalizedSwarm.lanes.map((lane) => buildSwarmLaneSummary(lane, swarmTasks));
   const counts = buildSwarmLaneCounts(laneSummaries);
   const derivedStatus = deriveSwarmStatus(normalizedSwarm, swarmTasks);
-  const nextLane = laneSummaries.find((lane) => lane.ready) ?? null;
+  const nextLane = pickPriorityEntry(laneSummaries, (lane) => lane.ready === true) ?? null;
   const readyToComplete = counts.totalLanes > 0 && counts.done === counts.totalLanes;
   const recommendedReason = deriveSwarmOverviewReason({
     counts,

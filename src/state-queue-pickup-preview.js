@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 export function buildPreviewTaskPickupView(
   input,
   {
@@ -39,6 +41,7 @@ export function buildPreviewTaskPickupView(
       candidate: null,
       task: null,
       brief: null,
+      purposeGuidance: buildPurposeGuidanceForTaskLike(null),
       command: null
     };
   }
@@ -63,6 +66,7 @@ export function buildPreviewTaskPickupView(
       candidate: next.candidate,
       task: currentTask,
       brief: next.brief,
+      purposeGuidance: buildPurposeGuidanceForTaskLike(next.candidate ?? next.brief?.coordination ?? currentTask),
       command: `node ./src/index.js task:pickup --role ${input.role} --worker ${input.workerId} --mode ${next.mode}`
     };
   }
@@ -83,6 +87,7 @@ export function buildPreviewTaskPickupView(
     candidate: next.candidate,
     task: currentTask,
     brief: next.brief,
+    purposeGuidance: buildPurposeGuidanceForTaskLike(next.candidate ?? next.brief?.coordination ?? currentTask),
     command: pickupFollowupCommand(next.candidate, input.workerId)
   };
 }
@@ -160,6 +165,7 @@ export function buildPreviewTaskAssignmentView(
       candidate: null,
       task: null,
       brief: null,
+      purposeGuidance: buildPurposeGuidanceForTaskLike(null),
       command: null
     };
   }
@@ -183,6 +189,7 @@ export function buildPreviewTaskAssignmentView(
       candidate: null,
       task: null,
       brief: null,
+      purposeGuidance: buildPurposeGuidanceForTaskLike(assignment),
       command: null,
       error: `Missing task for assignment ${assignment.taskId}`
     };
@@ -208,6 +215,7 @@ export function buildPreviewTaskAssignmentView(
     candidate,
     task,
     brief,
+    purposeGuidance: buildPurposeGuidanceForTaskLike(candidate ?? assignment ?? brief?.coordination ?? task),
     command: assignmentFollowupCommand(candidate, input.workerId)
   };
 }

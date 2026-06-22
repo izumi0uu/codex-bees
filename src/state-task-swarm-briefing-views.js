@@ -1,4 +1,5 @@
 import { recommendTaskAction } from "./state-task-core-views.js";
+import { compareLanePurposes, pickPriorityEntry } from "./state-queue-views.js";
 
 export function buildSwarmBriefView(
   id,
@@ -140,7 +141,7 @@ export function buildSwarmBundleView(
       done: laneSummary.done,
       report: task ? taskReport(task.id) : null
     };
-  });
+  }).sort((left, right) => compareLanePurposes(left.purpose ?? null, right.purpose ?? null));
   const recommendedReason = deriveSwarmBundleReason({ overview, laneBundles });
 
   return {
@@ -330,9 +331,7 @@ export function buildSwarmDispatchBundleView(
   }
 
   const brief = swarmBrief(id);
-  const dispatchLane = (brief?.lanes ?? []).find(
-    (lane) => lane.ready === true
-  ) ?? null;
+  const dispatchLane = pickPriorityEntry(brief?.lanes ?? [], (lane) => lane.ready === true) ?? null;
   const recommendedReason = deriveSwarmDispatchBundleReason({ overview, dispatchLane });
   const laneTaskBrief = dispatchLane?.taskId ? taskBrief(dispatchLane.taskId) : null;
   const recommendedCommands = dispatchLane?.recommendedCommands ?? [];
@@ -401,7 +400,7 @@ export function recommendLaneAction(laneSummary, task, tasks = [], recommendTask
 }
 
 export function recommendSwarmAction(overview, lanes) {
-  const pendingReviewLane = lanes.find((lane) => lane.taskQueueStatus === "ready_for_review");
+  const pendingReviewLane = pickPriorityEntry(lanes, (lane) => lane.taskQueueStatus === "ready_for_review");
   if (pendingReviewLane) {
     return {
       actor: pendingReviewLane.recommendedNextActor,
@@ -410,9 +409,7 @@ export function recommendSwarmAction(overview, lanes) {
     };
   }
 
-  const runnableLane = lanes.find((lane) =>
-    lane.ready === true
-  );
+  const runnableLane = pickPriorityEntry(lanes, (lane) => lane.ready === true);
   if (runnableLane) {
     return {
       actor: runnableLane.recommendedNextActor,
@@ -423,7 +420,7 @@ export function recommendSwarmAction(overview, lanes) {
     };
   }
 
-  const claimedLane = lanes.find((lane) => lane.taskQueueStatus === "claimed");
+  const claimedLane = pickPriorityEntry(lanes, (lane) => lane.taskQueueStatus === "claimed");
   if (claimedLane) {
     return {
       actor: claimedLane.recommendedNextActor,
@@ -432,7 +429,7 @@ export function recommendSwarmAction(overview, lanes) {
     };
   }
 
-  const blockedLane = lanes.find((lane) => lane.taskQueueStatus === "blocked");
+  const blockedLane = pickPriorityEntry(lanes, (lane) => lane.taskQueueStatus === "blocked");
   if (blockedLane) {
     return {
       actor: blockedLane.recommendedNextActor,
@@ -441,7 +438,8 @@ export function recommendSwarmAction(overview, lanes) {
     };
   }
 
-  const dependencyWaitingLane = lanes.find(
+  const dependencyWaitingLane = pickPriorityEntry(
+    lanes,
     (lane) =>
       (lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released") &&
       lane.dependencyReady === false

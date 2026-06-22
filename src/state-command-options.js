@@ -38,6 +38,7 @@ export const OBJECTIVE_OPTION = option("--objective <text>", "Objective text for
 export const TITLE_OPTION = option("--title <title>", "Human-readable title for the created or updated record");
 export const VERIFIER_OPTION = option("--verifier <role>", "Verifier role for review and approval");
 export const LANE_OPTION = option("--lane <lane>", "Lane id inside the parent swarm contract");
+export const LANE_PURPOSE_OPTION = option("--lane-purpose <purpose>", "Planner lane purpose for ordering (discovery|implementation|verification|documentation)");
 export const SWARM_LINK_OPTION = option("--swarm-id <swarm-id>", "Link the task to an existing swarm");
 export const SCOPE_OPTION = option("--scope <path,path>", "Comma-delimited scope paths; repeat the flag to append more");
 export const DEPENDS_ON_OPTION = option("--depends-on <ref,ref>", "Comma-delimited dependency refs; repeat the flag to append more");

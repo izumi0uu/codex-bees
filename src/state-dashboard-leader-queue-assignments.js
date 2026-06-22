@@ -1,3 +1,5 @@
+import { compareLanePurposes } from "./state-queue-views.js";
+
 export function buildLeaderQueueSummary(items) {
   if (items.length === 0) {
     return "Leader queue has no swarm work items yet.";
@@ -123,6 +125,12 @@ export function buildLeaderAssignmentsView(
         taskBrief: lane.taskId ? taskBrief(lane.taskId) : null,
         summary: `Dispatch ${lane.lane} from ${swarm.id} to ${lane.owner.id ?? lane.owner.name ?? "unknown"}.`
       }));
+  }).sort((left, right) => {
+    const purposeDiff = compareLanePurposes(left.purpose ?? null, right.purpose ?? null);
+    if (purposeDiff !== 0) {
+      return purposeDiff;
+    }
+    return (left.swarmId ?? "").localeCompare(right.swarmId ?? "");
   });
 
   const groupsByOwner = new Map();
@@ -135,10 +143,23 @@ export function buildLeaderAssignmentsView(
     };
     current.assignments.push(assignment);
     current.count += 1;
+    current.assignments.sort((left, right) => {
+      const purposeDiff = compareLanePurposes(left.purpose ?? null, right.purpose ?? null);
+      if (purposeDiff !== 0) {
+        return purposeDiff;
+      }
+      return (left.swarmId ?? "").localeCompare(right.swarmId ?? "");
+    });
     groupsByOwner.set(ownerId, current);
   }
 
   const groups = [...groupsByOwner.values()].sort((left, right) => {
+    const leftPurpose = left.assignments?.[0]?.purpose ?? null;
+    const rightPurpose = right.assignments?.[0]?.purpose ?? null;
+    const purposeDiff = compareLanePurposes(leftPurpose, rightPurpose);
+    if (purposeDiff !== 0) {
+      return purposeDiff;
+    }
     if (right.count !== left.count) {
       return right.count - left.count;
     }

@@ -1,19 +1,22 @@
+import { pickPriorityEntry } from "./state-queue-views.js";
+
 export function buildSwarmBundleSummary(overview, laneBundles) {
   if (overview.readyToComplete) {
     return `Swarm ${overview.swarm.id} is ready to complete with ${overview.counts.done}/${overview.counts.totalLanes} lanes done.`;
   }
 
-  const reviewLane = laneBundles.find((lane) => lane.queueStatus === "ready_for_review");
+  const reviewLane = pickPriorityEntry(laneBundles, (lane) => lane.queueStatus === "ready_for_review");
   if (reviewLane) {
     return `Swarm ${overview.swarm.id} has lane ${reviewLane.lane} waiting on verifier ${reviewLane.verifier}.`;
   }
 
-  const claimedLane = laneBundles.find((lane) => lane.queueStatus === "claimed");
+  const claimedLane = pickPriorityEntry(laneBundles, (lane) => lane.queueStatus === "claimed");
   if (claimedLane) {
     return `Swarm ${overview.swarm.id} is in progress on lane ${claimedLane.lane} with worker ${claimedLane.claimedBy ?? "unknown"}.`;
   }
 
-  const nextLane = laneBundles.find(
+  const nextLane = pickPriorityEntry(
+    laneBundles,
     (lane) =>
       (lane.queueStatus === "queued" || lane.queueStatus === "released") &&
       lane.dependencyReady !== false
@@ -94,15 +97,16 @@ export function deriveSwarmBundleReason({ overview, laneBundles }) {
   if (overview?.readyToComplete) {
     return "swarm_ready_to_complete";
   }
-  const reviewLane = laneBundles?.find((lane) => lane.queueStatus === "ready_for_review") ?? null;
+  const reviewLane = pickPriorityEntry(laneBundles, (lane) => lane.queueStatus === "ready_for_review") ?? null;
   if (reviewLane?.lane) {
     return "review_lane_waiting";
   }
-  const claimedLane = laneBundles?.find((lane) => lane.queueStatus === "claimed") ?? null;
+  const claimedLane = pickPriorityEntry(laneBundles, (lane) => lane.queueStatus === "claimed") ?? null;
   if (claimedLane?.lane) {
     return "claimed_lane_active";
   }
-  const dispatchLane = laneBundles?.find(
+  const dispatchLane = pickPriorityEntry(
+    laneBundles,
     (lane) =>
       (lane.queueStatus === "queued" || lane.queueStatus === "released") &&
       lane.dependencyReady !== false

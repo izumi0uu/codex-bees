@@ -1,67 +1,86 @@
+import { buildPurposeGuidanceForTaskLike, buildPurposeSentence } from "./state-lane-purpose.js";
+
 export function buildSessionTaskSnapshot(task, role, workerId, summarizeInboxTask, taskBrief) {
+  const summary = summarizeInboxTask(task, role, workerId);
+  const brief = taskBrief(task.id);
   return {
-    summary: summarizeInboxTask(task, role, workerId),
-    brief: taskBrief(task.id),
+    summary,
+    brief,
+    purposeGuidance: buildPurposeGuidanceForTaskLike(summary ?? brief?.coordination ?? task),
     recentHistory: (task.history ?? []).slice(-5),
     recentAnnotations: (task.annotations ?? []).slice(-5)
+  };
+}
+
+function buildFocusPayload(kind, taskLike, command, reason) {
+  const purposeGuidance = buildPurposeGuidanceForTaskLike(taskLike);
+  return {
+    kind,
+    taskId: taskLike?.id ?? null,
+    command,
+    reason,
+    purpose: purposeGuidance.purpose,
+    purposeGuidance
   };
 }
 
 export function recommendWorkerSessionFocus(input) {
   const activeTask = input.activeOwned[0];
   if (activeTask) {
-    return {
-      kind: "active_task",
-      taskId: activeTask.id,
-      command: `node ./src/index.js task:review --id ${activeTask.id} --by ${input.workerId}`,
-      reason: "worker already owns active execution"
-    };
+    return buildFocusPayload(
+      "active_task",
+      activeTask,
+      `node ./src/index.js task:review --id ${activeTask.id} --by ${input.workerId}`,
+      "worker already owns active execution"
+    );
   }
 
   const reviewTask = input.reviewQueue[0];
   if (reviewTask) {
-    return {
-      kind: "review_task",
-      taskId: reviewTask.id,
-      command: `node ./src/index.js task:approve --id ${reviewTask.id} --by ${input.role}`,
-      reason: "verifier has pending review work"
-    };
+    return buildFocusPayload(
+      "review_task",
+      reviewTask,
+      `node ./src/index.js task:approve --id ${reviewTask.id} --by ${input.role}`,
+      "verifier has pending review work"
+    );
   }
 
   const blockedTask = input.blockedOwned[0];
   if (blockedTask) {
-    return {
-      kind: "blocked_task",
-      taskId: blockedTask.id,
-      command: `node ./src/index.js task:release --id ${blockedTask.id} --by ${input.workerId}`,
-      reason: "worker has blocked owned work"
-    };
+    return buildFocusPayload(
+      "blocked_task",
+      blockedTask,
+      `node ./src/index.js task:release --id ${blockedTask.id} --by ${input.workerId}`,
+      "worker has blocked owned work"
+    );
   }
 
   const handoffTask = input.handoffsAwaitingReview[0];
   if (handoffTask) {
-    return {
-      kind: "awaiting_review",
-      taskId: handoffTask.id,
-      command: null,
-      reason: "worker has already handed this task to its verifier"
-    };
+    return buildFocusPayload(
+      "awaiting_review",
+      handoffTask,
+      null,
+      "worker has already handed this task to its verifier"
+    );
   }
 
   if (input.next?.candidate) {
-    return {
-      kind: "pickup_next",
-      taskId: input.next.candidate.id,
-      command: `node ./src/index.js task:pickup --role ${input.role} --worker ${input.workerId} --mode ${input.mode}`,
-      reason: "worker has no active task and can pick up the next candidate"
-    };
+    return buildFocusPayload(
+      "pickup_next",
+      input.next.candidate,
+      `node ./src/index.js task:pickup --role ${input.role} --worker ${input.workerId} --mode ${input.mode}`,
+      "worker has no active task and can pick up the next candidate"
+    );
   }
 
   return {
     kind: "idle",
     taskId: null,
     command: null,
-    reason: "no current or queued work for this worker session"
+    reason: "no current or queued work for this worker session",
+    purpose: null,
+    purposeGuidance: buildPurposeGuidanceForTaskLike(null)
   };
 }
 
@@ -128,6 +147,16 @@ export function buildWorkerSessionView(
     next
   });
   const recommendedReason = deriveWorkerSessionReason(focus, next);
+  const focusTaskSnapshot =
+    activeOwned.length > 0
+      ? buildSessionTaskSnapshot(activeOwned[0], role, workerId, summarizeInboxTask, taskBrief)
+      : reviewQueue.length > 0
+        ? buildSessionTaskSnapshot(reviewQueue[0], role, workerId, summarizeInboxTask, taskBrief)
+        : blockedOwned.length > 0
+          ? buildSessionTaskSnapshot(blockedOwned[0], role, workerId, summarizeInboxTask, taskBrief)
+          : handoffsAwaitingReview.length > 0
+            ? buildSessionTaskSnapshot(handoffsAwaitingReview[0], role, workerId, summarizeInboxTask, taskBrief)
+            : null;
 
   return {
     kind: "worker_session",
@@ -147,7 +176,9 @@ export function buildWorkerSessionView(
     reviewQueue: reviewQueue.map((task) => buildSessionTaskSnapshot(task, role, workerId, summarizeInboxTask, taskBrief)),
     inbox,
     next,
-    focus
+    focus,
+    focusTask: focusTaskSnapshot?.summary ?? next?.candidate ?? null,
+    purposeGuidance: focusTaskSnapshot?.purposeGuidance ?? focus?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(next?.candidate ?? null)
   };
 }
 
@@ -191,20 +222,25 @@ export function buildWorkerSessionViewFromSources(
 }
 
 export function buildWorkerHandoffSummary(session, focusTaskSnapshot) {
+  const purposeSentence = buildPurposeSentence(
+    focusTaskSnapshot?.summary ?? session.next?.candidate ?? null,
+    session.focus?.purpose ?? null
+  );
+
   if (session.focus?.kind === "active_task" && focusTaskSnapshot) {
-    return `Worker ${session.workerId} owns ${focusTaskSnapshot.summary.id} and should continue execution before handoff to verifier ${focusTaskSnapshot.summary.verifier}.`;
+    return `Worker ${session.workerId} owns ${focusTaskSnapshot.summary.id} and should continue execution before handoff to verifier ${focusTaskSnapshot.summary.verifier}. ${purposeSentence}`;
   }
   if (session.focus?.kind === "review_task" && focusTaskSnapshot) {
-    return `Worker ${session.workerId} is acting as verifier for ${focusTaskSnapshot.summary.id} and should decide approval or requested changes.`;
+    return `Worker ${session.workerId} is acting as verifier for ${focusTaskSnapshot.summary.id} and should decide approval or requested changes. ${purposeSentence}`;
   }
   if (session.focus?.kind === "blocked_task" && focusTaskSnapshot) {
-    return `Worker ${session.workerId} is blocked on ${focusTaskSnapshot.summary.id} and should release or annotate the blocker context.`;
+    return `Worker ${session.workerId} is blocked on ${focusTaskSnapshot.summary.id} and should release or annotate the blocker context. ${purposeSentence}`;
   }
   if (session.focus?.kind === "awaiting_review" && focusTaskSnapshot) {
-    return `Worker ${session.workerId} already handed ${focusTaskSnapshot.summary.id} to its verifier and is waiting on review.`;
+    return `Worker ${session.workerId} already handed ${focusTaskSnapshot.summary.id} to its verifier and is waiting on review. ${purposeSentence}`;
   }
   if (session.focus?.kind === "pickup_next" && session.next?.candidate) {
-    return `Worker ${session.workerId} has no active task and can pick up ${session.next.candidate.id} next.`;
+    return `Worker ${session.workerId} has no active task and can pick up ${session.next.candidate.id} next. ${purposeSentence}`;
   }
   return `Worker ${session.workerId} is idle with no current handoff target.`;
 }
@@ -235,6 +271,8 @@ export function buildWorkerHandoffView(
   const focusBrief = focusTaskSnapshot?.brief ?? session.next?.brief ?? null;
   const recommendedReason = deriveWorkerHandoffReason(session, focusTaskSnapshot);
 
+  const purposeGuidance = focusTaskSnapshot?.purposeGuidance ?? session.purposeGuidance ?? buildPurposeGuidanceForTaskLike(session.next?.candidate ?? null);
+
   return {
     kind: "worker_handoff",
     role: session.role,
@@ -244,6 +282,7 @@ export function buildWorkerHandoffView(
     focus: session.focus,
     currentTask: focusTaskSnapshot?.summary ?? null,
     brief: focusBrief,
+    purposeGuidance,
     recentHistory: focusTaskSnapshot?.recentHistory ?? [],
     recentAnnotations: focusTaskSnapshot?.recentAnnotations ?? [],
     nextCandidate: session.next?.candidate ?? null,

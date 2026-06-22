@@ -1,3 +1,5 @@
+import { compareLanePurposes } from "./state-queue-views.js";
+
 export function runtimeRolePriority(entry) {
   if (entry.counts.pendingReview > 0) {
     return 0;
@@ -21,6 +23,13 @@ export function compareRuntimeRoleEntries(left, right) {
   const rightRank = runtimeRolePriority(right);
   if (leftRank !== rightRank) {
     return leftRank - rightRank;
+  }
+  const purposeDiff = compareLanePurposes(
+    left.nextAction?.task?.lanePurpose ?? null,
+    right.nextAction?.task?.lanePurpose ?? null
+  );
+  if (purposeDiff !== 0) {
+    return purposeDiff;
   }
   return (left.role?.id ?? "").localeCompare(right.role?.id ?? "");
 }
