@@ -32,7 +32,6 @@ import {
   buildTaskInboxView,
   buildTaskNextViewFromSources,
   buildTaskNextView,
-  compareLeaderWorkspaceEntries,
   compareTasksByUpdatedAt,
   isClaimableTask,
   normalizeNextMode,
@@ -217,26 +216,14 @@ import {
   runtimeWorkspacePackFromSources
 } from "./state-runtime-packs.js";
 import {
-  buildLeaderAssignmentDispatchView,
-  buildLeaderAssignmentDispatchViewFromSources,
-  buildLeaderAssignmentDispatchBundleView,
-  buildLeaderAssignmentDispatchBundleViewFromSources,
-  buildLeaderAssignmentDispatchPackViewFromSources,
-  buildLeaderAssignmentDispatchPackView,
-  buildLeaderAssignmentLaunchPlanView,
-  buildLeaderAssignmentLaunchPlanViewFromSources,
-  buildLeaderAssignmentsViewFromSources,
-  buildLeaderAssignmentsView,
-  buildLeaderAssignmentsSummary,
-  buildLeaderQueueViewFromSources,
-  buildLeaderQueueView,
-  buildLeaderQueueSummary,
-  deriveLeaderAssignmentDispatchReason,
-  deriveLeaderAssignmentDispatchBundleReason,
-  deriveLeaderAssignmentsReason,
-  deriveLeaderAssignmentLaunchPlanReason,
-  deriveLeaderQueueReason
-} from "./state-dashboard-views.js";
+  leaderAssignmentsFromSources,
+  leaderAssignmentDispatchBundleFromSources,
+  leaderAssignmentDispatchFromSources,
+  leaderAssignmentDispatchPackFromSources,
+  leaderAssignmentLaunchPlanFromSources,
+  leaderQueueFromSources,
+  leaderWorkspaceFromSources
+} from "./state-leader-surfaces.js";
 import {
   buildSwarmOverviewData,
   buildSwarmOverviewView,
@@ -249,7 +236,6 @@ import {
   buildSwarmCloseoutSummary,
   buildSwarmDispatchBundleSummary,
   buildSwarmBundleSummary,
-  deriveLeaderWorkspaceReason,
   deriveSwarmBlockersReason,
   deriveSwarmBriefReason,
   deriveSwarmBundleReason,
@@ -277,14 +263,6 @@ import {
   deriveWorkerCloseoutCommand,
   recommendWorkerSessionFocus
 } from "./state-worker-views.js";
-import {
-  buildLeaderWorkspaceViewFromSources,
-  buildLeaderWorkspaceView,
-  buildLeaderWorkspaceSummary,
-  buildLeaderWorkspaceSwarmEntry,
-  compareRuntimeRoleEntries,
-  deriveLeaderAssignmentDispatchPackReason
-} from "./state-runtime-views.js";
 import {
   VALID_QUEUE_STATUSES,
   VALID_SWARM_STATUSES,
@@ -606,86 +584,42 @@ export function swarmDispatchBundle(id) {
 }
 
 export function leaderQueue(input = {}) {
-  return buildLeaderQueueViewFromSources(
-    input,
-    {
-      leaderWorkspace
-    },
-    {
-      deriveLeaderQueueReason,
-      buildLeaderQueueSummary,
-      buildLeaderQueueView
-    }
-  );
+  return leaderQueueFromSources(input, {
+    leaderWorkspace
+  });
 }
 
 export function leaderAssignments(input = {}) {
-  return buildLeaderAssignmentsViewFromSources(
-    input,
-    {
-      leaderWorkspace,
-      swarmBrief,
-      taskBrief
-    },
-    {
-      deriveLeaderAssignmentsReason,
-      buildLeaderAssignmentsView
-    }
-  );
+  return leaderAssignmentsFromSources(input, {
+    leaderWorkspace,
+    swarmBrief,
+    taskBrief
+  });
 }
 
 export function leaderAssignmentDispatch(input = {}) {
-  return buildLeaderAssignmentDispatchViewFromSources(
-    input,
-    {
-      leaderAssignments,
-      describeRole
-    },
-    {
-      deriveLeaderAssignmentDispatchReason,
-      buildLeaderAssignmentDispatchView
-    }
-  );
+  return leaderAssignmentDispatchFromSources(input, {
+    leaderAssignments
+  });
 }
 
 export function leaderAssignmentDispatchPack(input = {}) {
-  return buildLeaderAssignmentDispatchPackViewFromSources(
-    input,
-    {
-      leaderAssignments,
-      leaderAssignmentDispatch
-    },
-    {
-      deriveLeaderAssignmentDispatchPackReason,
-      buildLeaderAssignmentDispatchPackView
-    }
-  );
+  return leaderAssignmentDispatchPackFromSources(input, {
+    leaderAssignments,
+    leaderAssignmentDispatch
+  });
 }
 
 export function leaderAssignmentDispatchBundle(input = {}) {
-  return buildLeaderAssignmentDispatchBundleViewFromSources(
-    input,
-    {
-      leaderAssignmentDispatchPack
-    },
-    {
-      deriveLeaderAssignmentDispatchBundleReason,
-      buildLeaderAssignmentDispatchBundleView
-    }
-  );
+  return leaderAssignmentDispatchBundleFromSources(input, {
+    leaderAssignmentDispatchPack
+  });
 }
 
 export function leaderAssignmentLaunchPlan(input = {}) {
-  return buildLeaderAssignmentLaunchPlanViewFromSources(
-    input,
-    {
-      leaderAssignmentDispatchBundle
-    },
-    {
-      deriveLeaderAssignmentLaunchPlanReason,
-      buildLeaderAssignmentLaunchPlanView
-    }
-  );
+  return leaderAssignmentLaunchPlanFromSources(input, {
+    leaderAssignmentDispatchBundle
+  });
 }
 
 export function runtimeDashboard() {
@@ -977,22 +911,11 @@ export function runtimeVerifierPack(input = {}) {
 }
 
 export function leaderWorkspace(input = {}) {
-  return buildLeaderWorkspaceViewFromSources(
-    input,
-    {
-      listSwarmOverviews,
-      buildLeaderWorkspaceSwarmEntry,
-      swarmBrief,
-      swarmBundle,
-      buildSwarmBundleSummary,
-      compareLeaderWorkspaceEntries
-    },
-    {
-      deriveLeaderWorkspaceReason,
-      buildLeaderWorkspaceSummary,
-      buildLeaderWorkspaceView
-    }
-  );
+  return leaderWorkspaceFromSources(input, {
+    listSwarmOverviews,
+    swarmBrief,
+    swarmBundle
+  });
 }
 
 export function taskInbox(input = {}) {
