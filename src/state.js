@@ -1,9 +1,6 @@
 import { join } from "node:path";
 import { cwd } from "node:process";
 import {
-  buildMemory,
-  buildSwarm,
-  buildTask,
   buildTaskHistoryEntry
 } from "./state-builders.js";
 import {
@@ -25,8 +22,7 @@ import {
 import {
   getMemoryFromSources,
   listMemoriesFromSources,
-  searchMemoriesFromSources,
-  storeMemoryFromSources
+  searchMemoriesFromSources
 } from "./state-memory-core.js";
 import {
   buildMemoryDetailView,
@@ -37,12 +33,9 @@ import {
   buildMemorySearchViewFromSources
 } from "./state-memory-views.js";
 import {
-  buildMemoryMutationResult,
   buildRejectedTaskLifecycleResult,
   buildSwarmLifecycleResult,
-  buildSwarmMutationResult,
-  buildTaskLifecycleResult,
-  buildTaskMutationResult
+  buildTaskLifecycleResult
 } from "./state-lifecycle-views.js";
 import {
   ensureStateFileAtPath,
@@ -52,26 +45,15 @@ import {
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
 import {
-  buildUpdatedSwarmState,
   buildSyncedSwarmState,
-  dispatchSwarmLaneFromSources,
-  findDispatchableSwarmLane,
   getSwarmFromSources,
-  initSwarmFromSources,
   listSwarmOverviewsFromSources,
   listSwarmsFromSources,
-  queueSwarmTasksFromSources,
   syncSwarmStatusFromSources,
   transitionSwarmFromSources,
-  updateSwarmFromSources,
   updateLoadedSwarmState,
   validateSwarmFromSources,
   buildTransitionedSwarmState,
-  buildQueuedSwarmLaneState,
-  buildQueuedSwarmLaneTaskInput,
-  buildQueuedSwarmState,
-  buildDispatchedSwarmState,
-  buildDispatchedSwarmTaskState,
   syncLoadedSwarmState,
   syncLoadedSwarmLifecycle,
   transitionLoadedSwarmState,
@@ -89,16 +71,11 @@ import {
   validateVerifierAction
 } from "./state-transition-guards.js";
 import {
-  addTaskFromSources,
-  addTasksFromSources,
-  annotateTaskFromSources,
-  buildUpdatedTaskState,
   buildTransitionedTaskState,
   buildTaskReviewPatch,
   deriveTaskTransitionContext,
   resolveTaskClaimedBy,
   transitionTaskFromSources,
-  updateTaskFromSources,
   updateLoadedTaskState,
   transitionLoadedTaskState
 } from "./state-transition-helpers.js";
@@ -106,7 +83,6 @@ import {
   getTaskFromSources,
   listTasksFromSources,
   validateTaskFromSources,
-  appendTaskAnnotation,
   appendTaskHistoryEntry
 } from "./state-task-core.js";
 import {
@@ -182,14 +158,29 @@ import {
   taskReportFromSources
 } from "./state-task-swarm-surfaces.js";
 import {
+  addTaskMutationOperation,
+  addTaskOperation,
+  addTasksOperation,
+  annotateTaskMutationOperation,
+  annotateTaskOperation,
+  dispatchSwarmLaneOperation,
+  initSwarmMutationOperation,
+  initSwarmOperation,
+  queueSwarmTasksOperation,
+  storeMemoryMutationOperation,
+  storeMemoryOperation,
+  updateSwarmMutationOperation,
+  updateSwarmOperation,
+  updateTaskMutationOperation,
+  updateTaskOperation
+} from "./state-write-operations.js";
+import {
   buildSwarmOverviewData,
   buildSwarmOverviewView,
   buildSwarmOverviewViewFromSources,
   buildSwarmListView,
   buildSwarmListViewFromSources,
-  deriveSwarmDispatchReason,
   deriveSwarmOverviewReason,
-  deriveSwarmQueueReason,
   deriveSwarmSyncReason
 } from "./state-swarm-views.js";
 import {
@@ -345,16 +336,15 @@ export function taskReport(id) {
 }
 
 export function annotateTask(input = {}) {
-  return annotateTaskFromSources(input, {
+  return annotateTaskOperation(input, {
     loadState,
     saveState,
-    normalizeTask,
-    appendTaskAnnotation
+    normalizeTask
   });
 }
 
 export function annotateTaskMutation(input) {
-  return buildTaskMutationResult(annotateTask(input), "task_annotated");
+  return annotateTaskMutationOperation(input, { annotateTask });
 }
 
 export function getSwarm(id) {
@@ -891,47 +881,31 @@ export function swarmOverview(id) {
 }
 
 export function addTask(input) {
-  return addTaskFromSources(input, {
-    loadState,
-    saveState,
-    buildTask
-  });
+  return addTaskOperation(input, { loadState, saveState });
 }
 
 export function addTaskLifecycle(input) {
-  return buildTaskMutationResult(addTask(input), "task_created");
+  return addTaskMutationOperation(input, { addTask });
 }
 
 export function addTasks(inputs) {
-  return addTasksFromSources(inputs, {
-    loadState,
-    saveState,
-    buildTask
-  });
+  return addTasksOperation(inputs, { loadState, saveState });
 }
 
 export function storeMemory(input) {
-  return storeMemoryFromSources(input, {
-    loadState,
-    saveState,
-    buildMemory
-  });
+  return storeMemoryOperation(input, { loadState, saveState });
 }
 
 export function storeMemoryMutation(input) {
-  return buildMemoryMutationResult(storeMemory(input), "memory_stored");
+  return storeMemoryMutationOperation(input, { storeMemory });
 }
 
 export function initSwarm(input) {
-  return initSwarmFromSources(input, {
-    loadState,
-    saveState,
-    buildSwarm
-  });
+  return initSwarmOperation(input, { loadState, saveState });
 }
 
 export function initSwarmMutation(input) {
-  return buildSwarmMutationResult(initSwarm(input), "swarm_created");
+  return initSwarmMutationOperation(input, { initSwarm });
 }
 
 export function searchMemories(query, filters = {}) {
@@ -957,52 +931,43 @@ export function searchMemoriesView(query, filters = {}, limit = 10) {
 }
 
 export function updateTask(input) {
-  return updateTaskFromSources(input, {
+  return updateTaskOperation(input, {
     loadState,
     saveState,
     findTaskIndex,
-    normalizeTask,
-    buildUpdatedTaskState
+    normalizeTask
   });
 }
 
 export function updateTaskMutation(input) {
-  return buildTaskMutationResult(updateTask(input), "task_updated");
+  return updateTaskMutationOperation(input, { updateTask });
 }
 
 export function updateSwarm(input) {
-  return updateSwarmFromSources(input, {
+  return updateSwarmOperation(input, {
     loadState,
     saveState,
     findSwarmIndex,
-    normalizeSwarm,
-    buildUpdatedSwarmState
+    normalizeSwarm
   });
 }
 
 export function updateSwarmMutation(input) {
-  return buildSwarmMutationResult(updateSwarm(input), "swarm_updated");
+  return updateSwarmMutationOperation(input, { updateSwarm });
 }
 
 export function queueSwarmTasks(input) {
-  return queueSwarmTasksFromSources(input, {
+  return queueSwarmTasksOperation(input, {
     loadState,
     saveState,
     findSwarmIndex,
     normalizeSwarm,
-    normalizeSwarmLane,
-    validateSwarmValue,
-    runtimeRoleCatalog,
-    buildTask,
-    buildQueuedSwarmLaneTaskInput,
-    buildQueuedSwarmLaneState,
-    buildQueuedSwarmState,
-    deriveSwarmQueueReason
+    normalizeSwarmLane
   });
 }
 
 export function dispatchSwarmLane(input) {
-  return dispatchSwarmLaneFromSources(input, {
+  return dispatchSwarmLaneOperation(input, {
     loadState,
     saveState,
     findSwarmIndex,
@@ -1010,13 +975,7 @@ export function dispatchSwarmLane(input) {
     normalizeSwarm,
     normalizeTask,
     normalizeSwarmLane,
-    validateTaskValue,
-    runtimeRoleCatalog,
-    buildDispatchedSwarmTaskState,
-    buildDispatchedSwarmState,
-    findDispatchableSwarmLane,
-    syncSwarmInLoadedState,
-    deriveSwarmDispatchReason
+    syncSwarmInLoadedState
   });
 }
 
