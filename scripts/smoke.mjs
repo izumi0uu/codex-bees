@@ -167,76 +167,76 @@ const checks = [
   ],
   ["plan", ["./src/index.js", "plan", "--task", "Add a doctor smoke check to the CLI"]],
   ["plan-queue", ["./src/index.js", "plan:queue", "--task", "Queue a runtime task"]],
-  ["plan-swarm", ["./src/index.js", "plan:swarm", "--task", "Coordinate a runtime task"]],
-  [
-    "task-add",
-    [
-      "./src/index.js",
-      "task:add",
-      "--title",
-      "smoke task",
-      "--status",
-      "todo",
-      "--owner",
-      "executor",
-      "--verifier",
-      "tester",
-      "--objective",
-      "prove metadata persistence",
-      "--lane",
-      "lane-smoke",
-      "--scope",
-      "src/index.js,src/mcp.js",
-      "--acceptance",
-      "metadata stored|manual task remains bounded",
-      "--verification",
-      "task:list shows metadata|task:update preserves metadata"
-    ]
-  ],
-  ["task-claim", ["./src/index.js", "task:claim", "--id", "task-3", "--by", "smoke-worker"]],
-  ["task-block", ["./src/index.js", "task:block", "--id", "task-3", "--by", "smoke-worker", "--notes", "waiting on verifier"]],
-  ["task-claim-from-blocked", ["./src/index.js", "task:claim", "--id", "task-3", "--by", "smoke-worker"]],
-  ["task-review", ["./src/index.js", "task:review", "--id", "task-3", "--by", "smoke-worker"]],
-  ["task-done-unauthorized", ["./src/index.js", "task:done", "--id", "task-3", "--by", "smoke-worker"], 1],
-  [
-    "task-approve",
-    [
-      "./src/index.js",
-      "task:approve",
-      "--id",
-      "task-3",
-      "--by",
-      "tester",
-      "--notes",
-      "smoke verifier approved",
-      "--evidence",
-      "npm run smoke|task metadata reviewed"
-    ]
-  ],
-  ["task-list", ["./src/index.js", "task:list"]],
-  [
-    "task-update",
-    [
-      "./src/index.js",
-      "task:update",
-      "--id",
-      "task-3",
-      "--status",
-      "done",
-      "--notes",
-      "verified by smoke",
-      "--acceptance",
-      "metadata stored|manual task remains bounded|update path works",
-      "--verification",
-      "task:list shows metadata|task:update preserves metadata|smoke command passes"
-    ]
-  ],
-  ["task-release-invalid", ["./src/index.js", "task:release", "--id", "task-3", "--by", "smoke-worker"], 1]
+  ["plan-swarm", ["./src/index.js", "plan:swarm", "--task", "Coordinate a runtime task"]]
 ];
 
 for (const [label, args, expectedStatus = 0] of checks) {
   run(label, args, expectedStatus);
 }
+
+const smokeTaskAdd = JSON.parse(
+  run("task-add", [
+    "./src/index.js",
+    "task:add",
+    "--title",
+    "smoke task",
+    "--status",
+    "todo",
+    "--owner",
+    "executor",
+    "--verifier",
+    "tester",
+    "--objective",
+    "prove metadata persistence",
+    "--lane",
+    "lane-smoke",
+    "--scope",
+    "src/index.js,src/mcp.js",
+    "--acceptance",
+    "metadata stored|manual task remains bounded",
+    "--verification",
+    "task:list shows metadata|task:update preserves metadata"
+  ]).stdout
+);
+const smokeTaskId = smokeTaskAdd.created?.task?.id ?? smokeTaskAdd.task?.id;
+if (!smokeTaskId) {
+  console.error("[smoke:task-add] expected manual smoke task id");
+  process.exit(1);
+}
+
+run("task-claim", ["./src/index.js", "task:claim", "--id", smokeTaskId, "--by", "smoke-worker"]);
+run("task-block", ["./src/index.js", "task:block", "--id", smokeTaskId, "--by", "smoke-worker", "--notes", "waiting on verifier"]);
+run("task-claim-from-blocked", ["./src/index.js", "task:claim", "--id", smokeTaskId, "--by", "smoke-worker"]);
+run("task-review", ["./src/index.js", "task:review", "--id", smokeTaskId, "--by", "smoke-worker"]);
+run("task-done-unauthorized", ["./src/index.js", "task:done", "--id", smokeTaskId, "--by", "smoke-worker"], 1);
+run("task-approve", [
+  "./src/index.js",
+  "task:approve",
+  "--id",
+  smokeTaskId,
+  "--by",
+  "tester",
+  "--notes",
+  "smoke verifier approved",
+  "--evidence",
+  "npm run smoke|task metadata reviewed"
+]);
+run("task-list", ["./src/index.js", "task:list"]);
+run("task-update", [
+  "./src/index.js",
+  "task:update",
+  "--id",
+  smokeTaskId,
+  "--status",
+  "done",
+  "--notes",
+  "verified by smoke",
+  "--acceptance",
+  "metadata stored|manual task remains bounded|update path works",
+  "--verification",
+  "task:list shows metadata|task:update preserves metadata|smoke command passes"
+]);
+run("task-release-invalid", ["./src/index.js", "task:release", "--id", smokeTaskId, "--by", "smoke-worker"], 1);
 
 const importedSourceCli = run("import-src-index", [
   "-e",
@@ -339,7 +339,7 @@ const updatedLifecycleCli = JSON.parse(
     "./src/index.js",
     "task:update",
     "--id",
-    "task-3",
+    smokeTaskId,
     "--status",
     "done",
     "--notes",
@@ -353,7 +353,7 @@ const updatedLifecycleCli = JSON.parse(
 if (
   updatedLifecycleCli.kind !== "task_mutation" ||
   updatedLifecycleCli.recommendedReason !== "task_updated" ||
-  updatedLifecycleCli.task?.id !== "task-3" ||
+  updatedLifecycleCli.task?.id !== smokeTaskId ||
   updatedLifecycleCli.task?.status !== "done" ||
   updatedLifecycleCli.task?.notes !== "verified by smoke"
 ) {
@@ -1074,7 +1074,7 @@ const installedPlannerExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: planner?.id === "bounded-local" && taskPlan.kind === "task_plan" && taskPlan.objective === "document a planner example" && taskPlan.planner?.topology === "bounded-local" && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "stage a planner example" && swarmPlan.swarm?.topology === "bounded-local" && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 1 }));`
+    `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: planner?.id === "bounded-local" && planner?.adaptive === true && taskPlan.kind === "task_plan" && taskPlan.objective === "document a planner example" && taskPlan.planner?.topology === "bounded-local" && taskPlan.planner?.adaptive === true && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "stage a planner example" && swarmPlan.swarm?.topology === "bounded-local" && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 1 }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -2922,7 +2922,7 @@ if (
   runtimeActivityInitial.recommendedReason !== "review_event_latest" ||
   runtimeActivityInitial.kind !== "runtime_activity" ||
   runtimeActivityInitial.next?.type !== "approved" ||
-  runtimeActivityInitial.next?.taskId !== "task-3" ||
+  runtimeActivityInitial.next?.taskId !== smokeTaskId ||
   !Array.isArray(runtimeActivityInitial.entries)
 ) {
   console.error("[smoke:runtime-activity] expected top-level runtime activity");
@@ -2949,7 +2949,7 @@ if (
   !Array.isArray(runtimeCloseoutInitial.tasks) ||
   !Array.isArray(runtimeCloseoutInitial.swarms) ||
   runtimeCloseoutInitial.counts?.tasksReady < 1 ||
-  runtimeCloseoutInitial.tasks?.some((entry) => entry.taskId === "task-3" && entry.reviewOutcome === "approved") !== true
+  runtimeCloseoutInitial.tasks?.some((entry) => entry.taskId === smokeTaskId && entry.reviewOutcome === "approved") !== true
 ) {
   console.error("[smoke:runtime-closeout] expected top-level runtime closeout");
   process.exit(1);
@@ -3033,8 +3033,8 @@ const runtimeHandoffsInitial = JSON.parse(
 if (
   runtimeHandoffsInitial.recommendedReason !== "owner_claim_ready" ||
   runtimeHandoffsInitial.kind !== "runtime_handoffs" ||
-  runtimeHandoffsInitial.counts?.actorGroups !== 2 ||
-  runtimeHandoffsInitial.counts?.totalHandoffs !== 2 ||
+  runtimeHandoffsInitial.counts?.actorGroups !== 3 ||
+  runtimeHandoffsInitial.counts?.totalHandoffs !== 3 ||
   runtimeHandoffsInitial.next?.taskId !== "task-2" ||
   runtimeHandoffsInitial.next?.actor?.id !== "executor" ||
   !Array.isArray(runtimeHandoffsInitial.groups)
@@ -3318,21 +3318,21 @@ if (
   process.exit(1);
 }
 
-const fetchedTask = JSON.parse(run("task-get-verify", ["./src/index.js", "task:get", "--id", "task-3"]).stdout).task;
+const fetchedTask = JSON.parse(run("task-get-verify", ["./src/index.js", "task:get", "--id", smokeTaskId]).stdout).task;
 if (
   fetchedTask.kind !== "task_detail" ||
   fetchedTask.recommendedReason !== "task_detail_loaded" ||
   fetchedTask.metadata?.hasHistory !== true ||
   fetchedTask.metadata?.hasAnnotations !== false ||
   fetchedTask.metadata?.reviewState !== "approved" ||
-  fetchedTask.task?.id !== "task-3" ||
+  fetchedTask.task?.id !== smokeTaskId ||
   fetchedTask.task?.owner !== "executor" ||
   fetchedTask.task?.verifier !== "tester"
 ) {
   console.error("[smoke:task-get] expected persisted task detail");
   process.exit(1);
 }
-const taskExecutionBrief = JSON.parse(run("task-brief-verify", ["./src/index.js", "task:brief", "--id", "task-3"]).stdout).brief;
+const taskExecutionBrief = JSON.parse(run("task-brief-verify", ["./src/index.js", "task:brief", "--id", smokeTaskId]).stdout).brief;
 if (
   taskExecutionBrief.kind !== "task_execution_brief" ||
   taskExecutionBrief.recommendedReason !== "completed_task_brief" ||
@@ -3350,7 +3350,7 @@ if (
   process.exit(1);
 }
 const taskHistoryComplete = JSON.parse(
-  run("task-history-complete", ["./src/index.js", "task:history", "--id", "task-3"]).stdout
+  run("task-history-complete", ["./src/index.js", "task:history", "--id", smokeTaskId]).stdout
 ).history;
 if (
   taskHistoryComplete.recommendedReason !== "approved_event_latest" ||
@@ -3367,7 +3367,7 @@ const annotatedLifecycleCli = JSON.parse(
     "./src/index.js",
     "task:annotate",
     "--id",
-    "task-3",
+    smokeTaskId,
     "--by",
     "tester",
     "--kind",
@@ -3379,14 +3379,14 @@ const annotatedLifecycleCli = JSON.parse(
 if (
   annotatedLifecycleCli.kind !== "task_mutation" ||
   annotatedLifecycleCli.recommendedReason !== "task_annotated" ||
-  annotatedLifecycleCli.task?.id !== "task-3" ||
+  annotatedLifecycleCli.task?.id !== smokeTaskId ||
   annotatedLifecycleCli.task?.annotations?.at(-1)?.content !== "verified with smoke coverage"
 ) {
   console.error("[smoke:task-annotate] expected CLI task annotate mutation payload");
   process.exit(1);
 }
 const taskBriefAnnotated = JSON.parse(
-  run("task-brief-annotated", ["./src/index.js", "task:brief", "--id", "task-3"]).stdout
+  run("task-brief-annotated", ["./src/index.js", "task:brief", "--id", smokeTaskId]).stdout
 ).brief;
 if (
   taskBriefAnnotated.recommendedReason !== "completed_task_brief" ||
@@ -3396,7 +3396,7 @@ if (
   process.exit(1);
 }
 const taskReportDone = JSON.parse(
-  run("task-report-done", ["./src/index.js", "task:report", "--id", "task-3"]).stdout
+  run("task-report-done", ["./src/index.js", "task:report", "--id", smokeTaskId]).stdout
 ).report;
 if (
   taskReportDone.recommendedReason !== "approved_closure_ready" ||
@@ -3415,15 +3415,26 @@ if (
 const testerInbox = JSON.parse(
   run("task-inbox-tester", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).inbox;
-if (testerInbox.recommendedReason !== "observe_only_inbox" || testerInbox.counts.pendingReview !== 0 || testerInbox.tasks?.[0]?.relation !== "verifier_observe") {
-  console.error("[smoke:task-inbox] expected tester inbox summary for completed task");
+if (
+  testerInbox.recommendedReason !== "claimable_work_visible" ||
+  testerInbox.counts.ownerClaimable !== 1 ||
+  testerInbox.counts.pendingReview !== 0 ||
+  testerInbox.tasks?.[0]?.relation !== "owner_claimable" ||
+  testerInbox.tasks?.[0]?.owner !== "tester"
+) {
+  console.error("[smoke:task-inbox] expected tester inbox to surface the planner verification lane");
   process.exit(1);
 }
 const testerNext = JSON.parse(
   run("task-next-tester", ["./src/index.js", "task:next", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).next;
-if (testerNext.recommendedReason !== "no_next_candidate" || testerNext.candidate !== null || testerNext.brief !== null) {
-  console.error("[smoke:task-next] expected no next tester candidate after completion");
+if (
+  testerNext.recommendedReason !== "claimable_owner_candidate" ||
+  testerNext.candidate?.owner !== "tester" ||
+  testerNext.candidate?.relation !== "owner_claimable" ||
+  testerNext.brief?.recommendedReason !== "claimable_execution_brief"
+) {
+  console.error("[smoke:task-next] expected tester next-candidate handoff for the planner verification lane");
   process.exit(1);
 }
 
@@ -3437,7 +3448,7 @@ if (
   console.error("[smoke:task-list] expected CLI task list view payload");
   process.exit(1);
 }
-const smokeTask = listedTasks.tasks.find((task) => task.id === "task-3");
+const smokeTask = listedTasks.tasks.find((task) => task.id === smokeTaskId);
 if (!smokeTask || smokeTask.verifier !== "tester" || smokeTask.lane !== "lane-smoke") {
   console.error("[smoke:task-metadata] expected verifier and lane metadata");
   process.exit(1);
@@ -3460,7 +3471,7 @@ if (
   process.exit(1);
 }
 
-const checkedTask = JSON.parse(run("task-check-verify", ["./src/index.js", "task:check", "--id", "task-3"]).stdout).validation;
+const checkedTask = JSON.parse(run("task-check-verify", ["./src/index.js", "task:check", "--id", smokeTaskId]).stdout).validation;
 if (
   checkedTask.kind !== "task_validation" ||
   checkedTask.recommendedReason !== "task_ready_to_claim" ||
@@ -4040,11 +4051,26 @@ if (
   plannedTaskCli.kind !== "task_plan" ||
   plannedTaskCli.recommendedReason !== "multi_lane_plan_ready" ||
   !Array.isArray(plannedTaskCli.lanes) ||
-  plannedTaskCli.lanes.length !== 2
+  plannedTaskCli.lanes.length !== 3
 ) {
   console.error("[smoke:plan-cli] expected planner task payload with machine-readable reason");
   process.exit(1);
 }
+
+const plannedDocsTaskCli = JSON.parse(
+  run("plan-docs-cli", ["./src/index.js", "plan", "--task", "Document the README entry"]).stdout
+);
+if (
+  plannedDocsTaskCli.kind !== "task_plan" ||
+  plannedDocsTaskCli.recommendedReason !== "single_lane_plan_ready" ||
+  !Array.isArray(plannedDocsTaskCli.lanes) ||
+  plannedDocsTaskCli.lanes.length !== 1 ||
+  plannedDocsTaskCli.lanes[0]?.owner !== "reviewer"
+) {
+  console.error("[smoke:plan-docs-cli] expected single reviewer lane for docs-only work");
+  process.exit(1);
+}
+
 const planMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
@@ -4073,7 +4099,7 @@ if (
   planMcpPayload?.kind !== "task_plan" ||
   planMcpPayload?.recommendedReason !== "multi_lane_plan_ready" ||
   !Array.isArray(planMcpPayload?.lanes) ||
-  planMcpPayload.lanes.length !== 2
+  planMcpPayload.lanes.length !== 3
 ) {
   console.error("[smoke:plan-mcp] expected planner task payload with machine-readable reason");
   console.error(planMcp.stderr || planMcp.stdout);
@@ -4092,9 +4118,9 @@ if (
   queuedPlanPayload.kind !== "queued_plan" ||
   queuedPlanPayload.recommendedReason !== "multiple_plan_tasks_queued" ||
   !Array.isArray(queuedPlanPayload.created) ||
-  queuedPlanPayload.created.length !== 2
+  queuedPlanPayload.created.length !== 3
 ) {
-  console.error("[smoke:queue-plan-cli] expected two queued tasks");
+  console.error("[smoke:queue-plan-cli] expected three queued tasks for runtime planning work");
   process.exit(1);
 }
 if (!queuedPlanPayload.created[0].lane || !Array.isArray(queuedPlanPayload.created[0].scope)) {
@@ -4150,7 +4176,8 @@ const plannedSwarm = JSON.parse(
 if (
   plannedSwarm.kind !== "planned_swarm" ||
   plannedSwarm.recommendedReason !== "multi_lane_swarm_ready" ||
-  plannedSwarm.swarm?.laneSource !== "planner"
+  plannedSwarm.swarm?.laneSource !== "planner" ||
+  plannedSwarm.swarm?.lanes?.length !== 3
 ) {
   console.error("[smoke:plan-swarm] expected planner swarm payload");
   process.exit(1);
@@ -4182,7 +4209,8 @@ if (
   planSwarmMcp.status !== 0 ||
   planSwarmPayload?.kind !== "planned_swarm" ||
   planSwarmPayload?.recommendedReason !== "multi_lane_swarm_ready" ||
-  planSwarmPayload?.swarm?.laneSource !== "planner"
+  planSwarmPayload?.swarm?.laneSource !== "planner" ||
+  planSwarmPayload?.swarm?.lanes?.length !== 3
 ) {
   console.error("[smoke:plan-swarm-mcp] expected planner swarm payload with machine-readable reason");
   console.error(planSwarmMcp.stderr || planSwarmMcp.stdout);
@@ -4199,7 +4227,7 @@ const queuedPlanSwarm = JSON.parse(
 if (
   queuedPlanSwarm.kind !== "queued_plan_swarm" ||
   queuedPlanSwarm.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
-  queuedPlanSwarm.created.length !== 2 ||
+  queuedPlanSwarm.created.length !== 3 ||
   queuedPlanSwarm.swarm?.status !== "active" ||
   queuedPlanSwarm.swarm?.laneSource !== "planner"
 ) {

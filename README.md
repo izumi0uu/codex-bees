@@ -368,7 +368,7 @@ const metadata = getPackageMetadata();
 const view = getPackageMetadataView();
 ```
 
-The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI. The default exported planner profile is intentionally explicit: it uses a local `bounded-local` topology, a shipped `planner` lane source, and a non-adaptive discovery-then-execution lane model.
+The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI. The default exported planner profile stays local and bounded, but it now adapts lane count to the task: simple docs work can collapse to one reviewer lane, while runtime or coordination work expands into discovery, implementation, verification, and docs sidecars as needed.
 
 Example:
 
