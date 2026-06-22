@@ -33,11 +33,6 @@ import {
   buildMemorySearchViewFromSources
 } from "./state-memory-views.js";
 import {
-  buildRejectedTaskLifecycleResult,
-  buildSwarmLifecycleResult,
-  buildTaskLifecycleResult
-} from "./state-lifecycle-views.js";
-import {
   ensureStateFileAtPath,
   loadStateFromFile,
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
@@ -174,6 +169,26 @@ import {
   updateTaskMutationOperation,
   updateTaskOperation
 } from "./state-write-operations.js";
+import {
+  activateSwarmLifecycleView,
+  approveTaskLifecycleView,
+  approveTaskTransition,
+  blockSwarmLifecycleView,
+  blockTaskLifecycleView,
+  blockTaskTransition,
+  cancelSwarmLifecycleView,
+  claimTaskLifecycleView,
+  claimTaskTransition,
+  completeSwarmLifecycleView,
+  completeTaskLifecycleView,
+  completeTaskTransition,
+  markTaskReadyForReviewLifecycleView,
+  markTaskReadyForReviewTransition,
+  rejectTaskLifecycleView,
+  rejectTaskTransition,
+  releaseTaskLifecycleView,
+  releaseTaskTransition
+} from "./state-transition-surfaces.js";
 import {
   buildSwarmOverviewData,
   buildSwarmOverviewView,
@@ -984,121 +999,75 @@ export function stateFilePath() {
 }
 
 export function claimTask(input) {
-  return transitionTask({
-    ...input,
-    nextQueueStatus: "claimed",
-    requireClaimedBy: true
-  });
+  return claimTaskTransition(input, { transitionTask });
 }
 
 export function claimTaskLifecycle(input) {
-  return buildTaskLifecycleResult(claimTask(input), "task_claimed");
+  return claimTaskLifecycleView(input, { claimTask });
 }
 
 export function blockTask(input) {
-  return transitionTask({
-    ...input,
-    nextQueueStatus: "blocked"
-  });
+  return blockTaskTransition(input, { transitionTask });
 }
 
 export function blockTaskLifecycle(input) {
-  return buildTaskLifecycleResult(blockTask(input), "task_blocked");
+  return blockTaskLifecycleView(input, { blockTask });
 }
 
 export function markTaskReadyForReview(input) {
-  return transitionTask({
-    ...input,
-    nextQueueStatus: "ready_for_review"
-  });
+  return markTaskReadyForReviewTransition(input, { transitionTask });
 }
 
 export function markTaskReadyForReviewLifecycle(input) {
-  return buildTaskLifecycleResult(markTaskReadyForReview(input), "task_ready_for_review");
+  return markTaskReadyForReviewLifecycleView(input, { markTaskReadyForReview });
 }
 
 export function completeTask(input) {
-  return transitionTask({
-    ...input,
-    nextQueueStatus: "done"
-  });
+  return completeTaskTransition(input, { transitionTask });
 }
 
 export function completeTaskLifecycle(input) {
-  return buildTaskLifecycleResult(completeTask(input), "task_completed");
+  return completeTaskLifecycleView(input, { completeTask });
 }
 
 export function approveTask(input) {
-  return transitionTask({
-    ...input,
-    nextQueueStatus: "done"
-  });
+  return approveTaskTransition(input, { transitionTask });
 }
 
 export function approveTaskLifecycle(input) {
-  return buildTaskLifecycleResult(approveTask(input), "task_approved");
+  return approveTaskLifecycleView(input, { approveTask });
 }
 
 export function rejectTask(input) {
-  return transitionTask({
-    ...input,
-    nextQueueStatus: input.nextQueueStatus ?? "claimed"
-  });
+  return rejectTaskTransition(input, { transitionTask });
 }
 
 export function rejectTaskLifecycle(input) {
-  return buildRejectedTaskLifecycleResult(rejectTask(input));
+  return rejectTaskLifecycleView(input, { rejectTask });
 }
 
 export function releaseTask(input) {
-  return transitionTask({
-    ...input,
-    nextQueueStatus: "released"
-  });
+  return releaseTaskTransition(input, { transitionTask });
 }
 
 export function releaseTaskLifecycle(input) {
-  return buildTaskLifecycleResult(releaseTask(input), "task_released");
+  return releaseTaskLifecycleView(input, { releaseTask });
 }
 
 export function activateSwarm(input) {
-  return buildSwarmLifecycleResult(
-    transitionSwarm({
-      ...input,
-      nextStatus: "active"
-    }),
-    "swarm_activated"
-  );
+  return activateSwarmLifecycleView(input, { transitionSwarm });
 }
 
 export function blockSwarm(input) {
-  return buildSwarmLifecycleResult(
-    transitionSwarm({
-      ...input,
-      nextStatus: "blocked"
-    }),
-    "swarm_blocked"
-  );
+  return blockSwarmLifecycleView(input, { transitionSwarm });
 }
 
 export function completeSwarm(input) {
-  return buildSwarmLifecycleResult(
-    transitionSwarm({
-      ...input,
-      nextStatus: "completed"
-    }),
-    "swarm_completed"
-  );
+  return completeSwarmLifecycleView(input, { transitionSwarm });
 }
 
 export function cancelSwarm(input) {
-  return buildSwarmLifecycleResult(
-    transitionSwarm({
-      ...input,
-      nextStatus: "cancelled"
-    }),
-    "swarm_cancelled"
-  );
+  return cancelSwarmLifecycleView(input, { transitionSwarm });
 }
 
 function syncSwarmInLoadedState(state, swarmId) {
