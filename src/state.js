@@ -44,10 +44,8 @@ import {
   getSwarmFromSources,
   listSwarmOverviewsFromSources,
   listSwarmsFromSources,
-  syncSwarmStatusFromSources,
   transitionSwarmFromSources,
   updateLoadedSwarmState,
-  validateSwarmFromSources,
   buildTransitionedSwarmState,
   syncLoadedSwarmState,
   syncLoadedSwarmLifecycle,
@@ -77,7 +75,6 @@ import {
 import {
   getTaskFromSources,
   listTasksFromSources,
-  validateTaskFromSources,
   appendTaskHistoryEntry
 } from "./state-task-core.js";
 import {
@@ -190,30 +187,24 @@ import {
   releaseTaskTransition
 } from "./state-transition-surfaces.js";
 import {
-  buildSwarmOverviewData,
-  buildSwarmOverviewView,
-  buildSwarmOverviewViewFromSources,
   buildSwarmListView,
   buildSwarmListViewFromSources,
-  deriveSwarmOverviewReason,
-  deriveSwarmSyncReason
 } from "./state-swarm-views.js";
 import {
   VALID_QUEUE_STATUSES,
   VALID_SWARM_STATUSES,
-  buildSwarmValidationViewFromSources,
-  buildSwarmValidationView,
-  buildTaskValidationViewFromSources,
-  buildTaskValidationView,
   canTransitionSwarm,
   canTransitionTask,
   deriveSwarmStatus,
-  deriveSwarmValidationReason,
-  deriveTaskValidationReason,
-  validateSwarmValue,
   validateTaskValue
 } from "./state-rules.js";
 import { runtimeRoleCatalog } from "./state-role-catalog.js";
+import {
+  swarmOverviewSurface,
+  syncSwarmStatusSurface,
+  validateSwarmSurface,
+  validateTaskSurface
+} from "./state-validation-overview-surfaces.js";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
@@ -843,56 +834,39 @@ export function verifierBundle(input = {}) {
 }
 
 export function validateTask(id) {
-  return validateTaskFromSources(id, {
+  return validateTaskSurface(id, {
     loadState,
-    normalizeTask,
-    buildTaskValidationViewFromSources,
-    runtimeRoleCatalog,
-    buildTaskValidationView
+    normalizeTask
   });
 }
 
 export function validateSwarm(id) {
-  return validateSwarmFromSources(id, {
+  return validateSwarmSurface(id, {
     loadState,
-    normalizeSwarm,
-    buildSwarmValidationViewFromSources,
-    runtimeRoleCatalog,
-    buildSwarmValidationView
+    normalizeSwarm
   });
 }
 
 export { runtimeRoleCatalog };
 
 export function syncSwarmStatus(id) {
-  return syncSwarmStatusFromSources(id, {
+  return syncSwarmStatusSurface(id, {
     loadState,
     saveState,
     syncLoadedSwarmLifecycle,
     findSwarmIndex,
     normalizeSwarm,
     normalizeTask,
-    deriveSwarmStatus,
-    buildSyncedSwarmState,
-    deriveSwarmSyncReason
+    buildSyncedSwarmState
   });
 }
 
 export function swarmOverview(id) {
-  return buildSwarmOverviewViewFromSources(
-    id,
-    {
-      loadState,
-      normalizeSwarm,
-      normalizeTask,
-      buildSwarmOverviewData,
-      deriveSwarmStatus,
-      deriveSwarmOverviewReason
-    },
-    {
-      buildSwarmOverviewView
-    }
-  );
+  return swarmOverviewSurface(id, {
+    loadState,
+    normalizeSwarm,
+    normalizeTask
+  });
 }
 
 export function addTask(input) {
