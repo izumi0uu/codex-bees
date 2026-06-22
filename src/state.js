@@ -84,7 +84,10 @@ import {
   buildSyncedSwarmState,
   dispatchSwarmLaneFromSources,
   findDispatchableSwarmLane,
+  getSwarmFromSources,
   initSwarmFromSources,
+  listSwarmOverviewsFromSources,
+  listSwarmsFromSources,
   queueSwarmTasksFromSources,
   transitionSwarmFromSources,
   updateSwarmFromSources,
@@ -126,12 +129,16 @@ import {
   transitionLoadedTaskState
 } from "./state-transition-helpers.js";
 import {
+  getTaskFromSources,
+  listTasksFromSources,
   appendTaskAnnotation,
   appendTaskHistoryEntry,
   deriveReviewState,
   describeRole
 } from "./state-task-core.js";
 import {
+  buildTaskListView,
+  buildTaskListViewFromSources,
   buildTaskBriefView,
   buildTaskBriefViewFromSources,
   buildTaskDetailView,
@@ -472,20 +479,20 @@ export function saveState(state) {
 }
 
 export function listTasks() {
-  return loadState().tasks;
+  return listTasksFromSources({
+    loadState
+  });
 }
 
 export function listTasksView() {
-  const tasks = listTasks();
-  const recommendedReason = tasks.length > 0 ? "task_list_has_results" : "task_list_empty";
-  return {
-    kind: "task_view",
-    recommendedReason,
-    counts: {
-      totalTasks: tasks.length
+  return buildTaskListViewFromSources(
+    {
+      listTasks
     },
-    tasks
-  };
+    {
+      buildTaskListView
+    }
+  );
 }
 
 export function listMemories(filters = {}) {
@@ -527,13 +534,17 @@ export function getMemoryView(id) {
 }
 
 export function listSwarms(filters = {}) {
-  return filterSwarms(loadState().swarms, filters);
+  return listSwarmsFromSources(filters, {
+    loadState,
+    filterSwarms
+  });
 }
 
 export function listSwarmOverviews(filters = {}) {
-  return filterSwarms(loadState().swarms, filters)
-    .map((swarm) => swarmOverview(swarm.id))
-    .filter(Boolean);
+  return listSwarmOverviewsFromSources(filters, {
+    listSwarms,
+    swarmOverview
+  });
 }
 
 export function listSwarmsView(filters = {}, options = {}) {
@@ -551,8 +562,10 @@ export function listSwarmsView(filters = {}, options = {}) {
 }
 
 export function getTask(id) {
-  const task = loadState().tasks.find((item) => item.id === id);
-  return task ? normalizeTask(task) : null;
+  return getTaskFromSources(id, {
+    loadState,
+    normalizeTask
+  });
 }
 
 export function getTaskView(id) {
@@ -612,8 +625,10 @@ export function annotateTaskMutation(input) {
 }
 
 export function getSwarm(id) {
-  const swarm = loadState().swarms.find((item) => item.id === id);
-  return swarm ? normalizeSwarm(swarm) : null;
+  return getSwarmFromSources(id, {
+    loadState,
+    normalizeSwarm
+  });
 }
 
 export function getSwarmView(id) {

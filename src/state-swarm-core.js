@@ -6,6 +6,21 @@ export function buildSyncedSwarmState(current, derivedStatus, updatedAt = new Da
   };
 }
 
+export function listSwarmsFromSources(filters = {}, { loadState, filterSwarms }) {
+  return filterSwarms(loadState().swarms, filters);
+}
+
+export function getSwarmFromSources(id, { loadState, normalizeSwarm }) {
+  const swarm = loadState().swarms.find((item) => item.id === id);
+  return swarm ? normalizeSwarm(swarm) : null;
+}
+
+export function listSwarmOverviewsFromSources(filters = {}, { listSwarms, swarmOverview }) {
+  return listSwarms(filters)
+    .map((swarm) => swarmOverview(swarm.id))
+    .filter(Boolean);
+}
+
 export function isCancelledSwarm(current) {
   return current.status === "cancelled";
 }

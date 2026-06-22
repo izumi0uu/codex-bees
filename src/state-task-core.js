@@ -1,5 +1,14 @@
 import { getRuntimeCatalog } from "./catalog.js";
 
+export function listTasksFromSources({ loadState }) {
+  return loadState().tasks;
+}
+
+export function getTaskFromSources(id, { loadState, normalizeTask }) {
+  const task = loadState().tasks.find((item) => item.id === id);
+  return task ? normalizeTask(task) : null;
+}
+
 export function appendTaskHistoryEntry(task, entry) {
   const existing = Array.isArray(task.history) ? task.history : [];
   return [
