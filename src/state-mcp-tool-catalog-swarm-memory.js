@@ -35,6 +35,7 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
               owner: { type: "string" },
               verifier: { type: "string" },
               scope: { type: "array", items: { type: "string" } },
+              dependsOn: { type: "array", items: { type: "string" } },
               acceptance: { type: "array", items: { type: "string" } },
               verification: { type: "array", items: { type: "string" } }
             }
@@ -133,6 +134,7 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
               owner: { type: "string" },
               verifier: { type: "string" },
               scope: { type: "array", items: { type: "string" } },
+              dependsOn: { type: "array", items: { type: "string" } },
               acceptance: { type: "array", items: { type: "string" } },
               verification: { type: "array", items: { type: "string" } }
             }

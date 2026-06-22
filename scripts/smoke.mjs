@@ -3418,25 +3418,26 @@ const testerInbox = JSON.parse(
   run("task-inbox-tester", ["./src/index.js", "task:inbox", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).inbox;
 if (
-  testerInbox.recommendedReason !== "claimable_work_visible" ||
-  testerInbox.counts.ownerClaimable !== 1 ||
+  testerInbox.recommendedReason !== "observe_only_inbox" ||
+  testerInbox.counts.ownerClaimable !== 0 ||
+  testerInbox.counts.ownerWaitingOnDependencies !== 1 ||
   testerInbox.counts.pendingReview !== 0 ||
-  testerInbox.tasks?.[0]?.relation !== "owner_claimable" ||
+  testerInbox.tasks?.[0]?.relation !== "owner_dependency_wait" ||
   testerInbox.tasks?.[0]?.owner !== "tester"
 ) {
-  console.error("[smoke:task-inbox] expected tester inbox to surface the planner verification lane");
+  console.error("[smoke:task-inbox] expected tester inbox to surface the dependency-gated planner lane");
   process.exit(1);
 }
 const testerNext = JSON.parse(
   run("task-next-tester", ["./src/index.js", "task:next", "--role", "tester", "--worker", "tester-worker"]).stdout
 ).next;
 if (
-  testerNext.recommendedReason !== "claimable_owner_candidate" ||
+  testerNext.recommendedReason !== "no_next_candidate" ||
   testerNext.candidate?.owner !== "tester" ||
-  testerNext.candidate?.relation !== "owner_claimable" ||
-  testerNext.brief?.recommendedReason !== "claimable_execution_brief"
+  testerNext.candidate?.relation !== "owner_dependency_wait" ||
+  testerNext.brief?.recommendedReason !== "dependency_waiting_brief"
 ) {
-  console.error("[smoke:task-next] expected tester next-candidate handoff for the planner verification lane");
+  console.error("[smoke:task-next] expected tester next-candidate handoff for the dependency-gated planner lane");
   process.exit(1);
 }
 
@@ -4161,6 +4162,191 @@ if (
 ) {
   console.error("[smoke:queue-plan-mcp] expected queued_plan response");
   console.error(queuePlanMcp.stderr || queuePlanMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const dependencyParentPayload = JSON.parse(
+  run("dependency-task-parent-add", [
+    "./src/index.js",
+    "task:add",
+    "--title",
+    "dependency parent",
+    "--owner",
+    "explore",
+    "--verifier",
+    "reviewer",
+    "--scope",
+    "src/index.js",
+    "--acceptance",
+    "parent done",
+    "--verification",
+    "task:get shows done"
+  ]).stdout
+);
+const dependencyParentTaskId =
+  dependencyParentPayload.created?.task?.id ??
+  dependencyParentPayload.task?.id ??
+  dependencyParentPayload.created?.id;
+const dependencyChildPayload = JSON.parse(
+  run("dependency-task-child-add", [
+    "./src/index.js",
+    "task:add",
+    "--title",
+    "dependency child",
+    "--owner",
+    "executor",
+    "--verifier",
+    "tester",
+    "--scope",
+    "src/mcp.js",
+    "--depends-on",
+    dependencyParentTaskId,
+    "--acceptance",
+    "child gated",
+    "--verification",
+    "task:check stays blocked until parent done"
+  ]).stdout
+);
+const dependencyChildTaskId =
+  dependencyChildPayload.created?.task?.id ??
+  dependencyChildPayload.task?.id ??
+  dependencyChildPayload.created?.id;
+const dependencyChildValidationBlocked = JSON.parse(
+  run("dependency-task-check-blocked", ["./src/index.js", "task:check", "--id", dependencyChildTaskId]).stdout
+).validation;
+if (
+  dependencyChildValidationBlocked.recommendedReason !== "task_dependency_waiting" ||
+  dependencyChildValidationBlocked.ready !== false ||
+  !dependencyChildValidationBlocked.issues?.some((issue) => issue.code === "dependency_not_complete")
+) {
+  console.error("[smoke:dependency-task-check] expected dependent task to stay unclaimable before prerequisite completion");
+  process.exit(1);
+}
+run("dependency-task-claim-blocked", ["./src/index.js", "task:claim", "--id", dependencyChildTaskId, "--by", "dep-worker"], 1);
+run("dependency-parent-claim", ["./src/index.js", "task:claim", "--id", dependencyParentTaskId, "--by", "dep-parent-worker"]);
+run("dependency-parent-review", ["./src/index.js", "task:review", "--id", dependencyParentTaskId, "--by", "dep-parent-worker"]);
+run("dependency-parent-approve", ["./src/index.js", "task:approve", "--id", dependencyParentTaskId, "--by", "reviewer"]);
+const dependencyChildClaimed = JSON.parse(
+  run("dependency-task-claim-ready", ["./src/index.js", "task:claim", "--id", dependencyChildTaskId, "--by", "dep-worker"]).stdout
+).claimed;
+if (
+  dependencyChildClaimed.kind !== "task_lifecycle" ||
+  dependencyChildClaimed.task?.id !== dependencyChildTaskId ||
+  dependencyChildClaimed.task?.queueStatus !== "claimed" ||
+  dependencyChildClaimed.task?.claimedBy !== "dep-worker"
+) {
+  console.error("[smoke:dependency-task-claim] expected dependent task to unlock after prerequisite completion");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const dependencySwarmLanes = JSON.stringify([
+  {
+    lane: "lane-alpha",
+    summary: "Map dependency boundary",
+    owner: "explore",
+    verifier: "reviewer",
+    scope: ["src/index.js"],
+    acceptance: ["alpha done"],
+    verification: ["swarm overview shows alpha lane"]
+  },
+  {
+    lane: "lane-beta",
+    summary: "Implement after alpha",
+    owner: "executor",
+    verifier: "tester",
+    scope: ["src/mcp.js"],
+    dependsOn: ["lane-alpha"],
+    acceptance: ["beta waits for alpha"],
+    verification: ["dispatch stays blocked until alpha done"]
+  }
+]);
+const dependencySwarmCreated = JSON.parse(
+  run("dependency-swarm-init", [
+    "./src/index.js",
+    "swarm:init",
+    "--objective",
+    "dependency-gated swarm",
+    "--owner",
+    "leader",
+    "--topology",
+    "bounded-local",
+    "--max-workers",
+    "2",
+    "--lane-source",
+    "smoke",
+    "--lanes",
+    dependencySwarmLanes
+  ]).stdout
+).created;
+const dependencySwarmId = dependencySwarmCreated.swarm?.id ?? dependencySwarmCreated.id;
+const dependencySwarmQueued = JSON.parse(
+  run("dependency-swarm-queue", ["./src/index.js", "swarm:queue", "--id", dependencySwarmId]).stdout
+);
+const dependencyAlphaTaskId = dependencySwarmQueued.created?.find((task) => task.lane === "lane-alpha")?.id;
+const dependencyBetaTaskId = dependencySwarmQueued.created?.find((task) => task.lane === "lane-beta")?.id;
+const dependencySwarmOverviewBefore = JSON.parse(
+  run("dependency-swarm-overview-before", ["./src/index.js", "swarm:overview", "--id", dependencySwarmId]).stdout
+).overview;
+if (
+  dependencySwarmOverviewBefore.recommendedReason !== "dependency_lane_waiting" ||
+  dependencySwarmOverviewBefore.counts?.waitingOnDependencies !== 1 ||
+  dependencySwarmOverviewBefore.dispatchableCount !== 1 ||
+  dependencySwarmOverviewBefore.nextLane?.lane !== "lane-alpha"
+) {
+  console.error("[smoke:dependency-swarm-overview] expected one dispatchable lane and one dependency-gated lane");
+  process.exit(1);
+}
+run("dependency-swarm-dispatch-blocked", [
+  "./src/index.js",
+  "swarm:dispatch",
+  "--id",
+  dependencySwarmId,
+  "--by",
+  "worker-executor",
+  "--owner",
+  "executor"
+], 1);
+const dependencyAlphaDispatch = JSON.parse(
+  run("dependency-swarm-dispatch-alpha", [
+    "./src/index.js",
+    "swarm:dispatch",
+    "--id",
+    dependencySwarmId,
+    "--by",
+    "worker-explore",
+    "--owner",
+    "explore"
+  ]).stdout
+).dispatched;
+if (
+  dependencyAlphaDispatch.task?.id !== dependencyAlphaTaskId ||
+  dependencyAlphaDispatch.task?.queueStatus !== "claimed"
+) {
+  console.error("[smoke:dependency-swarm-dispatch] expected alpha lane to dispatch first");
+  process.exit(1);
+}
+run("dependency-swarm-alpha-review", ["./src/index.js", "task:review", "--id", dependencyAlphaTaskId, "--by", "worker-explore"]);
+run("dependency-swarm-alpha-approve", ["./src/index.js", "task:approve", "--id", dependencyAlphaTaskId, "--by", "reviewer"]);
+const dependencyBetaDispatch = JSON.parse(
+  run("dependency-swarm-dispatch-beta", [
+    "./src/index.js",
+    "swarm:dispatch",
+    "--id",
+    dependencySwarmId,
+    "--by",
+    "worker-executor",
+    "--owner",
+    "executor"
+  ]).stdout
+).dispatched;
+if (
+  dependencyBetaDispatch.task?.id !== dependencyBetaTaskId ||
+  dependencyBetaDispatch.task?.queueStatus !== "claimed" ||
+  dependencyBetaDispatch.lane?.lane !== "lane-beta"
+) {
+  console.error("[smoke:dependency-swarm-dispatch] expected beta lane to unlock after alpha completion");
   process.exit(1);
 }
 

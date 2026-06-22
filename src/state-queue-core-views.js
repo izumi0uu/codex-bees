@@ -8,6 +8,9 @@ export function pickupOutcome(relation) {
   if (relation === "owner_blocked") {
     return "blocked";
   }
+  if (relation === "owner_dependency_wait") {
+    return "observe";
+  }
   return "observe";
 }
 export function assignmentPickupOutcome(relation) {
@@ -25,6 +28,9 @@ export function pickupFollowupCommand(candidate, workerId) {
   }
   if (candidate.relation === "owner_blocked") {
     return `node ./src/index.js task:release --id ${candidate.id} --by ${candidate.claimedBy ?? workerId}`;
+  }
+  if (candidate.relation === "owner_dependency_wait") {
+    return `node ./src/index.js task:brief --id ${candidate.id}`;
   }
   return null;
 }
@@ -47,14 +53,19 @@ export function relationToAction(relation) {
   if (relation === "owner_blocked") {
     return "unblock";
   }
+  if (relation === "owner_dependency_wait") {
+    return "wait";
+  }
   return "observe";
 }
 export function isClaimableTask(task) {
-  return task.queueStatus === "queued" || task.queueStatus === "released";
+  return (task.queueStatus === "queued" || task.queueStatus === "released") && task.dependencyReady !== false;
 }
 export function summarizeInboxTask(task, role, workerId) {
   const relation = task.verifier === role && task.queueStatus === "ready_for_review"
     ? "verifier_review"
+    : task.owner === role && (task.queueStatus === "queued" || task.queueStatus === "released") && task.dependencyReady === false
+      ? "owner_dependency_wait"
     : task.owner === role && isClaimableTask(task)
       ? "owner_claimable"
       : task.owner === role && task.queueStatus === "claimed" && workerId && task.claimedBy === workerId
@@ -76,6 +87,9 @@ export function summarizeInboxTask(task, role, workerId) {
     owner: task.owner,
     verifier: task.verifier,
     scope: task.scope ?? [],
+    dependsOn: task.dependsOn ?? [],
+    dependencyReady: task.dependencyReady ?? true,
+    dependencySummary: task.dependencySummary ?? null,
     relation,
     recommendedAction: relationToAction(relation),
     updatedAt: task.updatedAt,
@@ -136,8 +150,11 @@ export function inboxPriority(task, role, workerId) {
   if (task.owner === role && task.queueStatus === "blocked") {
     return 3;
   }
-  if (task.owner === role && task.queueStatus === "claimed") {
+  if (task.owner === role && (task.queueStatus === "queued" || task.queueStatus === "released") && task.dependencyReady === false) {
     return 4;
+  }
+  if (task.owner === role && task.queueStatus === "claimed") {
+    return 5;
   }
   if (task.queueStatus === "done") {
     return 7;
@@ -175,6 +192,15 @@ export function nextCandidatePriority(task, role, workerId, mode) {
 
   if ((mode === "any" || mode === "owner") && task.owner === role && task.queueStatus === "blocked") {
     return 3;
+  }
+
+  if (
+    (mode === "any" || mode === "owner") &&
+    task.owner === role &&
+    (task.queueStatus === "queued" || task.queueStatus === "released") &&
+    task.dependencyReady === false
+  ) {
+    return 4;
   }
 
   return Number.POSITIVE_INFINITY;

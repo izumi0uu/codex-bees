@@ -266,12 +266,13 @@ function buildExecutionLane(task, implementationScope) {
   };
 }
 
-function buildVerificationLane(task, verificationScope) {
+function buildVerificationLane(task, verificationScope, dependsOn = []) {
   return {
     owner: "tester",
     verifier: "reviewer",
     summary: `Verify the bounded contract for: ${task}`,
     scope: verificationScope,
+    ...(dependsOn.length > 0 ? { dependsOn } : {}),
     acceptance: [
       "the planned scope has fresh verification evidence",
       "the bounded change is exercised from shipped command or script surfaces",
@@ -281,12 +282,13 @@ function buildVerificationLane(task, verificationScope) {
   };
 }
 
-function buildDocumentationLane(task, documentationScope) {
+function buildDocumentationLane(task, documentationScope, dependsOn = []) {
   return {
     owner: "reviewer",
     verifier: "tester",
     summary: `Document the operator-facing contract for: ${task}`,
     scope: documentationScope,
+    ...(dependsOn.length > 0 ? { dependsOn } : {}),
     acceptance: [
       "public-facing docs or examples match the bounded change",
       "the documented scope stays limited to shipped product surfaces",
@@ -316,15 +318,18 @@ function buildBoundedLocalPlanLanes(task) {
   const discoveryScope = chooseDiscoveryScope(implementationScope);
   const lanes = [
     buildDiscoveryLane(task, discoveryScope),
-    buildExecutionLane(task, implementationScope)
+    {
+      ...buildExecutionLane(task, implementationScope),
+      dependsOn: ["lane-1"]
+    }
   ];
 
   if (intent.verificationHeavy) {
-    lanes.push(buildVerificationLane(task, chooseVerificationScope(task, implementationScope)));
+    lanes.push(buildVerificationLane(task, chooseVerificationScope(task, implementationScope), ["lane-2"]));
   }
 
   if (intent.additionalDocsLane) {
-    lanes.push(buildDocumentationLane(task, chooseDocumentationScope(implementationScope)));
+    lanes.push(buildDocumentationLane(task, chooseDocumentationScope(implementationScope), ["lane-2"]));
   }
 
   return assignLaneIds(lanes);
@@ -438,6 +443,7 @@ export function queueTasksFromPlan(task, addTasks) {
     objective: task,
     lane: lane.lane,
     scope: lane.scope,
+    dependsOn: lane.dependsOn ?? null,
     acceptance: lane.acceptance,
     verification: lane.verification,
     notes: `Generated from plan for: ${task}`

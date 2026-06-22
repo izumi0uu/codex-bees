@@ -1,3 +1,5 @@
+import { summarizeTaskDependencies } from "./state-task-core.js";
+
 export const VALID_QUEUE_STATUSES = new Set([
   "queued",
   "claimed",
@@ -32,7 +34,7 @@ export const ALLOWED_SWARM_TRANSITIONS = {
   cancelled: new Set()
 };
 
-export function validateTaskValue(task, roleCatalog) {
+export function validateTaskValue(task, roleCatalog, tasks = []) {
   const issues = [];
 
   if (!task.title?.trim()) {
@@ -69,6 +71,29 @@ export function validateTaskValue(task, roleCatalog) {
     issues.push({ code: "missing_claimed_by", message: "Claimed tasks must record claimedBy" });
   }
 
+  const dependencySummary =
+    task?.dependencySummary ?? summarizeTaskDependencies(task, tasks);
+  if (
+    ["queued", "released", "claimed", "ready_for_review"].includes(task.queueStatus) &&
+    dependencySummary.refs.length > 0
+  ) {
+    if (dependencySummary.unresolvedRefs.length > 0) {
+      issues.push({
+        code: "unresolved_dependency",
+        message: `Task depends on unresolved refs: ${dependencySummary.unresolvedRefs.join(", ")}`
+      });
+    }
+    if (dependencySummary.blockingTaskIds.length > 0) {
+      const blockingTargets = dependencySummary.blockingLanes.length > 0
+        ? dependencySummary.blockingLanes.join(", ")
+        : dependencySummary.blockingTaskIds.join(", ");
+      issues.push({
+        code: "dependency_not_complete",
+        message: `Task depends on unfinished work: ${blockingTargets}`
+      });
+    }
+  }
+
   return {
     task,
     ready: issues.length === 0,
@@ -80,6 +105,40 @@ export function validateTaskValue(task, roleCatalog) {
 export function validateSwarmValue(swarm, roleCatalog) {
   const issues = [];
   const laneReports = [];
+  const laneIds = new Set((swarm.lanes ?? []).map((lane) => lane.lane).filter(Boolean));
+  const dependencyAdjacency = new Map(
+    (swarm.lanes ?? []).map((lane) => [
+      lane.lane,
+      (lane.dependsOn ?? []).filter((ref) => ref && ref !== lane.lane && laneIds.has(ref))
+    ])
+  );
+  const cycleLanes = new Set();
+  const visited = new Set();
+  const active = new Set();
+
+  function visitLaneDependencies(laneId) {
+    if (!laneId || visited.has(laneId)) {
+      return;
+    }
+    visited.add(laneId);
+    active.add(laneId);
+    for (const dependency of dependencyAdjacency.get(laneId) ?? []) {
+      if (active.has(dependency)) {
+        cycleLanes.add(laneId);
+        cycleLanes.add(dependency);
+        continue;
+      }
+      visitLaneDependencies(dependency);
+      if (cycleLanes.has(dependency)) {
+        cycleLanes.add(laneId);
+      }
+    }
+    active.delete(laneId);
+  }
+
+  for (const laneId of laneIds) {
+    visitLaneDependencies(laneId);
+  }
 
   if (!swarm.objective?.trim()) {
     issues.push({ code: "missing_objective", message: "Swarm objective is required" });
@@ -116,6 +175,28 @@ export function validateSwarmValue(swarm, roleCatalog) {
     }
     if (!Array.isArray(lane.verification) || lane.verification.length === 0) {
       laneIssues.push({ code: "missing_verification", message: "Lane verification steps are required" });
+    }
+    const dependencyRefs = Array.isArray(lane.dependsOn) ? lane.dependsOn : [];
+    for (const ref of dependencyRefs) {
+      if (ref === lane.lane) {
+        laneIssues.push({
+          code: "self_dependency",
+          message: `Lane ${lane.lane} cannot depend on itself`
+        });
+        continue;
+      }
+      if (!laneIds.has(ref)) {
+        laneIssues.push({
+          code: "unknown_dependency",
+          message: `Lane ${lane.lane} depends on unknown lane ${ref}`
+        });
+      }
+    }
+    if (cycleLanes.has(lane.lane)) {
+      laneIssues.push({
+        code: "dependency_cycle",
+        message: `Lane ${lane.lane} participates in a dependency cycle`
+      });
     }
 
     laneReports.push({
@@ -166,6 +247,9 @@ export function deriveTaskValidationReason(validation) {
   if ((validation.issues ?? []).some((issue) => issue.code === "missing_claimed_by")) {
     return "claimed_task_metadata_incomplete";
   }
+  if ((validation.issues ?? []).some((issue) => issue.code === "unresolved_dependency" || issue.code === "dependency_not_complete")) {
+    return "task_dependency_waiting";
+  }
   if ((validation.issues?.length ?? 0) > 0) {
     return "task_validation_issues_present";
   }
@@ -191,8 +275,8 @@ export function deriveSwarmValidationReason(validation) {
   return "swarm_validation_visible";
 }
 
-export function buildTaskValidationView(task, roleCatalog) {
-  const validation = validateTaskValue(task, roleCatalog);
+export function buildTaskValidationView(task, roleCatalog, tasks = []) {
+  const validation = validateTaskValue(task, roleCatalog, tasks);
   return {
     kind: "task_validation",
     recommendedReason: deriveTaskValidationReason(validation),
@@ -203,13 +287,14 @@ export function buildTaskValidationView(task, roleCatalog) {
 export function buildTaskValidationViewFromSources(
   task,
   {
-    runtimeRoleCatalog
+    runtimeRoleCatalog,
+    tasks
   },
   {
     buildTaskValidationView
   }
 ) {
-  return buildTaskValidationView(task, runtimeRoleCatalog());
+  return buildTaskValidationView(task, runtimeRoleCatalog(), tasks);
 }
 
 export function buildSwarmValidationView(swarm, roleCatalog) {

@@ -102,7 +102,7 @@ export function getSwarmViewFromSources(id, { getSwarm, swarmOverview }) {
   );
 }
 
-export function taskBriefFromSources(id, { getTask }) {
+export function taskBriefFromSources(id, { getTask, listTasks }) {
   return buildTaskBriefViewFromSources(
     id,
     {
@@ -113,7 +113,8 @@ export function taskBriefFromSources(id, { getTask }) {
       recommendTaskAction,
       deriveTaskBriefReason,
       describeRole,
-      deriveReviewState
+      deriveReviewState,
+      dependencyTasks: listTasks()
     },
     {
       buildTaskBriefView

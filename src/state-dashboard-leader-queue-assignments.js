@@ -103,7 +103,11 @@ export function buildLeaderAssignmentsView(
   const assignments = workspace.swarms.flatMap((swarm) => {
     const brief = swarmBrief(swarm.id);
     return (brief?.lanes ?? [])
-      .filter((lane) => lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released")
+      .filter(
+        (lane) =>
+          (lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released") &&
+          lane.dependencyReady !== false
+      )
       .map((lane) => ({
         swarmId: swarm.id,
         objective: swarm.objective,

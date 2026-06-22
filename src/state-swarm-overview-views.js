@@ -1,3 +1,5 @@
+import { annotateTasksWithDependencyState } from "./state-task-core.js";
+
 export function findSwarmLaneTask(lane, swarmTasks) {
   if (lane.taskId) {
     return swarmTasks.find((item) => item.id === lane.taskId) ?? null;
@@ -7,6 +9,17 @@ export function findSwarmLaneTask(lane, swarmTasks) {
 
 export function buildSwarmLaneSummary(lane, swarmTasks) {
   const task = findSwarmLaneTask(lane, swarmTasks);
+  const dependencySummary = task?.dependencySummary ?? {
+    refs: lane.dependsOn ?? [],
+    ready: (lane.dependsOn ?? []).length === 0,
+    unresolvedRefs: [],
+    blockingTaskIds: [],
+    blockingLanes: [],
+    blockingOwners: [],
+    blockingStatuses: [],
+    blocking: []
+  };
+  const dependencyReady = task?.dependencyReady ?? dependencySummary.ready;
   return {
     lane: lane.lane,
     summary: lane.summary,
@@ -17,7 +30,10 @@ export function buildSwarmLaneSummary(lane, swarmTasks) {
     claimedBy: task?.claimedBy ?? null,
     status: task?.status ?? null,
     scope: lane.scope,
-    ready: task?.queueStatus === "queued" || task?.queueStatus === "released",
+    dependsOn: lane.dependsOn ?? task?.dependsOn ?? [],
+    dependencyReady,
+    dependencySummary,
+    ready: (task?.queueStatus === "queued" || task?.queueStatus === "released") && dependencyReady,
     done: task?.queueStatus === "done"
   };
 }
@@ -30,6 +46,11 @@ export function buildSwarmLaneCounts(laneSummaries) {
     blocked: laneSummaries.filter((lane) => lane.queueStatus === "blocked").length,
     readyForReview: laneSummaries.filter((lane) => lane.queueStatus === "ready_for_review").length,
     released: laneSummaries.filter((lane) => lane.queueStatus === "released").length,
+    waitingOnDependencies: laneSummaries.filter(
+      (lane) =>
+        (lane.queueStatus === "queued" || lane.queueStatus === "released") &&
+        lane.dependencyReady === false
+    ).length,
     done: laneSummaries.filter((lane) => lane.queueStatus === "done").length,
     unqueued: laneSummaries.filter((lane) => !lane.taskId).length
   };
@@ -46,8 +67,7 @@ export function buildSwarmOverviewData(
   const laneSummaries = normalizedSwarm.lanes.map((lane) => buildSwarmLaneSummary(lane, swarmTasks));
   const counts = buildSwarmLaneCounts(laneSummaries);
   const derivedStatus = deriveSwarmStatus(normalizedSwarm, swarmTasks);
-  const nextLane =
-    laneSummaries.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null;
+  const nextLane = laneSummaries.find((lane) => lane.ready) ?? null;
   const readyToComplete = counts.totalLanes > 0 && counts.done === counts.totalLanes;
   const recommendedReason = deriveSwarmOverviewReason({
     counts,
@@ -64,7 +84,7 @@ export function buildSwarmOverviewData(
     derivedStatus,
     statusAligned: normalizedSwarm.status === derivedStatus,
     readyToComplete,
-    dispatchableCount: counts.queued + counts.released
+    dispatchableCount: laneSummaries.filter((lane) => lane.ready).length
   };
 }
 
@@ -86,9 +106,11 @@ export function buildSwarmOverviewView(
   }
 
   const normalizedSwarm = normalizeSwarm(swarm);
-  const swarmTasks = state.tasks
-    .map(normalizeTask)
-    .filter((task) => task.swarmId === normalizedSwarm.id);
+  const swarmTasks = annotateTasksWithDependencyState(
+    state.tasks
+      .map(normalizeTask)
+      .filter((task) => task.swarmId === normalizedSwarm.id)
+  );
   const overview = buildSwarmOverviewData(normalizedSwarm, swarmTasks, {
     deriveSwarmStatus,
     deriveSwarmOverviewReason

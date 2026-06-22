@@ -30,6 +30,7 @@ export const TASK_MCP_TOOL_CATALOG = [
         lane: { type: "string" },
         swarmId: { type: "string" },
         scope: { type: "array", items: { type: "string" } },
+        dependsOn: { type: "array", items: { type: "string" } },
         acceptance: { type: "array", items: { type: "string" } },
         verification: { type: "array", items: { type: "string" } },
         notes: { type: "string" }
@@ -52,6 +53,7 @@ export const TASK_MCP_TOOL_CATALOG = [
         lane: { type: "string" },
         swarmId: { type: "string" },
         scope: { type: "array", items: { type: "string" } },
+        dependsOn: { type: "array", items: { type: "string" } },
         acceptance: { type: "array", items: { type: "string" } },
         verification: { type: "array", items: { type: "string" } },
         notes: { type: "string" }

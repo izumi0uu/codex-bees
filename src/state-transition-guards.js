@@ -32,12 +32,12 @@ export function validateRequiredClaimedBy(input) {
   return null;
 }
 
-export function validateTaskClaimReady(current, nextQueueStatus, isVerifierReturn, validateTaskValue, runtimeRoleCatalog) {
+export function validateTaskClaimReady(current, nextQueueStatus, isVerifierReturn, validateTaskValue, runtimeRoleCatalog, tasks = []) {
   if (nextQueueStatus !== "claimed" || isVerifierReturn) {
     return null;
   }
 
-  const validation = validateTaskValue(current, runtimeRoleCatalog());
+  const validation = validateTaskValue(current, runtimeRoleCatalog(), tasks);
   if (!validation.ready) {
     return { error: `Task ${current.id} is not ready to claim`, validation };
   }

@@ -1,4 +1,5 @@
 import { updateSwarmAtIndex } from "./state-swarm-core-read-sync.js";
+import { taskDependenciesReady } from "./state-task-core.js";
 
 export function buildDispatchedSwarmTaskState(currentTask, input, updatedAt = new Date().toISOString()) {
   return {
@@ -32,7 +33,7 @@ export function findDispatchableSwarmLane(swarm, input, tasks, normalizeTask) {
       if (input.owner && lane.owner && lane.owner !== input.owner) {
         return false;
       }
-      return task.queueStatus === "queued" || task.queueStatus === "released";
+      return (task.queueStatus === "queued" || task.queueStatus === "released") && taskDependenciesReady(task, normalizedTasks);
     }) ?? null
   );
 }
@@ -81,7 +82,7 @@ export function dispatchLoadedSwarmLane(
   }
 
   const currentTask = normalizeTask(state.tasks[taskIndex]);
-  const taskValidation = validateTaskValue(currentTask, runtimeRoleCatalog());
+  const taskValidation = validateTaskValue(currentTask, runtimeRoleCatalog(), state.tasks.map(normalizeTask));
   if (!taskValidation.ready) {
     return { error: `Lane task ${currentTask.id} is not ready to dispatch`, validation: taskValidation };
   }
@@ -112,6 +113,7 @@ export function buildQueuedSwarmLaneTaskInput(current, lane) {
     lane: lane.lane,
     swarmId: current.id,
     scope: lane.scope,
+    dependsOn: lane.dependsOn ?? null,
     acceptance: lane.acceptance,
     verification: lane.verification,
     notes: `Queued from swarm ${current.id}${current.notes ? `: ${current.notes}` : ""}`

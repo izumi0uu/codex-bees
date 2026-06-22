@@ -39,6 +39,7 @@ export const VERIFIER_OPTION = option("--verifier <role>", "Verifier role for re
 export const LANE_OPTION = option("--lane <lane>", "Lane id inside the parent swarm contract");
 export const SWARM_LINK_OPTION = option("--swarm-id <swarm-id>", "Link the task to an existing swarm");
 export const SCOPE_OPTION = option("--scope <path,path>", "Comma-delimited scope paths; repeat the flag to append more");
+export const DEPENDS_ON_OPTION = option("--depends-on <ref,ref>", "Comma-delimited dependency refs; repeat the flag to append more");
 export const ACCEPTANCE_OPTION = option("--acceptance <item|item>", "Pipe-delimited acceptance criteria entries");
 export const VERIFICATION_OPTION = option("--verification <item|item>", "Pipe-delimited verification command or inspection entries");
 export const KIND_OPTION = option("--kind <kind>", "Structured note kind for the task annotation");
@@ -55,6 +56,7 @@ export const DETAILED_OPTION = option("--detailed", "Include nested lane and tas
 
 export const JSON_WORKERS_NOTE = "Pass --workers as a JSON array of worker ids when launch surfaces should emit concrete worker commands.";
 export const JSON_LANES_NOTE = "Pass --lanes as a JSON array of lane contracts.";
+export const JSON_LANE_DEPENDENCY_NOTE = "Lane JSON may include dependsOn arrays that reference prerequisite lane ids.";
 export const PIPE_LIST_NOTE = "Pipe-delimited flags such as --acceptance, --verification, and --evidence accept multiple entries in one argument.";
 
 export function cloneEntries(entries = []) {

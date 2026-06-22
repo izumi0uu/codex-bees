@@ -51,6 +51,7 @@ const TASK_LIFECYCLE_MCP_TOOL_HANDLERS = {
       lane: params.arguments.lane,
       swarmId: params.arguments.swarmId,
       scope: params.arguments.scope,
+      dependsOn: params.arguments.dependsOn,
       acceptance: params.arguments.acceptance,
       verification: params.arguments.verification,
       notes: params.arguments.notes
@@ -137,6 +138,7 @@ const TASK_LIFECYCLE_MCP_TOOL_HANDLERS = {
       lane: params.arguments.lane,
       swarmId: params.arguments.swarmId,
       scope: params.arguments.scope,
+      dependsOn: params.arguments.dependsOn,
       acceptance: params.arguments.acceptance,
       verification: params.arguments.verification,
       notes: params.arguments.notes

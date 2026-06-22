@@ -25,7 +25,7 @@ export function buildSwarmBriefView(
     const task = laneSummary.taskId
       ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
       : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
-    const recommended = recommendLaneAction(laneSummary, task);
+    const recommended = recommendLaneAction(laneSummary, task, overview.tasks);
 
     return {
       lane: laneSummary.lane,
@@ -36,6 +36,9 @@ export function buildSwarmBriefView(
       taskQueueStatus: task?.queueStatus ?? null,
       claimedBy: task?.claimedBy ?? null,
       scope: laneSummary.scope ?? [],
+      dependsOn: laneSummary.dependsOn ?? [],
+      dependencyReady: laneSummary.dependencyReady ?? true,
+      dependencySummary: laneSummary.dependencySummary ?? null,
       acceptance: task?.acceptance ?? [],
       verification: task?.verification ?? [],
       ready: laneSummary.ready,
@@ -129,6 +132,8 @@ export function buildSwarmBundleView(
       taskId: task?.id ?? null,
       queueStatus: task?.queueStatus ?? null,
       claimedBy: task?.claimedBy ?? null,
+      dependsOn: laneSummary.dependsOn ?? [],
+      dependencyReady: laneSummary.dependencyReady ?? true,
       ready: laneSummary.ready,
       done: laneSummary.done,
       report: task ? taskReport(task.id) : null
@@ -323,7 +328,7 @@ export function buildSwarmDispatchBundleView(
 
   const brief = swarmBrief(id);
   const dispatchLane = (brief?.lanes ?? []).find(
-    (lane) => lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released"
+    (lane) => lane.ready === true
   ) ?? null;
   const recommendedReason = deriveSwarmDispatchBundleReason({ overview, dispatchLane });
   const laneTaskBrief = dispatchLane?.taskId ? taskBrief(dispatchLane.taskId) : null;
@@ -377,7 +382,7 @@ export function buildSwarmDispatchBundleViewFromSources(
   );
 }
 
-export function recommendLaneAction(laneSummary, task, recommendTaskActionFn = recommendTaskAction) {
+export function recommendLaneAction(laneSummary, task, tasks = [], recommendTaskActionFn = recommendTaskAction) {
   if (!task) {
     return {
       actor: {
@@ -389,7 +394,7 @@ export function recommendLaneAction(laneSummary, task, recommendTaskActionFn = r
     };
   }
 
-  return recommendTaskActionFn(task);
+  return recommendTaskActionFn(task, tasks);
 }
 
 export function recommendSwarmAction(overview, lanes) {
@@ -403,7 +408,7 @@ export function recommendSwarmAction(overview, lanes) {
   }
 
   const runnableLane = lanes.find((lane) =>
-    lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released"
+    lane.ready === true
   );
   if (runnableLane) {
     return {
@@ -430,6 +435,19 @@ export function recommendSwarmAction(overview, lanes) {
       actor: blockedLane.recommendedNextActor,
       action: `unblock_lane:${blockedLane.lane}`,
       commands: blockedLane.recommendedCommands
+    };
+  }
+
+  const dependencyWaitingLane = lanes.find(
+    (lane) =>
+      (lane.taskQueueStatus === "queued" || lane.taskQueueStatus === "released") &&
+      lane.dependencyReady === false
+  );
+  if (dependencyWaitingLane) {
+    return {
+      actor: dependencyWaitingLane.recommendedNextActor,
+      action: `wait_on_dependencies:${dependencyWaitingLane.lane}`,
+      commands: dependencyWaitingLane.recommendedCommands
     };
   }
 
@@ -467,6 +485,9 @@ export function buildSwarmHandoff(overview, recommended) {
   }
   if (recommended.action.startsWith("unblock_lane:")) {
     return `Swarm ${overview.swarm.id} is blocked in at least one lane and needs unblock ownership.`;
+  }
+  if (recommended.action.startsWith("wait_on_dependencies:")) {
+    return `Swarm ${overview.swarm.id} has queued lanes waiting on dependency completion before dispatch.`;
   }
   if (recommended.action === "queue_swarm_lanes") {
     return `Swarm ${overview.swarm.id} has planned lanes but no queued tasks yet.`;

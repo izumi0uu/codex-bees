@@ -35,9 +35,10 @@ import {
   buildTaskListViewFromSources
 } from "./state-task-views.js";
 
-export function listTasksSurface({ loadState }) {
+export function listTasksSurface({ loadState, normalizeTask }) {
   return listTasksFromSources({
-    loadState
+    loadState,
+    normalizeTask
   });
 }
 

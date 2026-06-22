@@ -1,3 +1,5 @@
+import { annotateTasksWithDependencyState } from "./state-task-core.js";
+
 export function buildTaskNextView(
   input,
   {
@@ -18,7 +20,7 @@ export function buildTaskNextView(
   }
 
   const mode = normalizeNextMode(input.mode);
-  const tasks = loadState().tasks.map(normalizeTask);
+  const tasks = annotateTasksWithDependencyState(loadState().tasks.map(normalizeTask));
   const candidates = sortNextCandidates(tasks, input.role, input.workerId, mode);
   const selected = candidates[0] ?? null;
   const candidate = selected ? summarizeInboxTask(selected, input.role, input.workerId) : null;
@@ -86,8 +88,7 @@ export function buildTaskInboxView(
   }
 
   const catalog = getRuntimeCatalog();
-  const tasks = loadState().tasks
-    .map(normalizeTask)
+  const tasks = annotateTasksWithDependencyState(loadState().tasks.map(normalizeTask))
     .filter((task) => task.owner === input.role || task.verifier === input.role);
   const sorted = sortInboxTasks(tasks, input.role, input.workerId);
   const limit = Number.isInteger(Number(input.limit)) && Number(input.limit) > 0
@@ -112,6 +113,12 @@ export function buildTaskInboxView(
         ).length
       : 0,
     ownerBlocked: tasks.filter((task) => task.owner === input.role && task.queueStatus === "blocked").length,
+    ownerWaitingOnDependencies: tasks.filter(
+      (task) =>
+        task.owner === input.role &&
+        (task.queueStatus === "queued" || task.queueStatus === "released") &&
+        task.dependencyReady === false
+    ).length,
     pendingReview: tasks.filter((task) => task.verifier === input.role && task.queueStatus === "ready_for_review").length,
     completed: tasks.filter((task) => task.queueStatus === "done").length
   };

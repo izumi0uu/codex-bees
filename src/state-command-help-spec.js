@@ -11,6 +11,7 @@ import {
   DETAILED_OPTION,
   INIT_OPTION_NAME_OPTION,
   JSON_LANES_NOTE,
+  JSON_LANE_DEPENDENCY_NOTE,
   JSON_WORKERS_NOTE,
   KIND_FILTER_OPTION,
   KIND_OPTION,
@@ -32,6 +33,7 @@ import {
   REVIEW_EVIDENCE_OPTION,
   ROLE_OPTION,
   SCOPE_OPTION,
+  DEPENDS_ON_OPTION,
   SKILL_ID_OPTION,
   STATUS_OPTION,
   SWARM_ID_OPTION,
@@ -206,6 +208,7 @@ export const COMMAND_HELP_OVERRIDES = {
       LANE_OPTION,
       SWARM_LINK_OPTION,
       SCOPE_OPTION,
+      DEPENDS_ON_OPTION,
       ACCEPTANCE_OPTION,
       VERIFICATION_OPTION,
       NOTES_OPTION
@@ -346,6 +349,7 @@ export const COMMAND_HELP_OVERRIDES = {
       LANE_OPTION,
       SWARM_LINK_OPTION,
       SCOPE_OPTION,
+      DEPENDS_ON_OPTION,
       ACCEPTANCE_OPTION,
       VERIFICATION_OPTION,
       NOTES_OPTION
@@ -359,7 +363,7 @@ export const COMMAND_HELP_OVERRIDES = {
   "swarm:init": {
     usage: [commandUsage("swarm:init", "--objective <text> [options]")],
     options: [OBJECTIVE_OPTION, TOPOLOGY_OPTION, MAX_WORKERS_OPTION, OWNER_OPTION, LANE_SOURCE_OPTION, NOTES_OPTION, LANES_OPTION],
-    notes: [JSON_LANES_NOTE]
+    notes: [JSON_LANES_NOTE, JSON_LANE_DEPENDENCY_NOTE]
   },
   "swarm:list": {
     usage: [commandUsage("swarm:list", "[--status <status>] [--topology <topology>] [--owner <owner>] [--detailed]")],
@@ -392,7 +396,7 @@ export const COMMAND_HELP_OVERRIDES = {
   "swarm:update": {
     usage: [commandUsage("swarm:update", "--id <swarm-id> [options]")],
     options: [SWARM_ID_OPTION, OBJECTIVE_OPTION, TOPOLOGY_OPTION, MAX_WORKERS_OPTION, OWNER_OPTION, LANE_SOURCE_OPTION, NOTES_OPTION, LANES_OPTION],
-    notes: [JSON_LANES_NOTE]
+    notes: [JSON_LANES_NOTE, JSON_LANE_DEPENDENCY_NOTE]
   },
   "swarm:check": {
     usage: [commandUsage("swarm:check", "--id <swarm-id>")],

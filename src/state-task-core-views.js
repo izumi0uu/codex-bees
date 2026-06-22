@@ -1,3 +1,5 @@
+import { summarizeTaskDependencies } from "./state-task-core.js";
+
 export function deriveTaskReportReason(task) {
   if (task.queueStatus === "ready_for_review") {
     return "review_decision_pending";
@@ -7,6 +9,9 @@ export function deriveTaskReportReason(task) {
   }
   if (task.reviewOutcome === "changes_requested") {
     return "changes_requested_rework";
+  }
+  if ((task.queueStatus === "queued" || task.queueStatus === "released") && task.dependencyReady === false) {
+    return "dependency_waiting_report";
   }
   if (task.queueStatus === "claimed") {
     return "active_execution_report";
@@ -57,6 +62,12 @@ export function taskReportNextGate(task) {
     return {
       action: "complete_and_handoff",
       command: `node ./src/index.js task:review --id ${task.id} --by ${task.claimedBy ?? "<worker-id>"}`
+    };
+  }
+  if ((task.queueStatus === "queued" || task.queueStatus === "released") && task.dependencyReady === false) {
+    return {
+      action: "wait_on_dependencies",
+      command: `node ./src/index.js task:brief --id ${task.id}`
     };
   }
   return {
@@ -256,6 +267,9 @@ export function deriveTaskBriefReason(task, recommended) {
   if (task.queueStatus === "blocked") {
     return "blocked_recovery_brief";
   }
+  if ((task.queueStatus === "queued" || task.queueStatus === "released") && task.dependencyReady === false) {
+    return "dependency_waiting_brief";
+  }
   if (task.queueStatus === "released") {
     return "released_repickup_brief";
   }
@@ -274,7 +288,8 @@ export function buildTaskBriefView(
     recommendTaskAction,
     deriveTaskBriefReason,
     describeRole,
-    deriveReviewState
+    deriveReviewState,
+    dependencyTasks
   }
 ) {
   const task = getTask(id);
@@ -282,9 +297,10 @@ export function buildTaskBriefView(
     return null;
   }
 
-  const validation = validateTaskValue(task, runtimeRoleCatalog());
+  const dependencySummary = task.dependencySummary ?? summarizeTaskDependencies(task, dependencyTasks ?? []);
+  const validation = validateTaskValue(task, runtimeRoleCatalog(), dependencyTasks ?? []);
   const catalog = getRuntimeCatalog();
-  const recommended = recommendTaskAction(task);
+  const recommended = recommendTaskAction(task, dependencyTasks ?? []);
   const recommendedReason = deriveTaskBriefReason(task, recommended);
   const scope = task.scope ?? [];
   const acceptance = task.acceptance ?? [];
@@ -307,12 +323,15 @@ export function buildTaskBriefView(
       lane: task.lane,
       queueStatus: task.queueStatus,
       claimedBy: task.claimedBy,
-      notes: task.notes
+      notes: task.notes,
+      dependsOn: dependencySummary.refs
     },
     counts: {
       scopeEntries: scope.length,
       acceptanceItems: acceptance.length,
       verificationSteps: verification.length,
+      dependencyRefs: dependencySummary.refs.length,
+      blockingDependencies: dependencySummary.blockingTaskIds.length,
       reviewEvidenceEntries: reviewEvidence.length,
       historyEntries: historyEntries.length,
       annotationEntries: annotationEntries.length
@@ -320,8 +339,10 @@ export function buildTaskBriefView(
     execution: {
       scope,
       acceptance,
-      verification
+      verification,
+      dependsOn: dependencySummary.refs
     },
+    dependencies: dependencySummary,
     review: {
       state: deriveReviewState(task),
       reviewedBy: task.reviewedBy,
@@ -354,7 +375,8 @@ export function buildTaskBriefViewFromSources(
     recommendTaskAction,
     deriveTaskBriefReason,
     describeRole,
-    deriveReviewState
+    deriveReviewState,
+    dependencyTasks
   },
   {
     buildTaskBriefView
@@ -370,11 +392,13 @@ export function buildTaskBriefViewFromSources(
       recommendTaskAction,
       deriveTaskBriefReason,
       describeRole,
-      deriveReviewState
+      deriveReviewState,
+      dependencyTasks
     }
   );
 }
-export function recommendTaskAction(task) {
+export function recommendTaskAction(task, dependencyTasks = []) {
+  const dependencySummary = task.dependencySummary ?? summarizeTaskDependencies(task, dependencyTasks);
   if (task.queueStatus === "done") {
     return {
       actor: null,
@@ -399,6 +423,17 @@ export function recommendTaskAction(task) {
   }
 
   if (task.queueStatus === "queued" || task.queueStatus === "released") {
+    if (!dependencySummary.ready) {
+      return {
+        actor: {
+          type: "owner_role",
+          id: task.owner,
+          claimedBy: null
+        },
+        action: "wait_on_dependencies",
+        commands: [`node ./src/index.js task:brief --id ${task.id}`]
+      };
+    }
     return {
       actor: {
         type: "owner_role",

@@ -310,24 +310,30 @@ const taskHistoryViewReason:
 const taskHistoryViewEntryType: string | undefined = taskHistory(task.id)?.history[0]?.type;
 const taskBriefReason:
   | "completed_task_brief"
-  | "review_ready_task_brief"
-  | "blocked_task_brief"
-  | "claimed_task_brief"
+  | "verifier_decision_brief"
+  | "claimed_execution_brief"
+  | "blocked_recovery_brief"
+  | "dependency_waiting_brief"
+  | "released_repickup_brief"
   | "claimable_execution_brief"
+  | "queued_execution_brief"
   | undefined = taskBrief(task.id)?.recommendedReason;
 const taskBriefOwnerPromptPath: string | null | undefined = taskBrief(task.id)?.roles.owner.promptPath;
 const taskBriefNextCommand: string | undefined = taskBrief(task.id)?.recommendedCommands[0];
 const taskReportReason:
   | "approved_closure_ready"
-  | "review_ready_report"
-  | "claimed_report_in_progress"
-  | "blocked_report_attention"
-  | "queued_report_pending"
+  | "review_decision_pending"
+  | "changes_requested_rework"
+  | "dependency_waiting_report"
+  | "active_execution_report"
+  | "blocked_recovery_report"
+  | "queued_execution_report"
   | undefined = taskReport(task.id)?.recommendedReason;
 const taskReportClosureReady: boolean | undefined = taskReport(task.id)?.closure.closureReady;
 const taskReportAcceptanceStatus: "verified" | "pending" | undefined = taskReport(task.id)?.acceptance[0]?.status;
 const taskValidationReason:
   | "task_ready_to_claim"
+  | "task_dependency_waiting"
   | "task_role_validation_issues_present"
   | "claimed_task_metadata_incomplete"
   | "task_validation_issues_present"
@@ -400,6 +406,7 @@ const detailedSwarmRecommended:
   | "swarm_ready_to_complete"
   | "review_lane_waiting"
   | "blocked_lanes_present"
+  | "dependency_lane_waiting"
   | "dispatch_lane_ready"
   | "claimed_lane_active"
   | "planned_lanes_unqueued"

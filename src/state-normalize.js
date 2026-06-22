@@ -26,6 +26,7 @@ export function normalizeTask(task) {
     lane: task.lane ?? null,
     swarmId: task.swarmId ?? null,
     scope: Array.isArray(task.scope) ? task.scope : null,
+    dependsOn: Array.isArray(task.dependsOn) ? Array.from(new Set(task.dependsOn.filter(Boolean))) : null,
     acceptance: Array.isArray(task.acceptance) ? task.acceptance : null,
     verification: Array.isArray(task.verification) ? task.verification : null,
     notes: task.notes ?? null,
@@ -83,6 +84,7 @@ export function normalizeSwarmLane(lane, index = 0) {
     owner: lane.owner ?? null,
     verifier: lane.verifier ?? null,
     scope: Array.isArray(lane.scope) ? lane.scope : null,
+    dependsOn: Array.isArray(lane.dependsOn) ? Array.from(new Set(lane.dependsOn.filter(Boolean))) : null,
     acceptance: Array.isArray(lane.acceptance) ? lane.acceptance : null,
     verification: Array.isArray(lane.verification) ? lane.verification : null,
     taskId: lane.taskId ?? null

@@ -16,6 +16,7 @@ export function buildTask(input, nextId) {
     lane: input.lane ?? null,
     swarmId: input.swarmId ?? null,
     scope: input.scope ?? null,
+    dependsOn: input.dependsOn ?? null,
     acceptance: input.acceptance ?? null,
     verification: input.verification ?? null,
     claimedBy: input.claimedBy ?? null,

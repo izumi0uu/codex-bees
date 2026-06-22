@@ -13,9 +13,17 @@ export function buildSwarmBundleSummary(overview, laneBundles) {
     return `Swarm ${overview.swarm.id} is in progress on lane ${claimedLane.lane} with worker ${claimedLane.claimedBy ?? "unknown"}.`;
   }
 
-  const nextLane = laneBundles.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released");
+  const nextLane = laneBundles.find(
+    (lane) =>
+      (lane.queueStatus === "queued" || lane.queueStatus === "released") &&
+      lane.dependencyReady !== false
+  );
   if (nextLane) {
     return `Swarm ${overview.swarm.id} can dispatch lane ${nextLane.lane} next.`;
+  }
+
+  if ((overview.counts.waitingOnDependencies ?? 0) > 0) {
+    return `Swarm ${overview.swarm.id} has queued lanes waiting on dependency completion before they can dispatch.`;
   }
 
   return `Swarm ${overview.swarm.id} remains active with ${overview.counts.totalLanes} tracked lanes.`;
@@ -47,6 +55,9 @@ export function buildSwarmBlockersSummary(overview, blockedLanes) {
 
 export function buildSwarmDispatchBundleSummary(overview, dispatchLane) {
   if (!dispatchLane) {
+    if ((overview.counts.waitingOnDependencies ?? 0) > 0) {
+      return `Swarm ${overview.swarm.id} has queued lanes, but their dependencies are not complete yet.`;
+    }
     return `Swarm ${overview.swarm.id} has no dispatchable lane right now.`;
   }
 
@@ -73,6 +84,9 @@ export function deriveSwarmBriefReason(recommended) {
   if (typeof action === "string" && action.startsWith("unblock_lane:")) {
     return "blocked_lane_ready";
   }
+  if (typeof action === "string" && action.startsWith("wait_on_dependencies:")) {
+    return "dependency_lane_waiting";
+  }
   return "swarm_state_visible";
 }
 
@@ -88,9 +102,16 @@ export function deriveSwarmBundleReason({ overview, laneBundles }) {
   if (claimedLane?.lane) {
     return "claimed_lane_active";
   }
-  const dispatchLane = laneBundles?.find((lane) => lane.queueStatus === "queued" || lane.queueStatus === "released") ?? null;
+  const dispatchLane = laneBundles?.find(
+    (lane) =>
+      (lane.queueStatus === "queued" || lane.queueStatus === "released") &&
+      lane.dependencyReady !== false
+  ) ?? null;
   if (dispatchLane?.lane) {
     return "dispatch_lane_ready";
+  }
+  if (laneBundles?.some((lane) => lane.dependencyReady === false)) {
+    return "dependency_lane_waiting";
   }
   return "swarm_state_visible";
 }
@@ -101,6 +122,9 @@ export function deriveSwarmDispatchBundleReason({ overview, dispatchLane }) {
   }
   if (overview?.readyToComplete) {
     return "swarm_ready_to_complete";
+  }
+  if ((overview?.counts?.waitingOnDependencies ?? 0) > 0) {
+    return "dependency_lane_waiting";
   }
   if ((overview?.dispatchableCount ?? 0) > 0) {
     return "dispatchable_lanes_visible";
@@ -137,6 +161,9 @@ export function deriveSwarmOverviewReason({ counts, nextLane, readyToComplete })
   }
   if ((counts?.blocked ?? 0) > 0) {
     return "blocked_lanes_present";
+  }
+  if ((counts?.waitingOnDependencies ?? 0) > 0) {
+    return "dependency_lane_waiting";
   }
   if (nextLane?.lane) {
     return "dispatch_lane_ready";

@@ -327,8 +327,27 @@ export interface TaskPlanLane {
   verifier: string;
   summary: string;
   scope: string[];
+  dependsOn?: string[];
   acceptance: string[];
   verification: string[];
+}
+
+export interface PlannerIntent {
+  docs: boolean;
+  docsOnly: boolean;
+  runtime: boolean;
+  coordination: boolean;
+  build: boolean;
+  catalog: boolean;
+  verificationHeavy: boolean;
+  additionalDocsLane: boolean;
+}
+
+export interface PlannerScopeHints {
+  primary: string[];
+  discovery: string[];
+  verification: string[];
+  documentation: string[];
 }
 
 export interface PlannerRoleFileEvidence {
@@ -338,12 +357,14 @@ export interface PlannerRoleFileEvidence {
 
 export interface PlannerEvidence {
   task: string;
+  intent: PlannerIntent;
   repoSignals: {
     hasSrc: boolean;
     hasScripts: boolean;
     hasAgents: boolean;
     hasSkills: boolean;
   };
+  scopeHints: PlannerScopeHints;
   roleFiles: PlannerRoleFileEvidence[];
 }
 
@@ -353,7 +374,7 @@ export interface PlannerProfile {
   topology: "bounded-local";
   laneSource: "planner";
   adaptive: boolean;
-  laneModel: "discovery-then-execution";
+  laneModel: "adaptive-bounded-lanes";
   roles: string[];
   constraints: string[];
 }
@@ -613,6 +634,17 @@ export interface TaskAnnotation {
   content: string;
 }
 
+export interface TaskDependencySummary {
+  refs: string[];
+  ready: boolean;
+  unresolvedRefs: string[];
+  blockingTaskIds: string[];
+  blockingLanes: string[];
+  blockingOwners: string[];
+  blockingStatuses: string[];
+  blocking: TaskRecord[];
+}
+
 export interface TaskRecord {
   id: string;
   title?: string;
@@ -624,6 +656,7 @@ export interface TaskRecord {
   lane: string | null;
   swarmId: string | null;
   scope: string[] | null;
+  dependsOn: string[] | null;
   acceptance: string[] | null;
   verification: string[] | null;
   claimedBy: string | null;
@@ -633,6 +666,8 @@ export interface TaskRecord {
   reviewOutcome: string | null;
   reviewNotes: string | null;
   reviewEvidence: unknown[] | null;
+  dependencyReady?: boolean;
+  dependencySummary?: TaskDependencySummary;
   annotations: TaskAnnotation[];
   history: TaskHistoryEntry[];
   createdAt: string | null;
@@ -662,6 +697,7 @@ export interface SwarmLaneRecord {
   owner: string | null;
   verifier: string | null;
   scope: string[] | null;
+  dependsOn: string[] | null;
   acceptance: string[] | null;
   verification: string[] | null;
   taskId: string | null;
@@ -677,6 +713,9 @@ export interface SwarmLaneSummary {
   claimedBy: string | null;
   status: string | null;
   scope: string[] | null;
+  dependsOn: string[];
+  dependencyReady: boolean;
+  dependencySummary: TaskDependencySummary | null;
   ready: boolean;
   done: boolean;
 }
@@ -688,6 +727,7 @@ export interface SwarmOverviewCounts {
   blocked: number;
   readyForReview: number;
   released: number;
+  waitingOnDependencies: number;
   done: number;
   unqueued: number;
 }
@@ -698,6 +738,7 @@ export interface SwarmOverview {
     | "swarm_ready_to_complete"
     | "review_lane_waiting"
     | "blocked_lanes_present"
+    | "dependency_lane_waiting"
     | "dispatch_lane_ready"
     | "claimed_lane_active"
     | "planned_lanes_unqueued"
@@ -809,14 +850,28 @@ export interface RuntimeCatalogRoleReference {
   source: "workspace" | "bundled" | "missing";
 }
 
+export interface TaskRecommendedActor {
+  type: string;
+  id: string | null;
+  claimedBy?: string | null;
+}
+
+export interface TaskNextGate {
+  action: string;
+  command: string | null;
+}
+
 export interface TaskExecutionBrief {
   kind: "task_execution_brief";
   recommendedReason:
     | "completed_task_brief"
-    | "review_ready_task_brief"
-    | "blocked_task_brief"
-    | "claimed_task_brief"
-    | "claimable_execution_brief";
+    | "verifier_decision_brief"
+    | "claimed_execution_brief"
+    | "blocked_recovery_brief"
+    | "dependency_waiting_brief"
+    | "released_repickup_brief"
+    | "claimable_execution_brief"
+    | "queued_execution_brief";
   task: TaskRecord;
   objective: string | undefined;
   roles: {
@@ -829,11 +884,14 @@ export interface TaskExecutionBrief {
     queueStatus: TaskQueueStatus;
     claimedBy: string | null;
     notes: string | null;
+    dependsOn: string[];
   };
   counts: {
     scopeEntries: number;
     acceptanceItems: number;
     verificationSteps: number;
+    dependencyRefs: number;
+    blockingDependencies: number;
     reviewEvidenceEntries: number;
     historyEntries: number;
     annotationEntries: number;
@@ -842,7 +900,9 @@ export interface TaskExecutionBrief {
     scope: string[];
     acceptance: string[];
     verification: string[];
+    dependsOn: string[];
   };
+  dependencies: TaskDependencySummary;
   review: {
     state: TaskReviewState;
     reviewedBy: string | null;
@@ -860,7 +920,7 @@ export interface TaskExecutionBrief {
     entries: TaskAnnotation[];
   };
   validation: TaskValidationView;
-  recommendedNextActor: string;
+  recommendedNextActor: TaskRecommendedActor | null;
   recommendedNextAction: string;
   recommendedCommands: string[];
 }
@@ -869,10 +929,12 @@ export interface TaskReportView {
   kind: "task_report";
   recommendedReason:
     | "approved_closure_ready"
-    | "review_ready_report"
-    | "claimed_report_in_progress"
-    | "blocked_report_attention"
-    | "queued_report_pending";
+    | "review_decision_pending"
+    | "changes_requested_rework"
+    | "dependency_waiting_report"
+    | "active_execution_report"
+    | "blocked_recovery_report"
+    | "queued_execution_report";
   task: {
     id: string;
     title?: string;
@@ -891,7 +953,7 @@ export interface TaskReportView {
     reviewOutcome: string | null;
     reviewNotes: string | null;
     closureReady: boolean;
-    nextGate: string;
+    nextGate: TaskNextGate;
   };
   counts: {
     acceptanceItems: number;
@@ -983,6 +1045,7 @@ export interface TaskInput {
   lane?: string | null;
   swarmId?: string | null;
   scope?: string[] | null;
+  dependsOn?: string[] | null;
   acceptance?: string[] | null;
   verification?: string[] | null;
   claimedBy?: string | null;
@@ -1001,6 +1064,7 @@ export interface SwarmLaneInput {
   owner?: string | null;
   verifier?: string | null;
   scope?: string[] | null;
+  dependsOn?: string[] | null;
   acceptance?: string[] | null;
   verification?: string[] | null;
   taskId?: string | null;
@@ -1033,6 +1097,7 @@ export interface TaskValidationView {
   kind: "task_validation";
   recommendedReason:
     | "task_ready_to_claim"
+    | "task_dependency_waiting"
     | "task_role_validation_issues_present"
     | "claimed_task_metadata_incomplete"
     | "task_validation_issues_present"

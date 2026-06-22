@@ -142,7 +142,8 @@ export function transitionLoadedTaskState(
     nextQueueStatus,
     isVerifierReturn,
     validateTaskValue,
-    runtimeRoleCatalog
+    runtimeRoleCatalog,
+    state.tasks.map(normalizeTask)
   );
   if (claimReadyError) {
     return claimReadyError;
@@ -270,6 +271,7 @@ export function buildUpdatedTaskState(current, input, updatedAt = new Date().toI
     ...(input.lane !== undefined ? { lane: input.lane } : {}),
     ...(input.swarmId !== undefined ? { swarmId: input.swarmId } : {}),
     ...(input.scope !== undefined ? { scope: input.scope } : {}),
+    ...(input.dependsOn !== undefined ? { dependsOn: input.dependsOn } : {}),
     ...(input.acceptance !== undefined ? { acceptance: input.acceptance } : {}),
     ...(input.verification !== undefined ? { verification: input.verification } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),

@@ -53,7 +53,8 @@ export function createStateReadEntryPoints(shared, api) {
 
     function listTasks() {
       return listTasksSurface({
-        loadState
+        loadState,
+        normalizeTask
       });
     }
 
@@ -140,7 +141,7 @@ export function createStateReadEntryPoints(shared, api) {
     }
 
     function taskBrief(id) {
-      return taskBriefFromSources(id, { getTask });
+      return taskBriefFromSources(id, { getTask, listTasks });
     }
 
     function swarmBrief(id) {
