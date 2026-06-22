@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 export function deriveRuntimeDispatchReason({ groups, totalAssignments, next }) {
   if ((groups?.length ?? 0) > 1) {
     return "parallel_owner_groups_visible";
@@ -49,10 +51,10 @@ export function buildRuntimeRolesSummary(roles, next) {
     return `Runtime roles should look at ${next.role.id} first because blocked owner work is waiting.`;
   }
   if (next.counts.ownerClaimable > 0) {
-    return `Runtime roles should look at ${next.role.id} first because claimable owner work is waiting.`;
+    return `Runtime roles should look at ${next.role.id} first because claimable ${next.nextAction?.purposeGuidance?.label ?? "implementation"} work is waiting.`;
   }
   if (next.counts.ownerClaimed > 0) {
-    return `Runtime roles should look at ${next.role.id} first because active owner work is in flight.`;
+    return `Runtime roles should look at ${next.role.id} first because active ${next.nextAction?.purposeGuidance?.label ?? "implementation"} work is in flight.`;
   }
 
   return `Runtime roles is tracking ${roles.length} roles; ${next.role.id} is the next role to inspect.`;
@@ -166,7 +168,7 @@ export function buildRuntimeDispatchSummary(groups, next) {
     return `Runtime dispatch is tracking ${groups.length} owner group${groups.length === 1 ? "" : "s"}.`;
   }
 
-  return `Runtime dispatch has ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is the next handoff.`;
+  return `Runtime dispatch has ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is the next ${next.purposeGuidance?.label ?? "implementation"} handoff.`;
 }
 
 export function buildRuntimeDispatchView(
@@ -189,6 +191,7 @@ export function buildRuntimeDispatchView(
       objective: assignment.objective,
       lane: assignment.lane,
       purpose: assignment.purpose ?? null,
+      purposeGuidance: assignment.purposeGuidance ?? buildPurposeGuidanceForTaskLike(assignment),
       taskId: assignment.taskId,
       taskQueueStatus: assignment.taskQueueStatus,
       verifier: assignment.verifier,

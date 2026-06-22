@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawnSync as childSpawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -14,7 +14,16 @@ const PACKAGE_JSON_PATH = join(REPO_ROOT, "package.json");
 const README_TEXT = readFileSync(README_PATH, "utf8");
 const CLI_SOURCE_TEXT = readFileSync(join(REPO_ROOT, "src", "index.js"), "utf8");
 const NPM_CACHE_DIR = mkdtempSync(join(tmpdir(), "codex-bees-smoke-npm-cache-"));
+const SMOKE_SPAWN_MAX_BUFFER = 32 * 1024 * 1024;
 let packedTarballPath = null;
+
+function spawnSync(command, args, options = {}) {
+  return childSpawnSync(command, args, {
+    encoding: "utf8",
+    maxBuffer: SMOKE_SPAWN_MAX_BUFFER,
+    ...options
+  });
+}
 
 function sortedKeys(value) {
   return Object.keys(value).sort();
@@ -58,7 +67,7 @@ function cleanupPackedTarball() {
 process.on("exit", cleanupPackedTarball);
 
 function run(label, args, expectedStatus = 0) {
-  const result = spawnSync("node", args, { encoding: "utf8" });
+  const result = spawnSync("node", args);
   if (result.status !== expectedStatus) {
     console.error(`[smoke:${label}] failed`);
     console.error(result.stderr || result.stdout);
@@ -68,7 +77,7 @@ function run(label, args, expectedStatus = 0) {
 }
 
 function runInCwd(label, args, cwd, expectedStatus = 0) {
-  const result = spawnSync("node", args, { cwd, encoding: "utf8" });
+  const result = spawnSync("node", args, { cwd });
   if (result.status !== expectedStatus) {
     console.error(`[smoke:${label}] failed`);
     console.error(result.stderr || result.stdout);
@@ -80,7 +89,6 @@ function runInCwd(label, args, cwd, expectedStatus = 0) {
 function runNpm(args, options = {}) {
   mkdirSync(NPM_CACHE_DIR, { recursive: true });
   return spawnSync("npm", args, {
-    encoding: "utf8",
     env: {
       ...process.env,
       npm_config_cache: NPM_CACHE_DIR
@@ -4034,6 +4042,7 @@ if (
   ownerWorkerPack.kind !== "runtime_worker_pack" ||
   ownerWorkerPack.recommendedSurface !== "worker:session" ||
   ownerWorkerPack.recommendedReason !== "active_task_priority" ||
+  ownerWorkerPack.purposeGuidance?.label !== "implementation" ||
   ownerWorkerPack.metadata?.hasFocus !== true ||
   ownerWorkerPack.metadata?.hasHandoff !== true ||
   ownerWorkerPack.metadata?.hasCloseout !== true ||
@@ -4051,6 +4060,7 @@ if (
   ownerPackCli.kind !== "runtime_owner_pack" ||
   ownerPackCli.recommendedSurface !== "worker:session" ||
   ownerPackCli.recommendedReason !== "active_task_priority" ||
+  ownerPackCli.purposeGuidance?.label !== "implementation" ||
   ownerPackCli.metadata?.hasFocus !== true ||
   ownerPackCli.metadata?.hasCandidate !== true ||
   ownerPackCli.metadata?.hasHandoff !== true ||
@@ -4600,6 +4610,64 @@ if (
   queuedPlanSwarmAssignments?.groups?.flatMap((group) => group.assignments ?? []).some((assignment) => assignment.purpose === "implementation")
 ) {
   console.error("[smoke:plan-swarm-queue-leader-assignments] expected planner lane purpose in leader assignments");
+  process.exit(1);
+}
+const queuedPlanSwarmDispatchPack = JSON.parse(
+  run("plan-swarm-queue-leader-dispatch-pack", ["./src/index.js", "leader:assignment-dispatch-pack"]).stdout
+).assignmentDispatchPack;
+if (
+  queuedPlanSwarmDispatchPack.next?.purposeGuidance?.purpose !== "discovery" ||
+  queuedPlanSwarmDispatchPack.groups?.[0]?.purposeGuidance?.purpose !== "discovery"
+) {
+  console.error("[smoke:plan-swarm-queue-leader-dispatch-pack] expected purpose guidance in leader dispatch pack");
+  process.exit(1);
+}
+const queuedPlanSwarmDispatchBundle = JSON.parse(
+  run("plan-swarm-queue-leader-dispatch-bundle", ["./src/index.js", "leader:assignment-dispatch-bundle"]).stdout
+).assignmentDispatchBundle;
+if (
+  queuedPlanSwarmDispatchBundle.next?.purposeGuidance?.purpose !== "discovery" ||
+  queuedPlanSwarmDispatchBundle.launches?.[0]?.purposeGuidance?.purpose !== "discovery"
+) {
+  console.error("[smoke:plan-swarm-queue-leader-dispatch-bundle] expected purpose guidance in leader dispatch bundle");
+  process.exit(1);
+}
+const queuedPlanSwarmLaunchPlan = JSON.parse(
+  run("plan-swarm-queue-leader-launch-plan", ["./src/index.js", "leader:assignment-launch-plan"]).stdout
+).assignmentLaunchPlan;
+if (
+  queuedPlanSwarmLaunchPlan.next?.purposeGuidance?.purpose !== "discovery" ||
+  queuedPlanSwarmLaunchPlan.steps?.[0]?.purposeGuidance?.purpose !== "discovery"
+) {
+  console.error("[smoke:plan-swarm-queue-leader-launch-plan] expected purpose guidance in launch plan");
+  process.exit(1);
+}
+const queuedPlanSwarmRuntimeDispatch = JSON.parse(
+  run("plan-swarm-queue-runtime-dispatch", ["./src/index.js", "runtime:dispatch"]).stdout
+).dispatch;
+if (
+  queuedPlanSwarmRuntimeDispatch.next?.purposeGuidance?.purpose !== "discovery"
+) {
+  console.error("[smoke:plan-swarm-queue-runtime-dispatch] expected purpose guidance in runtime dispatch");
+  process.exit(1);
+}
+const queuedPlanSwarmRuntimeExecutionPack = JSON.parse(
+  run("plan-swarm-queue-runtime-execution-pack", ["./src/index.js", "runtime:execution-pack"]).stdout
+).executionPack;
+if (
+  queuedPlanSwarmRuntimeExecutionPack.purposeGuidance?.purpose !== "discovery" ||
+  queuedPlanSwarmRuntimeExecutionPack.next?.dispatch?.purposeGuidance?.purpose !== "discovery"
+) {
+  console.error("[smoke:plan-swarm-queue-runtime-execution-pack] expected purpose guidance in runtime execution pack");
+  process.exit(1);
+}
+const queuedPlanSwarmRuntimeFocus = JSON.parse(
+  run("plan-swarm-queue-runtime-focus", ["./src/index.js", "runtime:focus"]).stdout
+).focus;
+if (
+  queuedPlanSwarmRuntimeFocus.focus?.purposeGuidance?.purpose !== "discovery"
+) {
+  console.error("[smoke:plan-swarm-queue-runtime-focus] expected purpose guidance in runtime focus");
   process.exit(1);
 }
 
@@ -9392,6 +9460,7 @@ const runtimePickupPackVerifier = JSON.parse(
 if (
   runtimePickupPackVerifier.recommendedSurface !== "worker:closeout" ||
   runtimePickupPackVerifier.recommendedReason !== "review_task_priority" ||
+  runtimePickupPackVerifier.purposeGuidance?.label !== "implementation" ||
   runtimePickupPackVerifier.metadata?.hasFocus !== true ||
   runtimePickupPackVerifier.metadata?.hasCandidate !== true ||
   runtimePickupPackVerifier.metadata?.hasBrief !== true ||
@@ -9410,6 +9479,7 @@ const runtimeAssignmentPackVerifier = JSON.parse(
 if (
   runtimeAssignmentPackVerifier.recommendedSurface !== "worker:closeout" ||
   runtimeAssignmentPackVerifier.recommendedReason !== "review_task_priority" ||
+  runtimeAssignmentPackVerifier.purposeGuidance?.label !== "implementation" ||
   runtimeAssignmentPackVerifier.metadata?.hasAssignment !== false ||
   runtimeAssignmentPackVerifier.metadata?.hasPickup !== true ||
   runtimeAssignmentPackVerifier.metadata?.hasCandidate !== true ||
@@ -9443,6 +9513,7 @@ const runtimePickupPackOwner = JSON.parse(
 if (
   runtimePickupPackOwner.recommendedSurface !== "task:pickup --role executor --worker worker-owner --mode owner" ||
   runtimePickupPackOwner.recommendedReason !== "claimable_pickup_ready" ||
+  runtimePickupPackOwner.purposeGuidance?.label !== "implementation" ||
   runtimePickupPackOwner.metadata?.hasFocus !== true ||
   runtimePickupPackOwner.metadata?.hasCandidate !== true ||
   runtimePickupPackOwner.metadata?.hasBrief !== true ||
@@ -9461,6 +9532,7 @@ const runtimeAssignmentPackOwner = JSON.parse(
 if (
   runtimeAssignmentPackOwner.recommendedSurface !== "task:next" ||
   runtimeAssignmentPackOwner.recommendedReason !== "next_candidate_visible" ||
+  runtimeAssignmentPackOwner.purposeGuidance?.label !== "implementation" ||
   runtimeAssignmentPackOwner.metadata?.hasAssignment !== false ||
   runtimeAssignmentPackOwner.metadata?.hasPickup !== true ||
   runtimeAssignmentPackOwner.metadata?.hasCandidate !== true ||

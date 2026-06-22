@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 export function buildRuntimeFocusSummary(type, detail) {
   if (type === "blocked_task") {
     return `Runtime focus is blocked-task first: ${detail}`;
@@ -45,6 +47,8 @@ export function buildRuntimeFocusView(
         taskId: blockedAlert.taskId,
         swarmId: blockedAlert.swarmId,
         lane: blockedAlert.lane,
+        purpose: blockedAlert.lanePurpose ?? null,
+        purposeGuidance: buildPurposeGuidanceForTaskLike({ lanePurpose: blockedAlert.lanePurpose ?? null }),
         recommendedNextActor: brief?.recommendedNextActor ?? null,
         recommendedNextAction: brief?.recommendedNextAction ?? null,
         recommendedCommands: brief?.recommendedCommands ?? [],
@@ -67,6 +71,8 @@ export function buildRuntimeFocusView(
         taskId: review.next.taskId,
         swarmId: review.next.swarmId,
         lane: review.next.lane,
+        purpose: review.next.lanePurpose ?? null,
+        purposeGuidance: review.next.purposeGuidance ?? buildPurposeGuidanceForTaskLike(review.next),
         verifier: review.groups?.[0]?.verifier ?? null,
         recommendedNextActor: review.next.recommendedNextActor,
         recommendedNextAction: review.next.recommendedNextAction,
@@ -90,6 +96,8 @@ export function buildRuntimeFocusView(
         taskId: dispatch.next.taskId,
         swarmId: dispatch.next.swarmId,
         lane: dispatch.next.lane,
+        purpose: dispatch.next.purpose ?? null,
+        purposeGuidance: dispatch.next.purposeGuidance ?? buildPurposeGuidanceForTaskLike(dispatch.next),
         owner: dispatch.groups?.[0]?.owner ?? null,
         recommendedNextActor: dispatch.next.recommendedNextActor,
         recommendedNextAction: dispatch.next.recommendedNextAction,
@@ -112,6 +120,8 @@ export function buildRuntimeFocusView(
         type: "role_pressure",
         role: roles.next.role,
         lane: roles.next.nextAction?.lane ?? null,
+        purpose: roles.next.nextAction?.task?.lanePurpose ?? null,
+        purposeGuidance: roles.next.nextAction?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(roles.next.nextAction?.task ?? null),
         recommendedNextActor: roles.next.role,
         recommendedNextAction: roles.next.nextAction?.reason ?? null,
         recommendedCommands: roles.next.nextAction?.command ? [roles.next.nextAction.command] : [],

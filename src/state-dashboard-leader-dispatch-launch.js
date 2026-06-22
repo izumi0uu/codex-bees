@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 export function buildLeaderAssignmentDispatchPackView(
   input,
   {
@@ -22,6 +24,7 @@ export function buildLeaderAssignmentDispatchPackView(
       owner: group.owner,
       count: group.count,
       next: dispatch.assignment,
+      purposeGuidance: dispatch.assignment?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(dispatch.assignment),
       workerId,
       previewCommand: dispatch.previewCommand,
       pickupCommand: dispatch.pickupCommand,
@@ -42,7 +45,7 @@ export function buildLeaderAssignmentDispatchPackView(
     next,
     groups,
     summary: next
-      ? `Leader assignment dispatch pack has ${groups.length} owner group${groups.length === 1 ? "" : "s"} ready; ${next.owner?.id ?? next.owner?.name ?? "unknown"} is first.`
+      ? `Leader assignment dispatch pack has ${groups.length} owner group${groups.length === 1 ? "" : "s"} ready; ${next.owner?.id ?? next.owner?.name ?? "unknown"} is first for ${next.purposeGuidance?.label ?? "implementation"} work.`
       : "Leader assignment dispatch pack has no worker-targeted assignment dispatches right now."
   };
 }
@@ -89,6 +92,8 @@ export function buildLeaderAssignmentDispatchBundleView(
     swarmId: group.next?.swarmId ?? null,
     objective: group.next?.objective ?? null,
     lane: group.next?.lane ?? null,
+    purpose: group.next?.purpose ?? null,
+    purposeGuidance: group.next?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(group.next),
     assignment: group.next ?? null,
     sessionCommand: `node ./src/index.js worker:session --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
     assignmentPackCommand: `node ./src/index.js runtime:assignment-pack --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
@@ -112,7 +117,7 @@ export function buildLeaderAssignmentDispatchBundleView(
     next,
     launches,
     summary: next
-      ? `Leader assignment dispatch bundle has ${launches.length} worker launch${launches.length === 1 ? "" : "es"} ready; ${next.role?.id ?? next.role?.name ?? "unknown"} via ${next.workerId ?? "<worker-id>"} is first.`
+      ? `Leader assignment dispatch bundle has ${launches.length} worker launch${launches.length === 1 ? "" : "es"} ready; ${next.role?.id ?? next.role?.name ?? "unknown"} via ${next.workerId ?? "<worker-id>"} is first for ${next.purposeGuidance?.label ?? "implementation"} work.`
       : "Leader assignment dispatch bundle has no worker launches right now."
   };
 }
@@ -155,6 +160,8 @@ export function buildLeaderAssignmentLaunchPlanView(
     taskId: launch.taskId,
     lane: launch.lane,
     swarmId: launch.swarmId,
+    purpose: launch.purpose ?? null,
+    purposeGuidance: launch.purposeGuidance ?? buildPurposeGuidanceForTaskLike(launch.assignment ?? launch),
     launchCommand: launch.launchCommand,
     sessionCommand: launch.sessionCommand,
     previewCommand: launch.previewCommand,
@@ -163,7 +170,7 @@ export function buildLeaderAssignmentLaunchPlanView(
       assignmentPackCommand: launch.assignmentPackCommand,
       pickupCommand: launch.pickupCommand
     },
-    summary: `Start ${launch.workerId ?? "<worker-id>"} on ${launch.role?.id ?? launch.role?.name ?? "unknown"} for ${launch.taskId ?? "no-task"}.`
+    summary: `Start ${launch.workerId ?? "<worker-id>"} on ${launch.role?.id ?? launch.role?.name ?? "unknown"} for ${launch.taskId ?? "no-task"} as ${launch.purposeGuidance?.label ?? "implementation"} work.`
   }));
   const next = steps[0] ?? null;
   const recommendedReason = deriveLeaderAssignmentLaunchPlanReason({ bundle, steps, next });
@@ -181,7 +188,7 @@ export function buildLeaderAssignmentLaunchPlanView(
     steps,
     bundle,
     summary: next
-      ? `Leader assignment launch plan has ${steps.length} startup step${steps.length === 1 ? "" : "s"} ready; ${next.workerId ?? "<worker-id>"} is first.`
+      ? `Leader assignment launch plan has ${steps.length} startup step${steps.length === 1 ? "" : "s"} ready; ${next.workerId ?? "<worker-id>"} is first for ${next.purposeGuidance?.label ?? "implementation"} work.`
       : "Leader assignment launch plan has no startup steps right now."
   };
 }

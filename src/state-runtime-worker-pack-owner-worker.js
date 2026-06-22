@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 export function deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role, workerId }) {
   if (session?.focus?.kind === "active_task" || session?.focus?.kind === "blocked_task") {
     return "worker:session";
@@ -74,6 +76,10 @@ export function buildRuntimeOwnerPackView(
   });
   const recommendedSurface = deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role: input.role, workerId: input.workerId });
   const recommendedReason = deriveRuntimeOwnerPackReason({ session, handoff, closeout, next });
+  const purposeGuidance =
+    session?.purposeGuidance ??
+    handoff?.purposeGuidance ??
+    buildPurposeGuidanceForTaskLike(next?.candidate ?? null);
   const nextEntries = {
     focus: session?.focus ?? null,
     candidate: next?.candidate ?? null,
@@ -88,6 +94,7 @@ export function buildRuntimeOwnerPackView(
     mode: "owner",
     recommendedSurface,
     recommendedReason,
+    purposeGuidance,
     metadata: {
       hasFocus: Boolean(nextEntries.focus),
       hasCandidate: Boolean(nextEntries.candidate),
@@ -216,6 +223,10 @@ export function buildRuntimeWorkerPackView(
   });
   const recommendedSurface = deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next });
   const recommendedReason = deriveRuntimeWorkerPackReason({ session, handoff, closeout, next });
+  const purposeGuidance =
+    session?.purposeGuidance ??
+    handoff?.purposeGuidance ??
+    buildPurposeGuidanceForTaskLike(next?.candidate ?? null);
   const nextEntries = {
     focus: session?.focus ?? null,
     candidate: next?.candidate ?? null,
@@ -230,6 +241,7 @@ export function buildRuntimeWorkerPackView(
     mode: session?.mode ?? normalizeNextMode(input.mode),
     recommendedSurface,
     recommendedReason,
+    purposeGuidance,
     metadata: {
       hasFocus: Boolean(session?.focus),
       hasCandidate: Boolean(next?.candidate),

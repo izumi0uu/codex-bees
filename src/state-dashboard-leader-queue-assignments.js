@@ -1,3 +1,4 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import { compareLanePurposes } from "./state-queue-views.js";
 
 export function buildLeaderQueueSummary(items) {
@@ -83,7 +84,8 @@ export function buildLeaderAssignmentsSummary(assignments, groups) {
   }
 
   const next = assignments[0];
-  return `Leader assignments has ${assignments.length} dispatchable lane${assignments.length === 1 ? "" : "s"} across ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is first.`;
+  const purposeLabel = next.purposeGuidance?.label ?? "implementation";
+  return `Leader assignments has ${assignments.length} dispatchable lane${assignments.length === 1 ? "" : "s"} across ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.lane} from ${next.swarmId} is first for ${purposeLabel} work.`;
 }
 
 export function buildLeaderAssignmentsView(
@@ -115,6 +117,7 @@ export function buildLeaderAssignmentsView(
         objective: swarm.objective,
         lane: lane.lane,
         purpose: lane.purpose ?? null,
+        purposeGuidance: buildPurposeGuidanceForTaskLike(lane),
         owner: lane.owner,
         verifier: lane.verifier,
         taskId: lane.taskId,

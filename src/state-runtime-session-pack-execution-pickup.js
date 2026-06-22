@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 export function deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";
@@ -85,6 +87,13 @@ export function buildRuntimeExecutionPackView(
   const queuePack = runtimeQueuePack(input);
   const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
   const recommendedReason = deriveRuntimeExecutionPackReason({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
+  const purposeGuidance =
+    assignmentLaunchPlan?.next?.purposeGuidance ??
+    assignmentDispatchBundle?.next?.purposeGuidance ??
+    dispatch?.next?.purposeGuidance ??
+    focus?.focus?.purposeGuidance ??
+    roles?.next?.nextAction?.purposeGuidance ??
+    buildPurposeGuidanceForTaskLike(queuePack?.next?.queue?.task ?? null);
   const nextEntries = {
     focus: focus?.focus ?? null,
     dispatch: dispatch?.next ?? null,
@@ -98,6 +107,7 @@ export function buildRuntimeExecutionPackView(
     kind: "runtime_execution_pack",
     recommendedSurface,
     recommendedReason,
+    purposeGuidance,
     metadata: {
       hasFocus: Boolean(nextEntries.focus),
       hasDispatch: Boolean(nextEntries.dispatch),
@@ -275,6 +285,11 @@ export function buildRuntimePickupPackView(
     mode
   });
   const recommendedReason = deriveRuntimePickupPackReason({ session, pickup, next, rolePack });
+  const purposeGuidance =
+    pickup?.purposeGuidance ??
+    session?.purposeGuidance ??
+    rolePack?.purposeGuidance ??
+    buildPurposeGuidanceForTaskLike(next?.candidate ?? null);
   const nextEntries = {
     focus: session?.focus ?? null,
     candidate: next?.candidate ?? null,
@@ -289,6 +304,7 @@ export function buildRuntimePickupPackView(
     mode,
     recommendedSurface,
     recommendedReason,
+    purposeGuidance,
     metadata: {
       hasFocus: Boolean(nextEntries.focus),
       hasCandidate: Boolean(nextEntries.candidate),
@@ -305,7 +321,8 @@ export function buildRuntimePickupPackView(
         ? {
             outcome: pickup.outcome,
             command: pickup.command,
-            candidateId: pickup.candidate?.id ?? null
+            candidateId: pickup.candidate?.id ?? null,
+            purpose: pickup.purposeGuidance?.purpose ?? null
           }
         : null,
       role: rolePack?.overview?.role ?? null

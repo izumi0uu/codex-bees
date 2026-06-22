@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBrief) {
   return {
     position,
@@ -7,6 +9,7 @@ export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBr
     swarmId: task.swarmId,
     lane: task.lane,
     lanePurpose: task.lanePurpose ?? null,
+    purposeGuidance: buildPurposeGuidanceForTaskLike(task),
     owner: describeRole(task.owner),
     claimedBy: task.claimedBy,
     updatedAt: task.updatedAt,

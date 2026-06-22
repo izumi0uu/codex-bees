@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 export function deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role }) {
   if (bundle?.currentTask?.id || closeout?.report?.task?.id) {
     return "worker:closeout";
@@ -191,7 +193,7 @@ export function deriveRuntimeAssignmentPackReason({ assignment, session, next, p
 }
 export function buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, session, pickup, next, roleAssignments) {
   if (assignment?.taskId && next?.candidate?.id !== assignment.taskId) {
-    return `Runtime assignment pack recommends ${recommendedSurface} next. Leader has assignment ${assignment.taskId} ready for this worker.`;
+    return `Runtime assignment pack recommends ${recommendedSurface} next. Leader has ${assignment.purposeGuidance?.label ?? "implementation"} assignment ${assignment.taskId} ready for this worker.`;
   }
 
   const detail =
@@ -256,6 +258,11 @@ export function buildRuntimeAssignmentPackView(
     mode
   });
   const recommendedReason = deriveRuntimeAssignmentPackReason({ assignment, session, next, pickup, roleEntry });
+  const purposeGuidance =
+    session?.purposeGuidance ??
+    pickup?.purposeGuidance ??
+    assignment?.purposeGuidance ??
+    buildPurposeGuidanceForTaskLike(next?.candidate ?? assignment ?? null);
   const nextEntries = {
     assignment,
     pickup,
@@ -270,6 +277,7 @@ export function buildRuntimeAssignmentPackView(
     mode,
     recommendedSurface,
     recommendedReason,
+    purposeGuidance,
     metadata: {
       hasAssignment: Boolean(nextEntries.assignment),
       hasPickup: Boolean(nextEntries.pickup),
@@ -288,7 +296,8 @@ export function buildRuntimeAssignmentPackView(
         ? {
             outcome: pickup.outcome,
             command: pickup.command,
-            candidateId: pickup.candidate?.id ?? null
+            candidateId: pickup.candidate?.id ?? null,
+            purpose: pickup.purposeGuidance?.purpose ?? null
           }
         : null,
       role: roleEntry?.counts ?? null,

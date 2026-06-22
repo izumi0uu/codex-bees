@@ -1,3 +1,4 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import { annotateTasksWithDependencyState } from "./state-task-core.js";
 
 export function summarizeDashboardTask(task) {
@@ -30,6 +31,7 @@ export function buildRuntimeRoleNextAction(roleId, ownerNext, verifierNext, disp
     return {
       lane: "verifier",
       task: verifierNext.candidate,
+      purposeGuidance: buildPurposeGuidanceForTaskLike(verifierNext.candidate),
       command: `node ./src/index.js task:next --role ${roleId} --mode verifier`,
       reason: `Verifier lane can decide ${verifierNext.candidate.id} next.`
     };
@@ -39,6 +41,7 @@ export function buildRuntimeRoleNextAction(roleId, ownerNext, verifierNext, disp
     return {
       lane: "owner",
       task: ownerNext.candidate,
+      purposeGuidance: buildPurposeGuidanceForTaskLike(ownerNext.candidate),
       command: `node ./src/index.js task:next --role ${roleId} --mode owner`,
       reason: `Owner lane can move ${ownerNext.candidate.id} next.`
     };
@@ -59,6 +62,7 @@ export function buildRuntimeRoleNextAction(roleId, ownerNext, verifierNext, disp
         recommendedAction: assignment.recommendedNextAction,
         summary: assignment.summary
       },
+      purposeGuidance: assignment.purposeGuidance ?? buildPurposeGuidanceForTaskLike({ lanePurpose: assignment.purpose ?? null }),
       command: assignment.recommendedCommands?.[0] ?? `node ./src/index.js leader:assignments`,
       reason: `Leader can dispatch ${assignment.lane} from ${assignment.swarmId} to ${roleId}.`
     };
