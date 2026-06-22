@@ -6,7 +6,7 @@ import {
   getMcpCommandCatalogView,
   getMcpHelpView,
   renderMcpHelpText
-} from "./mcp.js";
+} from "./state-mcp-cli.js";
 
 export {
   getMcpCommandCatalog,

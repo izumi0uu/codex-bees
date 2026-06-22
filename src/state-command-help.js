@@ -1,5 +1,5 @@
 import { PRODUCT_NAME } from "./metadata.js";
-import { renderMcpHelpText } from "./mcp.js";
+import { renderMcpHelpText } from "./state-mcp-cli.js";
 import {
   DIR_OPTION,
   FORCE_OPTION,

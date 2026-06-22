@@ -1,7 +1,7 @@
 import { getRuntimeCatalog } from "./catalog.js";
 import { listMemories, listSwarms, listTasks } from "./state.js";
 import { getPackageMetadata } from "./metadata.js";
-import { listMcpTools } from "./mcp.js";
+import { listMcpTools } from "./state-mcp-tool-catalog.js";
 
 const CAPABILITY_CATALOG = [
   {
