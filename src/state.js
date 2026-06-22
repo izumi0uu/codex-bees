@@ -194,6 +194,29 @@ import {
   runtimeRolesFromSources
 } from "./state-runtime-overviews.js";
 import {
+  runtimeAssignmentPackFromSources,
+  runtimeCloseoutPackFromSources,
+  runtimeControlPackFromSources,
+  runtimeDispatchPackFromSources,
+  runtimeExecutionPackFromSources,
+  runtimeHandoffPackFromSources,
+  runtimeLeaderPackFromSources,
+  runtimeOperatorPackFromSources,
+  runtimeOwnerPackFromSources,
+  runtimePickupPackFromSources,
+  runtimeQueuePackFromSources,
+  runtimeRecoveryPackFromSources,
+  runtimeReviewPackFromSources,
+  runtimeRolePackFromSources,
+  runtimeSessionPackFromSources,
+  runtimeSignalPackFromSources,
+  runtimeSummaryPackFromSources,
+  runtimeTriagePackFromSources,
+  runtimeVerifierPackFromSources,
+  runtimeWorkerPackFromSources,
+  runtimeWorkspacePackFromSources
+} from "./state-runtime-packs.js";
+import {
   buildLeaderAssignmentDispatchView,
   buildLeaderAssignmentDispatchViewFromSources,
   buildLeaderAssignmentDispatchBundleView,
@@ -255,117 +278,12 @@ import {
   recommendWorkerSessionFocus
 } from "./state-worker-views.js";
 import {
-  buildRuntimeControlPackSummary,
-  buildRuntimeControlPackView,
-  buildRuntimeControlPackViewFromSources,
-  buildRuntimeExecutionPackSummary,
-  buildRuntimeExecutionPackViewFromSources,
-  buildRuntimeExecutionPackView,
-  buildRuntimeHandoffPackView,
-  buildRuntimeHandoffPackSummary,
-  buildRuntimeCloseoutPackView,
-  buildRuntimeCloseoutPackViewFromSources,
-  buildRuntimeCloseoutPackSummary,
-  buildRuntimeDispatchPackViewFromSources,
-  buildRuntimeDispatchPackView,
-  buildRuntimeDispatchPackSummary,
-  buildRuntimeAssignmentPackViewFromSources,
-  buildRuntimeAssignmentPackSummary,
-  buildRuntimeAssignmentPackView,
-  buildRuntimeOperatorPackView,
-  buildRuntimeOperatorPackViewFromSources,
-  buildRuntimeOperatorPackSummary,
-  buildRuntimePickupPackViewFromSources,
-  buildRuntimePickupPackSummary,
-  buildRuntimePickupPackView,
-  buildRuntimeRecoveryPackViewFromSources,
-  buildRuntimeRecoveryPackView,
-  buildRuntimeRecoveryPackSummary,
-  buildRuntimeReviewPackViewFromSources,
-  buildRuntimeReviewPackView,
-  buildRuntimeLeaderPackSummary,
-  buildRuntimeLeaderPackViewFromSources,
-  buildRuntimeLeaderPackView,
   buildLeaderWorkspaceViewFromSources,
   buildLeaderWorkspaceView,
   buildLeaderWorkspaceSummary,
   buildLeaderWorkspaceSwarmEntry,
-  buildRuntimeOwnerPackViewFromSources,
-  buildRuntimeOwnerPackSummary,
-  buildRuntimeOwnerPackView,
-  buildRuntimeWorkerPackViewFromSources,
-  buildRuntimeQueuePackView,
-  buildRuntimeQueuePackViewFromSources,
-  buildRuntimeQueuePackSummary,
-  buildRuntimeRolePackViewFromSources,
-  buildRuntimeRolePackView,
-  buildRuntimeReviewPackSummary,
-  buildRuntimeRolePackSummary,
-  buildRuntimeSessionPackViewFromSources,
-  buildRuntimeSessionPackView,
-  buildRuntimeSessionPackSummary,
-  buildRuntimeSignalPackViewFromSources,
-  buildRuntimeSignalPackView,
-  buildRuntimeSignalPackSummary,
-  buildRuntimeSummaryPackView,
-  buildRuntimeSummaryPackViewFromSources,
-  buildRuntimeSummaryPackSummary,
-  buildRuntimeWorkspacePackViewFromSources,
-  buildRuntimeHandoffPackViewFromSources,
-  buildRuntimeTriagePackViewFromSources,
-  buildRuntimeTriagePackView,
-  buildRuntimeTriagePackSummary,
-  buildRuntimeVerifierPackSummary,
-  buildRuntimeVerifierPackViewFromSources,
-  buildRuntimeVerifierPackView,
-  buildRuntimeWorkerPackSummary,
-  buildRuntimeWorkerPackView,
-  buildRuntimeWorkspacePackView,
   compareRuntimeRoleEntries,
-  deriveRuntimeCloseoutPackReason,
-  deriveRuntimeCloseoutPackSurface,
-  deriveRuntimeAssignmentPackReason,
-  deriveRuntimeAssignmentPackSurface,
-  deriveRuntimeDispatchPackReason,
-  deriveRuntimeDispatchPackSurface,
-  deriveRuntimeExecutionPackReason,
-  deriveRuntimeExecutionPackSurface,
-  deriveRuntimeHandoffPackReason,
-  deriveRuntimeHandoffPackSurface,
-  deriveRuntimeLeaderPackReason,
-  deriveRuntimeLeaderPackSurface,
-  deriveRuntimeOperatorPackReason,
-  deriveRuntimeOperatorPackSurface,
-  deriveRuntimeOwnerPackReason,
-  deriveRuntimeOwnerPackSurface,
-  deriveRuntimePickupPackReason,
-  deriveRuntimePickupPackSurface,
-  deriveRuntimeQueuePackReason,
-  deriveRuntimeQueuePackSurface,
-  deriveRuntimeRecoveryPackReason,
-  deriveRuntimeRecoveryPackSurface,
-  deriveRuntimeReviewPackReason,
-  deriveRuntimeReviewPackSurface,
-  deriveRuntimeRolePackReason,
-  deriveRuntimeRolePackSurface,
-  deriveRuntimeSessionPackReason,
-  deriveRuntimeSessionPackSurface,
-  deriveRuntimeSignalPackReason,
-  deriveRuntimeSignalPackSurface,
-  deriveRuntimeSummaryPackReason,
-  deriveRuntimeSummaryPackSurface,
-  deriveRuntimeTriagePackReason,
-  deriveRuntimeTriagePackSurface,
-  deriveRuntimeVerifierPackReason,
-  deriveRuntimeVerifierPackSurface,
-  deriveRuntimeWorkerPackReason,
-  deriveRuntimeWorkerPackSurface,
-  deriveRuntimeWorkspacePackReason,
-  deriveRuntimeWorkspacePackSurface,
-  deriveRuntimeControlPackReason,
-  deriveRuntimeControlPackSurface,
-  deriveLeaderAssignmentDispatchPackReason,
-  buildRuntimeWorkspacePackSummary
+  deriveLeaderAssignmentDispatchPackReason
 } from "./state-runtime-views.js";
 import {
   VALID_QUEUE_STATUSES,
@@ -857,401 +775,205 @@ export function runtimeRecovery() {
 }
 
 export function runtimeSummaryPack(input = {}) {
-  return buildRuntimeSummaryPackViewFromSources(
-    input,
-    {
-      runtimeDashboard,
-      runtimeAlerts,
-      runtimeFocus,
-      runtimeHandoffs,
-      runtimeRecovery,
-      runtimeCloseout,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan
-    },
-    {
-      deriveRuntimeSummaryPackSurface,
-      deriveRuntimeSummaryPackReason,
-      buildRuntimeSummaryPackSummary,
-      buildRuntimeSummaryPackView
-    }
-  );
+  return runtimeSummaryPackFromSources(input, {
+    runtimeDashboard,
+    runtimeAlerts,
+    runtimeFocus,
+    runtimeHandoffs,
+    runtimeRecovery,
+    runtimeCloseout,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  });
 }
 
 export function runtimeOperatorPack() {
-  return buildRuntimeOperatorPackViewFromSources(
-    {
-      runtimeDashboard,
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeHandoffs,
-      runtimeCloseout
-    },
-    {
-      deriveRuntimeOperatorPackSurface,
-      deriveRuntimeOperatorPackReason,
-      buildRuntimeOperatorPackSummary,
-      buildRuntimeOperatorPackView
-    }
-  );
+  return runtimeOperatorPackFromSources({
+    runtimeDashboard,
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeHandoffs,
+    runtimeCloseout
+  });
 }
 
 export function runtimeDispatchPack(input = {}) {
-  return buildRuntimeDispatchPackViewFromSources(
-    input,
-    {
-      runtimeDispatch,
-      leaderAssignmentDispatchPack,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeRoles,
-      runtimeHandoffs
-    },
-    {
-      deriveRuntimeDispatchPackSurface,
-      deriveRuntimeDispatchPackReason,
-      buildRuntimeDispatchPackSummary,
-      buildRuntimeDispatchPackView
-    }
-  );
+  return runtimeDispatchPackFromSources(input, {
+    runtimeDispatch,
+    leaderAssignmentDispatchPack,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeRoles,
+    runtimeHandoffs
+  });
 }
 
 export function runtimeRecoveryPack() {
-  return buildRuntimeRecoveryPackViewFromSources(
-    {
-      runtimeRecovery,
-      runtimeHandoffs,
-      runtimeFocus
-    },
-    {
-      deriveRuntimeRecoveryPackSurface,
-      deriveRuntimeRecoveryPackReason,
-      buildRuntimeRecoveryPackSummary,
-      buildRuntimeRecoveryPackView
-    }
-  );
+  return runtimeRecoveryPackFromSources({
+    runtimeRecovery,
+    runtimeHandoffs,
+    runtimeFocus
+  });
 }
 
 export function runtimeCloseoutPack(input = {}) {
-  return buildRuntimeCloseoutPackViewFromSources(
-    input,
-    {
-      runtimeCloseout,
-      runtimeSummaryPack,
-      runtimeLeaderPack
-    },
-    {
-      deriveRuntimeCloseoutPackSurface,
-      deriveRuntimeCloseoutPackReason,
-      buildRuntimeCloseoutPackSummary,
-      buildRuntimeCloseoutPackView
-    }
-  );
+  return runtimeCloseoutPackFromSources(input, {
+    runtimeCloseout,
+    runtimeSummaryPack,
+    runtimeLeaderPack
+  });
 }
 
 export function runtimeReviewPack(input = {}) {
-  return buildRuntimeReviewPackViewFromSources(
-    input,
-    {
-      runtimeReview,
-      runtimeRoles,
-      runtimeVerifierPack,
-      describeRole
-    },
-    {
-      deriveRuntimeReviewPackSurface,
-      deriveRuntimeReviewPackReason,
-      buildRuntimeReviewPackSummary,
-      buildRuntimeReviewPackView
-    }
-  );
+  return runtimeReviewPackFromSources(input, {
+    runtimeReview,
+    runtimeRoles,
+    runtimeVerifierPack
+  });
 }
 
 export function runtimeQueuePack(input = {}) {
-  return buildRuntimeQueuePackViewFromSources(
-    input,
-    {
-      leaderQueue,
-      runtimeDashboard,
-      runtimeFocus,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan
-    },
-    {
-      deriveRuntimeQueuePackSurface,
-      deriveRuntimeQueuePackReason,
-      buildRuntimeQueuePackSummary,
-      buildRuntimeQueuePackView
-    }
-  );
+  return runtimeQueuePackFromSources(input, {
+    leaderQueue,
+    runtimeDashboard,
+    runtimeFocus,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  });
 }
 
 export function runtimeWorkspacePack(input = {}) {
-  return buildRuntimeWorkspacePackViewFromSources(
-    input,
-    {
-      runtimeDashboard,
-      runtimeDispatch,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeReview,
-      runtimeRecovery
-    },
-    {
-      deriveRuntimeWorkspacePackSurface,
-      deriveRuntimeWorkspacePackReason,
-      buildRuntimeWorkspacePackSummary,
-      buildRuntimeWorkspacePackView
-    }
-  );
+  return runtimeWorkspacePackFromSources(input, {
+    runtimeDashboard,
+    runtimeDispatch,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeReview,
+    runtimeRecovery
+  });
 }
 
 export function runtimeControlPack(input = {}) {
-  return buildRuntimeControlPackViewFromSources(
-    input,
-    {
-      runtimeSummaryPack,
-      runtimeWorkspacePack,
-      runtimeOperatorPack,
-      runtimeLeaderPack
-    },
-    {
-      deriveRuntimeControlPackSurface,
-      deriveRuntimeControlPackReason,
-      buildRuntimeControlPackSummary,
-      buildRuntimeControlPackView
-    }
-  );
+  return runtimeControlPackFromSources(input, {
+    runtimeSummaryPack,
+    runtimeWorkspacePack,
+    runtimeOperatorPack,
+    runtimeLeaderPack
+  });
 }
 
 export function runtimeSignalPack(input = {}) {
-  return buildRuntimeSignalPackViewFromSources(
-    input,
-    {
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeActivity,
-      runtimeRoles
-    },
-    {
-      deriveRuntimeSignalPackSurface,
-      deriveRuntimeSignalPackReason,
-      buildRuntimeSignalPackSummary,
-      buildRuntimeSignalPackView
-    }
-  );
+  return runtimeSignalPackFromSources(input, {
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeActivity,
+    runtimeRoles
+  });
 }
 
 export function runtimeHandoffPack() {
-  return buildRuntimeHandoffPackViewFromSources(
-    {
-      runtimeHandoffs,
-      runtimeDispatch,
-      runtimeReview,
-      runtimeRecovery
-    },
-    {
-      deriveRuntimeHandoffPackSurface,
-      deriveRuntimeHandoffPackReason,
-      buildRuntimeHandoffPackSummary,
-      buildRuntimeHandoffPackView
-    }
-  );
+  return runtimeHandoffPackFromSources({
+    runtimeHandoffs,
+    runtimeDispatch,
+    runtimeReview,
+    runtimeRecovery
+  });
 }
 
 export function runtimeTriagePack() {
-  return buildRuntimeTriagePackViewFromSources(
-    {
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeReview,
-      runtimeRecovery
-    },
-    {
-      deriveRuntimeTriagePackSurface,
-      deriveRuntimeTriagePackReason,
-      buildRuntimeTriagePackSummary,
-      buildRuntimeTriagePackView
-    }
-  );
+  return runtimeTriagePackFromSources({
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeReview,
+    runtimeRecovery
+  });
 }
 
 export function runtimeSessionPack(input = {}) {
-  return buildRuntimeSessionPackViewFromSources(
-    input,
-    {
-      runtimeWorkerPack,
-      runtimeOwnerPack,
-      runtimeVerifierPack,
-      runtimeRoles,
-      describeRole
-    },
-    {
-      deriveRuntimeSessionPackSurface,
-      deriveRuntimeSessionPackReason,
-      buildRuntimeSessionPackSummary,
-      buildRuntimeSessionPackView
-    }
-  );
+  return runtimeSessionPackFromSources(input, {
+    runtimeWorkerPack,
+    runtimeOwnerPack,
+    runtimeVerifierPack,
+    runtimeRoles
+  });
 }
 
 export function runtimeRolePack(input = {}) {
-  return buildRuntimeRolePackViewFromSources(
-    input,
-    {
-      runtimeRoles,
-      runtimeSessionPack,
-      runtimeOwnerPack,
-      runtimeVerifierPack,
-      describeRole
-    },
-    {
-      deriveRuntimeRolePackSurface,
-      deriveRuntimeRolePackReason,
-      buildRuntimeRolePackSummary,
-      buildRuntimeRolePackView
-    }
-  );
+  return runtimeRolePackFromSources(input, {
+    runtimeRoles,
+    runtimeSessionPack,
+    runtimeOwnerPack,
+    runtimeVerifierPack
+  });
 }
 
 export function runtimeExecutionPack(input = {}) {
-  return buildRuntimeExecutionPackViewFromSources(
-    input,
-    {
-      runtimeFocus,
-      runtimeDispatch,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeRoles,
-      runtimeQueuePack
-    },
-    {
-      deriveRuntimeExecutionPackSurface,
-      deriveRuntimeExecutionPackReason,
-      buildRuntimeExecutionPackSummary,
-      buildRuntimeExecutionPackView
-    }
-  );
+  return runtimeExecutionPackFromSources(input, {
+    runtimeFocus,
+    runtimeDispatch,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeRoles,
+    runtimeQueuePack
+  });
 }
 
 export function runtimePickupPack(input = {}) {
-  return buildRuntimePickupPackViewFromSources(
-    input,
-    {
-      normalizeNextMode,
-      workerSession,
-      taskNext,
-      previewTaskPickup,
-      runtimeRolePack,
-      describeRole
-    },
-    {
-      deriveRuntimePickupPackSurface,
-      deriveRuntimePickupPackReason,
-      buildRuntimePickupPackSummary,
-      buildRuntimePickupPackView
-    }
-  );
+  return runtimePickupPackFromSources(input, {
+    workerSession,
+    taskNext,
+    previewTaskPickup,
+    runtimeRolePack
+  });
 }
 
 export function runtimeAssignmentPack(input = {}) {
-  return buildRuntimeAssignmentPackViewFromSources(
-    input,
-    {
-      normalizeNextMode,
-      leaderAssignments,
-      workerSession,
-      taskNext,
-      previewTaskAssignment,
-      runtimeRoles,
-      describeRole
-    },
-    {
-      deriveRuntimeAssignmentPackSurface,
-      deriveRuntimeAssignmentPackReason,
-      buildRuntimeAssignmentPackSummary,
-      buildRuntimeAssignmentPackView
-    }
-  );
+  return runtimeAssignmentPackFromSources(input, {
+    leaderAssignments,
+    workerSession,
+    taskNext,
+    previewTaskAssignment,
+    runtimeRoles
+  });
 }
 
 export function runtimeLeaderPack(input = {}) {
-  return buildRuntimeLeaderPackViewFromSources(
-    input,
-    {
-      leaderWorkspace,
-      leaderQueue,
-      runtimeDispatch,
-      leaderAssignmentDispatchPack,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeCloseout
-    },
-    {
-      deriveRuntimeLeaderPackSurface,
-      deriveRuntimeLeaderPackReason,
-      buildRuntimeLeaderPackSummary,
-      buildRuntimeLeaderPackView
-    }
-  );
+  return runtimeLeaderPackFromSources(input, {
+    leaderWorkspace,
+    leaderQueue,
+    runtimeDispatch,
+    leaderAssignmentDispatchPack,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeCloseout
+  });
 }
 
 export function runtimeOwnerPack(input = {}) {
-  return buildRuntimeOwnerPackViewFromSources(
-    input,
-    {
-      workerSession,
-      workerHandoff,
-      workerCloseout,
-      taskNext,
-      describeRole
-    },
-    {
-      deriveRuntimeOwnerPackSurface,
-      deriveRuntimeOwnerPackReason,
-      buildRuntimeOwnerPackSummary,
-      buildRuntimeOwnerPackView
-    }
-  );
+  return runtimeOwnerPackFromSources(input, {
+    workerSession,
+    workerHandoff,
+    workerCloseout,
+    taskNext
+  });
 }
 
 export function runtimeWorkerPack(input = {}) {
-  return buildRuntimeWorkerPackViewFromSources(
-    input,
-    {
-      workerSession,
-      workerHandoff,
-      workerCloseout,
-      taskNext,
-      describeRole,
-      normalizeNextMode
-    },
-    {
-      deriveRuntimeWorkerPackSurface,
-      deriveRuntimeWorkerPackReason,
-      buildRuntimeWorkerPackSummary,
-      buildRuntimeWorkerPackView
-    }
-  );
+  return runtimeWorkerPackFromSources(input, {
+    workerSession,
+    workerHandoff,
+    workerCloseout,
+    taskNext
+  });
 }
 
 export function runtimeVerifierPack(input = {}) {
-  return buildRuntimeVerifierPackViewFromSources(
-    input,
-    {
-      runtimeReview,
-      verifierBundle,
-      workerCloseout,
-      taskNext,
-      describeRole
-    },
-    {
-      deriveRuntimeVerifierPackSurface,
-      deriveRuntimeVerifierPackReason,
-      buildRuntimeVerifierPackSummary,
-      buildRuntimeVerifierPackView
-    }
-  );
+  return runtimeVerifierPackFromSources(input, {
+    runtimeReview,
+    verifierBundle,
+    workerCloseout,
+    taskNext
+  });
 }
 
 export function leaderWorkspace(input = {}) {
