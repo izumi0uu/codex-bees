@@ -61,7 +61,9 @@ import {
 } from "./state-memory-core.js";
 import {
   buildMemoryDetailView,
-  buildMemoryDetailViewFromSources
+  buildMemoryDetailViewFromSources,
+  buildMemoryListView,
+  buildMemoryListViewFromSources
 } from "./state-memory-views.js";
 import {
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
@@ -487,16 +489,15 @@ export function getMemory(id) {
 }
 
 export function listMemoriesView(filters = {}) {
-  const memories = listMemories(filters);
-  const recommendedReason = memories.length > 0 ? "memory_list_has_results" : "memory_list_empty";
-  return {
-    kind: "memory_view",
-    recommendedReason,
-    counts: {
-      totalMemories: memories.length
+  return buildMemoryListViewFromSources(
+    filters,
+    {
+      listMemories
     },
-    memories
-  };
+    {
+      buildMemoryListView
+    }
+  );
 }
 
 export function getMemoryView(id) {
