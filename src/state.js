@@ -14,25 +14,6 @@ import {
   normalizeTaskHistoryEntry
 } from "./state-normalize.js";
 import {
-  filterMemories,
-  filterSwarms,
-  scoreMemory,
-  tokenize
-} from "./state-query.js";
-import {
-  getMemoryFromSources,
-  listMemoriesFromSources,
-  searchMemoriesFromSources
-} from "./state-memory-core.js";
-import {
-  buildMemoryDetailView,
-  buildMemoryDetailViewFromSources,
-  buildMemoryListView,
-  buildMemoryListViewFromSources,
-  buildMemorySearchView,
-  buildMemorySearchViewFromSources
-} from "./state-memory-views.js";
-import {
   ensureStateFileAtPath,
   loadStateFromFile,
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
@@ -41,9 +22,6 @@ import {
 } from "./state-storage.js";
 import {
   buildSyncedSwarmState,
-  getSwarmFromSources,
-  listSwarmOverviewsFromSources,
-  listSwarmsFromSources,
   transitionSwarmFromSources,
   updateLoadedSwarmState,
   buildTransitionedSwarmState,
@@ -73,14 +51,8 @@ import {
   transitionLoadedTaskState
 } from "./state-transition-helpers.js";
 import {
-  getTaskFromSources,
-  listTasksFromSources,
   appendTaskHistoryEntry
 } from "./state-task-core.js";
-import {
-  buildTaskListView,
-  buildTaskListViewFromSources,
-} from "./state-task-views.js";
 import {
   runtimeActivityFromSources,
   runtimeAlertsFromSources,
@@ -149,6 +121,21 @@ import {
   taskHistoryFromSources,
   taskReportFromSources
 } from "./state-task-swarm-surfaces.js";
+import {
+  getMemorySurface,
+  getMemoryViewSurface,
+  getSwarmSurface,
+  getTaskSurface,
+  listMemoriesSurface,
+  listMemoriesViewSurface,
+  listSwarmOverviewsSurface,
+  listSwarmsSurface,
+  listSwarmsViewSurface,
+  listTasksSurface,
+  listTasksViewSurface,
+  searchMemoriesSurface,
+  searchMemoriesViewSurface
+} from "./state-access-surfaces.js";
 import {
   addTaskMutationOperation,
   addTaskOperation,
@@ -240,90 +227,65 @@ export function saveState(state) {
 }
 
 export function listTasks() {
-  return listTasksFromSources({
+  return listTasksSurface({
     loadState
   });
 }
 
 export function listTasksView() {
-  return buildTaskListViewFromSources(
-    {
-      listTasks
-    },
-    {
-      buildTaskListView
-    }
-  );
+  return listTasksViewSurface({
+    listTasks
+  });
 }
 
 export function listMemories(filters = {}) {
-  return listMemoriesFromSources(filters, {
+  return listMemoriesSurface(filters, {
     loadState,
-    filterMemories
+    normalizeMemory
   });
 }
 
 export function getMemory(id) {
-  return getMemoryFromSources(id, {
+  return getMemorySurface(id, {
     loadState,
     normalizeMemory
   });
 }
 
 export function listMemoriesView(filters = {}) {
-  return buildMemoryListViewFromSources(
-    filters,
-    {
-      listMemories
-    },
-    {
-      buildMemoryListView
-    }
-  );
+  return listMemoriesViewSurface(filters, {
+    listMemories
+  });
 }
 
 export function getMemoryView(id) {
-  return buildMemoryDetailViewFromSources(
-    id,
-    {
-      getMemory
-    },
-    {
-      buildMemoryDetailView
-    }
-  );
+  return getMemoryViewSurface(id, {
+    getMemory
+  });
 }
 
 export function listSwarms(filters = {}) {
-  return listSwarmsFromSources(filters, {
-    loadState,
-    filterSwarms
+  return listSwarmsSurface(filters, {
+    loadState
   });
 }
 
 export function listSwarmOverviews(filters = {}) {
-  return listSwarmOverviewsFromSources(filters, {
+  return listSwarmOverviewsSurface(filters, {
     listSwarms,
     swarmOverview
   });
 }
 
 export function listSwarmsView(filters = {}, options = {}) {
-  return buildSwarmListViewFromSources(
-    filters,
-    options,
-    {
-      listSwarms,
-      listSwarmOverviews
-    },
-    {
-      buildSwarmListView
-    }
-  );
+  return listSwarmsViewSurface(filters, options, {
+    listSwarms,
+    listSwarmOverviews
+  });
 }
 
 export function getTask(id) {
-  return getTaskFromSources(id, {
+  return getTaskSurface(id, {
     loadState,
     normalizeTask
   });
@@ -354,7 +316,7 @@ export function annotateTaskMutation(input) {
 }
 
 export function getSwarm(id) {
-  return getSwarmFromSources(id, {
+  return getSwarmSurface(id, {
     loadState,
     normalizeSwarm
   });
@@ -898,25 +860,15 @@ export function initSwarmMutation(input) {
 }
 
 export function searchMemories(query, filters = {}) {
-  return searchMemoriesFromSources(query, filters, {
-    listMemories,
-    tokenize,
-    scoreMemory
+  return searchMemoriesSurface(query, filters, {
+    listMemories
   });
 }
 
 export function searchMemoriesView(query, filters = {}, limit = 10) {
-  return buildMemorySearchViewFromSources(
-    query,
-    filters,
-    limit,
-    {
-      searchMemories
-    },
-    {
-      buildMemorySearchView
-    }
-  );
+  return searchMemoriesViewSurface(query, filters, limit, {
+    searchMemories
+  });
 }
 
 export function updateTask(input) {
