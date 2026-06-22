@@ -870,20 +870,22 @@ export function buildRuntimeRolesView(
   const catalog = getRuntimeCatalog();
   const roleMap = new Map((catalog?.agents ?? []).map((entry) => [entry.id, describeRole(entry.id)]));
   const assignments = leaderAssignments();
-  const tasks = loadState().tasks.map(normalizeTask);
+  const assignmentsByRole = new Map(
+    (assignments?.groups ?? []).map((group) => [group.owner?.id ?? group.owner?.name ?? "unknown", group.assignments ?? []])
+  );
 
   const roles = [...roleMap.values()]
     .map((role) =>
-      buildRuntimeRoleEntry(
-        role,
-        tasks,
-        assignments,
+      buildRuntimeRoleEntry(role.id, input.limit, assignmentsByRole.get(role.id) ?? [], {
+        describeRole,
+        loadState,
+        normalizeTask,
         taskInbox,
         taskNext,
-        isClaimableTask,
-        input
-      )
+        isClaimableTask
+      })
     )
+    .filter(Boolean)
     .sort(compareRuntimeRoleEntries);
   const next = roles[0] ?? null;
   const recommendedReason = deriveRuntimeRolesReason({ roles, next });

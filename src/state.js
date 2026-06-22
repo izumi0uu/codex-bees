@@ -158,10 +158,8 @@ import {
   buildSwarmBlockersViewFromSources,
   buildSwarmDispatchBundleView,
   buildSwarmDispatchBundleViewFromSources,
-  buildRuntimeReviewTaskEntry,
   buildSwarmHandoff,
   buildTaskReportEntries,
-  compareRuntimeReviewGroups,
   deriveSwarmCloseoutCommand,
   deriveTaskBriefReason,
   deriveTaskReportReason,
@@ -184,42 +182,17 @@ import {
   deriveWorkerSessionReason
 } from "./state-reasons.js";
 import {
-  buildRuntimeActivityView,
-  buildRuntimeActivityViewFromState,
-  buildRuntimeCloseoutViewFromState,
-  buildRuntimeCloseoutView,
-  buildRuntimeFocusView,
-  buildRuntimeActivityEntry,
-  buildRuntimeHandoffsViewFromState,
-  buildRuntimeHandoffsView,
-  buildRuntimeRecoveryViewFromState,
-  buildRuntimeRecoveryView,
-  buildRuntimeCloseoutTaskEntry,
-  buildRuntimeFocusSummary,
-  buildRuntimeHandoffEntry,
-  buildRuntimeRecoveryEntry,
-  chooseRuntimeCloseoutNext,
-  compareRuntimeActivityEntries,
-  compareRuntimeCloseoutSwarms,
-  compareRuntimeCloseoutTasks,
-  compareRuntimeHandoffEntries,
-  compareRuntimeHandoffGroups,
-  compareRuntimeRecoveryEntries,
-  compareRuntimeRecoveryGroups,
-  isRuntimeRecoveryTask,
-  runtimeHandoffActorKey,
-  runtimeHandoffPriority,
-  runtimeRecoveryPriority,
-  runtimeRecoveryType
-} from "./state-runtime-entities.js";
-import {
-  buildRuntimeRoleEntry,
-  buildRuntimeRoleEntrySummary,
-  buildRuntimeRoleNextAction,
-  buildRuntimeRolesView,
-  compareRuntimeAlerts,
-  summarizeDashboardTask
-} from "./state-role-views.js";
+  runtimeActivityFromSources,
+  runtimeAlertsFromSources,
+  runtimeCloseoutFromSources,
+  runtimeDashboardFromSources,
+  runtimeDispatchFromSources,
+  runtimeFocusFromSources,
+  runtimeHandoffsFromSources,
+  runtimeRecoveryFromSources,
+  runtimeReviewFromSources,
+  runtimeRolesFromSources
+} from "./state-runtime-overviews.js";
 import {
   buildLeaderAssignmentDispatchView,
   buildLeaderAssignmentDispatchViewFromSources,
@@ -235,36 +208,11 @@ import {
   buildLeaderQueueViewFromSources,
   buildLeaderQueueView,
   buildLeaderQueueSummary,
-  buildRuntimeAlertsSummary,
-  buildRuntimeAlertsViewFromSources,
-  buildRuntimeAlertsView,
-  buildRuntimeDashboardSummary,
-  buildRuntimeDashboardViewFromSources,
-  buildRuntimeDashboardView,
-  buildRuntimeActivitySummary,
   deriveLeaderAssignmentDispatchReason,
   deriveLeaderAssignmentDispatchBundleReason,
   deriveLeaderAssignmentsReason,
   deriveLeaderAssignmentLaunchPlanReason,
-  deriveLeaderQueueReason,
-  deriveRuntimeDashboardReason,
-  deriveRuntimeActivityReason,
-  deriveRuntimeAlertsReason,
-  deriveRuntimeDispatchReason,
-  deriveRuntimeHandoffsReason,
-  deriveRuntimeRecoveryReason,
-  deriveRuntimeReviewReason,
-  deriveRuntimeRolesReason,
-  buildRuntimeDispatchSummary,
-  buildRuntimeDispatchViewFromSources,
-  buildRuntimeDispatchView,
-  buildRuntimeHandoffsSummary,
-  buildRuntimeRecoverySummary,
-  buildRuntimeReviewSummary,
-  buildRuntimeReviewViewFromSources,
-  buildRuntimeReviewView,
-  buildRuntimeRolesViewFromSources,
-  buildRuntimeRolesSummary
+  deriveLeaderQueueReason
 } from "./state-dashboard-views.js";
 import {
   buildSwarmOverviewData,
@@ -277,11 +225,8 @@ import {
   buildSwarmBlockersSummary,
   buildSwarmCloseoutSummary,
   buildSwarmDispatchBundleSummary,
-  buildRuntimeCloseoutSummary,
-  buildRuntimeCloseoutSwarmEntry,
   buildSwarmBundleSummary,
   deriveLeaderWorkspaceReason,
-  deriveRuntimeCloseoutReason,
   deriveSwarmBlockersReason,
   deriveSwarmBriefReason,
   deriveSwarmBundleReason,
@@ -316,8 +261,6 @@ import {
   buildRuntimeExecutionPackSummary,
   buildRuntimeExecutionPackViewFromSources,
   buildRuntimeExecutionPackView,
-  buildRuntimeFocusSources,
-  buildRuntimeFocusViewFromSources,
   buildRuntimeHandoffPackView,
   buildRuntimeHandoffPackSummary,
   buildRuntimeCloseoutPackView,
@@ -828,188 +771,89 @@ export function leaderAssignmentLaunchPlan(input = {}) {
 }
 
 export function runtimeDashboard() {
-  return buildRuntimeDashboardViewFromSources(
-    {
-      loadState,
-      normalizeTask,
-      listSwarmOverviews,
-      leaderQueue,
-      leaderAssignments,
-      compareTasksByUpdatedAt,
-      summarizeDashboardTask
-    },
-    {
-      deriveRuntimeDashboardReason,
-      buildRuntimeDashboardSummary,
-      buildRuntimeDashboardView
-    }
-  );
+  return runtimeDashboardFromSources({
+    loadState,
+    normalizeTask,
+    listSwarmOverviews,
+    leaderQueue,
+    leaderAssignments
+  });
 }
 
 export function runtimeAlerts() {
-  return buildRuntimeAlertsViewFromSources(
-    {
-      runtimeDashboard,
-      listSwarmOverviews,
-      compareRuntimeAlerts
-    },
-    {
-      deriveRuntimeAlertsReason,
-      buildRuntimeAlertsSummary,
-      buildRuntimeAlertsView
-    }
-  );
+  return runtimeAlertsFromSources({
+    runtimeDashboard,
+    listSwarmOverviews
+  });
 }
 
 export function runtimeRoles(input = {}) {
-  return buildRuntimeRolesViewFromSources(
-    input,
-    {
-      getRuntimeCatalog,
-      leaderAssignments,
-      buildRuntimeRoleEntry,
-      describeRole,
-      loadState,
-      normalizeTask,
-      taskInbox,
-      taskNext,
-      isClaimableTask,
-      compareRuntimeRoleEntries
-    },
-    {
-      deriveRuntimeRolesReason,
-      buildRuntimeRolesSummary,
-      buildRuntimeRolesView
-    }
-  );
+  return runtimeRolesFromSources(input, {
+    leaderAssignments,
+    loadState,
+    normalizeTask,
+    taskInbox,
+    taskNext
+  });
 }
 
 export function runtimeDispatch() {
-  return buildRuntimeDispatchViewFromSources(
-    {
-      leaderAssignments
-    },
-    {
-      deriveRuntimeDispatchReason,
-      buildRuntimeDispatchSummary,
-      buildRuntimeDispatchView
-    }
-  );
+  return runtimeDispatchFromSources({
+    leaderAssignments
+  });
 }
 
 export function runtimeReview() {
-  return buildRuntimeReviewViewFromSources(
-    {
-      loadState,
-      normalizeTask,
-      compareTasksByUpdatedAt,
-      describeRole,
-      taskBrief,
-      buildRuntimeReviewTaskEntry,
-      compareRuntimeReviewGroups
-    },
-    {
-      deriveRuntimeReviewReason,
-      buildRuntimeReviewSummary,
-      buildRuntimeReviewView
-    }
-  );
+  return runtimeReviewFromSources({
+    loadState,
+    normalizeTask,
+    taskBrief
+  });
 }
 
 export function runtimeFocus() {
-  return buildRuntimeFocusViewFromSources(
-    {
-      runtimeDashboard,
-      runtimeAlerts,
-      runtimeReview,
-      runtimeDispatch,
-      runtimeRoles,
-      taskBrief,
-      buildRuntimeFocusView
-    },
-    {
-      buildRuntimeFocusSources,
-      buildRuntimeFocusSummary
-    }
-  );
+  return runtimeFocusFromSources({
+    runtimeDashboard,
+    runtimeAlerts,
+    runtimeReview,
+    runtimeDispatch,
+    runtimeRoles,
+    taskBrief
+  });
 }
 
 export function runtimeActivity(input = {}) {
-  return buildRuntimeActivityViewFromState(
-    input,
-    {
-      loadState,
-      normalizeTask,
-      taskBrief,
-      buildRuntimeActivityEntry,
-      compareRuntimeActivityEntries
-    },
-    {
-      deriveRuntimeActivityReason,
-      buildRuntimeActivitySummary,
-      buildRuntimeActivityView
-    }
-  );
+  return runtimeActivityFromSources(input, {
+    loadState,
+    normalizeTask,
+    taskBrief
+  });
 }
 
 export function runtimeHandoffs() {
-  return buildRuntimeHandoffsViewFromState(
-    {
-      loadState,
-      normalizeTask,
-      taskBrief
-    },
-    {
-      buildRuntimeHandoffEntry,
-      compareRuntimeHandoffEntries,
-      runtimeHandoffActorKey,
-      compareRuntimeHandoffGroups,
-      deriveRuntimeHandoffsReason,
-      buildRuntimeHandoffsSummary,
-      buildRuntimeHandoffsView
-    }
-  );
+  return runtimeHandoffsFromSources({
+    loadState,
+    normalizeTask,
+    taskBrief
+  });
 }
 
 export function runtimeCloseout() {
-  return buildRuntimeCloseoutViewFromState(
-    {
-      loadState,
-      normalizeTask,
-      taskReport,
-      listSwarmOverviews,
-      swarmCloseout
-    },
-    {
-      buildRuntimeCloseoutTaskEntry,
-      compareRuntimeCloseoutTasks,
-      buildRuntimeCloseoutSwarmEntry,
-      compareRuntimeCloseoutSwarms,
-      chooseRuntimeCloseoutNext,
-      deriveRuntimeCloseoutReason,
-      buildRuntimeCloseoutSummary,
-      buildRuntimeCloseoutView
-    }
-  );
+  return runtimeCloseoutFromSources({
+    loadState,
+    normalizeTask,
+    taskReport,
+    listSwarmOverviews,
+    swarmCloseout
+  });
 }
 
 export function runtimeRecovery() {
-  return buildRuntimeRecoveryViewFromState(
-    {
-      loadState,
-      normalizeTask,
-      taskBrief
-    },
-    {
-      isRuntimeRecoveryTask,
-      buildRuntimeRecoveryEntry,
-      compareRuntimeRecoveryEntries,
-      compareRuntimeRecoveryGroups,
-      deriveRuntimeRecoveryReason,
-      buildRuntimeRecoverySummary,
-      buildRuntimeRecoveryView
-    }
-  );
+  return runtimeRecoveryFromSources({
+    loadState,
+    normalizeTask,
+    taskBrief
+  });
 }
 
 export function runtimeSummaryPack(input = {}) {
