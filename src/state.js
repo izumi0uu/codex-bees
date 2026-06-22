@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import { cwd } from "node:process";
-import { getRuntimeCatalog } from "./catalog.js";
 import {
   buildMemory,
   buildSwarm,
@@ -108,42 +107,12 @@ import {
   listTasksFromSources,
   validateTaskFromSources,
   appendTaskAnnotation,
-  appendTaskHistoryEntry,
-  deriveReviewState,
-  describeRole
+  appendTaskHistoryEntry
 } from "./state-task-core.js";
 import {
   buildTaskListView,
   buildTaskListViewFromSources,
-  buildTaskBriefView,
-  buildTaskBriefViewFromSources,
-  buildTaskDetailView,
-  buildTaskDetailViewFromSources,
-  buildTaskHistoryView,
-  buildTaskHistoryViewFromSources,
-  buildTaskReportView,
-  buildTaskReportViewFromSources,
-  buildSwarmBriefView,
-  buildSwarmBriefViewFromSources,
-  buildSwarmBundleView,
-  buildSwarmBundleViewFromSources,
-  buildSwarmCloseoutView,
-  buildSwarmCloseoutViewFromSources,
-  buildSwarmBlockersView,
-  buildSwarmBlockersViewFromSources,
-  buildSwarmDispatchBundleView,
-  buildSwarmDispatchBundleViewFromSources,
-  buildSwarmHandoff,
-  buildTaskReportEntries,
-  deriveSwarmCloseoutCommand,
-  deriveTaskBriefReason,
-  deriveTaskReportReason,
-  recommendLaneAction,
-  recommendSwarmAction,
-  recommendTaskAction,
-  taskReportNextGate
 } from "./state-task-views.js";
-import { deriveTaskHistoryReason } from "./state-reasons.js";
 import {
   runtimeActivityFromSources,
   runtimeAlertsFromSources,
@@ -201,22 +170,23 @@ import {
   workerSessionFromSources
 } from "./state-worker-surfaces.js";
 import {
+  getSwarmViewFromSources,
+  getTaskViewFromSources,
+  swarmBlockersFromSources,
+  swarmBriefFromSources,
+  swarmBundleFromSources,
+  swarmCloseoutFromSources,
+  swarmDispatchBundleFromSources,
+  taskBriefFromSources,
+  taskHistoryFromSources,
+  taskReportFromSources
+} from "./state-task-swarm-surfaces.js";
+import {
   buildSwarmOverviewData,
   buildSwarmOverviewView,
   buildSwarmOverviewViewFromSources,
-  buildSwarmDetailView,
-  buildSwarmDetailViewFromSources,
   buildSwarmListView,
   buildSwarmListViewFromSources,
-  buildSwarmBlockersSummary,
-  buildSwarmCloseoutSummary,
-  buildSwarmDispatchBundleSummary,
-  buildSwarmBundleSummary,
-  deriveSwarmBlockersReason,
-  deriveSwarmBriefReason,
-  deriveSwarmBundleReason,
-  deriveSwarmCloseoutReason,
-  deriveSwarmDispatchBundleReason,
   deriveSwarmDispatchReason,
   deriveSwarmOverviewReason,
   deriveSwarmQueueReason,
@@ -363,46 +333,15 @@ export function getTask(id) {
 }
 
 export function getTaskView(id) {
-  return buildTaskDetailViewFromSources(
-    id,
-    {
-      getTask,
-      deriveReviewState
-    },
-    {
-      buildTaskDetailView
-    }
-  );
+  return getTaskViewFromSources(id, { getTask });
 }
 
 export function taskHistory(id) {
-  return buildTaskHistoryViewFromSources(
-    id,
-    {
-      getTask,
-      deriveTaskHistoryReason
-    },
-    {
-      buildTaskHistoryView
-    }
-  );
+  return taskHistoryFromSources(id, { getTask });
 }
 
 export function taskReport(id) {
-  return buildTaskReportViewFromSources(
-    id,
-    {
-      getTask,
-      taskBrief,
-      buildTaskReportEntries,
-      deriveTaskReportReason,
-      deriveReviewState,
-      taskReportNextGate
-    },
-    {
-      buildTaskReportView
-    }
-  );
+  return taskReportFromSources(id, { getTask, taskBrief });
 }
 
 export function annotateTask(input = {}) {
@@ -426,120 +365,31 @@ export function getSwarm(id) {
 }
 
 export function getSwarmView(id) {
-  return buildSwarmDetailViewFromSources(
-    id,
-    {
-      getSwarm,
-      swarmOverview
-    },
-    {
-      buildSwarmDetailView
-    }
-  );
+  return getSwarmViewFromSources(id, { getSwarm, swarmOverview });
 }
 
 export function taskBrief(id) {
-  return buildTaskBriefViewFromSources(
-    id,
-    {
-      getTask,
-      runtimeRoleCatalog,
-      validateTaskValue,
-      getRuntimeCatalog,
-      recommendTaskAction,
-      deriveTaskBriefReason,
-      describeRole,
-      deriveReviewState
-    },
-    {
-      buildTaskBriefView
-    }
-  );
+  return taskBriefFromSources(id, { getTask });
 }
 
 export function swarmBrief(id) {
-  return buildSwarmBriefViewFromSources(
-    id,
-    {
-      swarmOverview,
-      getRuntimeCatalog,
-      validateSwarmValue,
-      runtimeRoleCatalog,
-      recommendLaneAction,
-      recommendSwarmAction,
-      describeRole,
-      buildSwarmHandoff,
-      deriveSwarmBriefReason
-    },
-    {
-      buildSwarmBriefView
-    }
-  );
+  return swarmBriefFromSources(id, { swarmOverview });
 }
 
 export function swarmBundle(id) {
-  return buildSwarmBundleViewFromSources(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskReport,
-      deriveSwarmBundleReason,
-      buildSwarmBundleSummary
-    },
-    {
-      buildSwarmBundleView
-    }
-  );
+  return swarmBundleFromSources(id, { swarmOverview, swarmBrief, taskReport });
 }
 
 export function swarmCloseout(id) {
-  return buildSwarmCloseoutViewFromSources(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      swarmBundle,
-      deriveSwarmCloseoutCommand,
-      deriveSwarmCloseoutReason,
-      buildSwarmCloseoutSummary
-    },
-    {
-      buildSwarmCloseoutView
-    }
-  );
+  return swarmCloseoutFromSources(id, { swarmOverview, swarmBrief, swarmBundle });
 }
 
 export function swarmBlockers(id) {
-  return buildSwarmBlockersViewFromSources(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskReport,
-      deriveSwarmBlockersReason,
-      buildSwarmBlockersSummary
-    },
-    {
-      buildSwarmBlockersView
-    }
-  );
+  return swarmBlockersFromSources(id, { swarmOverview, swarmBrief, taskReport });
 }
 
 export function swarmDispatchBundle(id) {
-  return buildSwarmDispatchBundleViewFromSources(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskBrief,
-      deriveSwarmDispatchBundleReason,
-      buildSwarmDispatchBundleSummary
-    },
-    {
-      buildSwarmDispatchBundleView
-    }
-  );
+  return swarmDispatchBundleFromSources(id, { swarmOverview, swarmBrief, taskBrief });
 }
 
 export function leaderQueue(input = {}) {
