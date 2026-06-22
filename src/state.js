@@ -54,50 +54,6 @@ import {
   appendTaskHistoryEntry
 } from "./state-task-core.js";
 import {
-  runtimeActivityFromSources,
-  runtimeAlertsFromSources,
-  runtimeCloseoutFromSources,
-  runtimeDashboardFromSources,
-  runtimeDispatchFromSources,
-  runtimeFocusFromSources,
-  runtimeHandoffsFromSources,
-  runtimeRecoveryFromSources,
-  runtimeReviewFromSources,
-  runtimeRolesFromSources
-} from "./state-runtime-overviews.js";
-import {
-  runtimeAssignmentPackFromSources,
-  runtimeCloseoutPackFromSources,
-  runtimeControlPackFromSources,
-  runtimeDispatchPackFromSources,
-  runtimeExecutionPackFromSources,
-  runtimeHandoffPackFromSources,
-  runtimeLeaderPackFromSources,
-  runtimeOperatorPackFromSources,
-  runtimeOwnerPackFromSources,
-  runtimePickupPackFromSources,
-  runtimeQueuePackFromSources,
-  runtimeRecoveryPackFromSources,
-  runtimeReviewPackFromSources,
-  runtimeRolePackFromSources,
-  runtimeSessionPackFromSources,
-  runtimeSignalPackFromSources,
-  runtimeSummaryPackFromSources,
-  runtimeTriagePackFromSources,
-  runtimeVerifierPackFromSources,
-  runtimeWorkerPackFromSources,
-  runtimeWorkspacePackFromSources
-} from "./state-runtime-packs.js";
-import {
-  leaderAssignmentsFromSources,
-  leaderAssignmentDispatchBundleFromSources,
-  leaderAssignmentDispatchFromSources,
-  leaderAssignmentDispatchPackFromSources,
-  leaderAssignmentLaunchPlanFromSources,
-  leaderQueueFromSources,
-  leaderWorkspaceFromSources
-} from "./state-leader-surfaces.js";
-import {
   previewTaskAssignmentFromSources,
   previewTaskPickupFromSources,
   taskAssignmentPickupFromSources,
@@ -136,6 +92,46 @@ import {
   searchMemoriesSurface,
   searchMemoriesViewSurface
 } from "./state-access-surfaces.js";
+import {
+  leaderAssignmentDispatchBundleSurface,
+  leaderAssignmentDispatchPackSurface,
+  leaderAssignmentDispatchSurface,
+  leaderAssignmentLaunchPlanSurface,
+  leaderAssignmentsSurface,
+  leaderQueueSurface,
+  leaderWorkspaceSurface,
+  runtimeActivitySurface,
+  runtimeAlertsSurface,
+  runtimeAssignmentPackSurface,
+  runtimeCloseoutSurface,
+  runtimeCloseoutPackSurface,
+  runtimeControlPackSurface,
+  runtimeDashboardSurface,
+  runtimeDispatchPackSurface,
+  runtimeDispatchSurface,
+  runtimeExecutionPackSurface,
+  runtimeFocusSurface,
+  runtimeHandoffPackSurface,
+  runtimeHandoffsSurface,
+  runtimeLeaderPackSurface,
+  runtimeOperatorPackSurface,
+  runtimeOwnerPackSurface,
+  runtimePickupPackSurface,
+  runtimeQueuePackSurface,
+  runtimeRecoveryPackSurface,
+  runtimeRecoverySurface,
+  runtimeReviewPackSurface,
+  runtimeReviewSurface,
+  runtimeRolePackSurface,
+  runtimeRolesSurface,
+  runtimeSessionPackSurface,
+  runtimeSignalPackSurface,
+  runtimeSummaryPackSurface,
+  runtimeTriagePackSurface,
+  runtimeVerifierPackSurface,
+  runtimeWorkerPackSurface,
+  runtimeWorkspacePackSurface
+} from "./state-runtime-entry-surfaces.js";
 import {
   addTaskMutationOperation,
   addTaskOperation,
@@ -351,13 +347,13 @@ export function swarmDispatchBundle(id) {
 }
 
 export function leaderQueue(input = {}) {
-  return leaderQueueFromSources(input, {
+  return leaderQueueSurface(input, {
     leaderWorkspace
   });
 }
 
 export function leaderAssignments(input = {}) {
-  return leaderAssignmentsFromSources(input, {
+  return leaderAssignmentsSurface(input, {
     leaderWorkspace,
     swarmBrief,
     taskBrief
@@ -365,32 +361,32 @@ export function leaderAssignments(input = {}) {
 }
 
 export function leaderAssignmentDispatch(input = {}) {
-  return leaderAssignmentDispatchFromSources(input, {
+  return leaderAssignmentDispatchSurface(input, {
     leaderAssignments
   });
 }
 
 export function leaderAssignmentDispatchPack(input = {}) {
-  return leaderAssignmentDispatchPackFromSources(input, {
+  return leaderAssignmentDispatchPackSurface(input, {
     leaderAssignments,
     leaderAssignmentDispatch
   });
 }
 
 export function leaderAssignmentDispatchBundle(input = {}) {
-  return leaderAssignmentDispatchBundleFromSources(input, {
+  return leaderAssignmentDispatchBundleSurface(input, {
     leaderAssignmentDispatchPack
   });
 }
 
 export function leaderAssignmentLaunchPlan(input = {}) {
-  return leaderAssignmentLaunchPlanFromSources(input, {
+  return leaderAssignmentLaunchPlanSurface(input, {
     leaderAssignmentDispatchBundle
   });
 }
 
 export function runtimeDashboard() {
-  return runtimeDashboardFromSources({
+  return runtimeDashboardSurface({
     loadState,
     normalizeTask,
     listSwarmOverviews,
@@ -400,14 +396,14 @@ export function runtimeDashboard() {
 }
 
 export function runtimeAlerts() {
-  return runtimeAlertsFromSources({
+  return runtimeAlertsSurface({
     runtimeDashboard,
     listSwarmOverviews
   });
 }
 
 export function runtimeRoles(input = {}) {
-  return runtimeRolesFromSources(input, {
+  return runtimeRolesSurface(input, {
     leaderAssignments,
     loadState,
     normalizeTask,
@@ -417,13 +413,13 @@ export function runtimeRoles(input = {}) {
 }
 
 export function runtimeDispatch() {
-  return runtimeDispatchFromSources({
+  return runtimeDispatchSurface({
     leaderAssignments
   });
 }
 
 export function runtimeReview() {
-  return runtimeReviewFromSources({
+  return runtimeReviewSurface({
     loadState,
     normalizeTask,
     taskBrief
@@ -431,7 +427,7 @@ export function runtimeReview() {
 }
 
 export function runtimeFocus() {
-  return runtimeFocusFromSources({
+  return runtimeFocusSurface({
     runtimeDashboard,
     runtimeAlerts,
     runtimeReview,
@@ -442,7 +438,7 @@ export function runtimeFocus() {
 }
 
 export function runtimeActivity(input = {}) {
-  return runtimeActivityFromSources(input, {
+  return runtimeActivitySurface(input, {
     loadState,
     normalizeTask,
     taskBrief
@@ -450,7 +446,7 @@ export function runtimeActivity(input = {}) {
 }
 
 export function runtimeHandoffs() {
-  return runtimeHandoffsFromSources({
+  return runtimeHandoffsSurface({
     loadState,
     normalizeTask,
     taskBrief
@@ -458,7 +454,7 @@ export function runtimeHandoffs() {
 }
 
 export function runtimeCloseout() {
-  return runtimeCloseoutFromSources({
+  return runtimeCloseoutSurface({
     loadState,
     normalizeTask,
     taskReport,
@@ -468,7 +464,7 @@ export function runtimeCloseout() {
 }
 
 export function runtimeRecovery() {
-  return runtimeRecoveryFromSources({
+  return runtimeRecoverySurface({
     loadState,
     normalizeTask,
     taskBrief
@@ -476,7 +472,7 @@ export function runtimeRecovery() {
 }
 
 export function runtimeSummaryPack(input = {}) {
-  return runtimeSummaryPackFromSources(input, {
+  return runtimeSummaryPackSurface(input, {
     runtimeDashboard,
     runtimeAlerts,
     runtimeFocus,
@@ -489,7 +485,7 @@ export function runtimeSummaryPack(input = {}) {
 }
 
 export function runtimeOperatorPack() {
-  return runtimeOperatorPackFromSources({
+  return runtimeOperatorPackSurface({
     runtimeDashboard,
     runtimeFocus,
     runtimeAlerts,
@@ -499,7 +495,7 @@ export function runtimeOperatorPack() {
 }
 
 export function runtimeDispatchPack(input = {}) {
-  return runtimeDispatchPackFromSources(input, {
+  return runtimeDispatchPackSurface(input, {
     runtimeDispatch,
     leaderAssignmentDispatchPack,
     leaderAssignmentDispatchBundle,
@@ -510,7 +506,7 @@ export function runtimeDispatchPack(input = {}) {
 }
 
 export function runtimeRecoveryPack() {
-  return runtimeRecoveryPackFromSources({
+  return runtimeRecoveryPackSurface({
     runtimeRecovery,
     runtimeHandoffs,
     runtimeFocus
@@ -518,7 +514,7 @@ export function runtimeRecoveryPack() {
 }
 
 export function runtimeCloseoutPack(input = {}) {
-  return runtimeCloseoutPackFromSources(input, {
+  return runtimeCloseoutPackSurface(input, {
     runtimeCloseout,
     runtimeSummaryPack,
     runtimeLeaderPack
@@ -526,7 +522,7 @@ export function runtimeCloseoutPack(input = {}) {
 }
 
 export function runtimeReviewPack(input = {}) {
-  return runtimeReviewPackFromSources(input, {
+  return runtimeReviewPackSurface(input, {
     runtimeReview,
     runtimeRoles,
     runtimeVerifierPack
@@ -534,7 +530,7 @@ export function runtimeReviewPack(input = {}) {
 }
 
 export function runtimeQueuePack(input = {}) {
-  return runtimeQueuePackFromSources(input, {
+  return runtimeQueuePackSurface(input, {
     leaderQueue,
     runtimeDashboard,
     runtimeFocus,
@@ -544,7 +540,7 @@ export function runtimeQueuePack(input = {}) {
 }
 
 export function runtimeWorkspacePack(input = {}) {
-  return runtimeWorkspacePackFromSources(input, {
+  return runtimeWorkspacePackSurface(input, {
     runtimeDashboard,
     runtimeDispatch,
     leaderAssignmentDispatchBundle,
@@ -555,7 +551,7 @@ export function runtimeWorkspacePack(input = {}) {
 }
 
 export function runtimeControlPack(input = {}) {
-  return runtimeControlPackFromSources(input, {
+  return runtimeControlPackSurface(input, {
     runtimeSummaryPack,
     runtimeWorkspacePack,
     runtimeOperatorPack,
@@ -564,7 +560,7 @@ export function runtimeControlPack(input = {}) {
 }
 
 export function runtimeSignalPack(input = {}) {
-  return runtimeSignalPackFromSources(input, {
+  return runtimeSignalPackSurface(input, {
     runtimeFocus,
     runtimeAlerts,
     runtimeActivity,
@@ -573,7 +569,7 @@ export function runtimeSignalPack(input = {}) {
 }
 
 export function runtimeHandoffPack() {
-  return runtimeHandoffPackFromSources({
+  return runtimeHandoffPackSurface({
     runtimeHandoffs,
     runtimeDispatch,
     runtimeReview,
@@ -582,7 +578,7 @@ export function runtimeHandoffPack() {
 }
 
 export function runtimeTriagePack() {
-  return runtimeTriagePackFromSources({
+  return runtimeTriagePackSurface({
     runtimeFocus,
     runtimeAlerts,
     runtimeReview,
@@ -591,7 +587,7 @@ export function runtimeTriagePack() {
 }
 
 export function runtimeSessionPack(input = {}) {
-  return runtimeSessionPackFromSources(input, {
+  return runtimeSessionPackSurface(input, {
     runtimeWorkerPack,
     runtimeOwnerPack,
     runtimeVerifierPack,
@@ -600,7 +596,7 @@ export function runtimeSessionPack(input = {}) {
 }
 
 export function runtimeRolePack(input = {}) {
-  return runtimeRolePackFromSources(input, {
+  return runtimeRolePackSurface(input, {
     runtimeRoles,
     runtimeSessionPack,
     runtimeOwnerPack,
@@ -609,7 +605,7 @@ export function runtimeRolePack(input = {}) {
 }
 
 export function runtimeExecutionPack(input = {}) {
-  return runtimeExecutionPackFromSources(input, {
+  return runtimeExecutionPackSurface(input, {
     runtimeFocus,
     runtimeDispatch,
     leaderAssignmentDispatchBundle,
@@ -620,7 +616,7 @@ export function runtimeExecutionPack(input = {}) {
 }
 
 export function runtimePickupPack(input = {}) {
-  return runtimePickupPackFromSources(input, {
+  return runtimePickupPackSurface(input, {
     workerSession,
     taskNext,
     previewTaskPickup,
@@ -629,7 +625,7 @@ export function runtimePickupPack(input = {}) {
 }
 
 export function runtimeAssignmentPack(input = {}) {
-  return runtimeAssignmentPackFromSources(input, {
+  return runtimeAssignmentPackSurface(input, {
     leaderAssignments,
     workerSession,
     taskNext,
@@ -639,7 +635,7 @@ export function runtimeAssignmentPack(input = {}) {
 }
 
 export function runtimeLeaderPack(input = {}) {
-  return runtimeLeaderPackFromSources(input, {
+  return runtimeLeaderPackSurface(input, {
     leaderWorkspace,
     leaderQueue,
     runtimeDispatch,
@@ -651,7 +647,7 @@ export function runtimeLeaderPack(input = {}) {
 }
 
 export function runtimeOwnerPack(input = {}) {
-  return runtimeOwnerPackFromSources(input, {
+  return runtimeOwnerPackSurface(input, {
     workerSession,
     workerHandoff,
     workerCloseout,
@@ -660,7 +656,7 @@ export function runtimeOwnerPack(input = {}) {
 }
 
 export function runtimeWorkerPack(input = {}) {
-  return runtimeWorkerPackFromSources(input, {
+  return runtimeWorkerPackSurface(input, {
     workerSession,
     workerHandoff,
     workerCloseout,
@@ -669,7 +665,7 @@ export function runtimeWorkerPack(input = {}) {
 }
 
 export function runtimeVerifierPack(input = {}) {
-  return runtimeVerifierPackFromSources(input, {
+  return runtimeVerifierPackSurface(input, {
     runtimeReview,
     verifierBundle,
     workerCloseout,
@@ -678,7 +674,7 @@ export function runtimeVerifierPack(input = {}) {
 }
 
 export function leaderWorkspace(input = {}) {
-  return leaderWorkspaceFromSources(input, {
+  return leaderWorkspaceSurface(input, {
     listSwarmOverviews,
     swarmBrief,
     swarmBundle
