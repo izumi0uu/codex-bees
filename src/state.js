@@ -254,6 +254,8 @@ import {
   buildSwarmOverviewData,
   buildSwarmOverviewView,
   buildSwarmOverviewViewFromSources,
+  buildSwarmDetailView,
+  buildSwarmDetailViewFromSources,
   buildSwarmBlockersSummary,
   buildSwarmCloseoutSummary,
   buildSwarmDispatchBundleSummary,
@@ -614,22 +616,16 @@ export function getSwarm(id) {
 }
 
 export function getSwarmView(id) {
-  const swarm = getSwarm(id);
-  if (!swarm) {
-    return null;
-  }
-  const overview = swarmOverview(id);
-  return {
-    kind: "swarm_detail",
-    recommendedReason: "swarm_detail_loaded",
-    metadata: {
-      derivedStatus: overview?.derivedStatus ?? swarm.status,
-      statusAligned: overview?.statusAligned ?? true,
-      readyToComplete: overview?.readyToComplete ?? false,
-      dispatchableCount: overview?.dispatchableCount ?? 0
+  return buildSwarmDetailViewFromSources(
+    id,
+    {
+      getSwarm,
+      swarmOverview
     },
-    swarm
-  };
+    {
+      buildSwarmDetailView
+    }
+  );
 }
 
 export function taskBrief(id) {

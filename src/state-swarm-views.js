@@ -191,6 +191,42 @@ export function buildSwarmOverviewViewFromSources(
   );
 }
 
+
+export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
+  const swarm = getSwarm(id);
+  if (!swarm) {
+    return null;
+  }
+  const overview = swarmOverview(id);
+  return {
+    kind: "swarm_detail",
+    recommendedReason: "swarm_detail_loaded",
+    metadata: {
+      derivedStatus: overview?.derivedStatus ?? swarm.status,
+      statusAligned: overview?.statusAligned ?? true,
+      readyToComplete: overview?.readyToComplete ?? false,
+      dispatchableCount: overview?.dispatchableCount ?? 0
+    },
+    swarm
+  };
+}
+
+export function buildSwarmDetailViewFromSources(
+  id,
+  {
+    getSwarm,
+    swarmOverview
+  },
+  {
+    buildSwarmDetailView
+  }
+) {
+  return buildSwarmDetailView(id, {
+    getSwarm,
+    swarmOverview
+  });
+}
+
 export function buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout) {
   const closeout = swarmCloseout(overview.swarm.id);
   return {
