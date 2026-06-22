@@ -60,6 +60,10 @@ import {
   storeMemoryFromSources
 } from "./state-memory-core.js";
 import {
+  buildMemoryDetailView,
+  buildMemoryDetailViewFromSources
+} from "./state-memory-views.js";
+import {
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
@@ -496,21 +500,15 @@ export function listMemoriesView(filters = {}) {
 }
 
 export function getMemoryView(id) {
-  const memory = getMemory(id);
-  if (!memory) {
-    return null;
-  }
-
-  return {
-    kind: "memory_detail",
-    recommendedReason: "memory_detail_loaded",
-    metadata: {
-      hasTitle: Boolean(memory.title),
-      hasNotes: Boolean(memory.notes),
-      tagCount: (memory.tags ?? []).length
+  return buildMemoryDetailViewFromSources(
+    id,
+    {
+      getMemory
     },
-    memory
-  };
+    {
+      buildMemoryDetailView
+    }
+  );
 }
 
 export function listSwarms(filters = {}) {
