@@ -14,6 +14,7 @@ export function buildRuntimeCloseoutTaskEntry(task, taskReport) {
     verifier: task.verifier,
     swarmId: task.swarmId,
     lane: task.lane,
+    lanePurpose: task.lanePurpose ?? null,
     reviewOutcome: task.reviewOutcome,
     reviewedBy: task.reviewedBy,
     reviewedAt: task.reviewedAt,

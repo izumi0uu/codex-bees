@@ -112,6 +112,7 @@ export function buildLeaderAssignmentsView(
         swarmId: swarm.id,
         objective: swarm.objective,
         lane: lane.lane,
+        purpose: lane.purpose ?? null,
         owner: lane.owner,
         verifier: lane.verifier,
         taskId: lane.taskId,

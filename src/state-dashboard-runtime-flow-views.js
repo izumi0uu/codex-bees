@@ -188,6 +188,7 @@ export function buildRuntimeDispatchView(
       swarmId: assignment.swarmId,
       objective: assignment.objective,
       lane: assignment.lane,
+      purpose: assignment.purpose ?? null,
       taskId: assignment.taskId,
       taskQueueStatus: assignment.taskQueueStatus,
       verifier: assignment.verifier,

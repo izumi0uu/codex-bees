@@ -6,6 +6,7 @@ export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBr
     objective: task.objective,
     swarmId: task.swarmId,
     lane: task.lane,
+    lanePurpose: task.lanePurpose ?? null,
     owner: describeRole(task.owner),
     claimedBy: task.claimedBy,
     updatedAt: task.updatedAt,

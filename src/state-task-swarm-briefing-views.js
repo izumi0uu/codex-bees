@@ -29,6 +29,7 @@ export function buildSwarmBriefView(
 
     return {
       lane: laneSummary.lane,
+      purpose: laneSummary.purpose ?? null,
       summary: laneSummary.summary,
       owner: describeRole(laneSummary.owner, catalog),
       verifier: describeRole(laneSummary.verifier, catalog),
@@ -126,6 +127,7 @@ export function buildSwarmBundleView(
       : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
     return {
       lane: laneSummary.lane,
+      purpose: laneSummary.purpose ?? null,
       summary: laneSummary.summary,
       owner: laneSummary.owner,
       verifier: laneSummary.verifier,
@@ -262,6 +264,7 @@ export function buildSwarmBlockersView(
     .filter((lane) => lane.taskQueueStatus === "blocked")
     .map((lane) => ({
       lane: lane.lane,
+      purpose: lane.purpose ?? null,
       summary: lane.summary,
       owner: lane.owner,
       verifier: lane.verifier,

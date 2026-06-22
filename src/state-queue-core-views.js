@@ -81,6 +81,7 @@ export function summarizeInboxTask(task, role, workerId) {
     title: task.title,
     objective: task.objective,
     lane: task.lane,
+    lanePurpose: task.lanePurpose ?? null,
     swarmId: task.swarmId,
     queueStatus: task.queueStatus,
     claimedBy: task.claimedBy,

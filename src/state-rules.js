@@ -17,6 +17,13 @@ export const VALID_SWARM_STATUSES = new Set([
   "cancelled"
 ]);
 
+export const VALID_LANE_PURPOSES = new Set([
+  "discovery",
+  "implementation",
+  "verification",
+  "documentation"
+]);
+
 export const ALLOWED_QUEUE_TRANSITIONS = {
   queued: new Set(["claimed", "blocked"]),
   claimed: new Set(["blocked", "ready_for_review", "released"]),
@@ -69,6 +76,13 @@ export function validateTaskValue(task, roleCatalog, tasks = []) {
   }
   if (task.queueStatus === "claimed" && !task.claimedBy) {
     issues.push({ code: "missing_claimed_by", message: "Claimed tasks must record claimedBy" });
+  }
+  if (task.lanePurpose && !VALID_LANE_PURPOSES.has(task.lanePurpose)) {
+    issues.push({
+      code: "invalid_lane_purpose",
+      message: `Task lanePurpose ${task.lanePurpose} is not a known planner purpose`,
+      allowed: [...VALID_LANE_PURPOSES]
+    });
   }
 
   const dependencySummary =
@@ -175,6 +189,13 @@ export function validateSwarmValue(swarm, roleCatalog) {
     }
     if (!Array.isArray(lane.verification) || lane.verification.length === 0) {
       laneIssues.push({ code: "missing_verification", message: "Lane verification steps are required" });
+    }
+    if (lane.purpose && !VALID_LANE_PURPOSES.has(lane.purpose)) {
+      laneIssues.push({
+        code: "invalid_lane_purpose",
+        message: `Lane ${lane.lane} has unknown purpose ${lane.purpose}`,
+        allowed: [...VALID_LANE_PURPOSES]
+      });
     }
     const dependencyRefs = Array.isArray(lane.dependsOn) ? lane.dependsOn : [];
     for (const ref of dependencyRefs) {

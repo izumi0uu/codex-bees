@@ -31,6 +31,7 @@ export function buildRuntimeHandoffEntry(task, taskBrief) {
     claimedBy: task.claimedBy,
     swarmId: task.swarmId,
     lane: task.lane,
+    lanePurpose: task.lanePurpose ?? null,
     actor: brief?.recommendedNextActor ?? null,
     recommendedNextAction: brief?.recommendedNextAction ?? null,
     recommendedCommands: brief?.recommendedCommands ?? [],

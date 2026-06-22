@@ -9,6 +9,12 @@ const ROLE_FILES = {
   reviewer: "agents/reviewer.md",
   tester: "agents/tester.md"
 };
+const PUBLIC_RUNTIME_PATHS = new Set([
+  "src/index.js",
+  "src/mcp.js",
+  "src/planner.js",
+  "src/state.js"
+]);
 
 function directoryExists(path) {
   return existsSync(path) && statSync(path).isDirectory();
@@ -71,6 +77,10 @@ function includesAny(text, terms) {
   return terms.some((term) => text.includes(term));
 }
 
+function touchesPublicRuntime(paths) {
+  return paths.some((path) => PUBLIC_RUNTIME_PATHS.has(path));
+}
+
 function choosePrimaryScope(task) {
   const lower = task.toLowerCase();
 
@@ -82,8 +92,7 @@ function choosePrimaryScope(task) {
     lower.includes("swarm") ||
     lower.includes("parallel") ||
     lower.includes("lane") ||
-    lower.includes("planner") ||
-    lower.includes("plan ")
+    lower.includes("planner")
   ) {
     return sourceFilePaths().filter((path) => ["src/planner.js", "src/index.js", "src/mcp.js", "src/state.js"].includes(path));
   }
@@ -187,13 +196,23 @@ function inferPlannerIntent(task, implementationScope = choosePrimaryScope(task)
   const lower = task.toLowerCase();
   const docs = includesAny(lower, ["readme", "docs", "documentation", "guide", "example", "help"]);
   const runtime = includesAny(lower, ["runtime", "cli", "command", "mcp", "tool"]);
-  const coordination = includesAny(lower, ["task", "queue", "claim", "review", "state", "swarm", "planner", "plan ", "lane", "parallel"]);
+  const coordination = includesAny(lower, [
+    "task",
+    "queue",
+    "claim",
+    "review",
+    "state",
+    "swarm",
+    "planner",
+    "lane",
+    "parallel",
+    "dispatch",
+    "orchestrate"
+  ]);
   const build = includesAny(lower, ["build", "smoke", "script", "test", "check", "verify", "verification", "package", "pack"]);
   const catalog = includesAny(lower, ["skill", "agent", "prompt", "catalog"]);
   const docsOnly = docs && implementationScope.length === 1 && implementationScope[0] === "README.md";
-  const implementationTouchesPublicRuntime = implementationScope.some((path) =>
-    ["src/index.js", "src/mcp.js", "src/planner.js", "src/state.js"].includes(path)
-  );
+  const implementationTouchesPublicRuntime = touchesPublicRuntime(implementationScope);
   const verificationHeavy = !docsOnly && (runtime || coordination || build || implementationTouchesPublicRuntime);
 
   return {
@@ -208,16 +227,74 @@ function inferPlannerIntent(task, implementationScope = choosePrimaryScope(task)
   };
 }
 
+function derivePlannerTaskClass(intent) {
+  if (intent.docsOnly) {
+    return "docs-only";
+  }
+  if (intent.docs) {
+    return "docs-runtime";
+  }
+  if (intent.coordination) {
+    return "coordination-kernel";
+  }
+  if (intent.catalog) {
+    return "catalog-contract";
+  }
+  if (intent.runtime) {
+    return "runtime-surface";
+  }
+  if (intent.build) {
+    return "build-verification";
+  }
+  return "general";
+}
+
+function derivePlannerStrategy(task, implementationScope, intent = inferPlannerIntent(task, implementationScope)) {
+  const publicSurface = intent.runtime || intent.catalog || touchesPublicRuntime(implementationScope);
+  const needsDiscovery = !intent.docsOnly && (
+    intent.coordination ||
+    (intent.catalog && implementationScope.length > 1) ||
+    (intent.build && implementationScope.length > 2) ||
+    implementationScope.length > 3
+  );
+  const needsVerification = !intent.docsOnly && intent.verificationHeavy;
+  const needsDocumentation = !intent.docsOnly && (intent.docs || intent.runtime || intent.catalog);
+
+  let laneStrategy = "implement-verify";
+  if (intent.docsOnly) {
+    laneStrategy = "documentation";
+  } else if (needsDiscovery && needsDocumentation) {
+    laneStrategy = "discover-implement-verify-docs";
+  } else if (needsDiscovery) {
+    laneStrategy = "discover-implement-verify";
+  } else if (needsDocumentation) {
+    laneStrategy = "implement-verify-docs";
+  }
+
+  return {
+    taskClass: derivePlannerTaskClass(intent),
+    laneStrategy,
+    publicSurface,
+    needsDiscovery,
+    needsVerification,
+    needsDocumentation
+  };
+}
+
 function plannerEvidence(task) {
   const catalogPaths = getRuntimeCatalogPaths();
   const implementationScope = choosePrimaryScope(task);
   const intent = inferPlannerIntent(task, implementationScope);
-  const documentationScope = intent.docs || intent.docsOnly ? chooseDocumentationScope(implementationScope) : [];
-  const verificationScope = intent.verificationHeavy ? chooseVerificationScope(task, implementationScope) : [];
+  const strategy = derivePlannerStrategy(task, implementationScope, intent);
+  const documentationScope = strategy.needsDocumentation || intent.docsOnly
+    ? chooseDocumentationScope(implementationScope)
+    : [];
+  const verificationScope = strategy.needsVerification ? chooseVerificationScope(task, implementationScope) : [];
 
   return {
     task,
     intent,
+    strategy,
     repoSignals: {
       hasSrc: directoryExists("src"),
       hasScripts: directoryExists("scripts"),
@@ -226,7 +303,7 @@ function plannerEvidence(task) {
     },
     scopeHints: {
       primary: implementationScope,
-      discovery: intent.docsOnly ? [] : chooseDiscoveryScope(implementationScope),
+      discovery: strategy.needsDiscovery ? chooseDiscoveryScope(implementationScope) : [],
       verification: verificationScope,
       documentation: documentationScope
     },
@@ -238,6 +315,7 @@ function plannerEvidence(task) {
 
 function buildDiscoveryLane(task, discoveryScope) {
   return {
+    purpose: "discovery",
     owner: "explore",
     verifier: "reviewer",
     summary: `Map scope and verification for: ${task}`,
@@ -253,6 +331,7 @@ function buildDiscoveryLane(task, discoveryScope) {
 
 function buildExecutionLane(task, implementationScope) {
   return {
+    purpose: "implementation",
     owner: "executor",
     verifier: "tester",
     summary: `Implement the bounded repo change for: ${task}`,
@@ -268,6 +347,7 @@ function buildExecutionLane(task, implementationScope) {
 
 function buildVerificationLane(task, verificationScope, dependsOn = []) {
   return {
+    purpose: "verification",
     owner: "tester",
     verifier: "reviewer",
     summary: `Verify the bounded contract for: ${task}`,
@@ -284,6 +364,7 @@ function buildVerificationLane(task, verificationScope, dependsOn = []) {
 
 function buildDocumentationLane(task, documentationScope, dependsOn = []) {
   return {
+    purpose: "documentation",
     owner: "reviewer",
     verifier: "tester",
     summary: `Document the operator-facing contract for: ${task}`,
@@ -308,31 +389,45 @@ function assignLaneIds(lanes) {
 function buildBoundedLocalPlanLanes(task) {
   const implementationScope = choosePrimaryScope(task);
   const intent = inferPlannerIntent(task, implementationScope);
+  const strategy = derivePlannerStrategy(task, implementationScope, intent);
 
-  if (intent.docsOnly) {
+  if (strategy.laneStrategy === "documentation") {
     return assignLaneIds([
       buildDocumentationLane(task, implementationScope)
     ]);
   }
 
-  const discoveryScope = chooseDiscoveryScope(implementationScope);
-  const lanes = [
-    buildDiscoveryLane(task, discoveryScope),
-    {
-      ...buildExecutionLane(task, implementationScope),
-      dependsOn: ["lane-1"]
+  const lanes = [];
+  if (strategy.needsDiscovery) {
+    lanes.push(buildDiscoveryLane(task, chooseDiscoveryScope(implementationScope)));
+  }
+  lanes.push(buildExecutionLane(task, implementationScope));
+  if (strategy.needsVerification) {
+    lanes.push(buildVerificationLane(task, chooseVerificationScope(task, implementationScope)));
+  }
+  if (strategy.needsDocumentation) {
+    lanes.push(buildDocumentationLane(task, chooseDocumentationScope(implementationScope)));
+  }
+
+  const assignedLanes = assignLaneIds(lanes);
+  const discoveryLaneId = assignedLanes.find((lane) => lane.purpose === "discovery")?.lane ?? null;
+  const implementationLaneId = assignedLanes.find((lane) => lane.purpose === "implementation")?.lane ?? null;
+
+  return assignedLanes.map((lane) => {
+    if (lane.purpose === "implementation" && discoveryLaneId) {
+      return {
+        ...lane,
+        dependsOn: [discoveryLaneId]
+      };
     }
-  ];
-
-  if (intent.verificationHeavy) {
-    lanes.push(buildVerificationLane(task, chooseVerificationScope(task, implementationScope), ["lane-2"]));
-  }
-
-  if (intent.additionalDocsLane) {
-    lanes.push(buildDocumentationLane(task, chooseDocumentationScope(implementationScope), ["lane-2"]));
-  }
-
-  return assignLaneIds(lanes);
+    if ((lane.purpose === "verification" || lane.purpose === "documentation") && implementationLaneId) {
+      return {
+        ...lane,
+        dependsOn: [implementationLaneId]
+      };
+    }
+    return lane;
+  });
 }
 
 const PLANNER_PROFILES = {
@@ -469,6 +564,7 @@ export function queueTasksFromPlan(task, addTasks, options = {}) {
     verifier: lane.verifier,
     objective: task,
     lane: lane.lane,
+    lanePurpose: lane.purpose,
     scope: lane.scope,
     dependsOn: lane.dependsOn ?? null,
     acceptance: lane.acceptance,

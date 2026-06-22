@@ -123,7 +123,8 @@ export function buildTaskReportView(
       verifier: task.verifier,
       claimedBy: task.claimedBy,
       swarmId: task.swarmId,
-      lane: task.lane
+      lane: task.lane,
+      lanePurpose: task.lanePurpose ?? null
     },
     closure: {
       reviewState: deriveReviewState(task),
@@ -321,6 +322,7 @@ export function buildTaskBriefView(
     coordination: {
       swarmId: task.swarmId,
       lane: task.lane,
+      lanePurpose: task.lanePurpose ?? null,
       queueStatus: task.queueStatus,
       claimedBy: task.claimedBy,
       notes: task.notes,

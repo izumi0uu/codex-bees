@@ -22,6 +22,7 @@ export function buildSwarmLaneSummary(lane, swarmTasks) {
   const dependencyReady = task?.dependencyReady ?? dependencySummary.ready;
   return {
     lane: lane.lane,
+    purpose: lane.purpose ?? null,
     summary: lane.summary,
     owner: lane.owner,
     verifier: lane.verifier,

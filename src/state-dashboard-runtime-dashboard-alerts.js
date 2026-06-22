@@ -135,6 +135,7 @@ export function buildRuntimeAlertsView(
       taskId: task.id,
       swarmId: task.swarmId,
       lane: task.lane,
+      lanePurpose: task.lanePurpose ?? null,
       owner: task.owner,
       summary: `Task ${task.id} is blocked${task.swarmId ? ` in ${task.swarmId}` : ""}.`
     });
@@ -147,6 +148,7 @@ export function buildRuntimeAlertsView(
       taskId: task.id,
       swarmId: task.swarmId,
       lane: task.lane,
+      lanePurpose: task.lanePurpose ?? null,
       verifier: task.verifier,
       summary: `Task ${task.id} is waiting on verifier ${task.verifier ?? "unknown"}.`
     });

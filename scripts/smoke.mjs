@@ -3131,8 +3131,8 @@ const runtimeHandoffsInitial = JSON.parse(
 if (
   runtimeHandoffsInitial.recommendedReason !== "owner_claim_ready" ||
   runtimeHandoffsInitial.kind !== "runtime_handoffs" ||
-  runtimeHandoffsInitial.counts?.actorGroups !== 3 ||
-  runtimeHandoffsInitial.counts?.totalHandoffs !== 3 ||
+  runtimeHandoffsInitial.counts?.actorGroups !== 4 ||
+  runtimeHandoffsInitial.counts?.totalHandoffs !== 4 ||
   runtimeHandoffsInitial.next?.taskId !== "task-2" ||
   runtimeHandoffsInitial.next?.actor?.id !== "executor" ||
   !Array.isArray(runtimeHandoffsInitial.groups)
@@ -4162,8 +4162,13 @@ const plannedTaskCli = JSON.parse(
 if (
   plannedTaskCli.kind !== "task_plan" ||
   plannedTaskCli.recommendedReason !== "multi_lane_plan_ready" ||
+  plannedTaskCli.evidence?.strategy?.taskClass !== "runtime-surface" ||
+  plannedTaskCli.evidence?.strategy?.laneStrategy !== "implement-verify-docs" ||
   !Array.isArray(plannedTaskCli.lanes) ||
-  plannedTaskCli.lanes.length !== 3
+  plannedTaskCli.lanes.length !== 3 ||
+  plannedTaskCli.lanes[0]?.purpose !== "implementation" ||
+  plannedTaskCli.lanes[1]?.purpose !== "verification" ||
+  plannedTaskCli.lanes[2]?.purpose !== "documentation"
 ) {
   console.error("[smoke:plan-cli] expected planner task payload with machine-readable reason");
   process.exit(1);
@@ -4175,9 +4180,12 @@ const plannedDocsTaskCli = JSON.parse(
 if (
   plannedDocsTaskCli.kind !== "task_plan" ||
   plannedDocsTaskCli.recommendedReason !== "single_lane_plan_ready" ||
+  plannedDocsTaskCli.evidence?.strategy?.taskClass !== "docs-only" ||
+  plannedDocsTaskCli.evidence?.strategy?.laneStrategy !== "documentation" ||
   !Array.isArray(plannedDocsTaskCli.lanes) ||
   plannedDocsTaskCli.lanes.length !== 1 ||
-  plannedDocsTaskCli.lanes[0]?.owner !== "reviewer"
+  plannedDocsTaskCli.lanes[0]?.owner !== "reviewer" ||
+  plannedDocsTaskCli.lanes[0]?.purpose !== "documentation"
 ) {
   console.error("[smoke:plan-docs-cli] expected single reviewer lane for docs-only work");
   process.exit(1);
@@ -4210,8 +4218,10 @@ if (
   planMcp.status !== 0 ||
   planMcpPayload?.kind !== "task_plan" ||
   planMcpPayload?.recommendedReason !== "multi_lane_plan_ready" ||
+  planMcpPayload?.evidence?.strategy?.laneStrategy !== "implement-verify-docs" ||
   !Array.isArray(planMcpPayload?.lanes) ||
-  planMcpPayload.lanes.length !== 3
+  planMcpPayload.lanes.length !== 3 ||
+  planMcpPayload.lanes?.[2]?.purpose !== "documentation"
 ) {
   console.error("[smoke:plan-mcp] expected planner task payload with machine-readable reason");
   console.error(planMcp.stderr || planMcp.stdout);
@@ -4230,12 +4240,20 @@ if (
   queuedPlanPayload.kind !== "queued_plan" ||
   queuedPlanPayload.recommendedReason !== "multiple_plan_tasks_queued" ||
   !Array.isArray(queuedPlanPayload.created) ||
-  queuedPlanPayload.created.length !== 3
+  queuedPlanPayload.created.length !== 3 ||
+  !queuedPlanPayload.created.some((task) => task.lanePurpose === "discovery") ||
+  !queuedPlanPayload.created.some((task) => task.lanePurpose === "implementation") ||
+  !queuedPlanPayload.created.some((task) => task.lanePurpose === "verification") ||
+  queuedPlanPayload.created.some((task) => task.lanePurpose === "documentation")
 ) {
-  console.error("[smoke:queue-plan-cli] expected three queued tasks for runtime planning work");
+  console.error("[smoke:queue-plan-cli] expected three queued tasks for planner coordination work");
   process.exit(1);
 }
-if (!queuedPlanPayload.created[0].lane || !Array.isArray(queuedPlanPayload.created[0].scope)) {
+if (
+  !queuedPlanPayload.created[0].lane ||
+  !Array.isArray(queuedPlanPayload.created[0].scope) ||
+  !queuedPlanPayload.created[0].lanePurpose
+) {
   console.error("[smoke:queue-plan-cli] expected lane metadata on queued tasks");
   process.exit(1);
 }
@@ -4267,7 +4285,9 @@ const queuePlanPayloadMcp = queuePlanText ? JSON.parse(queuePlanText) : null;
 if (
   queuePlanMcp.status !== 0 ||
   queuePlanPayloadMcp?.kind !== "queued_plan" ||
-  queuePlanPayloadMcp?.recommendedReason !== "multiple_plan_tasks_queued"
+  queuePlanPayloadMcp?.recommendedReason !== "multiple_plan_tasks_queued" ||
+  !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "discovery") ||
+  !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "verification")
 ) {
   console.error("[smoke:queue-plan-mcp] expected queued_plan response");
   console.error(queuePlanMcp.stderr || queuePlanMcp.stdout);
@@ -4473,8 +4493,13 @@ const plannedSwarm = JSON.parse(
 if (
   plannedSwarm.kind !== "planned_swarm" ||
   plannedSwarm.recommendedReason !== "multi_lane_swarm_ready" ||
+  plannedSwarm.evidence?.strategy?.taskClass !== "coordination-kernel" ||
+  plannedSwarm.evidence?.strategy?.laneStrategy !== "discover-implement-verify" ||
   plannedSwarm.swarm?.laneSource !== "planner" ||
-  plannedSwarm.swarm?.lanes?.length !== 3
+  plannedSwarm.swarm?.lanes?.length !== 3 ||
+  plannedSwarm.swarm?.lanes?.[0]?.purpose !== "discovery" ||
+  plannedSwarm.swarm?.lanes?.[1]?.purpose !== "implementation" ||
+  plannedSwarm.swarm?.lanes?.[2]?.purpose !== "verification"
 ) {
   console.error("[smoke:plan-swarm] expected planner swarm payload");
   process.exit(1);
@@ -4506,8 +4531,11 @@ if (
   planSwarmMcp.status !== 0 ||
   planSwarmPayload?.kind !== "planned_swarm" ||
   planSwarmPayload?.recommendedReason !== "multi_lane_swarm_ready" ||
+  planSwarmPayload?.evidence?.strategy?.laneStrategy !== "discover-implement-verify-docs" ||
   planSwarmPayload?.swarm?.laneSource !== "planner" ||
-  planSwarmPayload?.swarm?.lanes?.length !== 3
+  planSwarmPayload?.swarm?.lanes?.length !== 4 ||
+  planSwarmPayload?.swarm?.lanes?.[0]?.purpose !== "discovery" ||
+  planSwarmPayload?.swarm?.lanes?.[3]?.purpose !== "documentation"
 ) {
   console.error("[smoke:plan-swarm-mcp] expected planner swarm payload with machine-readable reason");
   console.error(planSwarmMcp.stderr || planSwarmMcp.stdout);
@@ -4526,7 +4554,9 @@ if (
   queuedPlanSwarm.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
   queuedPlanSwarm.created.length !== 3 ||
   queuedPlanSwarm.swarm?.status !== "active" ||
-  queuedPlanSwarm.swarm?.laneSource !== "planner"
+  queuedPlanSwarm.swarm?.laneSource !== "planner" ||
+  !queuedPlanSwarm.created.some((task) => task.lanePurpose === "discovery") ||
+  !queuedPlanSwarm.swarm?.lanes?.some((lane) => lane.purpose === "verification")
 ) {
   console.error("[smoke:plan-swarm-queue] expected queued planner swarm tasks");
   process.exit(1);
@@ -4534,8 +4564,42 @@ if (
 const queuedPlanSwarmTasks = JSON.parse(
   run("plan-swarm-queue-task-list", ["./src/index.js", "task:list"]).stdout
 ).tasks.tasks;
-if (!queuedPlanSwarmTasks.every((task) => task.swarmId === "swarm-1")) {
+if (
+  !queuedPlanSwarmTasks.every((task) => task.swarmId === "swarm-1") ||
+  !queuedPlanSwarmTasks.every((task) => typeof task.lanePurpose === "string")
+) {
   console.error("[smoke:plan-swarm-queue] expected swarm-linked tasks from planner");
+  process.exit(1);
+}
+const queuedPlanSwarmTaskBrief = JSON.parse(
+  run("plan-swarm-queue-task-brief", ["./src/index.js", "task:brief", "--id", "task-1"]).stdout
+).brief;
+if (
+  queuedPlanSwarmTaskBrief?.task?.lanePurpose !== "discovery" ||
+  queuedPlanSwarmTaskBrief?.coordination?.lanePurpose !== "discovery"
+) {
+  console.error("[smoke:plan-swarm-queue-task-brief] expected planner lane purpose in task brief");
+  process.exit(1);
+}
+const queuedPlanSwarmBrief = JSON.parse(
+  run("plan-swarm-queue-swarm-brief", ["./src/index.js", "swarm:brief", "--id", "swarm-1"]).stdout
+).brief;
+if (
+  queuedPlanSwarmBrief?.lanes?.[0]?.purpose !== "discovery" ||
+  queuedPlanSwarmBrief?.lanes?.[1]?.purpose !== "implementation" ||
+  queuedPlanSwarmBrief?.lanes?.[2]?.purpose !== "verification"
+) {
+  console.error("[smoke:plan-swarm-queue-swarm-brief] expected planner lane purpose in swarm brief");
+  process.exit(1);
+}
+const queuedPlanSwarmAssignments = JSON.parse(
+  run("plan-swarm-queue-leader-assignments", ["./src/index.js", "leader:assignments"]).stdout
+).assignments;
+if (
+  !queuedPlanSwarmAssignments?.groups?.flatMap((group) => group.assignments ?? []).some((assignment) => assignment.purpose === "discovery") ||
+  queuedPlanSwarmAssignments?.groups?.flatMap((group) => group.assignments ?? []).some((assignment) => assignment.purpose === "implementation")
+) {
+  console.error("[smoke:plan-swarm-queue-leader-assignments] expected planner lane purpose in leader assignments");
   process.exit(1);
 }
 

@@ -34,6 +34,7 @@ export function buildRuntimeRecoveryEntry(task, taskBrief) {
     claimedBy: task.claimedBy,
     swarmId: task.swarmId,
     lane: task.lane,
+    lanePurpose: task.lanePurpose ?? null,
     recoveryType: runtimeRecoveryType(task),
     recommendedNextActor: brief?.recommendedNextActor ?? null,
     recommendedNextAction: brief?.recommendedNextAction ?? null,

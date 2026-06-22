@@ -266,12 +266,15 @@ const rootPlannerProfileLaneSource: "planner" | undefined = getPlannerProfile()?
 const rootPlannerProfileAdaptive: boolean | undefined = getPlannerProfile()?.adaptive;
 const rootPlannerProfileViewReason: "planner_profile_loaded" | "planner_profile_missing" = getPlannerProfileView().recommendedReason;
 const rootPlannerProfileViewKind: "planner_profile_view" = getPlannerProfileView().kind;
+const rootPlanTaskClass: "docs-only" | "docs-runtime" | "coordination-kernel" | "catalog-contract" | "runtime-surface" | "build-verification" | "general" = planTask("typed smoke", { profileId: "bounded-local" }).evidence.strategy.taskClass;
+const rootPlanLaneStrategy: "documentation" | "implement-verify" | "implement-verify-docs" | "discover-implement-verify" | "discover-implement-verify-docs" = planTask("typed smoke", { profileId: "bounded-local" }).evidence.strategy.laneStrategy;
 const rootPlanRequestedProfile: string = planTask("typed smoke", { profileId: "bounded-local" }).requestedProfile;
 const rootPlanResolvedProfile: string = planTask("typed smoke", { profileId: "missing-profile" }).plannerSelection.resolvedProfile;
 const plannedSwarmReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready" = planSwarm("typed root swarm", { profileId: "bounded-local" }).recommendedReason;
 const rootSwarmPlanWorkers: number = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.maxWorkers;
 const rootSwarmPlanTopology: "bounded-local" = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.topology;
 const rootSwarmPlanLaneSource: "planner" = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.laneSource;
+const rootSwarmLanePurpose: "discovery" | "implementation" | "verification" | "documentation" = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.lanes[0]?.purpose as "discovery" | "implementation" | "verification" | "documentation";
 const rootTaskPlanPlannerTopology: "bounded-local" = planTask("typed smoke", { profileId: "bounded-local" }).planner.topology;
 const rootTaskPlanPlannerLaneSource: "planner" = planTask("typed smoke", { profileId: "bounded-local" }).planner.laneSource;
 const serializedMcpMessage: string = serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "tools/list" });
@@ -281,6 +284,7 @@ const apiRunMcpCli: (args?: string[]) => Promise<void> = runMcpCliApi;
 const apiStartMcpServer: () => Promise<void> = startMcpServerApi;
 const apiToolCatalogEntryName: string | undefined = toolCatalogApi[0]?.name;
 const taskPlanReason: "multi_lane_plan_ready" | "single_lane_plan_ready" = planTask("typed smoke").recommendedReason;
+const taskPlanLanePurpose: "discovery" | "implementation" | "verification" | "documentation" = planTask("typed smoke").lanes[0]?.purpose as "discovery" | "implementation" | "verification" | "documentation";
 const plannerHasSrc: boolean = planTask("typed smoke").evidence.repoSignals.hasSrc;
 const plannerRolePath: string | undefined = planTask("typed smoke").evidence.roleFiles[0]?.path;
 const apiPlannerProfileId: string | undefined = getApiPlannerProfiles()[0]?.id;
@@ -334,6 +338,7 @@ const taskBriefReason:
   | "claimable_execution_brief"
   | "queued_execution_brief"
   | undefined = taskBrief(task.id)?.recommendedReason;
+const taskBriefLanePurpose: "discovery" | "implementation" | "verification" | "documentation" | null | undefined = taskBrief(task.id)?.coordination.lanePurpose;
 const taskBriefOwnerExists: boolean | undefined = taskBrief(task.id)?.roles.owner.exists;
 const taskBriefOwnerPromptPath: string | null | undefined = taskBrief(task.id)?.roles.owner.promptPath;
 const taskBriefOwnerSource: "workspace" | "bundled" | "missing" | undefined = taskBrief(task.id)?.roles.owner.source;

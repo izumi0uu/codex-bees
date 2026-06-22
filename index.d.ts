@@ -363,8 +363,31 @@ export interface RuntimeCapabilityView {
   capability: RuntimeCapability | null;
 }
 
+export type TaskPlanLanePurpose =
+  | "discovery"
+  | "implementation"
+  | "verification"
+  | "documentation";
+
+export type PlannerTaskClass =
+  | "docs-only"
+  | "docs-runtime"
+  | "coordination-kernel"
+  | "catalog-contract"
+  | "runtime-surface"
+  | "build-verification"
+  | "general";
+
+export type PlannerLaneStrategy =
+  | "documentation"
+  | "implement-verify"
+  | "implement-verify-docs"
+  | "discover-implement-verify"
+  | "discover-implement-verify-docs";
+
 export interface TaskPlanLane {
   lane: string;
+  purpose: TaskPlanLanePurpose;
   owner: string;
   verifier: string;
   summary: string;
@@ -397,9 +420,19 @@ export interface PlannerRoleFileEvidence {
   path: string;
 }
 
+export interface PlannerStrategyEvidence {
+  taskClass: PlannerTaskClass;
+  laneStrategy: PlannerLaneStrategy;
+  publicSurface: boolean;
+  needsDiscovery: boolean;
+  needsVerification: boolean;
+  needsDocumentation: boolean;
+}
+
 export interface PlannerEvidence {
   task: string;
   intent: PlannerIntent;
+  strategy: PlannerStrategyEvidence;
   repoSignals: {
     hasSrc: boolean;
     hasScripts: boolean;
@@ -718,6 +751,7 @@ export interface TaskRecord {
   queueStatus: TaskQueueStatus;
   objective: string | null;
   lane: string | null;
+  lanePurpose?: TaskPlanLanePurpose | null;
   swarmId: string | null;
   scope: string[] | null;
   dependsOn: string[] | null;
@@ -757,6 +791,7 @@ export interface SwarmRecord {
 
 export interface SwarmLaneRecord {
   lane: string;
+  purpose: TaskPlanLanePurpose | null;
   summary: string;
   owner: string | null;
   verifier: string | null;
@@ -769,6 +804,7 @@ export interface SwarmLaneRecord {
 
 export interface SwarmLaneSummary {
   lane: string;
+  purpose: TaskPlanLanePurpose | null;
   summary: string;
   owner: string | null;
   verifier: string | null;
@@ -947,6 +983,7 @@ export interface TaskExecutionBrief {
   coordination: {
     swarmId: string | null;
     lane: string | null;
+    lanePurpose: TaskPlanLanePurpose | null;
     queueStatus: TaskQueueStatus;
     claimedBy: string | null;
     notes: string | null;
@@ -1011,6 +1048,7 @@ export interface TaskReportView {
     claimedBy: string | null;
     swarmId: string | null;
     lane: string | null;
+    lanePurpose: TaskPlanLanePurpose | null;
   };
   closure: {
     reviewState: TaskReviewState;
@@ -1109,6 +1147,7 @@ export interface TaskInput {
   verifier?: string | null;
   objective?: string | null;
   lane?: string | null;
+  lanePurpose?: TaskPlanLanePurpose | null;
   swarmId?: string | null;
   scope?: string[] | null;
   dependsOn?: string[] | null;
@@ -1126,6 +1165,7 @@ export interface TaskInput {
 
 export interface SwarmLaneInput {
   lane?: string;
+  purpose?: TaskPlanLanePurpose | null;
   summary?: string;
   owner?: string | null;
   verifier?: string | null;

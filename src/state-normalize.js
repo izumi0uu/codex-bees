@@ -24,6 +24,7 @@ export function normalizeTask(task) {
     verifier: task.verifier ?? null,
     objective: task.objective ?? null,
     lane: task.lane ?? null,
+    lanePurpose: task.lanePurpose ?? null,
     swarmId: task.swarmId ?? null,
     scope: Array.isArray(task.scope) ? task.scope : null,
     dependsOn: Array.isArray(task.dependsOn) ? Array.from(new Set(task.dependsOn.filter(Boolean))) : null,
@@ -80,6 +81,7 @@ export function normalizeMemory(memory) {
 export function normalizeSwarmLane(lane, index = 0) {
   return {
     lane: lane.lane ?? `lane-${index + 1}`,
+    purpose: lane.purpose ?? null,
     summary: lane.summary ?? `Lane ${index + 1}`,
     owner: lane.owner ?? null,
     verifier: lane.verifier ?? null,

@@ -30,6 +30,7 @@ export function buildRuntimeActivityEntry(task, event, taskBrief) {
     verifier: task.verifier,
     swarmId: task.swarmId,
     lane: task.lane,
+    lanePurpose: task.lanePurpose ?? null,
     actor: event.actor,
     fromQueueStatus: event.fromQueueStatus,
     toQueueStatus: event.toQueueStatus,

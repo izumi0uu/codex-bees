@@ -6,6 +6,7 @@ export function summarizeDashboardTask(task) {
     title: task.title,
     swarmId: task.swarmId,
     lane: task.lane,
+    lanePurpose: task.lanePurpose ?? null,
     owner: task.owner,
     verifier: task.verifier,
     claimedBy: task.claimedBy,
@@ -50,6 +51,7 @@ export function buildRuntimeRoleNextAction(roleId, ownerNext, verifierNext, disp
       task: {
         id: assignment.taskId,
         lane: assignment.lane,
+        lanePurpose: assignment.purpose ?? null,
         swarmId: assignment.swarmId,
         owner: assignment.owner?.id ?? assignment.owner?.name ?? roleId,
         verifier: assignment.verifier?.id ?? assignment.verifier?.name ?? null,
