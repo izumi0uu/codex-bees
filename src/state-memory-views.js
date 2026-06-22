@@ -66,3 +66,41 @@ export function buildMemoryListViewFromSources(
     listMemories
   });
 }
+
+export function buildMemorySearchView(
+  query,
+  filters = {},
+  limit = 10,
+  {
+    searchMemories
+  }
+) {
+  const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10;
+  const results = searchMemories(query, filters).slice(0, normalizedLimit);
+  const recommendedReason = results.length > 0 ? "memory_search_has_results" : "memory_search_empty";
+  return {
+    kind: "memory_search_view",
+    recommendedReason,
+    counts: {
+      totalResults: results.length
+    },
+    query,
+    results
+  };
+}
+
+export function buildMemorySearchViewFromSources(
+  query,
+  filters = {},
+  limit = 10,
+  {
+    searchMemories
+  },
+  {
+    buildMemorySearchView
+  }
+) {
+  return buildMemorySearchView(query, filters, limit, {
+    searchMemories
+  });
+}

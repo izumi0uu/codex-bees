@@ -63,7 +63,9 @@ import {
   buildMemoryDetailView,
   buildMemoryDetailViewFromSources,
   buildMemoryListView,
-  buildMemoryListViewFromSources
+  buildMemoryListViewFromSources,
+  buildMemorySearchView,
+  buildMemorySearchViewFromSources
 } from "./state-memory-views.js";
 import {
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
@@ -1760,18 +1762,17 @@ export function searchMemories(query, filters = {}) {
 }
 
 export function searchMemoriesView(query, filters = {}, limit = 10) {
-  const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10;
-  const results = searchMemories(query, filters).slice(0, normalizedLimit);
-  const recommendedReason = results.length > 0 ? "memory_search_has_results" : "memory_search_empty";
-  return {
-    kind: "memory_search_view",
-    recommendedReason,
-    counts: {
-      totalResults: results.length
-    },
+  return buildMemorySearchViewFromSources(
     query,
-    results
-  };
+    filters,
+    limit,
+    {
+      searchMemories
+    },
+    {
+      buildMemorySearchView
+    }
+  );
 }
 
 export function updateTask(input) {
