@@ -21,6 +21,31 @@ export function listSwarmOverviewsFromSources(filters = {}, { listSwarms, swarmO
     .filter(Boolean);
 }
 
+export function validateSwarmFromSources(
+  id,
+  {
+    loadState,
+    normalizeSwarm,
+    buildSwarmValidationViewFromSources,
+    runtimeRoleCatalog,
+    buildSwarmValidationView
+  }
+) {
+  const swarm = loadState().swarms.map(normalizeSwarm).find((item) => item.id === id);
+  if (!swarm) {
+    return null;
+  }
+  return buildSwarmValidationViewFromSources(
+    swarm,
+    {
+      runtimeRoleCatalog
+    },
+    {
+      buildSwarmValidationView
+    }
+  );
+}
+
 export function isCancelledSwarm(current) {
   return current.status === "cancelled";
 }
@@ -190,6 +215,42 @@ export function syncLoadedSwarmLifecycle(
       derivedStatus,
       changed
     })
+  };
+}
+
+export function syncSwarmStatusFromSources(
+  id,
+  {
+    loadState,
+    saveState,
+    syncLoadedSwarmLifecycle,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask,
+    deriveSwarmStatus,
+    buildSyncedSwarmState,
+    deriveSwarmSyncReason
+  }
+) {
+  const state = loadState();
+  const result = syncLoadedSwarmLifecycle(state, id, {
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask,
+    deriveSwarmStatus,
+    buildSyncedSwarmState,
+    deriveSwarmSyncReason
+  });
+  if (!result) {
+    return null;
+  }
+  saveState(state);
+  return {
+    kind: "swarm_sync",
+    recommendedReason: result.recommendedReason,
+    swarm: result.swarm,
+    derivedStatus: result.derivedStatus,
+    changed: result.changed
   };
 }
 

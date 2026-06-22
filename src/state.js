@@ -89,9 +89,11 @@ import {
   listSwarmOverviewsFromSources,
   listSwarmsFromSources,
   queueSwarmTasksFromSources,
+  syncSwarmStatusFromSources,
   transitionSwarmFromSources,
   updateSwarmFromSources,
   updateLoadedSwarmState,
+  validateSwarmFromSources,
   buildTransitionedSwarmState,
   buildQueuedSwarmLaneState,
   buildQueuedSwarmLaneTaskInput,
@@ -131,6 +133,7 @@ import {
 import {
   getTaskFromSources,
   listTasksFromSources,
+  validateTaskFromSources,
   appendTaskAnnotation,
   appendTaskHistoryEntry,
   deriveReviewState,
@@ -1624,42 +1627,32 @@ export function verifierBundle(input = {}) {
 }
 
 export function validateTask(id) {
-  const task = loadState().tasks.map(normalizeTask).find((item) => item.id === id);
-  if (!task) {
-    return null;
-  }
-  return buildTaskValidationViewFromSources(
-    task,
-    {
-      runtimeRoleCatalog
-    },
-    {
-      buildTaskValidationView
-    }
-  );
+  return validateTaskFromSources(id, {
+    loadState,
+    normalizeTask,
+    buildTaskValidationViewFromSources,
+    runtimeRoleCatalog,
+    buildTaskValidationView
+  });
 }
 
 export function validateSwarm(id) {
-  const swarm = loadState().swarms.map(normalizeSwarm).find((item) => item.id === id);
-  if (!swarm) {
-    return null;
-  }
-  return buildSwarmValidationViewFromSources(
-    swarm,
-    {
-      runtimeRoleCatalog
-    },
-    {
-      buildSwarmValidationView
-    }
-  );
+  return validateSwarmFromSources(id, {
+    loadState,
+    normalizeSwarm,
+    buildSwarmValidationViewFromSources,
+    runtimeRoleCatalog,
+    buildSwarmValidationView
+  });
 }
 
 export { runtimeRoleCatalog };
 
 export function syncSwarmStatus(id) {
-  const state = loadState();
-  const result = syncLoadedSwarmLifecycle(state, id, {
+  return syncSwarmStatusFromSources(id, {
+    loadState,
+    saveState,
+    syncLoadedSwarmLifecycle,
     findSwarmIndex,
     normalizeSwarm,
     normalizeTask,
@@ -1667,17 +1660,6 @@ export function syncSwarmStatus(id) {
     buildSyncedSwarmState,
     deriveSwarmSyncReason
   });
-  if (!result) {
-    return null;
-  }
-  saveState(state);
-  return {
-    kind: "swarm_sync",
-    recommendedReason: result.recommendedReason,
-    swarm: result.swarm,
-    derivedStatus: result.derivedStatus,
-    changed: result.changed
-  };
 }
 
 export function swarmOverview(id) {

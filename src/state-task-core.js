@@ -9,6 +9,31 @@ export function getTaskFromSources(id, { loadState, normalizeTask }) {
   return task ? normalizeTask(task) : null;
 }
 
+export function validateTaskFromSources(
+  id,
+  {
+    loadState,
+    normalizeTask,
+    buildTaskValidationViewFromSources,
+    runtimeRoleCatalog,
+    buildTaskValidationView
+  }
+) {
+  const task = loadState().tasks.map(normalizeTask).find((item) => item.id === id);
+  if (!task) {
+    return null;
+  }
+  return buildTaskValidationViewFromSources(
+    task,
+    {
+      runtimeRoleCatalog
+    },
+    {
+      buildTaskValidationView
+    }
+  );
+}
+
 export function appendTaskHistoryEntry(task, entry) {
   const existing = Array.isArray(task.history) ? task.history : [];
   return [
