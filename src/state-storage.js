@@ -1,6 +1,7 @@
 import {
   existsSync,
   mkdirSync,
+  readFileSync,
   renameSync,
   unlinkSync,
   writeFileSync
@@ -31,4 +32,55 @@ export function recoverCorruptStateFile({ stateDir, stateFile, error, defaultSta
 
   writeStateFile(stateDir, stateFile, defaultState);
   console.warn(`[codex-bees] recovered corrupt state file: ${error.message}`);
+}
+
+export function ensureStateFileAtPath({ stateDir, stateFile, defaultState, writeStateFile }) {
+  mkdirSync(stateDir, { recursive: true });
+  if (!existsSync(stateFile)) {
+    writeStateFile(stateDir, stateFile, defaultState());
+  }
+  return stateFile;
+}
+
+export function loadStateFromFile({
+  stateDir,
+  stateFile,
+  defaultState,
+  normalizeState,
+  ensureStateFile,
+  recoverCorruptStateFile
+}) {
+  ensureStateFile();
+  try {
+    const raw = readFileSync(stateFile, "utf8");
+    const parsed = JSON.parse(raw);
+    return normalizeState(parsed);
+  } catch (error) {
+    recoverCorruptStateFile({
+      stateDir,
+      stateFile,
+      error,
+      defaultState: defaultState()
+    });
+    return defaultState();
+  }
+}
+
+export function saveStateToFile(
+  state,
+  {
+    stateDir,
+    stateFile,
+    normalizeState,
+    ensureStateFile,
+    writeStateFile
+  }
+) {
+  ensureStateFile();
+  const next = normalizeState({
+    ...state,
+    updatedAt: new Date().toISOString()
+  });
+  writeStateFile(stateDir, stateFile, next);
+  return next;
 }

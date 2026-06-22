@@ -1,8 +1,3 @@
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync
-} from "node:fs";
 import { join } from "node:path";
 import { cwd } from "node:process";
 import { getRuntimeCatalog } from "./catalog.js";
@@ -76,7 +71,10 @@ import {
   buildTaskMutationResult
 } from "./state-lifecycle-views.js";
 import {
+  ensureStateFileAtPath,
+  loadStateFromFile,
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
+  saveStateToFile,
   writeStateFile as writeStateFileWithPaths
 } from "./state-storage.js";
 import {
@@ -447,38 +445,33 @@ const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");
 
 export function ensureStateFile() {
-  mkdirSync(STATE_DIR, { recursive: true });
-  if (!existsSync(STATE_FILE)) {
-    writeStateFileWithPaths(STATE_DIR, STATE_FILE, defaultState());
-  }
-  return STATE_FILE;
+  return ensureStateFileAtPath({
+    stateDir: STATE_DIR,
+    stateFile: STATE_FILE,
+    defaultState,
+    writeStateFile: writeStateFileWithPaths
+  });
 }
 
 export function loadState() {
-  ensureStateFile();
-  try {
-    const raw = readFileSync(STATE_FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    return normalizeState(parsed);
-  } catch (error) {
-    recoverCorruptStateFileWithPaths({
-      stateDir: STATE_DIR,
-      stateFile: STATE_FILE,
-      error,
-      defaultState: defaultState()
-    });
-    return defaultState();
-  }
+  return loadStateFromFile({
+    stateDir: STATE_DIR,
+    stateFile: STATE_FILE,
+    defaultState,
+    normalizeState,
+    ensureStateFile,
+    recoverCorruptStateFile: recoverCorruptStateFileWithPaths
+  });
 }
 
 export function saveState(state) {
-  ensureStateFile();
-  const next = normalizeState({
-    ...state,
-    updatedAt: new Date().toISOString()
+  return saveStateToFile(state, {
+    stateDir: STATE_DIR,
+    stateFile: STATE_FILE,
+    normalizeState,
+    ensureStateFile,
+    writeStateFile: writeStateFileWithPaths
   });
-  writeStateFileWithPaths(STATE_DIR, STATE_FILE, next);
-  return next;
 }
 
 export function listTasks() {
