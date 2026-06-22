@@ -28,9 +28,11 @@ import {
   getCapabilityCatalogEntryView,
   getCapabilityCatalogView,
   getAgentCatalogEntry,
+  getAgentCatalogDocumentView,
   getAgentCatalogListView,
   getAgentCatalogEntryView,
   getSkillCatalogListView,
+  getSkillCatalogDocumentView,
   getSkillCatalogEntryView,
   getRuntimeCatalog,
   getRuntimeCatalogPaths,
@@ -115,7 +117,12 @@ import {
   startMcpServer as startMcpServerApi,
   toolCatalog as toolCatalogApi
 } from "codex-bees/api";
-import { getAgentCatalogListView as getCatalogSubpathAgentListView, getRuntimeCatalogView as getCatalogSubpathView } from "codex-bees/catalog";
+import {
+  getAgentCatalogDocumentView as getCatalogSubpathAgentDocumentView,
+  getAgentCatalogListView as getCatalogSubpathAgentListView,
+  getRuntimeCatalogView as getCatalogSubpathView,
+  getSkillCatalogDocumentView as getCatalogSubpathSkillDocumentView
+} from "codex-bees/catalog";
 import { getRuntimeContractView as getContractSubpathView } from "codex-bees/runtime-contract";
 import {
   getPlannerProfile as getPlannerProfileSubpath,
@@ -452,6 +459,10 @@ const rootAgentLaneEntryType: "agent" | "skill" = getAgentCatalogListView().entr
 const rootAgentLaneEntryId: string | undefined = getAgentCatalogListView().entries[0]?.id;
 const rootAgentViewReason: "catalog_entry_loaded" | "catalog_entry_missing" = getAgentCatalogEntryView("executor").recommendedReason;
 const rootAgentViewMatched: string | null = getAgentCatalogEntryView("executor").matchedId;
+const rootAgentDocumentKind: "runtime_catalog_document_view" = getAgentCatalogDocumentView("executor").kind;
+const rootAgentDocumentReason: "catalog_document_loaded" | "catalog_document_missing" = getAgentCatalogDocumentView("executor").recommendedReason;
+const rootAgentDocumentTitle: string | null = getAgentCatalogDocumentView("executor").document?.title ?? null;
+const rootAgentDocumentSectionTitle: string | undefined = getAgentCatalogDocumentView("executor").document?.sections[0]?.title;
 const rootAgentRoleId: string | undefined = listAgentRoleIds()[0];
 const rootSkillId: string | undefined = listSkillCatalog()[0]?.id;
 const rootSkillEntryId: string | undefined = getSkillCatalogEntry("project-development")?.id;
@@ -461,6 +472,10 @@ const rootSkillLaneEntryType: "agent" | "skill" = getSkillCatalogListView().entr
 const rootSkillLaneEntryId: string | undefined = getSkillCatalogListView().entries[0]?.id;
 const rootSkillViewReason: "catalog_entry_loaded" | "catalog_entry_missing" = getSkillCatalogEntryView("project-development").recommendedReason;
 const rootSkillViewMatched: string | null = getSkillCatalogEntryView("project-development").matchedId;
+const rootSkillDocumentKind: "runtime_catalog_document_view" = getSkillCatalogDocumentView("project-development").kind;
+const rootSkillDocumentReason: "catalog_document_loaded" | "catalog_document_missing" = getSkillCatalogDocumentView("project-development").recommendedReason;
+const rootSkillDocumentSummary: string | null = getSkillCatalogDocumentView("project-development").document?.summary ?? null;
+const rootSkillDocumentSectionSlug: string | undefined = getSkillCatalogDocumentView("project-development").document?.sections[0]?.slug;
 const rootCatalogSource: "workspace" | "bundled" | "missing" = getRuntimeCatalog().source;
 const runtimeCatalogSource: "workspace" | "bundled" | "missing" = getRuntimeCatalogPaths().source;
 const resolvedSkillPath: string | null = resolveRuntimeCatalogPath("skills");
@@ -478,6 +493,8 @@ const apiToolName: string | undefined = getApiToolCatalogView().tools[0]?.name;
 const catalogSource: "workspace" | "bundled" | "missing" = getCatalogSubpathView().catalog.source;
 const catalogSubpathKind: "runtime_catalog_view" = getCatalogSubpathView().kind;
 const catalogSubpathReason: "catalog_entries_loaded" | "catalog_empty" = getCatalogSubpathView().recommendedReason;
+const catalogSubpathAgentDocumentKind: "runtime_catalog_document_view" = getCatalogSubpathAgentDocumentView("executor").kind;
+const catalogSubpathSkillDocumentKind: "runtime_catalog_document_view" = getCatalogSubpathSkillDocumentView("project-development").kind;
 const contractSubpathKind: "runtime_contract_view" = getContractSubpathView().kind;
 const contractProduct: "codex-bees" = getContractSubpathView().contract.product;
 const contractArchitectureLayer:

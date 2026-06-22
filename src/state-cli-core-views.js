@@ -1,7 +1,15 @@
 import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { argv, requireOption, write } from "./state-cli-helpers.js";
-import { getAgentCatalogEntryView, getAgentCatalogListView, getRuntimeCatalogView, getSkillCatalogEntryView, getSkillCatalogListView } from "./catalog.js";
+import {
+  getAgentCatalogDocumentView,
+  getAgentCatalogEntryView,
+  getAgentCatalogListView,
+  getRuntimeCatalogView,
+  getSkillCatalogDocumentView,
+  getSkillCatalogEntryView,
+  getSkillCatalogListView
+} from "./catalog.js";
 import { getCommandCatalogEntryView, getCommandCatalogView, getCommandHelpView, getInitCommandCatalogEntryView, getInitCommandCatalogView, getInitHelpView, renderHelpText } from "./commands.js";
 import { getRuntimeDoctorView } from "./doctor.js";
 import { getPackageMetadataView, PACKAGE_VERSION } from "./metadata.js";
@@ -92,6 +100,11 @@ function printCatalogAgentView() {
   write(JSON.stringify({ agent: getAgentCatalogEntryView(id) }, null, 2) + "\n");
 }
 
+function printCatalogAgentDocumentView() {
+  const id = requireOption("--id");
+  write(JSON.stringify({ agent: getAgentCatalogDocumentView(id) }, null, 2) + "\n");
+}
+
 function printCatalogSkillsView() {
   write(JSON.stringify({ skills: getSkillCatalogListView() }, null, 2) + "\n");
 }
@@ -99,6 +112,11 @@ function printCatalogSkillsView() {
 function printCatalogSkillView() {
   const id = requireOption("--id");
   write(JSON.stringify({ skill: getSkillCatalogEntryView(id) }, null, 2) + "\n");
+}
+
+function printCatalogSkillDocumentView() {
+  const id = requireOption("--id");
+  write(JSON.stringify({ skill: getSkillCatalogDocumentView(id) }, null, 2) + "\n");
 }
 
 function printGuidanceOverviewView() {
@@ -135,8 +153,10 @@ export {
   printCapabilityView,
   printCatalog,
   printCatalogAgentView,
+  printCatalogAgentDocumentView,
   printCatalogAgentsView,
   printCatalogSkillView,
+  printCatalogSkillDocumentView,
   printCatalogSkillsView,
   printCommandHelpView,
   printCommandsView,

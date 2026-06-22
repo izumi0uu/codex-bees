@@ -1,4 +1,12 @@
-import { getAgentCatalogEntryView, getAgentCatalogListView, getRuntimeCatalogView, getSkillCatalogEntryView, getSkillCatalogListView } from "./catalog.js";
+import {
+  getAgentCatalogDocumentView,
+  getAgentCatalogEntryView,
+  getAgentCatalogListView,
+  getRuntimeCatalogView,
+  getSkillCatalogDocumentView,
+  getSkillCatalogEntryView,
+  getSkillCatalogListView
+} from "./catalog.js";
 import { getRuntimeDoctorView } from "./doctor.js";
 import { getPackageMetadataView } from "./metadata.js";
 import { getRuntimeContractView } from "./runtime-contract.js";
@@ -143,12 +151,28 @@ const CORE_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createTextPayload({ agent: getAgentCatalogEntryView(params.arguments.id) }));
   },
 
+  runtime_catalog_agent_document({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "runtime_catalog_agent_document requires arguments.id");
+    }
+    return createSuccess(id, createTextPayload({ agent: getAgentCatalogDocumentView(params.arguments.id) }));
+  },
+
   runtime_catalog_skill({ id, args, metadata }) {
     const params = { arguments: args };
     if (!params.arguments?.id) {
       return createError(id, -32602, "runtime_catalog_skill requires arguments.id");
     }
     return createSuccess(id, createTextPayload({ skill: getSkillCatalogEntryView(params.arguments.id) }));
+  },
+
+  runtime_catalog_skill_document({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "runtime_catalog_skill_document requires arguments.id");
+    }
+    return createSuccess(id, createTextPayload({ skill: getSkillCatalogDocumentView(params.arguments.id) }));
   },
 
   runtime_status({ id, args, metadata }) {

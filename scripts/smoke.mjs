@@ -130,8 +130,10 @@ const checks = [
   ["catalog", ["./src/index.js", "catalog"]],
   ["catalog-agents", ["./src/index.js", "catalog:agents"]],
   ["catalog-agent", ["./src/index.js", "catalog:agent", "--id", "executor"]],
+  ["catalog-agent-doc", ["./src/index.js", "catalog:agent-doc", "--id", "executor"]],
   ["catalog-skills", ["./src/index.js", "catalog:skills"]],
   ["catalog-skill", ["./src/index.js", "catalog:skill", "--id", "project-development"]],
+  ["catalog-skill-doc", ["./src/index.js", "catalog:skill-doc", "--id", "project-development"]],
   ["guidance-overview", ["./src/index.js", "guidance:overview"]],
   ["guidance-worker", ["./src/index.js", "guidance:worker"]],
   ["contract", ["./src/index.js", "contract"]],
@@ -402,6 +404,36 @@ if (
   runtimeCatalogSkillView.entry?.id !== "project-development"
 ) {
   console.error("[smoke:catalog-skill] expected shipped skill detail view");
+  process.exit(1);
+}
+const runtimeCatalogAgentDocumentView = JSON.parse(
+  run("catalog-agent-doc-verify", ["./src/index.js", "catalog:agent-doc", "--id", "executor"]).stdout
+).agent;
+if (
+  runtimeCatalogAgentDocumentView.kind !== "runtime_catalog_document_view" ||
+  runtimeCatalogAgentDocumentView.recommendedReason !== "catalog_document_loaded" ||
+  runtimeCatalogAgentDocumentView.entryType !== "agent" ||
+  runtimeCatalogAgentDocumentView.matchedId !== "executor" ||
+  runtimeCatalogAgentDocumentView.document?.title !== "Executor" ||
+  runtimeCatalogAgentDocumentView.document?.frontmatter?.name !== "executor" ||
+  !runtimeCatalogAgentDocumentView.document?.sections?.some((section) => section.title === "Ownership")
+) {
+  console.error("[smoke:catalog-agent-doc] expected shipped agent document contract view");
+  process.exit(1);
+}
+const runtimeCatalogSkillDocumentView = JSON.parse(
+  run("catalog-skill-doc-verify", ["./src/index.js", "catalog:skill-doc", "--id", "project-development"]).stdout
+).skill;
+if (
+  runtimeCatalogSkillDocumentView.kind !== "runtime_catalog_document_view" ||
+  runtimeCatalogSkillDocumentView.recommendedReason !== "catalog_document_loaded" ||
+  runtimeCatalogSkillDocumentView.entryType !== "skill" ||
+  runtimeCatalogSkillDocumentView.matchedId !== "project-development" ||
+  runtimeCatalogSkillDocumentView.document?.title !== "Project Development" ||
+  runtimeCatalogSkillDocumentView.document?.frontmatter?.name !== "project-development" ||
+  !runtimeCatalogSkillDocumentView.document?.sections?.some((section) => section.title === "Stage 1: Intake")
+) {
+  console.error("[smoke:catalog-skill-doc] expected shipped skill document contract view");
   process.exit(1);
 }
 const bundledRuntimeDir = mkdtempSync(join(tmpdir(), "codex-bees-bundled-"));
@@ -1183,7 +1215,7 @@ const installedCatalogImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && typeof m.getAgentCatalogEntry === "function" && m.getAgentCatalogEntry("executor")?.id === "executor" && typeof m.getAgentCatalogEntryView === "function" && m.getAgentCatalogEntryView("executor")?.matchedId === "executor" && typeof m.getSkillCatalogEntry === "function" && m.getSkillCatalogEntry("project-development")?.id === "project-development" && typeof m.getSkillCatalogEntryView === "function" && m.getSkillCatalogEntryView("project-development")?.matchedId === "project-development" && !("getBundledRuntimeCatalogPaths" in m)})))'
+    'import("codex-bees/catalog").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("getRuntimeCatalogView") && typeof m.getAgentCatalogEntry === "function" && m.getAgentCatalogEntry("executor")?.id === "executor" && typeof m.getAgentCatalogEntryView === "function" && m.getAgentCatalogEntryView("executor")?.matchedId === "executor" && typeof m.getAgentCatalogDocumentView === "function" && m.getAgentCatalogDocumentView("executor")?.document?.title === "Executor" && typeof m.getSkillCatalogEntry === "function" && m.getSkillCatalogEntry("project-development")?.id === "project-development" && typeof m.getSkillCatalogEntryView === "function" && m.getSkillCatalogEntryView("project-development")?.matchedId === "project-development" && typeof m.getSkillCatalogDocumentView === "function" && m.getSkillCatalogDocumentView("project-development")?.document?.title === "Project Development" && !("getBundledRuntimeCatalogPaths" in m)})))'
   ],
   {
     cwd: packedInstallAppDir,
@@ -2840,6 +2872,26 @@ if (
   !cliCatalogSkills.entries?.some((entry) => entry.id === "project-development")
 ) {
   console.error("[smoke:catalog-skills] expected skill catalog listing");
+  process.exit(1);
+}
+const cliCatalogAgentDocument = JSON.parse(run("catalog-agent-doc-cli-verify", ["./src/index.js", "catalog:agent-doc", "--id", "executor"]).stdout).agent;
+if (
+  cliCatalogAgentDocument.kind !== "runtime_catalog_document_view" ||
+  cliCatalogAgentDocument.recommendedReason !== "catalog_document_loaded" ||
+  cliCatalogAgentDocument.document?.counts?.totalSections < 3 ||
+  !cliCatalogAgentDocument.document?.sections?.some((section) => section.slug === "executor--ownership")
+) {
+  console.error("[smoke:catalog-agent-doc-cli] expected agent document contract view");
+  process.exit(1);
+}
+const cliCatalogSkillDocument = JSON.parse(run("catalog-skill-doc-cli-verify", ["./src/index.js", "catalog:skill-doc", "--id", "project-development"]).stdout).skill;
+if (
+  cliCatalogSkillDocument.kind !== "runtime_catalog_document_view" ||
+  cliCatalogSkillDocument.recommendedReason !== "catalog_document_loaded" ||
+  cliCatalogSkillDocument.document?.counts?.frontmatterFields < 2 ||
+  !cliCatalogSkillDocument.document?.sections?.some((section) => section.slug === "project-development--stage-4-verification")
+) {
+  console.error("[smoke:catalog-skill-doc-cli] expected skill document contract view");
   process.exit(1);
 }
 const cliGuidanceOverview = JSON.parse(run("guidance-overview-verify", ["./src/index.js", "guidance:overview"]).stdout).overview;
@@ -8771,8 +8823,8 @@ const runtimeGuidanceMcpInput = [
     id: 7,
     method: "tools/call",
     params: {
-      name: "runtime_capability",
-      arguments: { id: "memory" }
+      name: "runtime_catalog_agent_document",
+      arguments: { id: "executor" }
     }
   }),
   JSON.stringify({
@@ -8780,7 +8832,25 @@ const runtimeGuidanceMcpInput = [
     id: 8,
     method: "tools/call",
     params: {
+      name: "runtime_capability",
+      arguments: { id: "memory" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 9,
+    method: "tools/call",
+    params: {
       name: "runtime_catalog_skill",
+      arguments: { id: "project-development" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 10,
+    method: "tools/call",
+    params: {
+      name: "runtime_catalog_skill_document",
       arguments: { id: "project-development" }
     }
   })
@@ -8798,8 +8868,10 @@ const workerGuidelinesMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines
 const runtimeCatalogAgentsMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[3]).result.content[0].text);
 const runtimeCatalogSkillsMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[4]).result.content[0].text);
 const runtimeCatalogAgentMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[5]).result.content[0].text);
-const runtimeCapabilityMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[6]).result.content[0].text);
-const runtimeCatalogSkillMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[7]).result.content[0].text);
+const runtimeCatalogAgentDocumentMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[6]).result.content[0].text);
+const runtimeCapabilityMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[7]).result.content[0].text);
+const runtimeCatalogSkillMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[8]).result.content[0].text);
+const runtimeCatalogSkillDocumentMcpPayload = JSON.parse(JSON.parse(runtimeGuidanceMcpLines[9]).result.content[0].text);
 if (
   runtimeGuidanceMcp.status !== 0 ||
   coordinationOverviewMcpPayload.overview?.kind !== "coordination_overview_view" ||
@@ -8818,11 +8890,15 @@ if (
   !runtimeCatalogSkillsMcpPayload.skills?.entries?.some((entry) => entry.id === "project-development") ||
   runtimeCatalogAgentMcpPayload.agent?.kind !== "runtime_catalog_entry_view" ||
   runtimeCatalogAgentMcpPayload.agent?.matchedId !== "executor" ||
+  runtimeCatalogAgentDocumentMcpPayload.agent?.kind !== "runtime_catalog_document_view" ||
+  runtimeCatalogAgentDocumentMcpPayload.agent?.document?.title !== "Executor" ||
   runtimeCapabilityMcpPayload.capability?.kind !== "runtime_capability_view" ||
   runtimeCapabilityMcpPayload.capability?.matchedCapability !== "memory" ||
   !runtimeCapabilityMcpPayload.capability?.capability?.mcpTools?.includes("memory_get") ||
   runtimeCatalogSkillMcpPayload.skill?.kind !== "runtime_catalog_entry_view" ||
-  runtimeCatalogSkillMcpPayload.skill?.matchedId !== "project-development"
+  runtimeCatalogSkillMcpPayload.skill?.matchedId !== "project-development" ||
+  runtimeCatalogSkillDocumentMcpPayload.skill?.kind !== "runtime_catalog_document_view" ||
+  runtimeCatalogSkillDocumentMcpPayload.skill?.document?.title !== "Project Development"
 ) {
   console.error("[smoke:runtime-guidance-capability-mcp] expected MCP guidance, capability, and runtime catalog lane/entry views");
   console.error(runtimeGuidanceMcp.stderr || runtimeGuidanceMcp.stdout);

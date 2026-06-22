@@ -51,8 +51,30 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "runtime_catalog_agent_document",
+    description: "Return one shipped local agent document contract view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" }
+      },
+      required: ["id"]
+    }
+  },
+  {
     name: "runtime_catalog_skill",
     description: "Return one shipped local skill catalog entry view.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" }
+      },
+      required: ["id"]
+    }
+  },
+  {
+    name: "runtime_catalog_skill_document",
+    description: "Return one shipped local skill document contract view.",
     inputSchema: {
       type: "object",
       properties: {

@@ -1,5 +1,6 @@
 export {
   getAgentCatalogEntry,
+  getAgentCatalogDocumentView,
   getAgentCatalogListView,
   getAgentCatalogEntryView,
   getRuntimeCatalog,
@@ -8,6 +9,7 @@ export {
   listAgentCatalog,
   listAgentRoleIds,
   getSkillCatalogEntry,
+  getSkillCatalogDocumentView,
   getSkillCatalogListView,
   getSkillCatalogEntryView,
   listSkillCatalog,

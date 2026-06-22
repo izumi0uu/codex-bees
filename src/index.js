@@ -11,8 +11,10 @@ import {
   printCapabilityView,
   printCatalog,
   printCatalogAgentView,
+  printCatalogAgentDocumentView,
   printCatalogAgentsView,
   printCatalogSkillView,
+  printCatalogSkillDocumentView,
   printCatalogSkillsView,
   printCommandHelpView,
   printCommandsView,
@@ -197,11 +199,17 @@ async function runCommand(command) {
     case "catalog:agent":
       printCatalogAgentView();
       return;
+    case "catalog:agent-doc":
+      printCatalogAgentDocumentView();
+      return;
     case "catalog:skills":
       printCatalogSkillsView();
       return;
     case "catalog:skill":
       printCatalogSkillView();
+      return;
+    case "catalog:skill-doc":
+      printCatalogSkillDocumentView();
       return;
     case "guidance:overview":
       printGuidanceOverviewView();

@@ -90,8 +90,16 @@ export const COMMAND_HELP_OVERRIDES = {
     usage: [commandUsage("catalog:agent", "--id <agent-id>")],
     options: [AGENT_ID_OPTION]
   },
+  "catalog:agent-doc": {
+    usage: [commandUsage("catalog:agent-doc", "--id <agent-id>")],
+    options: [AGENT_ID_OPTION]
+  },
   "catalog:skill": {
     usage: [commandUsage("catalog:skill", "--id <skill-id>")],
+    options: [SKILL_ID_OPTION]
+  },
+  "catalog:skill-doc": {
+    usage: [commandUsage("catalog:skill-doc", "--id <skill-id>")],
     options: [SKILL_ID_OPTION]
   },
   "capabilities:get": {

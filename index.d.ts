@@ -118,6 +118,29 @@ export interface RuntimeCatalogEntry {
   source: "workspace" | "bundled" | "missing";
 }
 
+export interface RuntimeCatalogDocumentSection {
+  title: string;
+  slug: string;
+  depth: number;
+  path: string[];
+  content: string;
+  items: string[];
+}
+
+export interface RuntimeCatalogDocument {
+  entry: RuntimeCatalogEntry;
+  title: string | null;
+  summary: string | null;
+  frontmatter: Record<string, string>;
+  counts: {
+    totalLines: number;
+    totalSections: number;
+    totalItems: number;
+    frontmatterFields: number;
+  };
+  sections: RuntimeCatalogDocumentSection[];
+}
+
 export interface RuntimeCatalogPaths {
   source: "workspace" | "bundled" | "missing";
   workingDirectory: string;
@@ -166,6 +189,15 @@ export interface RuntimeCatalogLaneView {
     totalEntries: number;
   };
   entries: RuntimeCatalogEntry[];
+}
+
+export interface RuntimeCatalogDocumentView {
+  kind: "runtime_catalog_document_view";
+  recommendedReason: "catalog_document_loaded" | "catalog_document_missing";
+  entryType: "agent" | "skill";
+  id: string | null;
+  matchedId: string | null;
+  document: RuntimeCatalogDocument | null;
 }
 
 export interface RuntimeContractView {
@@ -1193,11 +1225,13 @@ export declare function listAgentCatalog(): RuntimeCatalogEntry[];
 export declare function getAgentCatalogEntry(id: string): RuntimeCatalogEntry | undefined;
 export declare function getAgentCatalogListView(): RuntimeCatalogLaneView;
 export declare function getAgentCatalogEntryView(id?: string): RuntimeCatalogEntryView;
+export declare function getAgentCatalogDocumentView(id?: string): RuntimeCatalogDocumentView;
 export declare function listAgentRoleIds(): string[];
 export declare function listSkillCatalog(): RuntimeCatalogEntry[];
 export declare function getSkillCatalogEntry(id: string): RuntimeCatalogEntry | undefined;
 export declare function getSkillCatalogListView(): RuntimeCatalogLaneView;
 export declare function getSkillCatalogEntryView(id?: string): RuntimeCatalogEntryView;
+export declare function getSkillCatalogDocumentView(id?: string): RuntimeCatalogDocumentView;
 export declare function getRuntimeCatalog(): RuntimeCatalog;
 export declare function getRuntimeCatalogView(): RuntimeCatalogView;
 
