@@ -13,7 +13,7 @@ const README_PATH = join(REPO_ROOT, "README.md");
 const PACKAGE_JSON_PATH = join(REPO_ROOT, "package.json");
 const README_TEXT = readFileSync(README_PATH, "utf8");
 const CLI_SOURCE_TEXT = readFileSync(join(REPO_ROOT, "src", "index.js"), "utf8");
-const NPM_CACHE_DIR = join(tmpdir(), "codex-bees-smoke-npm-cache");
+const NPM_CACHE_DIR = mkdtempSync(join(tmpdir(), "codex-bees-smoke-npm-cache-"));
 let packedTarballPath = null;
 
 function sortedKeys(value) {
@@ -51,6 +51,8 @@ function cleanupPackedTarball() {
   if (packedTarballPath) {
     rmSync(packedTarballPath, { force: true });
   }
+
+  rmSync(NPM_CACHE_DIR, { recursive: true, force: true });
 }
 
 process.on("exit", cleanupPackedTarball);
