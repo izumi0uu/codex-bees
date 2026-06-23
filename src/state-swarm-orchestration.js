@@ -95,13 +95,14 @@ export function buildSwarmOrchestrationView(swarm, laneSummaries = []) {
   const peakParallelOwners = Math.max(...waves.map((wave) => wave.ownerCount), 0);
   const nextWave = waves.find((wave) => wave.status !== "complete") ?? null;
   const activeWave = waves.find((wave) => wave.status === "active") ?? nextWave;
+  const waveCount =
+    Number.isInteger(Number(swarm?.waveCount)) && Number(swarm.waveCount) >= 0
+      ? Number(swarm.waveCount)
+      : waves.length;
 
   return {
     executionShape: deriveExecutionShapeFromWaves(swarm?.executionShape ?? null, lanes, waves),
-    waveCount:
-      Number.isInteger(Number(swarm?.waveCount)) && Number(swarm.waveCount) >= 0
-        ? Number(swarm.waveCount)
-        : waves.length,
+    waveCount: waveCount > 0 ? waveCount : waves.length,
     maxWorkers:
       Number.isInteger(Number(swarm?.maxWorkers)) && Number(swarm.maxWorkers) > 0
         ? Number(swarm.maxWorkers)

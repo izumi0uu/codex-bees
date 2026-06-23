@@ -1,0 +1,208 @@
+import { compareLanePurposes } from "./state-queue-views.js";
+import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
+import { buildHistoryView, buildPlanningView } from "./state-view-metadata.js";
+
+export function buildSwarmBriefView(
+  id,
+  {
+    swarmOverview,
+    getRuntimeCatalog,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    recommendLaneAction,
+    recommendSwarmAction,
+    describeRole,
+    buildSwarmHandoff,
+    deriveSwarmBriefReason
+  }
+) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const catalog = getRuntimeCatalog();
+  const validation = validateSwarmValue(overview.swarm, runtimeRoleCatalog());
+  const orchestration = buildSwarmOrchestrationView(overview.swarm, overview.lanes);
+  const swarmHistory = buildHistoryView(overview.swarm.history ?? [], { limit: 5, newestFirst: true });
+  const lanes = overview.lanes.map((laneSummary) => {
+    const task = laneSummary.taskId
+      ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
+      : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
+    const recommended = recommendLaneAction(laneSummary, task, overview.tasks);
+    const laneOrchestration = findLaneOrchestrationContext(orchestration, laneSummary.lane);
+
+    return {
+      lane: laneSummary.lane,
+      purpose: laneSummary.purpose ?? null,
+      summary: laneSummary.summary,
+      owner: describeRole(laneSummary.owner, catalog),
+      verifier: describeRole(laneSummary.verifier, catalog),
+      taskId: laneSummary.taskId,
+      taskQueueStatus: task?.queueStatus ?? null,
+      claimedBy: task?.claimedBy ?? null,
+      scope: laneSummary.scope ?? [],
+      dependsOn: laneSummary.dependsOn ?? [],
+      dependencyReady: laneSummary.dependencyReady ?? true,
+      dependencySummary: laneSummary.dependencySummary ?? null,
+      acceptance: task?.acceptance ?? [],
+      verification: task?.verification ?? [],
+      ready: laneSummary.ready,
+      done: laneSummary.done,
+      wave: laneOrchestration?.wave ?? null,
+      wavePosition: laneOrchestration?.wavePosition ?? null,
+      waveStatus: laneOrchestration?.waveStatus ?? null,
+      waveParallelizable: laneOrchestration?.waveParallelizable ?? null,
+      waveLaneCount: laneOrchestration?.waveLaneCount ?? null,
+      waveOwnerCount: laneOrchestration?.waveOwnerCount ?? null,
+      recommendedNextActor: recommended.actor,
+      recommendedNextAction: recommended.action,
+      recommendedCommands: recommended.commands
+    };
+  });
+  const recommended = recommendSwarmAction(overview, lanes);
+  const recommendedReason = deriveSwarmBriefReason(recommended);
+
+  return {
+    kind: "swarm_execution_brief",
+    recommendedReason,
+    swarm: overview.swarm,
+    planning: buildPlanningView(overview.swarm.plannerProvenance),
+    derivedStatus: overview.derivedStatus,
+    statusAligned: overview.statusAligned,
+    counts: overview.counts,
+    readyToComplete: overview.readyToComplete,
+    dispatchableCount: overview.dispatchableCount,
+    history: swarmHistory,
+    orchestration,
+    owner: describeRole(overview.swarm.owner, catalog),
+    lanes,
+    nextLane: lanes.find((lane) => lane.lane === overview.nextLane?.lane) ?? null,
+    validation,
+    leaderHandoff: buildSwarmHandoff(overview, recommended, orchestration),
+    recommendedNextActor: recommended.actor,
+    recommendedNextAction: recommended.action,
+    recommendedCommands: recommended.commands
+  };
+}
+
+export function buildSwarmBriefViewFromSources(
+  id,
+  {
+    swarmOverview,
+    getRuntimeCatalog,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    recommendLaneAction,
+    recommendSwarmAction,
+    describeRole,
+    buildSwarmHandoff,
+    deriveSwarmBriefReason
+  },
+  {
+    buildSwarmBriefView
+  }
+) {
+  return buildSwarmBriefView(
+    id,
+    {
+      swarmOverview,
+      getRuntimeCatalog,
+      validateSwarmValue,
+      runtimeRoleCatalog,
+      recommendLaneAction,
+      recommendSwarmAction,
+      describeRole,
+      buildSwarmHandoff,
+      deriveSwarmBriefReason
+    }
+  );
+}
+
+export function buildSwarmBundleView(
+  id,
+  {
+    swarmOverview,
+    swarmBrief,
+    taskReport,
+    deriveSwarmBundleReason,
+    buildSwarmBundleSummary
+  }
+) {
+  const overview = swarmOverview(id);
+  if (!overview) {
+    return null;
+  }
+
+  const brief = swarmBrief(id);
+  const orchestration = brief?.orchestration ?? buildSwarmOrchestrationView(overview.swarm, overview.lanes);
+  const history = brief?.history ?? buildHistoryView(overview.swarm.history ?? [], { limit: 5, newestFirst: true });
+  const laneBundles = overview.lanes
+    .map((laneSummary) => {
+      const task = laneSummary.taskId
+        ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
+        : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
+      const laneOrchestration = findLaneOrchestrationContext(orchestration, laneSummary.lane);
+      return {
+        lane: laneSummary.lane,
+        purpose: laneSummary.purpose ?? null,
+        summary: laneSummary.summary,
+        owner: laneSummary.owner,
+        verifier: laneSummary.verifier,
+        taskId: task?.id ?? null,
+        queueStatus: task?.queueStatus ?? null,
+        claimedBy: task?.claimedBy ?? null,
+        dependsOn: laneSummary.dependsOn ?? [],
+        dependencyReady: laneSummary.dependencyReady ?? true,
+        ready: laneSummary.ready,
+        done: laneSummary.done,
+        wave: laneOrchestration?.wave ?? null,
+        wavePosition: laneOrchestration?.wavePosition ?? null,
+        waveStatus: laneOrchestration?.waveStatus ?? null,
+        waveParallelizable: laneOrchestration?.waveParallelizable ?? null,
+        report: task ? taskReport(task.id) : null
+      };
+    })
+    .sort((left, right) => compareLanePurposes(left.purpose ?? null, right.purpose ?? null));
+  const recommendedReason = deriveSwarmBundleReason({ overview, laneBundles });
+
+  return {
+    kind: "swarm_bundle",
+    recommendedReason,
+    swarm: overview.swarm,
+    brief,
+    counts: overview.counts,
+    derivedStatus: overview.derivedStatus,
+    readyToComplete: overview.readyToComplete,
+    history,
+    orchestration,
+    nextLane: overview.nextLane,
+    lanes: laneBundles,
+    summary: buildSwarmBundleSummary(overview, laneBundles)
+  };
+}
+
+export function buildSwarmBundleViewFromSources(
+  id,
+  {
+    swarmOverview,
+    swarmBrief,
+    taskReport,
+    deriveSwarmBundleReason,
+    buildSwarmBundleSummary
+  },
+  {
+    buildSwarmBundleView
+  }
+) {
+  return buildSwarmBundleView(
+    id,
+    {
+      swarmOverview,
+      swarmBrief,
+      taskReport,
+      deriveSwarmBundleReason,
+      buildSwarmBundleSummary
+    }
+  );
+}
