@@ -1,4 +1,5 @@
 import { pickPriorityEntry } from "./state-queue-views.js";
+import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
 import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildSwarmCloseoutView(
@@ -90,9 +91,7 @@ export function buildSwarmBlockersView(
       verifier: lane.verifier,
       taskId: lane.taskId,
       claimedBy: lane.claimedBy,
-      recommendedNextActor: lane.recommendedNextActor,
-      recommendedNextAction: lane.recommendedNextAction,
-      recommendedCommands: lane.recommendedCommands,
+      ...buildRecommendedNextFields(lane),
       report: lane.taskId ? taskReport(lane.taskId) : null
     }));
   const recommendedReason = deriveSwarmBlockersReason({ blockedLanes });

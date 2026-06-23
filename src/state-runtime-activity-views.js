@@ -2,6 +2,7 @@ import {
   buildRuntimeTaskIdentityFields,
   buildRuntimeTaskRecommendationFields
 } from "./state-runtime-task-entry-helpers.js";
+import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
 
 export function buildRuntimeActivityEventSummary(entity, event) {
   if (entity.entityType === "swarm") {
@@ -117,9 +118,7 @@ export function buildRuntimeSwarmActivityEntry(swarm, event, swarmBrief) {
     toStatus: event.toStatus ?? null,
     outcome: event.outcome ?? null,
     notes: event.notes ?? null,
-    recommendedNextActor: brief?.recommendedNextActor ?? null,
-    recommendedNextAction: brief?.recommendedNextAction ?? null,
-    recommendedCommands: brief?.recommendedCommands ?? [],
+    ...buildRecommendedNextFields(brief),
     summary: buildRuntimeActivityEventSummary(
       {
         entityType: "swarm",

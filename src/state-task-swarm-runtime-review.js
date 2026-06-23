@@ -1,4 +1,5 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
 import { buildRuntimeTaskIdentityFields } from "./state-runtime-task-entry-helpers.js";
 
 export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBrief) {
@@ -10,17 +11,21 @@ export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBr
     owner: describeRole(task.owner),
     claimedBy: task.claimedBy,
     updatedAt: task.updatedAt,
-    recommendedNextActor: {
-      type: "verifier_role",
-      id: task.verifier,
-      claimedBy: null
-    },
-    recommendedNextAction: "review_and_decide",
-    recommendedCommands: [
-      `node ./src/index.js task:approve --id ${task.id} --by ${task.verifier ?? "<verifier-role>"}`,
-      `node ./src/index.js task:reject --id ${task.id} --by ${task.verifier ?? "<verifier-role>"} --status claimed --notes "<changes requested>"`
-    ],
-    taskBrief: taskBrief(task.id),
+    ...buildRecommendedNextFields(
+      {
+        recommendedNextActor: {
+          type: "verifier_role",
+          id: task.verifier,
+          claimedBy: null
+        },
+        recommendedNextAction: "review_and_decide",
+        recommendedCommands: [
+          `node ./src/index.js task:approve --id ${task.id} --by ${task.verifier ?? "<verifier-role>"}`,
+          `node ./src/index.js task:reject --id ${task.id} --by ${task.verifier ?? "<verifier-role>"} --status claimed --notes "<changes requested>"`
+        ]
+      },
+      { includeTaskBrief: true, taskBrief: taskBrief(task.id) }
+    ),
     summary: `Review ${task.id} for verifier ${task.verifier ?? "unknown"}.`
   };
 }

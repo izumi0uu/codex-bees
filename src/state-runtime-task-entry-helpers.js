@@ -1,3 +1,5 @@
+import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
+
 export function buildRuntimeTaskIdentityFields(task) {
   return {
     taskId: task.id,
@@ -12,10 +14,7 @@ export function buildRuntimeTaskIdentityFields(task) {
 
 export function buildRuntimeTaskRecommendationFields(brief) {
   return {
-    recommendedNextActor: brief?.recommendedNextActor ?? null,
-    recommendedNextAction: brief?.recommendedNextAction ?? null,
-    recommendedCommands: brief?.recommendedCommands ?? [],
-    taskBrief: brief ?? null
+    ...buildRecommendedNextFields(brief, { includeTaskBrief: true, taskBrief: brief })
   };
 }
 
