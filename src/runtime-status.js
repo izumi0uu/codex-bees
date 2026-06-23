@@ -2,6 +2,7 @@ import { getRuntimeCatalog } from "./catalog.js";
 import { listMemories, listSwarms, listTasks } from "./state-runtime.js";
 import { getPackageMetadata } from "./metadata.js";
 import { listMcpTools } from "./state-mcp-tool-catalog.js";
+import { createCollectionView, createResolvedItemView } from "./state-view-helpers.js";
 
 const CAPABILITY_CATALOG = [
   {
@@ -166,28 +167,29 @@ export function getCapabilityCatalogEntry(id) {
 
 export function getCapabilityCatalogEntryView(id) {
   const capability = getCapabilityCatalogEntry(id);
-
-  return {
-    kind: "runtime_capability_view",
-    recommendedReason: capability ? "runtime_capability_loaded" : "runtime_capability_missing",
-    id: id ?? null,
-    matchedCapability: capability?.id ?? null,
-    capability: capability ?? null
-  };
+  return createResolvedItemView("runtime_capability_view", {
+    requestLabel: "id",
+    requestValue: id,
+    matchedLabel: "matchedCapability",
+    matchedValue: capability?.id,
+    valueLabel: "capability",
+    value: capability,
+    loadedReason: "runtime_capability_loaded",
+    missingReason: "runtime_capability_missing"
+  });
 }
 
 export function getCapabilityCatalogView() {
   const capabilities = getCapabilityCatalog();
   const categoryCounts = countBy(capabilities, (capability) => capability.category);
-  return {
-    kind: "runtime_capabilities_view",
-    recommendedReason: capabilities.length > 0 ? "capabilities_loaded" : "capabilities_empty",
+  return createCollectionView("runtime_capabilities_view", "capabilities", capabilities, {
+    loadedReason: "capabilities_loaded",
+    emptyReason: "capabilities_empty",
     counts: {
       totalCapabilities: capabilities.length,
       categories: categoryCounts
-    },
-    capabilities
-  };
+    }
+  });
 }
 
 export function getRuntimeStatus({ version, toolCount } = {}) {

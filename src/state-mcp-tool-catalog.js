@@ -10,6 +10,7 @@ import {
 import {
   TASK_MCP_TOOL_CATALOG
 } from "./state-mcp-tool-catalog-task.js";
+import { createCollectionView, createResolvedItemView } from "./state-view-helpers.js";
 
 export const toolCatalog = [
   ...CORE_MCP_TOOL_CATALOG,
@@ -33,15 +34,14 @@ export function getToolCatalogView() {
     return counts;
   }, {});
 
-  return {
-    kind: "tool_catalog_view",
-    recommendedReason: toolCatalog.length > 0 ? "tool_catalog_loaded" : "tool_catalog_empty",
+  return createCollectionView("tool_catalog_view", "tools", toolCatalog, {
+    loadedReason: "tool_catalog_loaded",
+    emptyReason: "tool_catalog_empty",
     counts: {
       totalTools: toolCatalog.length,
       groups
-    },
-    tools: toolCatalog
-  };
+    }
+  });
 }
 
 function toolByName(name) {
@@ -59,14 +59,16 @@ export function getMcpToolEntry(name) {
 
 export function getMcpToolView(name) {
   const tool = getMcpToolEntry(name);
-
-  return {
-    kind: "mcp_tool_view",
-    recommendedReason: tool ? "mcp_tool_loaded" : "mcp_tool_missing",
-    name: name ?? null,
-    matchedTool: tool?.name ?? null,
-    tool: tool ?? null
-  };
+  return createResolvedItemView("mcp_tool_view", {
+    requestLabel: "name",
+    requestValue: name,
+    matchedLabel: "matchedTool",
+    matchedValue: tool?.name,
+    valueLabel: "tool",
+    value: tool,
+    loadedReason: "mcp_tool_loaded",
+    missingReason: "mcp_tool_missing"
+  });
 }
 
 export function listMcpTools() {

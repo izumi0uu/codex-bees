@@ -16,19 +16,22 @@ import {
   pushCommandHelpSection
 } from "./state-command-core.js";
 import { createResolvedOptionView } from "./state-command-options.js";
+import { createResolvedItemView } from "./state-view-helpers.js";
 
 export function getCommandHelpView(command) {
   const matchedEntry = getCommandCatalogEntry(command);
   const text = renderCommandHelpText(command);
-
-  return {
-    kind: "command_help_view",
-    recommendedReason: matchedEntry ? "command_help_loaded" : "command_help_fallback_loaded",
-    command: command ?? null,
-    matchedCommand: matchedEntry?.command ?? null,
-    text,
-    entry: matchedEntry ?? null
-  };
+  return createResolvedItemView("command_help_view", {
+    requestLabel: "command",
+    requestValue: command,
+    matchedLabel: "matchedCommand",
+    matchedValue: matchedEntry?.command,
+    valueLabel: "entry",
+    value: matchedEntry,
+    loadedReason: "command_help_loaded",
+    missingReason: "command_help_fallback_loaded",
+    extra: { text }
+  });
 }
 
 export function renderHelpText() {
