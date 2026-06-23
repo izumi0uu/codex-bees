@@ -190,6 +190,28 @@ export function queueTasksFromPlan(task, addTasks, options = {}) {
   };
 }
 
+export function queueSwarmFromPlan(task, { initSwarm, queueSwarmTasks }, options = {}) {
+  const planned = planSwarm(task, options);
+  const swarm = initSwarm(planned.swarm);
+  const queued = queueSwarmTasks({ id: swarm.id });
+  if (!queued || queued.error) {
+    return queued;
+  }
+
+  return {
+    kind: "queued_plan_swarm",
+    recommendedReason: queued.created.length > 1 ? "multiple_swarm_lane_tasks_queued" : "single_swarm_lane_task_queued",
+    objective: task,
+    requestedProfile: planned.requestedProfile,
+    planner: planned.planner,
+    plannerSelection: planned.plannerSelection,
+    evidence: planned.evidence,
+    orchestration: planned.orchestration,
+    swarm: queued.swarm,
+    created: queued.created
+  };
+}
+
 export { registerPlannerProfile, registerPlannerProfiles };
 
 export function resetPlannerProfiles() {

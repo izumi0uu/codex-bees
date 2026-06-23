@@ -1,4 +1,4 @@
-import { getPlannerProfileView, getPlannerProfilesView, planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
+import { getPlannerProfileView, getPlannerProfilesView, planSwarm, planTask, queueSwarmFromPlan, queueTasksFromPlan } from "./planner.js";
 import {
   activateSwarm,
   addTasks,
@@ -109,34 +109,21 @@ const PLAN_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, "queue_plan_swarm requires arguments.task");
     }
     
-    const planned = planSwarm(params.arguments.task, {
+    const queued = queueSwarmFromPlan(params.arguments.task, {
+      initSwarm,
+      queueSwarmTasks
+    }, {
       profileId: params.arguments.profile,
       profileFile: params.arguments.profileFile
     });
-    const swarm = initSwarm(planned.swarm);
-    const queued = queueSwarmTasks({ id: swarm.id });
     if (!queued) {
-      return createError(id, -32602, `Unknown swarm id: ${swarm.id}`);
+      return createError(id, -32602, `Unable to queue planned swarm for task: ${params.arguments.task}`);
     }
     if (queued.error) {
       return createError(id, -32602, queued.error);
     }
     
-    return createSuccess(
-      id,
-      createTextPayload({
-        kind: "queued_plan_swarm",
-        recommendedReason: queued.created.length > 1 ? "multiple_swarm_lane_tasks_queued" : "single_swarm_lane_task_queued",
-        objective: params.arguments.task,
-        requestedProfile: planned.requestedProfile,
-        planner: planned.planner,
-        plannerSelection: planned.plannerSelection,
-        evidence: planned.evidence,
-        orchestration: planned.orchestration,
-        swarm: queued.swarm,
-        created: queued.created
-      })
-    );
+    return createSuccess(id, createTextPayload(queued));
   }
 };
 
