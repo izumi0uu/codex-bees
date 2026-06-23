@@ -18,3 +18,15 @@ export function buildRuntimeTaskRecommendationFields(brief) {
     taskBrief: brief ?? null
   };
 }
+
+export function buildRuntimeTaskDashboardFields(task) {
+  return {
+    id: task.id,
+    title: task.title,
+    swarmId: task.swarmId,
+    lane: task.lane,
+    lanePurpose: task.lanePurpose ?? null,
+    owner: task.owner,
+    verifier: task.verifier
+  };
+}

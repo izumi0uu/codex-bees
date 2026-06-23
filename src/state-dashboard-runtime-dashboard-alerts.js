@@ -1,3 +1,5 @@
+import { buildRuntimeTaskDashboardFields } from "./state-runtime-task-entry-helpers.js";
+
 export function buildRuntimeDashboardSummary(queue, blockedTasks, pendingReview, activeClaimed) {
   const nextSwarm = queue?.next?.swarmId ?? null;
   if (blockedTasks.length > 0) {
@@ -129,28 +131,30 @@ export function buildRuntimeAlertsView(
   const alerts = [];
 
   for (const task of dashboard.blockedTasks) {
+    const taskFields = buildRuntimeTaskDashboardFields(task);
     alerts.push({
       kind: "blocked_task",
       severity: "high",
-      taskId: task.id,
-      swarmId: task.swarmId,
-      lane: task.lane,
-      lanePurpose: task.lanePurpose ?? null,
-      owner: task.owner,
-      summary: `Task ${task.id} is blocked${task.swarmId ? ` in ${task.swarmId}` : ""}.`
+      taskId: taskFields.id,
+      swarmId: taskFields.swarmId,
+      lane: taskFields.lane,
+      lanePurpose: taskFields.lanePurpose,
+      owner: taskFields.owner,
+      summary: `Task ${taskFields.id} is blocked${taskFields.swarmId ? ` in ${taskFields.swarmId}` : ""}.`
     });
   }
 
   for (const task of dashboard.pendingReview) {
+    const taskFields = buildRuntimeTaskDashboardFields(task);
     alerts.push({
       kind: "pending_review",
       severity: "medium",
-      taskId: task.id,
-      swarmId: task.swarmId,
-      lane: task.lane,
-      lanePurpose: task.lanePurpose ?? null,
-      verifier: task.verifier,
-      summary: `Task ${task.id} is waiting on verifier ${task.verifier ?? "unknown"}.`
+      taskId: taskFields.id,
+      swarmId: taskFields.swarmId,
+      lane: taskFields.lane,
+      lanePurpose: taskFields.lanePurpose,
+      verifier: taskFields.verifier,
+      summary: `Task ${taskFields.id} is waiting on verifier ${taskFields.verifier ?? "unknown"}.`
     });
   }
 

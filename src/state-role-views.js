@@ -1,15 +1,10 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import { annotateTasksWithDependencyState } from "./state-task-core.js";
+import { buildRuntimeTaskDashboardFields } from "./state-runtime-task-entry-helpers.js";
 
 export function summarizeDashboardTask(task) {
   return {
-    id: task.id,
-    title: task.title,
-    swarmId: task.swarmId,
-    lane: task.lane,
-    lanePurpose: task.lanePurpose ?? null,
-    owner: task.owner,
-    verifier: task.verifier,
+    ...buildRuntimeTaskDashboardFields(task),
     claimedBy: task.claimedBy,
     queueStatus: task.queueStatus,
     updatedAt: task.updatedAt
