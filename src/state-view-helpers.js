@@ -13,6 +13,20 @@ function createCollectionView(kind, itemLabel, items, {
   };
 }
 
+function createLoadedValueView(kind, valueLabel, value, {
+  recommendedReason,
+  counts = {},
+  extra = {}
+} = {}) {
+  return {
+    kind,
+    recommendedReason,
+    counts,
+    [valueLabel]: value,
+    ...extra
+  };
+}
+
 function createResolvedItemView(kind, {
   requestLabel,
   requestValue,
@@ -34,4 +48,4 @@ function createResolvedItemView(kind, {
   };
 }
 
-export { createCollectionView, createResolvedItemView };
+export { createCollectionView, createLoadedValueView, createResolvedItemView };

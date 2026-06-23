@@ -1,4 +1,5 @@
 import { cwd, version as nodeVersion } from "node:process";
+import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function getRuntimeContract(options = {}) {
   const workingDirectory = options.workingDirectory ?? cwd();
@@ -39,8 +40,7 @@ export function getRuntimeContract(options = {}) {
 
 export function getRuntimeContractView(options = {}) {
   const contract = getRuntimeContract(options);
-  return {
-    kind: "runtime_contract_view",
+  return createLoadedValueView("runtime_contract_view", "contract", contract, {
     recommendedReason: "contract_loaded",
     counts: {
       positioningFacets: Object.keys(contract.positioning).length,
@@ -48,7 +48,6 @@ export function getRuntimeContractView(options = {}) {
       transports: Object.keys(contract.transport).length,
       responsibilities: contract.responsibilities.length,
       exclusions: contract.exclusions.length
-    },
-    contract
-  };
+    }
+  });
 }

@@ -1,3 +1,5 @@
+import { createLoadedValueView } from "./state-view-helpers.js";
+
 export function getCoordinationOverview() {
   return {
     executionModel: "local bounded multi-agent coordination",
@@ -8,14 +10,12 @@ export function getCoordinationOverview() {
 
 export function getCoordinationOverviewView() {
   const overview = getCoordinationOverview();
-  return {
-    kind: "coordination_overview_view",
+  return createLoadedValueView("coordination_overview_view", "overview", overview, {
     recommendedReason: "coordination_model_loaded",
     counts: {
       facets: Object.keys(overview).length
-    },
-    overview
-  };
+    }
+  });
 }
 
 export function getWorkerGuidelines() {
@@ -28,13 +28,11 @@ export function getWorkerGuidelines() {
 
 export function getWorkerGuidelinesView() {
   const guidelines = getWorkerGuidelines();
-  return {
-    kind: "worker_guidelines_view",
+  return createLoadedValueView("worker_guidelines_view", "guidelines", guidelines, {
     recommendedReason: "worker_guidelines_loaded",
     counts: {
       ruleSections: 2,
       validationSteps: guidelines.validation.length
-    },
-    guidelines
-  };
+    }
+  });
 }

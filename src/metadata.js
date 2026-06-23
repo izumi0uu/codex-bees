@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { createLoadedValueView } from "./state-view-helpers.js";
 
 const PACKAGE_MANIFEST_LOCATIONS = [
   new URL("../package.json", import.meta.url),
@@ -38,9 +39,7 @@ export function getPackageMetadata() {
 }
 
 export function getPackageMetadataView() {
-  return {
-    kind: "package_metadata_view",
-    recommendedReason: "package_metadata_loaded",
-    metadata: getPackageMetadata()
-  };
+  return createLoadedValueView("package_metadata_view", "metadata", getPackageMetadata(), {
+    recommendedReason: "package_metadata_loaded"
+  });
 }

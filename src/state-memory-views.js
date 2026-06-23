@@ -1,3 +1,5 @@
+import { createLoadedValueView } from "./state-view-helpers.js";
+
 export function buildMemoryDetailView(
   id,
   {
@@ -9,16 +11,16 @@ export function buildMemoryDetailView(
     return null;
   }
 
-  return {
-    kind: "memory_detail",
+  return createLoadedValueView("memory_detail", "memory", memory, {
     recommendedReason: "memory_detail_loaded",
-    metadata: {
-      hasTitle: Boolean(memory.title),
-      hasNotes: Boolean(memory.notes),
-      tagCount: (memory.tags ?? []).length
-    },
-    memory
-  };
+    extra: {
+      metadata: {
+        hasTitle: Boolean(memory.title),
+        hasNotes: Boolean(memory.notes),
+        tagCount: (memory.tags ?? []).length
+      }
+    }
+  });
 }
 
 export function buildMemoryDetailViewFromSources(
