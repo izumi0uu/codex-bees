@@ -1,4 +1,5 @@
 import { summarizePlannerProvenance } from "./planner-provenance.js";
+import { buildSwarmOverviewStatusFields } from "./state-swarm-overview-status-helpers.js";
 
 export function buildPlanningView(provenance) {
   return summarizePlannerProvenance(provenance);
@@ -32,10 +33,12 @@ export function buildSwarmDetailMetadata(swarm, overview = null) {
   const history = Array.isArray(swarm?.history) ? swarm.history : [];
 
   return {
-    derivedStatus: overview?.derivedStatus ?? swarm?.status ?? null,
-    statusAligned: overview?.statusAligned ?? true,
-    readyToComplete: overview?.readyToComplete ?? false,
-    dispatchableCount: overview?.dispatchableCount ?? 0,
+    ...buildSwarmOverviewStatusFields(overview, {
+      includeStatusAligned: true,
+      includeReadyToComplete: true,
+      includeDispatchableCount: true,
+      fallbackDerivedStatus: swarm?.status ?? null
+    }),
     hasHistory: history.length > 0,
     historyEntries: history.length,
     plannerProvenance: buildPlanningView(swarm?.plannerProvenance)

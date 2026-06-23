@@ -1,6 +1,7 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import { compareLanePurposes } from "./state-queue-views.js";
 import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
+import { buildSwarmOverviewStatusFields } from "./state-swarm-overview-status-helpers.js";
 import { findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
 
 export function buildLeaderQueueSummary(items) {
@@ -32,8 +33,9 @@ export function buildLeaderQueueView(
     swarmId: swarm.id,
     objective: swarm.objective,
     status: swarm.status,
-    derivedStatus: swarm.derivedStatus,
-    readyToComplete: swarm.readyToComplete,
+    ...buildSwarmOverviewStatusFields(swarm, {
+      includeReadyToComplete: true
+    }),
     ...buildRecommendedNextFields(swarm),
     summary: swarm.summary
   }));
