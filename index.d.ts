@@ -771,6 +771,19 @@ export interface TaskAnnotation {
   content: string;
 }
 
+export interface SwarmHistoryEntry {
+  id: string;
+  at: string | null;
+  type: string;
+  fromStatus: SwarmStatus | null;
+  toStatus: SwarmStatus | null;
+  actor: string | null;
+  lane: string | null;
+  taskId: string | null;
+  notes: string | null;
+  outcome: string | null;
+}
+
 export interface TaskDependencySummary {
   refs: string[];
   ready: boolean;
@@ -825,6 +838,7 @@ export interface SwarmRecord {
   owner: string | null;
   laneSource: string;
   lanes: SwarmLaneRecord[];
+  history: SwarmHistoryEntry[];
   queuedAt: string | null;
   notes: string | null;
   createdAt: string | null;
@@ -1127,6 +1141,8 @@ export interface SwarmDetailMetadata {
   statusAligned: boolean;
   readyToComplete: boolean;
   dispatchableCount: number;
+  hasHistory: boolean;
+  historyEntries: number;
 }
 
 export interface MemoryDetailMetadata {

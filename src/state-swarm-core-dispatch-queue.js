@@ -1,20 +1,40 @@
+import { buildSwarmHistoryEntry, buildTaskHistoryEntry } from "./state-builders.js";
 import { updateSwarmAtIndex } from "./state-swarm-core-read-sync.js";
-import { taskDependenciesReady } from "./state-task-core.js";
+import { appendSwarmHistoryEntry } from "./state-swarm-history.js";
+import { appendTaskHistoryEntry, taskDependenciesReady } from "./state-task-core.js";
 
 export function buildDispatchedSwarmTaskState(currentTask, input, updatedAt = new Date().toISOString()) {
   return {
     ...currentTask,
     queueStatus: "claimed",
     claimedBy: input.claimedBy,
+    history: appendTaskHistoryEntry(
+      currentTask,
+      buildTaskHistoryEntry(currentTask, "claimed", {
+        claimedBy: input.claimedBy,
+        notes: input.notes ?? `Dispatched from swarm ${currentTask.swarmId ?? "unknown"}.`
+      })
+    ),
     updatedAt
   };
 }
 
-export function buildDispatchedSwarmState(swarm, input, updatedAt = new Date().toISOString()) {
+export function buildDispatchedSwarmState(swarm, input, lane, task, updatedAt = new Date().toISOString()) {
+  const nextStatus = swarm.status === "planned" ? "active" : swarm.status;
   return {
     ...swarm,
-    status: swarm.status === "planned" ? "active" : swarm.status,
+    status: nextStatus,
     ...(input.owner !== undefined ? { owner: input.owner } : {}),
+    history: appendSwarmHistoryEntry(
+      swarm,
+      buildSwarmHistoryEntry(swarm, nextStatus, input, {
+        type: "dispatched",
+        lane: lane?.lane ?? null,
+        taskId: task?.id ?? null,
+        actor: input.claimedBy ?? null,
+        notes: input.notes ?? `Dispatched ${lane?.lane ?? "lane"} to ${input.claimedBy}.`
+      })
+    ),
     updatedAt
   };
 }
@@ -90,7 +110,7 @@ export function dispatchLoadedSwarmLane(
   const nextTask = normalizeTask(buildDispatchedSwarmTaskState(currentTask, input));
   state.tasks[taskIndex] = nextTask;
 
-  const nextSwarm = normalizeSwarm(buildDispatchedSwarmState(swarm, input));
+  const nextSwarm = normalizeSwarm(buildDispatchedSwarmState(swarm, input, candidateLane, nextTask));
   state.swarms[swarmIndex] = nextSwarm;
   const syncedSwarm = syncSwarmInLoadedState(state, swarm.id) ?? nextSwarm;
 
@@ -128,12 +148,19 @@ export function buildQueuedSwarmLaneState(lane, task, normalizeSwarmLane) {
   });
 }
 
-export function buildQueuedSwarmState(current, nextLanes, queuedAt = new Date().toISOString()) {
+export function buildQueuedSwarmState(current, nextLanes, created = [], queuedAt = new Date().toISOString()) {
   const nextStatus = current.status === "planned" ? "active" : current.status;
   return {
     ...current,
     status: nextStatus,
     lanes: nextLanes,
+    history: appendSwarmHistoryEntry(
+      current,
+      buildSwarmHistoryEntry(current, nextStatus, {}, {
+        type: "queued",
+        notes: `Queued ${created.length} lane task${created.length === 1 ? "" : "s"}.`
+      })
+    ),
     queuedAt,
     updatedAt: queuedAt
   };
@@ -183,7 +210,7 @@ export function queueLoadedSwarmTasks(
     nextLanes.push(buildQueuedSwarmLaneState(lane, task, normalizeSwarmLane));
   }
 
-  const updated = normalizeSwarm(buildQueuedSwarmState(current, nextLanes));
+  const updated = normalizeSwarm(buildQueuedSwarmState(current, nextLanes, created));
   updateSwarmAtIndex(state.swarms, swarmIndex, updated);
 
   return {

@@ -166,6 +166,7 @@ export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
     return null;
   }
   const overview = swarmOverview(id);
+  const history = Array.isArray(swarm.history) ? swarm.history : [];
   return {
     kind: "swarm_detail",
     recommendedReason: "swarm_detail_loaded",
@@ -173,7 +174,9 @@ export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
       derivedStatus: overview?.derivedStatus ?? swarm.status,
       statusAligned: overview?.statusAligned ?? true,
       readyToComplete: overview?.readyToComplete ?? false,
-      dispatchableCount: overview?.dispatchableCount ?? 0
+      dispatchableCount: overview?.dispatchableCount ?? 0,
+      hasHistory: history.length > 0,
+      historyEntries: history.length
     },
     swarm
   };

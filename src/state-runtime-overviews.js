@@ -236,7 +236,9 @@ export function runtimeActivityFromSources(
   {
     loadState,
     normalizeTask,
-    taskBrief
+    normalizeSwarm,
+    taskBrief,
+    swarmBrief
   }
 ) {
   return buildRuntimeActivityViewFromState(
@@ -244,7 +246,9 @@ export function runtimeActivityFromSources(
     {
       loadState,
       normalizeTask,
+      normalizeSwarm,
       taskBrief,
+      swarmBrief,
       buildRuntimeActivityEntry,
       compareRuntimeActivityEntries
     },

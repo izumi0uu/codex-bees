@@ -4819,6 +4819,9 @@ if (
   swarmGet.metadata?.statusAligned !== true ||
   swarmGet.metadata?.readyToComplete !== false ||
   swarmGet.metadata?.dispatchableCount !== 0 ||
+  swarmGet.metadata?.hasHistory !== true ||
+  swarmGet.metadata?.historyEntries !== 1 ||
+  swarmGet.swarm?.history?.[0]?.type !== "created" ||
   !swarmGet.swarm
 ) {
   console.error("[smoke:swarm-get] expected CLI swarm detail payload");
@@ -4846,7 +4849,8 @@ const startedSwarm = JSON.parse(
 if (
   startedSwarm.kind !== "swarm_lifecycle" ||
   startedSwarm.recommendedReason !== "swarm_activated" ||
-  startedSwarm.swarm?.status !== "active"
+  startedSwarm.swarm?.status !== "active" ||
+  startedSwarm.swarm?.history?.at(-1)?.type !== "activated"
 ) {
   console.error("[smoke:swarm-start] expected activated swarm lifecycle payload");
   process.exit(1);
@@ -4858,7 +4862,8 @@ if (
   swarmQueue.kind !== "swarm_queue" ||
   swarmQueue.recommendedReason !== "multiple_lane_tasks_queued" ||
   !Array.isArray(swarmQueue.created) ||
-  swarmQueue.created.length !== 2
+  swarmQueue.created.length !== 2 ||
+  swarmQueue.swarm?.history?.at(-1)?.type !== "queued"
 ) {
   console.error("[smoke:swarm-queue] expected two queued swarm tasks");
   process.exit(1);
@@ -5205,7 +5210,9 @@ if (
   dispatchedLane.kind !== "swarm_dispatch" ||
   dispatchedLane.recommendedReason !== "dispatch_lane_claimed" ||
   dispatchedLane.task.claimedBy !== "worker-alpha" ||
-  dispatchedLane.lane.lane !== "lane-alpha"
+  dispatchedLane.lane.lane !== "lane-alpha" ||
+  dispatchedLane.task?.history?.at(-1)?.type !== "claimed" ||
+  dispatchedLane.swarm?.history?.at(-1)?.type !== "dispatched"
 ) {
   console.error("[smoke:swarm-dispatch] expected first lane claimed by worker-alpha");
   process.exit(1);
@@ -5381,6 +5388,8 @@ if (
   syncedSwarmGet.metadata?.statusAligned !== true ||
   syncedSwarmGet.metadata?.readyToComplete !== true ||
   syncedSwarmGet.metadata?.dispatchableCount !== 0 ||
+  syncedSwarmGet.metadata?.hasHistory !== true ||
+  (syncedSwarmGet.metadata?.historyEntries ?? 0) < 1 ||
   syncedSwarmGet.swarm?.status !== "completed"
 ) {
   console.error("[smoke:swarm-sync] expected stored completed swarm status");
@@ -5535,7 +5544,8 @@ if (
   updatedSwarmGet.swarm?.objective !== "Updated swarm smoke" ||
   updatedSwarmGet.swarm?.maxWorkers !== 3 ||
   updatedSwarmGet.swarm?.laneSource !== "smoke-refresh" ||
-  updatedSwarmGet.swarm?.notes !== "update path verified"
+  updatedSwarmGet.swarm?.notes !== "update path verified" ||
+  updatedSwarmGet.swarm?.history?.at(-1)?.type !== "updated"
 ) {
   console.error("[smoke:swarm-update] expected persisted updated swarm metadata");
   process.exit(1);
@@ -6702,13 +6712,16 @@ const runtimeActivityCli = JSON.parse(
   run("runtime-activity-cli", ["./src/index.js", "runtime:activity"]).stdout
 ).activity;
 if (
-  runtimeActivityCli.recommendedReason !== "created_event_latest" ||
-  runtimeActivityCli.counts?.totalEntries < 6 ||
-  runtimeActivityCli.next?.type !== "created" ||
-  runtimeActivityCli.next?.taskId !== "task-4" ||
+  runtimeActivityCli.recommendedReason !== "swarm_event_latest" ||
+  runtimeActivityCli.counts?.totalEntries < 8 ||
+  runtimeActivityCli.counts?.swarmEvents < 2 ||
+  runtimeActivityCli.next?.entityType !== "swarm" ||
+  runtimeActivityCli.next?.type !== "queued" ||
+  runtimeActivityCli.next?.swarmId !== "swarm-1" ||
   runtimeActivityCli.entries?.some((entry) => entry.type === "blocked" && entry.taskId === "task-1") !== true ||
   runtimeActivityCli.entries?.some((entry) => entry.type === "ready_for_review" && entry.taskId === "task-2") !== true ||
-  runtimeActivityCli.entries?.some((entry) => entry.type === "claimed" && entry.taskId === "task-1") !== true
+  runtimeActivityCli.entries?.some((entry) => entry.type === "claimed" && entry.taskId === "task-1") !== true ||
+  runtimeActivityCli.entries?.some((entry) => entry.entityType === "swarm" && entry.type === "queued" && entry.swarmId === "swarm-1") !== true
 ) {
   console.error("[smoke:runtime-activity] expected CLI runtime activity stream");
   process.exit(1);
@@ -7057,7 +7070,9 @@ if (
   runtimeSignalPackCli.counts?.surfacedNextEntries !== Object.values(runtimeSignalPackCli.next ?? {}).filter(Boolean).length ||
   runtimeSignalPackCli.next?.focus?.taskId !== "task-1" ||
   runtimeSignalPackCli.next?.alert?.taskId !== "task-1" ||
-  runtimeSignalPackCli.next?.activity?.taskId !== "task-4" ||
+  runtimeSignalPackCli.next?.activity?.entityType !== "swarm" ||
+  runtimeSignalPackCli.next?.activity?.type !== "queued" ||
+  runtimeSignalPackCli.next?.activity?.swarmId !== "swarm-1" ||
   runtimeSignalPackCli.next?.role?.role?.id !== "tester"
 ) {
   console.error("[smoke:runtime-signal-pack] expected CLI signal pack to recommend focus");
@@ -7261,11 +7276,14 @@ const runtimeActivityMcpLines = runtimeActivityMcp.stdout
 const runtimeActivityMcpPayload = JSON.parse(JSON.parse(runtimeActivityMcpLines[1]).result.content[0].text);
 if (
   runtimeActivityMcp.status !== 0 ||
-  runtimeActivityMcpPayload.activity?.recommendedReason !== "created_event_latest" ||
-  runtimeActivityMcpPayload.activity?.counts?.totalEntries < 6 ||
-  runtimeActivityMcpPayload.activity?.next?.type !== "created" ||
-  runtimeActivityMcpPayload.activity?.next?.taskId !== "task-4" ||
-  runtimeActivityMcpPayload.activity?.entries?.some((entry) => entry.type === "blocked" && entry.taskId === "task-1") !== true
+  runtimeActivityMcpPayload.activity?.recommendedReason !== "swarm_event_latest" ||
+  runtimeActivityMcpPayload.activity?.counts?.totalEntries < 8 ||
+  runtimeActivityMcpPayload.activity?.counts?.swarmEvents < 2 ||
+  runtimeActivityMcpPayload.activity?.next?.entityType !== "swarm" ||
+  runtimeActivityMcpPayload.activity?.next?.type !== "queued" ||
+  runtimeActivityMcpPayload.activity?.next?.swarmId !== "swarm-1" ||
+  runtimeActivityMcpPayload.activity?.entries?.some((entry) => entry.type === "blocked" && entry.taskId === "task-1") !== true ||
+  runtimeActivityMcpPayload.activity?.entries?.some((entry) => entry.entityType === "swarm" && entry.type === "queued" && entry.swarmId === "swarm-1") !== true
 ) {
   console.error("[smoke:runtime-activity-mcp] expected MCP runtime activity");
   console.error(runtimeActivityMcp.stderr || runtimeActivityMcp.stdout);
@@ -7872,6 +7890,10 @@ if (
   runtimeSignalPackMcpPayload.signalPack?.counts?.surfacedNextEntries !==
     Object.values(runtimeSignalPackMcpPayload.signalPack?.next ?? {}).filter(Boolean).length ||
   runtimeSignalPackMcpPayload.signalPack?.next?.focus?.taskId !== "task-1" ||
+  runtimeSignalPackMcpPayload.signalPack?.next?.alert?.taskId !== "task-1" ||
+  runtimeSignalPackMcpPayload.signalPack?.next?.activity?.entityType !== "swarm" ||
+  runtimeSignalPackMcpPayload.signalPack?.next?.activity?.type !== "queued" ||
+  runtimeSignalPackMcpPayload.signalPack?.next?.activity?.swarmId !== "swarm-1" ||
   runtimeSignalPackMcpPayload.signalPack?.next?.role?.role?.id !== "tester"
 ) {
   console.error("[smoke:runtime-signal-pack-mcp] expected MCP runtime signal pack");

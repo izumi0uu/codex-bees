@@ -12,7 +12,7 @@ import {
 } from "./state-runtime-entry-surfaces.js";
 
 export function createStateRuntimeOverviewEntryPoints(shared, api, runtimeLeader) {
-  const { loadState, normalizeTask } = shared;
+  const { loadState, normalizeTask, normalizeSwarm } = shared;
   const { leaderQueue, leaderAssignments } = runtimeLeader;
 
   function runtimeDashboard() {
@@ -71,7 +71,9 @@ export function createStateRuntimeOverviewEntryPoints(shared, api, runtimeLeader
     return runtimeActivitySurface(input, {
       loadState,
       normalizeTask,
-      taskBrief: api.taskBrief
+      normalizeSwarm,
+      taskBrief: api.taskBrief,
+      swarmBrief: api.swarmBrief
     });
   }
 

@@ -5,6 +5,9 @@ export function deriveRuntimeActivityReason({ entries, next }) {
   if (["ready_for_review", "approved", "changes_requested"].includes(next?.type)) {
     return "review_event_latest";
   }
+  if (next?.entityType === "swarm") {
+    return "swarm_event_latest";
+  }
   if (next?.type === "claimed") {
     return "claimed_event_latest";
   }
@@ -51,11 +54,15 @@ export function deriveRuntimeRecoveryReason({ groups, next }) {
 
 export function buildRuntimeActivitySummary(entries, next) {
   if (entries.length === 0) {
-    return "Runtime activity has no recorded task events yet.";
+    return "Runtime activity has no recorded task or swarm events yet.";
   }
 
   if (!next) {
     return `Runtime activity is tracking ${entries.length} recent event${entries.length === 1 ? "" : "s"}.`;
+  }
+
+  if (next.entityType === "swarm") {
+    return `Runtime activity is led by ${next.type} on ${next.swarmId}.`;
   }
 
   return `Runtime activity is led by ${next.type} on ${next.taskId}.`;

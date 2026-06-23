@@ -93,6 +93,21 @@ export function normalizeSwarmLane(lane, index = 0) {
   };
 }
 
+export function normalizeSwarmHistoryEntry(entry, index = 0) {
+  return {
+    id: entry.id ?? `event-${index + 1}`,
+    at: entry.at ?? null,
+    type: entry.type ?? "updated",
+    fromStatus: entry.fromStatus ?? null,
+    toStatus: entry.toStatus ?? null,
+    actor: entry.actor ?? null,
+    lane: entry.lane ?? null,
+    taskId: entry.taskId ?? null,
+    notes: entry.notes ?? null,
+    outcome: entry.outcome ?? null
+  };
+}
+
 export function normalizeSwarm(swarm) {
   return {
     ...swarm,
@@ -113,6 +128,7 @@ export function normalizeSwarm(swarm) {
     lanes: Array.isArray(swarm.lanes)
       ? swarm.lanes.map((lane, index) => normalizeSwarmLane(lane, index))
       : [],
+    history: Array.isArray(swarm.history) ? swarm.history.map(normalizeSwarmHistoryEntry) : [],
     queuedAt: swarm.queuedAt ?? null,
     notes: swarm.notes ?? null
   };

@@ -1,8 +1,26 @@
+import { buildSwarmHistoryEntry } from "./state-builders.js";
+import { appendSwarmHistoryEntry } from "./state-swarm-history.js";
+
 export function buildSyncedSwarmState(current, derivedStatus, updatedAt = new Date().toISOString()) {
-  return {
+  const next = {
     ...current,
     status: derivedStatus,
     updatedAt
+  };
+
+  if (derivedStatus === current.status) {
+    return next;
+  }
+
+  return {
+    ...next,
+    history: appendSwarmHistoryEntry(
+      current,
+      buildSwarmHistoryEntry(current, derivedStatus, {}, {
+        type: "synced",
+        notes: `Synced swarm status to ${derivedStatus}.`
+      })
+    )
   };
 }
 
@@ -89,11 +107,30 @@ export function syncLoadedSwarmState(
 }
 
 export function buildTransitionedSwarmState(current, input, updatedAt = new Date().toISOString()) {
+  const nextStatus = input.nextStatus;
+  const statusType =
+    nextStatus === "active"
+      ? "activated"
+      : nextStatus === "blocked"
+        ? "blocked"
+        : nextStatus === "completed"
+          ? "completed"
+          : nextStatus === "cancelled"
+            ? "cancelled"
+            : "updated";
+
   return {
     ...current,
-    status: input.nextStatus,
+    status: nextStatus,
     ...(input.owner !== undefined ? { owner: input.owner } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
+    history: appendSwarmHistoryEntry(
+      current,
+      buildSwarmHistoryEntry(current, nextStatus, input, {
+        type: statusType,
+        notes: input.notes ?? `Swarm status changed to ${nextStatus}.`
+      })
+    ),
     updatedAt
   };
 }

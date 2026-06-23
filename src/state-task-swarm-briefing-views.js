@@ -24,6 +24,7 @@ export function buildSwarmBriefView(
   const catalog = getRuntimeCatalog();
   const validation = validateSwarmValue(overview.swarm, runtimeRoleCatalog());
   const orchestration = buildSwarmOrchestrationView(overview.swarm, overview.lanes);
+  const swarmHistory = Array.isArray(overview.swarm.history) ? overview.swarm.history : [];
   const lanes = overview.lanes.map((laneSummary) => {
     const task = laneSummary.taskId
       ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
@@ -71,6 +72,10 @@ export function buildSwarmBriefView(
     counts: overview.counts,
     readyToComplete: overview.readyToComplete,
     dispatchableCount: overview.dispatchableCount,
+    history: {
+      count: swarmHistory.length,
+      entries: swarmHistory.slice(-5).reverse()
+    },
     orchestration,
     owner: describeRole(overview.swarm.owner, catalog),
     lanes,
@@ -133,6 +138,10 @@ export function buildSwarmBundleView(
 
   const brief = swarmBrief(id);
   const orchestration = brief?.orchestration ?? buildSwarmOrchestrationView(overview.swarm, overview.lanes);
+  const history = brief?.history ?? {
+    count: Array.isArray(overview.swarm.history) ? overview.swarm.history.length : 0,
+    entries: Array.isArray(overview.swarm.history) ? overview.swarm.history.slice(-5).reverse() : []
+  };
   const laneBundles = overview.lanes.map((laneSummary) => {
     const task = laneSummary.taskId
       ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
@@ -168,6 +177,7 @@ export function buildSwarmBundleView(
     counts: overview.counts,
     derivedStatus: overview.derivedStatus,
     readyToComplete: overview.readyToComplete,
+    history,
     orchestration,
     nextLane: overview.nextLane,
     lanes: laneBundles,

@@ -70,11 +70,13 @@ export function runtimeFocusSurface({
   });
 }
 
-export function runtimeActivitySurface(input = {}, { loadState, normalizeTask, taskBrief }) {
+export function runtimeActivitySurface(input = {}, { loadState, normalizeTask, normalizeSwarm, taskBrief, swarmBrief }) {
   return runtimeActivityFromSources(input, {
     loadState,
     normalizeTask,
-    taskBrief
+    normalizeSwarm,
+    taskBrief,
+    swarmBrief
   });
 }
 

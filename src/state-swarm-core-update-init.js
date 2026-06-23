@@ -1,3 +1,5 @@
+import { buildSwarmHistoryEntry } from "./state-builders.js";
+import { appendSwarmHistoryEntry } from "./state-swarm-history.js";
 import { updateSwarmAtIndex } from "./state-swarm-core-read-sync.js";
 
 export function buildUpdatedSwarmState(current, input, updatedAt = new Date().toISOString()) {
@@ -13,6 +15,13 @@ export function buildUpdatedSwarmState(current, input, updatedAt = new Date().to
     ...(input.laneSource !== undefined ? { laneSource: input.laneSource } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
     ...(input.lanes !== undefined ? { lanes: input.lanes } : {}),
+    history: appendSwarmHistoryEntry(
+      current,
+      buildSwarmHistoryEntry(current, current.status, input, {
+        type: "updated",
+        notes: input.notes ?? "Updated swarm metadata."
+      })
+    ),
     updatedAt
   };
 }

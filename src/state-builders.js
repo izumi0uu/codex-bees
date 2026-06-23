@@ -83,6 +83,24 @@ export function buildTaskHistoryEntry(current, nextQueueStatus, input) {
   };
 }
 
+export function buildSwarmHistoryEntry(current, nextStatus, input = {}, options = {}) {
+  const actor = options.actor ?? input.claimedBy ?? input.owner ?? current?.owner ?? null;
+  const type = options.type ?? "updated";
+  const notes = options.notes ?? input.notes ?? null;
+
+  return {
+    at: options.at ?? new Date().toISOString(),
+    type,
+    fromStatus: current?.status ?? null,
+    toStatus: nextStatus ?? null,
+    actor,
+    lane: options.lane ?? null,
+    taskId: options.taskId ?? null,
+    notes,
+    outcome: options.outcome ?? null
+  };
+}
+
 export function buildMemory(input, nextMemoryId) {
   return normalizeMemory({
     id: `memory-${nextMemoryId}`,
@@ -99,10 +117,11 @@ export function buildMemory(input, nextMemoryId) {
 }
 
 export function buildSwarm(input, nextSwarmId) {
+  const initialStatus = input.status ?? "planned";
   return normalizeSwarm({
     id: `swarm-${nextSwarmId}`,
     objective: input.objective,
-    status: input.status ?? "planned",
+    status: initialStatus,
     topology: input.topology ?? "bounded-local",
     maxWorkers: input.maxWorkers ?? 1,
     executionShape: input.executionShape ?? null,
@@ -111,6 +130,14 @@ export function buildSwarm(input, nextSwarmId) {
     owner: input.owner ?? null,
     laneSource: input.laneSource ?? "manual",
     lanes: input.lanes ?? [],
+    history: [
+      {
+        id: "event-1",
+        ...buildSwarmHistoryEntry(null, initialStatus, input, {
+          type: "created"
+        })
+      }
+    ],
     queuedAt: input.queuedAt ?? null,
     notes: input.notes ?? null,
     createdAt: new Date().toISOString(),
