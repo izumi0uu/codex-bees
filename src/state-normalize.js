@@ -102,6 +102,12 @@ export function normalizeSwarm(swarm) {
       Number.isInteger(Number(swarm.maxWorkers)) && Number(swarm.maxWorkers) > 0
         ? Number(swarm.maxWorkers)
         : 1,
+    executionShape: swarm.executionShape ?? null,
+    waveCount:
+      Number.isInteger(Number(swarm.waveCount)) && Number(swarm.waveCount) >= 0
+        ? Number(swarm.waveCount)
+        : null,
+    waves: Array.isArray(swarm.waves) ? swarm.waves : null,
     owner: swarm.owner ?? null,
     laneSource: swarm.laneSource ?? "manual",
     lanes: Array.isArray(swarm.lanes)

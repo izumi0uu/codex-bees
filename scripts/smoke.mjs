@@ -1126,7 +1126,7 @@ const installedPlannerExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: planner?.id === "bounded-local" && planner?.adaptive === true && taskPlan.kind === "task_plan" && taskPlan.objective === "document a planner example" && taskPlan.planner?.topology === "bounded-local" && taskPlan.planner?.adaptive === true && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "stage a planner example" && swarmPlan.swarm?.topology === "bounded-local" && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 1 }));`
+    `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: planner?.id === "bounded-local" && planner?.adaptive === true && planner?.executionModel === "dependency-wave-local" && taskPlan.kind === "task_plan" && taskPlan.objective === "Document the README entry" && taskPlan.planner?.topology === "bounded-local" && taskPlan.planner?.adaptive === true && taskPlan.orchestration?.executionShape === "solo-lane" && taskPlan.orchestration?.waveCount >= 1 && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "Coordinate a planner-driven swarm" && swarmPlan.swarm?.topology === "bounded-local" && swarmPlan.swarm?.executionShape === "serial-handoff" && swarmPlan.swarm?.maxWorkers === 1 && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 1 }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -2700,7 +2700,8 @@ if (
   plannerProfileView.kind !== "planner_profile_view" ||
   plannerProfileView.recommendedReason !== "planner_profile_loaded" ||
   plannerProfileView.matchedProfile !== "bounded-local" ||
-  plannerProfileView.profile?.laneModel !== "adaptive-bounded-lanes"
+  plannerProfileView.profile?.laneModel !== "adaptive-bounded-lanes" ||
+  plannerProfileView.profile?.executionModel !== "dependency-wave-local"
 ) {
   console.error("[smoke:plan-profile] expected planner profile detail view");
   process.exit(1);
@@ -4214,8 +4215,14 @@ const plannedTaskCli = JSON.parse(
 if (
   plannedTaskCli.kind !== "task_plan" ||
   plannedTaskCli.recommendedReason !== "multi_lane_plan_ready" ||
+  plannedTaskCli.planner?.executionModel !== "dependency-wave-local" ||
   plannedTaskCli.evidence?.strategy?.taskClass !== "runtime-surface" ||
   plannedTaskCli.evidence?.strategy?.laneStrategy !== "implement-verify-docs" ||
+  plannedTaskCli.orchestration?.executionShape !== "parallel-handoff" ||
+  plannedTaskCli.orchestration?.waveCount !== 2 ||
+  plannedTaskCli.orchestration?.peakParallelLanes !== 2 ||
+  plannedTaskCli.orchestration?.maxWorkers !== 2 ||
+  plannedTaskCli.orchestration?.waves?.[1]?.parallelizable !== true ||
   !Array.isArray(plannedTaskCli.lanes) ||
   plannedTaskCli.lanes.length !== 3 ||
   plannedTaskCli.lanes[0]?.purpose !== "implementation" ||
@@ -4234,6 +4241,9 @@ if (
   plannedDocsTaskCli.recommendedReason !== "single_lane_plan_ready" ||
   plannedDocsTaskCli.evidence?.strategy?.taskClass !== "docs-only" ||
   plannedDocsTaskCli.evidence?.strategy?.laneStrategy !== "documentation" ||
+  plannedDocsTaskCli.orchestration?.executionShape !== "solo-lane" ||
+  plannedDocsTaskCli.orchestration?.maxWorkers !== 1 ||
+  plannedDocsTaskCli.orchestration?.waveCount !== 1 ||
   !Array.isArray(plannedDocsTaskCli.lanes) ||
   plannedDocsTaskCli.lanes.length !== 1 ||
   plannedDocsTaskCli.lanes[0]?.owner !== "reviewer" ||
@@ -4271,6 +4281,8 @@ if (
   planMcpPayload?.kind !== "task_plan" ||
   planMcpPayload?.recommendedReason !== "multi_lane_plan_ready" ||
   planMcpPayload?.evidence?.strategy?.laneStrategy !== "implement-verify-docs" ||
+  planMcpPayload?.orchestration?.executionShape !== "parallel-handoff" ||
+  planMcpPayload?.orchestration?.maxWorkers !== 2 ||
   !Array.isArray(planMcpPayload?.lanes) ||
   planMcpPayload.lanes.length !== 3 ||
   planMcpPayload.lanes?.[2]?.purpose !== "documentation"
@@ -4291,6 +4303,9 @@ const queuedPlanPayload = JSON.parse(queuedPlan.stdout);
 if (
   queuedPlanPayload.kind !== "queued_plan" ||
   queuedPlanPayload.recommendedReason !== "multiple_plan_tasks_queued" ||
+  queuedPlanPayload.orchestration?.executionShape !== "serial-handoff" ||
+  queuedPlanPayload.orchestration?.waveCount !== 3 ||
+  queuedPlanPayload.orchestration?.maxWorkers !== 1 ||
   !Array.isArray(queuedPlanPayload.created) ||
   queuedPlanPayload.created.length !== 3 ||
   !queuedPlanPayload.created.some((task) => task.lanePurpose === "discovery") ||
@@ -4338,8 +4353,13 @@ if (
   queuePlanMcp.status !== 0 ||
   queuePlanPayloadMcp?.kind !== "queued_plan" ||
   queuePlanPayloadMcp?.recommendedReason !== "multiple_plan_tasks_queued" ||
+  queuePlanPayloadMcp?.planner?.executionModel !== "dependency-wave-local" ||
+  queuePlanPayloadMcp?.orchestration?.executionShape !== "parallel-handoff" ||
+  queuePlanPayloadMcp?.orchestration?.waveCount !== 3 ||
+  queuePlanPayloadMcp?.orchestration?.maxWorkers !== 2 ||
   !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "discovery") ||
-  !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "verification")
+  !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "verification") ||
+  !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "documentation")
 ) {
   console.error("[smoke:queue-plan-mcp] expected queued_plan response");
   console.error(queuePlanMcp.stderr || queuePlanMcp.stdout);
@@ -4547,7 +4567,11 @@ if (
   plannedSwarm.recommendedReason !== "multi_lane_swarm_ready" ||
   plannedSwarm.evidence?.strategy?.taskClass !== "coordination-kernel" ||
   plannedSwarm.evidence?.strategy?.laneStrategy !== "discover-implement-verify" ||
+  plannedSwarm.orchestration?.executionShape !== "serial-handoff" ||
+  plannedSwarm.orchestration?.waveCount !== 3 ||
   plannedSwarm.swarm?.laneSource !== "planner" ||
+  plannedSwarm.swarm?.executionShape !== "serial-handoff" ||
+  plannedSwarm.swarm?.maxWorkers !== 1 ||
   plannedSwarm.swarm?.lanes?.length !== 3 ||
   plannedSwarm.swarm?.lanes?.[0]?.purpose !== "discovery" ||
   plannedSwarm.swarm?.lanes?.[1]?.purpose !== "implementation" ||
@@ -4584,7 +4608,11 @@ if (
   planSwarmPayload?.kind !== "planned_swarm" ||
   planSwarmPayload?.recommendedReason !== "multi_lane_swarm_ready" ||
   planSwarmPayload?.evidence?.strategy?.laneStrategy !== "discover-implement-verify-docs" ||
+  planSwarmPayload?.orchestration?.executionShape !== "parallel-handoff" ||
+  planSwarmPayload?.orchestration?.maxWorkers !== 2 ||
   planSwarmPayload?.swarm?.laneSource !== "planner" ||
+  planSwarmPayload?.swarm?.executionShape !== "parallel-handoff" ||
+  planSwarmPayload?.swarm?.maxWorkers !== 2 ||
   planSwarmPayload?.swarm?.lanes?.length !== 4 ||
   planSwarmPayload?.swarm?.lanes?.[0]?.purpose !== "discovery" ||
   planSwarmPayload?.swarm?.lanes?.[3]?.purpose !== "documentation"
@@ -4604,9 +4632,16 @@ const queuedPlanSwarm = JSON.parse(
 if (
   queuedPlanSwarm.kind !== "queued_plan_swarm" ||
   queuedPlanSwarm.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
+  queuedPlanSwarm.planner?.executionModel !== "dependency-wave-local" ||
+  queuedPlanSwarm.orchestration?.executionShape !== "serial-handoff" ||
+  queuedPlanSwarm.orchestration?.maxWorkers !== 1 ||
   queuedPlanSwarm.created.length !== 3 ||
   queuedPlanSwarm.swarm?.status !== "active" ||
   queuedPlanSwarm.swarm?.laneSource !== "planner" ||
+  queuedPlanSwarm.swarm?.executionShape !== "serial-handoff" ||
+  queuedPlanSwarm.swarm?.maxWorkers !== 1 ||
+  queuedPlanSwarm.swarm?.waveCount !== 3 ||
+  queuedPlanSwarm.swarm?.waves?.[0]?.lanes?.[0]?.purpose !== "discovery" ||
   !queuedPlanSwarm.created.some((task) => task.lanePurpose === "discovery") ||
   !queuedPlanSwarm.swarm?.lanes?.some((lane) => lane.purpose === "verification")
 ) {
@@ -8537,7 +8572,15 @@ const queuePlanSwarmPayload = queuePlanSwarmText ? JSON.parse(queuePlanSwarmText
 if (
   queuePlanSwarmMcp.status !== 0 ||
   queuePlanSwarmPayload?.kind !== "queued_plan_swarm" ||
-  queuePlanSwarmPayload?.recommendedReason !== "multiple_swarm_lane_tasks_queued"
+  queuePlanSwarmPayload?.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
+  queuePlanSwarmPayload?.planner?.executionModel !== "dependency-wave-local" ||
+  queuePlanSwarmPayload?.orchestration?.executionShape !== "parallel-handoff" ||
+  queuePlanSwarmPayload?.orchestration?.waveCount !== 3 ||
+  queuePlanSwarmPayload?.orchestration?.maxWorkers !== 2 ||
+  queuePlanSwarmPayload?.swarm?.executionShape !== "parallel-handoff" ||
+  queuePlanSwarmPayload?.swarm?.maxWorkers !== 2 ||
+  queuePlanSwarmPayload?.swarm?.waveCount !== 3 ||
+  !queuePlanSwarmPayload?.swarm?.lanes?.some((lane) => lane.purpose === "documentation")
 ) {
   console.error("[smoke:queue-plan-swarm-mcp] expected queued_plan_swarm response");
   console.error(queuePlanSwarmMcp.stderr || queuePlanSwarmMcp.stdout);

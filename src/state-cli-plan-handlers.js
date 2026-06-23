@@ -79,8 +79,10 @@ function handlePlanSwarmQueue() {
         recommendedReason: queued.created.length > 1 ? "multiple_swarm_lane_tasks_queued" : "single_swarm_lane_task_queued",
         objective: task,
         requestedProfile: planned.requestedProfile,
+        planner: planned.planner,
         plannerSelection: planned.plannerSelection,
         evidence: planned.evidence,
+        orchestration: planned.orchestration,
         swarm: queued.swarm,
         created: queued.created
       },

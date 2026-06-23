@@ -386,6 +386,100 @@ function assignLaneIds(lanes) {
   }));
 }
 
+function laneDependsOnList(lane) {
+  return Array.isArray(lane?.dependsOn) ? lane.dependsOn.filter(Boolean) : [];
+}
+
+function buildWaveLaneView(lane) {
+  return {
+    lane: lane.lane,
+    purpose: lane.purpose,
+    owner: lane.owner,
+    verifier: lane.verifier,
+    dependsOn: laneDependsOnList(lane)
+  };
+}
+
+function buildPlannerWaves(lanes) {
+  const pending = new Map(
+    lanes.map((lane) => [lane.lane, new Set(laneDependsOnList(lane))])
+  );
+  const remaining = new Set(lanes.map((lane) => lane.lane));
+  const waves = [];
+
+  while (remaining.size > 0) {
+    const ready = lanes.filter((lane) => remaining.has(lane.lane) && (pending.get(lane.lane)?.size ?? 0) === 0);
+    if (ready.length === 0) {
+      const unresolved = lanes.filter((lane) => remaining.has(lane.lane));
+      waves.push({
+        wave: waves.length + 1,
+        parallelizable: unresolved.length > 1,
+        blocked: true,
+        laneCount: unresolved.length,
+        ownerCount: new Set(unresolved.map((lane) => lane.owner).filter(Boolean)).size,
+        purposes: Array.from(new Set(unresolved.map((lane) => lane.purpose).filter(Boolean))),
+        owners: Array.from(new Set(unresolved.map((lane) => lane.owner).filter(Boolean))),
+        lanes: unresolved.map(buildWaveLaneView)
+      });
+      break;
+    }
+
+    const readyIds = new Set(ready.map((lane) => lane.lane));
+    for (const laneId of readyIds) {
+      remaining.delete(laneId);
+    }
+    for (const [laneId, dependencySet] of pending.entries()) {
+      if (!remaining.has(laneId)) {
+        continue;
+      }
+      for (const resolvedId of readyIds) {
+        dependencySet.delete(resolvedId);
+      }
+    }
+
+    waves.push({
+      wave: waves.length + 1,
+      parallelizable: ready.length > 1,
+      blocked: false,
+      laneCount: ready.length,
+      ownerCount: new Set(ready.map((lane) => lane.owner).filter(Boolean)).size,
+      purposes: Array.from(new Set(ready.map((lane) => lane.purpose).filter(Boolean))),
+      owners: Array.from(new Set(ready.map((lane) => lane.owner).filter(Boolean))),
+      lanes: ready.map(buildWaveLaneView)
+    });
+  }
+
+  return waves;
+}
+
+function deriveExecutionShapeFromWaves(lanes, waves) {
+  if (lanes.length <= 1) {
+    return "solo-lane";
+  }
+
+  const peakParallelLanes = Math.max(...waves.map((wave) => wave.laneCount), 0);
+  if (peakParallelLanes <= 1) {
+    return "serial-handoff";
+  }
+
+  return "parallel-handoff";
+}
+
+function buildPlannerOrchestration(lanes) {
+  const waves = buildPlannerWaves(lanes);
+  const peakParallelLanes = Math.max(...waves.map((wave) => wave.laneCount), 0);
+  const peakParallelOwners = Math.max(...waves.map((wave) => wave.ownerCount), 0);
+
+  return {
+    executionShape: deriveExecutionShapeFromWaves(lanes, waves),
+    waveCount: waves.length,
+    peakParallelLanes,
+    peakParallelOwners,
+    maxWorkers: lanes.length > 0 ? Math.max(1, peakParallelOwners) : 0,
+    waves
+  };
+}
+
 function buildBoundedLocalPlanLanes(task) {
   const implementationScope = choosePrimaryScope(task);
   const intent = inferPlannerIntent(task, implementationScope);
@@ -438,6 +532,7 @@ const PLANNER_PROFILES = {
     laneSource: "planner",
     adaptive: true,
     laneModel: "adaptive-bounded-lanes",
+    executionModel: "dependency-wave-local",
     roles: ["explore", "reviewer", "executor", "tester"],
     constraints: [
       "codex-only runtime boundary",
@@ -456,6 +551,7 @@ function toPlannerProfile(profile) {
     laneSource: profile.laneSource,
     adaptive: profile.adaptive,
     laneModel: profile.laneModel,
+    executionModel: profile.executionModel,
     roles: [...profile.roles],
     constraints: [...profile.constraints]
   };
@@ -503,17 +599,13 @@ export function getPlannerProfileView(id = DEFAULT_PLANNER_PROFILE_ID) {
   };
 }
 
-function laneCountToWorkers(lanes) {
-  const owners = new Set(lanes.map((lane) => lane.owner).filter(Boolean));
-  return Math.max(owners.size, lanes.length > 0 ? 1 : 0);
-}
-
 export function planTask(task, options = {}) {
   const requestedProfileId = options.profileId ?? DEFAULT_PLANNER_PROFILE_ID;
   const resolvedProfileId = resolvePlannerProfileId(requestedProfileId);
   const profile = getPlannerProfileRecord(requestedProfileId);
   const planner = toPlannerProfile(profile);
   const lanes = profile.buildLanes(task);
+  const orchestration = buildPlannerOrchestration(lanes);
   const recommendedReason = lanes.length > 1 ? "multi_lane_plan_ready" : "single_lane_plan_ready";
 
   return {
@@ -528,6 +620,7 @@ export function planTask(task, options = {}) {
       usedDefaultProfile: resolvedProfileId !== requestedProfileId
     },
     evidence: plannerEvidence(task),
+    orchestration,
     lanes
   };
 }
@@ -543,10 +636,14 @@ export function planSwarm(task, options = {}) {
     planner: plan.planner,
     plannerSelection: plan.plannerSelection,
     evidence: plan.evidence,
+    orchestration: plan.orchestration,
     swarm: {
       objective: task,
       topology: plan.planner.topology,
-      maxWorkers: laneCountToWorkers(plan.lanes),
+      maxWorkers: plan.orchestration.maxWorkers,
+      executionShape: plan.orchestration.executionShape,
+      waveCount: plan.orchestration.waveCount,
+      waves: plan.orchestration.waves,
       laneSource: plan.planner.laneSource,
       lanes: plan.lanes,
       notes: `Generated from plan for: ${task}`
@@ -581,6 +678,7 @@ export function queueTasksFromPlan(task, addTasks, options = {}) {
     requestedProfile: plan.requestedProfile,
     planner: plan.planner,
     plannerSelection: plan.plannerSelection,
+    orchestration: plan.orchestration,
     lanes: plan.lanes,
     created
   };

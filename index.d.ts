@@ -450,6 +450,7 @@ export interface PlannerProfile {
   laneSource: "planner";
   adaptive: boolean;
   laneModel: "adaptive-bounded-lanes";
+  executionModel: "dependency-wave-local";
   roles: string[];
   constraints: string[];
 }
@@ -478,6 +479,39 @@ export interface PlannerSelection {
   usedDefaultProfile: boolean;
 }
 
+export type PlannerExecutionShape =
+  | "solo-lane"
+  | "serial-handoff"
+  | "parallel-handoff";
+
+export interface PlannerWaveLane {
+  lane: string;
+  purpose: TaskPlanLanePurpose;
+  owner: string;
+  verifier: string;
+  dependsOn: string[];
+}
+
+export interface PlannerWave {
+  wave: number;
+  parallelizable: boolean;
+  blocked: boolean;
+  laneCount: number;
+  ownerCount: number;
+  purposes: TaskPlanLanePurpose[];
+  owners: string[];
+  lanes: PlannerWaveLane[];
+}
+
+export interface PlannerOrchestration {
+  executionShape: PlannerExecutionShape;
+  waveCount: number;
+  peakParallelLanes: number;
+  peakParallelOwners: number;
+  maxWorkers: number;
+  waves: PlannerWave[];
+}
+
 export interface TaskPlan {
   kind: "task_plan";
   recommendedReason: "multi_lane_plan_ready" | "single_lane_plan_ready";
@@ -486,6 +520,7 @@ export interface TaskPlan {
   planner: PlannerProfile;
   plannerSelection: PlannerSelection;
   evidence: PlannerEvidence;
+  orchestration: PlannerOrchestration;
   lanes: TaskPlanLane[];
 }
 
@@ -497,6 +532,7 @@ export interface PlannedSwarm {
   planner: PlannerProfile;
   plannerSelection: PlannerSelection;
   evidence: PlannerEvidence;
+  orchestration: PlannerOrchestration;
   swarm: PlannedSwarmShape;
 }
 
@@ -507,6 +543,7 @@ export interface QueuedPlan {
   requestedProfile: string;
   planner: PlannerProfile;
   plannerSelection: PlannerSelection;
+  orchestration: PlannerOrchestration;
   lanes: TaskPlanLane[];
   created: TaskRecord[];
 }
@@ -637,6 +674,9 @@ export interface PlannedSwarmShape {
   objective: string;
   topology: "bounded-local";
   maxWorkers: number;
+  executionShape: PlannerExecutionShape;
+  waveCount: number;
+  waves: PlannerWave[];
   laneSource: "planner";
   lanes: TaskPlanLane[];
   notes: string;
