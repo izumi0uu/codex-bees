@@ -22,18 +22,19 @@ export function buildSwarmCloseoutView(
   const command = deriveSwarmCloseoutCommand(overview, brief);
   const recommendedReason = deriveSwarmCloseoutReason({ overview, command });
 
-  return {
-    kind: "swarm_closeout",
+  return createLoadedValueView("swarm_closeout", "swarm", overview.swarm, {
     recommendedReason,
-    swarm: overview.swarm,
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
-    readyToComplete: overview.readyToComplete,
-    brief,
-    bundle,
-    command,
-    summary: buildSwarmCloseoutSummary(overview, command)
-  };
+    includeCounts: false,
+    extra: {
+      derivedStatus: overview.derivedStatus,
+      statusAligned: overview.statusAligned,
+      readyToComplete: overview.readyToComplete,
+      brief,
+      bundle,
+      command,
+      summary: buildSwarmCloseoutSummary(overview, command)
+    }
+  });
 }
 
 export function buildSwarmCloseoutViewFromSources(
@@ -96,16 +97,17 @@ export function buildSwarmBlockersView(
     }));
   const recommendedReason = deriveSwarmBlockersReason({ blockedLanes });
 
-  return {
-    kind: "swarm_blockers",
+  return createLoadedValueView("swarm_blockers", "swarm", overview.swarm, {
     recommendedReason,
-    swarm: overview.swarm,
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
-    blockedCount: blockedLanes.length,
-    blockers: blockedLanes,
-    summary: buildSwarmBlockersSummary(overview, blockedLanes)
-  };
+    includeCounts: false,
+    extra: {
+      derivedStatus: overview.derivedStatus,
+      statusAligned: overview.statusAligned,
+      blockedCount: blockedLanes.length,
+      blockers: blockedLanes,
+      summary: buildSwarmBlockersSummary(overview, blockedLanes)
+    }
+  });
 }
 
 export function buildSwarmBlockersViewFromSources(

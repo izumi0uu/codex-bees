@@ -16,15 +16,21 @@ function createCollectionView(kind, itemLabel, items, {
 function createLoadedValueView(kind, valueLabel, value, {
   recommendedReason,
   counts = {},
+  includeCounts = true,
   extra = {}
 } = {}) {
-  return {
+  const view = {
     kind,
     recommendedReason,
-    counts,
     [valueLabel]: value,
     ...extra
   };
+
+  if (includeCounts) {
+    view.counts = counts;
+  }
+
+  return view;
 }
 
 function createResolvedItemView(kind, {

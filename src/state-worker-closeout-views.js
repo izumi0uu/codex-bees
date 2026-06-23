@@ -1,3 +1,5 @@
+import { createLoadedValueView } from "./state-view-helpers.js";
+
 export function deriveWorkerCloseoutCommand(handoff, report) {
   if (!handoff.currentTask?.id) {
     return null;
@@ -58,18 +60,19 @@ export function buildWorkerCloseoutView(
 
   const report = handoff.currentTask?.id ? taskReport(handoff.currentTask.id) : null;
   const recommendedReason = deriveWorkerCloseoutReason(handoff, report);
-  return {
-    kind: "worker_closeout",
-    role: handoff.role,
-    workerId: handoff.workerId,
-    mode: handoff.mode,
+  return createLoadedValueView("worker_closeout", "handoff", handoff, {
     recommendedReason,
-    focus: handoff.focus,
-    handoff,
-    report,
-    command: deriveWorkerCloseoutCommand(handoff, report),
-    summary: buildWorkerCloseoutSummary(handoff, report)
-  };
+    includeCounts: false,
+    extra: {
+      role: handoff.role,
+      workerId: handoff.workerId,
+      mode: handoff.mode,
+      focus: handoff.focus,
+      report,
+      command: deriveWorkerCloseoutCommand(handoff, report),
+      summary: buildWorkerCloseoutSummary(handoff, report)
+    }
+  });
 }
 
 export function buildWorkerCloseoutViewFromSources(
@@ -96,4 +99,3 @@ export function buildWorkerCloseoutViewFromSources(
     }
   );
 }
-
