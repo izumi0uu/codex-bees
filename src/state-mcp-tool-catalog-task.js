@@ -1,3 +1,16 @@
+const WORKER_IDS_INPUT_SCHEMA = {
+  type: "object",
+  additionalProperties: {
+    oneOf: [
+      { type: "string" },
+      {
+        type: "array",
+        items: { type: "string" }
+      }
+    ]
+  }
+};
+
 export const TASK_MCP_TOOL_CATALOG = [
   {
     name: "worker_guidelines",
@@ -332,7 +345,7 @@ export const TASK_MCP_TOOL_CATALOG = [
         role: { type: "string" },
         owner: { type: "string" },
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } },
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
         taskId: { type: "string" },
         status: { type: "string" },
         topology: { type: "string" }
@@ -348,7 +361,7 @@ export const TASK_MCP_TOOL_CATALOG = [
         role: { type: "string" },
         owner: { type: "string" },
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } },
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
         taskId: { type: "string" },
         status: { type: "string" },
         topology: { type: "string" }
@@ -364,7 +377,7 @@ export const TASK_MCP_TOOL_CATALOG = [
         role: { type: "string" },
         owner: { type: "string" },
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } },
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
         taskId: { type: "string" },
         status: { type: "string" },
         topology: { type: "string" }

@@ -1,3 +1,16 @@
+const WORKER_IDS_INPUT_SCHEMA = {
+  type: "object",
+  additionalProperties: {
+    oneOf: [
+      { type: "string" },
+      {
+        type: "array",
+        items: { type: "string" }
+      }
+    ]
+  }
+};
+
 export const RUNTIME_MCP_TOOL_CATALOG = [
   {
     name: "runtime_doctor",
@@ -156,7 +169,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } }
+        workerIds: WORKER_IDS_INPUT_SCHEMA
       }
     }
   },
@@ -167,7 +180,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } },
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
         detail: { type: "string", enum: ["compact", "full"] }
       }
     }
@@ -252,7 +265,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } }
+        workerIds: WORKER_IDS_INPUT_SCHEMA
       }
     }
   },
@@ -263,7 +276,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } }
+        workerIds: WORKER_IDS_INPUT_SCHEMA
       }
     }
   },
@@ -277,7 +290,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
         topology: { type: "string" },
         owner: { type: "string" },
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } }
+        workerIds: WORKER_IDS_INPUT_SCHEMA
       }
     }
   },
@@ -333,7 +346,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } },
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
         detail: { type: "string", enum: ["compact", "full"] }
       }
     }
@@ -386,7 +399,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } }
+        workerIds: WORKER_IDS_INPUT_SCHEMA
       }
     }
   },
@@ -397,7 +410,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } }
+        workerIds: WORKER_IDS_INPUT_SCHEMA
       }
     }
   },

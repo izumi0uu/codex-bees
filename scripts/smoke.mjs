@@ -1166,7 +1166,7 @@ const installedCommandsExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedCommandsExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "command_catalog_view" && catalog.commands.some((entry) => entry.command === "mcp") && initEntry?.command === "init" && initEntryView?.kind === "command_catalog_entry_view" && initEntryView?.matchedCommand === "init" && Array.isArray(taskAddEntry?.usage) && taskAddEntry?.usage?.some((line) => line.includes("task:add --title <title>")) && Array.isArray(taskAddEntry?.options) && taskAddEntry?.options?.some((option) => option.option === "--acceptance <item|item>") && Array.isArray(taskAddEntry?.notes) && taskAddEntry?.notes?.some((note) => note.includes("Pipe-delimited")) && Array.isArray(memorySearchEntry?.usage) && memorySearchEntry?.usage?.some((line) => line.includes("memory:search --query <text>")) && Array.isArray(memorySearchEntry?.options) && memorySearchEntry?.options?.some((option) => option.option === "--query <text>") && Array.isArray(launchPlanEntry?.usage) && launchPlanEntry?.usage?.some((line) => line.includes("leader:assignment-launch-plan")) && Array.isArray(launchPlanEntry?.notes) && launchPlanEntry?.notes?.some((note) => note.includes("JSON array of worker ids")) && Array.isArray(catalog.commands.find((entry) => entry.command === "--help")?.aliases) && catalog.commands.find((entry) => entry.command === "--help")?.aliases?.includes("help") && Array.isArray(catalog.commands.find((entry) => entry.command === "--version")?.aliases) && catalog.commands.find((entry) => entry.command === "--version")?.aliases?.includes("version") && statusHelpView?.kind === "command_help_view" && statusHelpView?.matchedCommand === "status" && statusHelpView?.text.includes("codex-bees status") && statusHelpView?.text.includes("Print runtime state and surface summary") && Array.isArray(initEntry?.usage) && initEntry?.usage?.some((line) => line.includes("init [--preview]")) && Array.isArray(initEntry?.options) && Array.isArray(initOptions) && initOptions.some((option) => option.option === "--preview") && initOptionsView?.kind === "init_command_catalog_view" && initOptionsView?.counts?.totalOptions >= 5 && initOptionsView?.options?.some((option) => option.option === "--preview") && previewOption?.option === "--preview" && previewOptionView?.kind === "init_command_option_view" && previewOptionView?.matchedOption === "--preview" && initOptionHelpView?.kind === "init_help_view" && initOptionHelpView?.matchedOption === "--preview" && initOptionHelpView?.text.includes("codex-bees init") && statusHelp.includes("codex-bees status") && statusHelp.includes("Description:") && initHelp.includes("codex-bees init") && help.includes("codex-bees run") && help.includes("codex-bees mcp") }));`
+    `${documentedCommandsExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "command_catalog_view" && catalog.commands.some((entry) => entry.command === "mcp") && initEntry?.command === "init" && initEntryView?.kind === "command_catalog_entry_view" && initEntryView?.matchedCommand === "init" && Array.isArray(taskAddEntry?.usage) && taskAddEntry?.usage?.some((line) => line.includes("task:add --title <title>")) && Array.isArray(taskAddEntry?.options) && taskAddEntry?.options?.some((option) => option.option === "--acceptance <item|item>") && Array.isArray(taskAddEntry?.notes) && taskAddEntry?.notes?.some((note) => note.includes("Pipe-delimited")) && Array.isArray(memorySearchEntry?.usage) && memorySearchEntry?.usage?.some((line) => line.includes("memory:search --query <text>")) && Array.isArray(memorySearchEntry?.options) && memorySearchEntry?.options?.some((option) => option.option === "--query <text>") && Array.isArray(launchPlanEntry?.usage) && launchPlanEntry?.usage?.some((line) => line.includes("leader:assignment-launch-plan")) && Array.isArray(launchPlanEntry?.notes) && launchPlanEntry?.notes?.some((note) => note.includes("worker ids or worker-id arrays")) && Array.isArray(catalog.commands.find((entry) => entry.command === "--help")?.aliases) && catalog.commands.find((entry) => entry.command === "--help")?.aliases?.includes("help") && Array.isArray(catalog.commands.find((entry) => entry.command === "--version")?.aliases) && catalog.commands.find((entry) => entry.command === "--version")?.aliases?.includes("version") && statusHelpView?.kind === "command_help_view" && statusHelpView?.matchedCommand === "status" && statusHelpView?.text.includes("codex-bees status") && statusHelpView?.text.includes("Print runtime state and surface summary") && Array.isArray(initEntry?.usage) && initEntry?.usage?.some((line) => line.includes("init [--preview]")) && Array.isArray(initEntry?.options) && Array.isArray(initOptions) && initOptions.some((option) => option.option === "--preview") && initOptionsView?.kind === "init_command_catalog_view" && initOptionsView?.counts?.totalOptions >= 5 && initOptionsView?.options?.some((option) => option.option === "--preview") && previewOption?.option === "--preview" && previewOptionView?.kind === "init_command_option_view" && previewOptionView?.matchedOption === "--preview" && initOptionHelpView?.kind === "init_help_view" && initOptionHelpView?.matchedOption === "--preview" && initOptionHelpView?.text.includes("codex-bees init") && statusHelp.includes("codex-bees status") && statusHelp.includes("Description:") && initHelp.includes("codex-bees init") && help.includes("codex-bees run") && help.includes("codex-bees mcp") }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -5531,6 +5531,223 @@ run("swarm-dispatch-none", ["./src/index.js", "swarm:dispatch", "--id", "swarm-1
 run("swarm-queue-invalid", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
 
 rmSync(".codex-bees", { recursive: true, force: true });
+const sameRoleWorkerPool = {
+  executor: ["worker-executor-1", "worker-executor-2"]
+};
+const sameRoleWorkerPoolJson = JSON.stringify(sameRoleWorkerPool);
+run("same-role-swarm-init", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Same-role worker pool smoke",
+  "--owner",
+  "leader",
+  "--max-workers",
+  "2",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-exec-1",
+      summary: "Implement slice A",
+      owner: "executor",
+      verifier: "tester",
+      scope: ["src/a.js"],
+      acceptance: ["a"],
+      verification: ["va"]
+    },
+    {
+      lane: "lane-exec-2",
+      summary: "Implement slice B",
+      owner: "executor",
+      verifier: "tester",
+      scope: ["src/b.js"],
+      acceptance: ["b"],
+      verification: ["vb"]
+    }
+  ])
+]);
+run("same-role-swarm-start", ["./src/index.js", "swarm:start", "--id", "swarm-1", "--owner", "leader"]);
+run("same-role-swarm-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]);
+const sameRoleDispatchPackCli = JSON.parse(
+  run("same-role-dispatch-pack-cli", [
+    "./src/index.js",
+    "leader:assignment-dispatch-pack",
+    "--workers",
+    sameRoleWorkerPoolJson
+  ]).stdout
+).assignmentDispatchPack;
+if (
+  sameRoleDispatchPackCli.recommendedReason !== "parallel_worker_targets_ready" ||
+  sameRoleDispatchPackCli.counts?.ownerGroups !== 1 ||
+  sameRoleDispatchPackCli.counts?.totalAssignments !== 2 ||
+  sameRoleDispatchPackCli.counts?.workerTargets !== 2 ||
+  sameRoleDispatchPackCli.next?.owner?.id !== "executor" ||
+  sameRoleDispatchPackCli.next?.workerId !== "worker-executor-1" ||
+  JSON.stringify(sameRoleDispatchPackCli.next?.workerPool) !== JSON.stringify(["worker-executor-1", "worker-executor-2"]) ||
+  sameRoleDispatchPackCli.next?.workerCount !== 2 ||
+  sameRoleDispatchPackCli.next?.readyTargets !== 2 ||
+  sameRoleDispatchPackCli.next?.deferredAssignments !== 0 ||
+  sameRoleDispatchPackCli.next?.launchReady !== true ||
+  sameRoleDispatchPackCli.targets?.length !== 2 ||
+  sameRoleDispatchPackCli.next?.targets?.length !== 2 ||
+  sameRoleDispatchPackCli.next?.targets?.[0]?.workerId !== "worker-executor-1" ||
+  sameRoleDispatchPackCli.next?.targets?.[1]?.workerId !== "worker-executor-2" ||
+  sameRoleDispatchPackCli.next?.targets?.[0]?.startupWindowKey !== "swarm-1:wave-1" ||
+  sameRoleDispatchPackCli.next?.targets?.[1]?.startupWindowKey !== "swarm-1:wave-1" ||
+  sameRoleDispatchPackCli.next?.targets?.[0]?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor-1 --task task-1" ||
+  sameRoleDispatchPackCli.next?.targets?.[1]?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor-2 --task task-2"
+) {
+  console.error("[smoke:same-role-dispatch-pack] expected CLI dispatch pack to expose parallel worker targets inside one owner group");
+  process.exit(1);
+}
+const sameRoleDispatchBundleCli = JSON.parse(
+  run("same-role-dispatch-bundle-cli", [
+    "./src/index.js",
+    "leader:assignment-dispatch-bundle",
+    "--workers",
+    sameRoleWorkerPoolJson
+  ]).stdout
+).assignmentDispatchBundle;
+if (
+  sameRoleDispatchBundleCli.recommendedReason !== "parallel_worker_launches_ready" ||
+  sameRoleDispatchBundleCli.counts?.ownerGroups !== 1 ||
+  sameRoleDispatchBundleCli.counts?.launches !== 2 ||
+  sameRoleDispatchBundleCli.counts?.workerTargets !== 2 ||
+  sameRoleDispatchBundleCli.next?.role?.id !== "executor" ||
+  sameRoleDispatchBundleCli.next?.workerId !== "worker-executor-1" ||
+  sameRoleDispatchBundleCli.launches?.length !== 2 ||
+  sameRoleDispatchBundleCli.launches?.[0]?.startupWindowKey !== "swarm-1:wave-1" ||
+  sameRoleDispatchBundleCli.launches?.[1]?.startupWindowKey !== "swarm-1:wave-1" ||
+  sameRoleDispatchBundleCli.launches?.[0]?.assignmentPackCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor-1 --mode owner" ||
+  sameRoleDispatchBundleCli.launches?.[1]?.assignmentPackCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor-2 --mode owner" ||
+  sameRoleDispatchBundleCli.launches?.[1]?.previewCommand !== "node ./src/index.js task:assignment-preview --role executor --worker worker-executor-2 --task task-2"
+) {
+  console.error("[smoke:same-role-dispatch-bundle] expected CLI dispatch bundle to flatten same-role worker launches");
+  process.exit(1);
+}
+const sameRoleLaunchPlanCli = JSON.parse(
+  run("same-role-launch-plan-cli", [
+    "./src/index.js",
+    "leader:assignment-launch-plan",
+    "--workers",
+    sameRoleWorkerPoolJson
+  ]).stdout
+).assignmentLaunchPlan;
+if (
+  sameRoleLaunchPlanCli.recommendedReason !== "parallel_startup_steps_ready" ||
+  sameRoleLaunchPlanCli.counts?.steps !== 2 ||
+  sameRoleLaunchPlanCli.counts?.startupWindows !== 1 ||
+  sameRoleLaunchPlanCli.next?.workerId !== "worker-executor-1" ||
+  sameRoleLaunchPlanCli.nextWindow?.stepCount !== 2 ||
+  sameRoleLaunchPlanCli.nextWindow?.maxWorkers !== 2 ||
+  JSON.stringify(sameRoleLaunchPlanCli.nextWindow?.workers) !== JSON.stringify(["worker-executor-1", "worker-executor-2"]) ||
+  sameRoleLaunchPlanCli.steps?.[0]?.startupWindowKey !== "swarm-1:wave-1" ||
+  sameRoleLaunchPlanCli.steps?.[1]?.startupWindowKey !== "swarm-1:wave-1" ||
+  sameRoleLaunchPlanCli.steps?.[1]?.workerId !== "worker-executor-2" ||
+  sameRoleLaunchPlanCli.steps?.[1]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor-2 --mode owner" ||
+  sameRoleLaunchPlanCli.steps?.[1]?.handoff?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor-2 --task task-2"
+) {
+  console.error("[smoke:same-role-launch-plan] expected CLI launch plan to preserve same-role parallel startup");
+  process.exit(1);
+}
+const sameRoleRuntimeDispatchPackCli = JSON.parse(
+  run("same-role-runtime-dispatch-pack-cli", [
+    "./src/index.js",
+    "runtime:dispatch-pack",
+    "--workers",
+    sameRoleWorkerPoolJson
+  ]).stdout
+).dispatchPack;
+if (
+  sameRoleRuntimeDispatchPackCli.recommendedSurface !== "leader:assignment-launch-plan" ||
+  sameRoleRuntimeDispatchPackCli.recommendedReason !== "parallel_launch_plan_ready" ||
+  sameRoleRuntimeDispatchPackCli.overview?.assignmentDispatchPack?.ownerGroups !== 1 ||
+  sameRoleRuntimeDispatchPackCli.overview?.assignmentDispatchPack?.workerTargets !== 2 ||
+  sameRoleRuntimeDispatchPackCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
+  sameRoleRuntimeDispatchPackCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
+  sameRoleRuntimeDispatchPackCli.next?.assignmentLaunchStep?.workerId !== "worker-executor-1" ||
+  sameRoleRuntimeDispatchPackCli.surfaces?.assignmentDispatchPack?.recommendedReason !== "parallel_worker_targets_ready" ||
+  sameRoleRuntimeDispatchPackCli.surfaces?.assignmentLaunchPlan?.nextWindow?.stepCount !== 2
+) {
+  console.error("[smoke:same-role-runtime-dispatch-pack] expected CLI runtime dispatch pack to surface same-role launch planning");
+  process.exit(1);
+}
+const sameRoleMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "leader_assignment_dispatch_pack",
+      arguments: { workerIds: sameRoleWorkerPool }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "leader_assignment_dispatch_bundle",
+      arguments: { workerIds: sameRoleWorkerPool }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "leader_assignment_launch_plan",
+      arguments: { workerIds: sameRoleWorkerPool }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "runtime_dispatch_pack",
+      arguments: { workerIds: sameRoleWorkerPool }
+    }
+  })
+].join("\n") + "\n";
+const sameRoleMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: sameRoleMcpInput,
+  encoding: "utf8"
+});
+const sameRoleMcpMessages = indexJsonRpcById(parseJsonRpcLines(sameRoleMcp.stdout));
+const sameRoleDispatchPackMcpPayload = parseJsonRpcTextResult(sameRoleMcpMessages.get(2));
+const sameRoleDispatchBundleMcpPayload = parseJsonRpcTextResult(sameRoleMcpMessages.get(3));
+const sameRoleLaunchPlanMcpPayload = parseJsonRpcTextResult(sameRoleMcpMessages.get(4));
+const sameRoleRuntimeDispatchPackMcpPayload = parseJsonRpcTextResult(sameRoleMcpMessages.get(5));
+if (
+  sameRoleMcp.status !== 0 ||
+  sameRoleDispatchPackMcpPayload.assignmentDispatchPack?.recommendedReason !== "parallel_worker_targets_ready" ||
+  sameRoleDispatchPackMcpPayload.assignmentDispatchPack?.counts?.ownerGroups !== 1 ||
+  sameRoleDispatchPackMcpPayload.assignmentDispatchPack?.counts?.workerTargets !== 2 ||
+  sameRoleDispatchPackMcpPayload.assignmentDispatchPack?.next?.workerCount !== 2 ||
+  sameRoleDispatchPackMcpPayload.assignmentDispatchPack?.next?.targets?.[1]?.workerId !== "worker-executor-2" ||
+  sameRoleDispatchPackMcpPayload.assignmentDispatchPack?.targets?.[0]?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor-1 --task task-1" ||
+  sameRoleDispatchPackMcpPayload.assignmentDispatchPack?.targets?.[1]?.pickupCommand !== "node ./src/index.js task:assignment-pickup --role executor --worker worker-executor-2 --task task-2" ||
+  sameRoleDispatchBundleMcpPayload.assignmentDispatchBundle?.recommendedReason !== "parallel_worker_launches_ready" ||
+  sameRoleDispatchBundleMcpPayload.assignmentDispatchBundle?.counts?.launches !== 2 ||
+  sameRoleDispatchBundleMcpPayload.assignmentDispatchBundle?.launches?.[1]?.workerId !== "worker-executor-2" ||
+  sameRoleLaunchPlanMcpPayload.assignmentLaunchPlan?.recommendedReason !== "parallel_startup_steps_ready" ||
+  sameRoleLaunchPlanMcpPayload.assignmentLaunchPlan?.counts?.startupWindows !== 1 ||
+  sameRoleLaunchPlanMcpPayload.assignmentLaunchPlan?.steps?.[1]?.workerId !== "worker-executor-2" ||
+  sameRoleLaunchPlanMcpPayload.assignmentLaunchPlan?.windows?.[0]?.stepCount !== 2 ||
+  sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.recommendedSurface !== "leader:assignment-launch-plan" ||
+  sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.recommendedReason !== "parallel_launch_plan_ready" ||
+  sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.overview?.assignmentDispatchPack?.workerTargets !== 2 ||
+  sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.surfaces?.assignmentDispatchPack?.recommendedReason !== "parallel_worker_targets_ready" ||
+  sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.next?.assignmentLaunchStep?.workerId !== "worker-executor-1"
+) {
+  console.error("[smoke:same-role-worker-pool-mcp] expected MCP launch-planning surfaces to honor same-role worker pools");
+  console.error(sameRoleMcp.stderr || sameRoleMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
 run("archive-cli-task-add", [
   "./src/index.js",
   "task:add",
@@ -6335,6 +6552,8 @@ run("leader-assignments-swarm", [
   "Leader assignments swarm",
   "--owner",
   "leader",
+  "--max-workers",
+  "2",
   "--lanes",
   JSON.stringify([
     {

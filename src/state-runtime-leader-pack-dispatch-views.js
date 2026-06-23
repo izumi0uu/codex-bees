@@ -160,14 +160,17 @@ export function buildRuntimeDispatchPackViewFromSources(
     }
   );
 }
-export function deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next }) {
+export function deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next, workerTargets }) {
+  if ((workerTargets ?? 0) > (groups?.length ?? 0)) {
+    return "parallel_worker_targets_ready";
+  }
   if ((groups?.length ?? 0) > 1) {
     return "parallel_owner_groups_ready";
   }
   if ((assignments?.counts?.totalAssignments ?? 0) > 1) {
     return "multiple_assignments_ready";
   }
-  if (next?.next?.taskId) {
+  if (next?.next?.taskId || next?.launchReady) {
     return "next_assignment_ready";
   }
   if ((assignments?.counts?.ownerGroups ?? 0) > 0) {

@@ -1,5 +1,157 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 
+function normalizeWorkerPoolEntry(value) {
+  const values = Array.isArray(value) ? value : [value];
+  return Array.from(
+    new Set(
+      values
+        .filter((entry) => typeof entry === "string")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+function resolveWorkerPoolForRole(ownerId, input) {
+  const explicitPool = normalizeWorkerPoolEntry(input.workerIds?.[ownerId]);
+  if (explicitPool.length > 0) {
+    return explicitPool;
+  }
+
+  if (input.workerId) {
+    return [input.workerId];
+  }
+
+  return [`<${ownerId}-worker>`];
+}
+
+function buildStartupWindowKey(assignment, fallbackKey) {
+  return assignment?.swarmId && assignment?.wave != null
+    ? `${assignment.swarmId}:wave-${assignment.wave}`
+    : fallbackKey;
+}
+
+function resolveStartupWindowLimit(assignment) {
+  const maxWorkers = Number(assignment?.swarmMaxWorkers);
+  return Number.isInteger(maxWorkers) && maxWorkers > 0
+    ? maxWorkers
+    : Number.POSITIVE_INFINITY;
+}
+
+function buildDispatchCommands(ownerId, workerId, assignment) {
+  const previewCommand = `node ./src/index.js task:assignment-preview --role ${ownerId} --worker ${workerId} --task ${assignment.taskId}`;
+  const pickupCommand = `node ./src/index.js task:assignment-pickup --role ${ownerId} --worker ${workerId} --task ${assignment.taskId}`;
+
+  return {
+    previewCommand,
+    pickupCommand,
+    command: pickupCommand
+  };
+}
+
+function buildWorkerTarget({
+  owner,
+  ownerId,
+  assignment,
+  workerId,
+  workerIndex,
+  workerPoolSize,
+  startupWindowKey
+}) {
+  const commands = buildDispatchCommands(ownerId, workerId, assignment);
+
+  return {
+    owner,
+    ownerId,
+    workerId,
+    workerIndex,
+    workerPoolSize,
+    taskId: assignment.taskId ?? null,
+    swarmId: assignment.swarmId ?? null,
+    objective: assignment.objective ?? null,
+    lane: assignment.lane ?? null,
+    purpose: assignment.purpose ?? null,
+    purposeGuidance: assignment.purposeGuidance ?? buildPurposeGuidanceForTaskLike(assignment),
+    wave: assignment.wave ?? null,
+    waveStatus: assignment.waveStatus ?? null,
+    waveParallelizable: assignment.waveParallelizable ?? null,
+    swarmExecutionShape: assignment.swarmExecutionShape ?? null,
+    swarmWaveCount: assignment.swarmWaveCount ?? null,
+    swarmMaxWorkers: assignment.swarmMaxWorkers ?? null,
+    startupWindowKey,
+    assignment,
+    ...commands,
+    summary: `Leader can dispatch ${assignment.lane} from ${assignment.swarmId}${assignment.wave ? ` wave ${assignment.wave}` : ""} to ${ownerId} via ${workerId}.`
+  };
+}
+
+function buildDispatchTargetsForGroups(input, groups = []) {
+  const resolvedGroups = groups.map((group, groupIndex) => {
+    const ownerId = group.owner?.id ?? group.owner?.name ?? "unknown";
+    return {
+      owner: group.owner,
+      ownerId,
+      count: group.count,
+      assignments: group.assignments ?? [],
+      workerPool: resolveWorkerPoolForRole(ownerId, input),
+      targets: []
+    };
+  });
+
+  const globalWindowUsage = new Map();
+  const nextWorkerIndexByOwner = new Map();
+  const nextAssignmentIndexByOwner = new Map();
+  const orderedTargets = [];
+
+  let progress = true;
+  while (progress) {
+    progress = false;
+
+    for (const [groupIndex, group] of resolvedGroups.entries()) {
+      const nextAssignmentIndex = nextAssignmentIndexByOwner.get(group.ownerId) ?? 0;
+      const nextWorkerIndex = nextWorkerIndexByOwner.get(group.ownerId) ?? 0;
+      const assignment = group.assignments[nextAssignmentIndex];
+
+      if (!assignment || nextWorkerIndex >= group.workerPool.length) {
+        continue;
+      }
+
+      const startupWindowKey = buildStartupWindowKey(
+        assignment,
+        `${group.ownerId}:assignment-${groupIndex + 1}-${nextAssignmentIndex + 1}`
+      );
+      const startupWindowLimit = resolveStartupWindowLimit(assignment);
+      const usedWindowSlots = globalWindowUsage.get(startupWindowKey) ?? 0;
+      if (usedWindowSlots >= startupWindowLimit) {
+        continue;
+      }
+
+      const workerId = group.workerPool[nextWorkerIndex];
+      group.targets.push(
+        buildWorkerTarget({
+          owner: group.owner,
+          ownerId: group.ownerId,
+          assignment,
+          workerId,
+          workerIndex: nextWorkerIndex + 1,
+          workerPoolSize: group.workerPool.length,
+          startupWindowKey
+        })
+      );
+      orderedTargets.push(group.targets[group.targets.length - 1]);
+      nextWorkerIndexByOwner.set(group.ownerId, nextWorkerIndex + 1);
+      nextAssignmentIndexByOwner.set(group.ownerId, nextAssignmentIndex + 1);
+      globalWindowUsage.set(startupWindowKey, usedWindowSlots + 1);
+      progress = true;
+    }
+  }
+
+  return {
+    groups: resolvedGroups,
+    targets: orderedTargets
+  };
+}
+
 function buildLaunchWindows(launches) {
   const windows = [];
   const windowsByKey = new Map();
@@ -50,48 +202,63 @@ export function buildLeaderAssignmentDispatchPackView(
   }
 ) {
   const assignments = leaderAssignments(input);
-  const groups = (assignments?.groups ?? []).map((group) => {
-    const ownerId = group.owner?.id ?? group.owner?.name ?? "unknown";
-    const workerId = input.workerIds?.[ownerId] ?? input.workerId ?? `<${ownerId}-worker>`;
-    const dispatch = leaderAssignmentDispatch({
-      ...input,
-      role: ownerId,
-      workerId
-    });
+  const allocation = buildDispatchTargetsForGroups(input, assignments?.groups ?? []);
+  const groups = allocation.groups.map((group) => {
+    const nextTarget = group.targets[0] ?? null;
+    const nextAssignment = nextTarget?.assignment ?? group.assignments[0] ?? null;
+    const purposeGuidance = nextAssignment?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(nextAssignment);
 
     return {
       owner: group.owner,
       count: group.count,
-      next: dispatch.assignment,
-      purposeGuidance: dispatch.assignment?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(dispatch.assignment),
-      wave: dispatch.assignment?.wave ?? null,
-      waveStatus: dispatch.assignment?.waveStatus ?? null,
-      waveParallelizable: dispatch.assignment?.waveParallelizable ?? null,
-      swarmId: dispatch.assignment?.swarmId ?? null,
-      swarmExecutionShape: dispatch.assignment?.swarmExecutionShape ?? null,
-      swarmWaveCount: dispatch.assignment?.swarmWaveCount ?? null,
-      swarmMaxWorkers: dispatch.assignment?.swarmMaxWorkers ?? null,
-      workerId,
-      previewCommand: dispatch.previewCommand,
-      pickupCommand: dispatch.pickupCommand,
-      command: dispatch.command,
-      summary: dispatch.summary
+      next: nextAssignment,
+      purposeGuidance,
+      wave: nextAssignment?.wave ?? null,
+      waveStatus: nextAssignment?.waveStatus ?? null,
+      waveParallelizable: nextAssignment?.waveParallelizable ?? null,
+      swarmId: nextAssignment?.swarmId ?? null,
+      swarmExecutionShape: nextAssignment?.swarmExecutionShape ?? null,
+      swarmWaveCount: nextAssignment?.swarmWaveCount ?? null,
+      swarmMaxWorkers: nextAssignment?.swarmMaxWorkers ?? null,
+      workerId: nextTarget?.workerId ?? null,
+      workerPool: group.workerPool,
+      workerCount: group.workerPool.length,
+      readyTargets: group.targets.length,
+      deferredAssignments: Math.max(0, group.count - group.targets.length),
+      launchReady: group.targets.length > 0,
+      previewCommand: nextTarget?.previewCommand ?? null,
+      pickupCommand: nextTarget?.pickupCommand ?? null,
+      command: nextTarget?.command ?? null,
+      targets: group.targets,
+      summary:
+        group.targets.length > 1
+          ? `${group.ownerId} has ${group.targets.length} worker-targeted dispatches ready.`
+          : group.targets.length === 1
+            ? `${group.ownerId} has 1 worker-targeted dispatch ready.`
+            : `${group.ownerId} has dispatchable work waiting for an open startup slot.`
     };
   });
-  const next = groups[0] ?? null;
-  const recommendedReason = deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next });
+  const next = groups.find((group) => group.launchReady) ?? groups[0] ?? null;
+  const recommendedReason = deriveLeaderAssignmentDispatchPackReason({
+    assignments,
+    groups,
+    next,
+    workerTargets: allocation.targets.length
+  });
 
   return {
     kind: "leader_assignment_dispatch_pack",
     recommendedReason,
     counts: {
       ownerGroups: groups.length,
-      totalAssignments: assignments?.counts?.totalAssignments ?? 0
+      totalAssignments: assignments?.counts?.totalAssignments ?? 0,
+      workerTargets: allocation.targets.length
     },
     next,
+    targets: allocation.targets,
     groups,
     summary: next
-      ? `Leader assignment dispatch pack has ${groups.length} owner group${groups.length === 1 ? "" : "s"} ready; ${next.owner?.id ?? next.owner?.name ?? "unknown"} is first for ${next.purposeGuidance?.label ?? "implementation"} work.`
+      ? `Leader assignment dispatch pack has ${allocation.targets.length} worker-targeted dispatch${allocation.targets.length === 1 ? "" : "es"} across ${groups.length} owner group${groups.length === 1 ? "" : "s"}; ${next.owner?.id ?? next.owner?.name ?? "unknown"} is first for ${next.purposeGuidance?.label ?? "implementation"} work.`
       : "Leader assignment dispatch pack has no worker-targeted assignment dispatches right now."
   };
 }
@@ -129,35 +296,36 @@ export function buildLeaderAssignmentDispatchBundleView(
   }
 ) {
   const dispatchPack = leaderAssignmentDispatchPack(input);
-  const launches = (dispatchPack?.groups ?? []).map((group, index) => ({
-    roleId: group.owner?.id ?? group.owner?.name ?? "unknown",
+  const launchTargets =
+    Array.isArray(dispatchPack?.targets) && dispatchPack.targets.length > 0
+      ? dispatchPack.targets
+      : (dispatchPack?.groups ?? []).flatMap((group) => group.targets ?? []);
+  const launches = launchTargets.map((target, index) => ({
+    roleId: target.owner?.id ?? target.owner?.name ?? "unknown",
     position: index + 1,
-    role: group.owner,
-    workerId: group.workerId,
-    taskId: group.next?.taskId ?? null,
-    swarmId: group.next?.swarmId ?? null,
-    objective: group.next?.objective ?? null,
-    lane: group.next?.lane ?? null,
-    purpose: group.next?.purpose ?? null,
-    purposeGuidance: group.next?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(group.next),
-    wave: group.next?.wave ?? null,
-    waveStatus: group.next?.waveStatus ?? null,
-    waveParallelizable: group.next?.waveParallelizable ?? null,
-    swarmExecutionShape: group.next?.swarmExecutionShape ?? null,
-    swarmWaveCount: group.next?.swarmWaveCount ?? null,
-    swarmMaxWorkers: group.next?.swarmMaxWorkers ?? null,
-    startupWindowKey:
-      group.next?.swarmId && group.next?.wave != null
-        ? `${group.next.swarmId}:wave-${group.next.wave}`
-        : `${group.owner?.id ?? group.owner?.name ?? "unknown"}:${index + 1}`,
-    assignment: group.next ?? null,
-    sessionCommand: `node ./src/index.js worker:session --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
-    assignmentPackCommand: `node ./src/index.js runtime:assignment-pack --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
-    launchCommand: `node ./src/index.js runtime:assignment-pack --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
-    previewCommand: group.previewCommand,
-    pickupCommand: group.pickupCommand,
-    command: group.command,
-    summary: group.summary
+    role: target.owner,
+    workerId: target.workerId,
+    taskId: target.taskId ?? null,
+    swarmId: target.swarmId ?? null,
+    objective: target.objective ?? null,
+    lane: target.lane ?? null,
+    purpose: target.purpose ?? null,
+    purposeGuidance: target.purposeGuidance ?? buildPurposeGuidanceForTaskLike(target.assignment ?? target),
+    wave: target.wave ?? null,
+    waveStatus: target.waveStatus ?? null,
+    waveParallelizable: target.waveParallelizable ?? null,
+    swarmExecutionShape: target.swarmExecutionShape ?? null,
+    swarmWaveCount: target.swarmWaveCount ?? null,
+    swarmMaxWorkers: target.swarmMaxWorkers ?? null,
+    startupWindowKey: target.startupWindowKey ?? buildStartupWindowKey(target.assignment ?? target, `${target.ownerId}:${index + 1}`),
+    assignment: target.assignment ?? null,
+    sessionCommand: `node ./src/index.js worker:session --role ${target.owner?.id ?? target.owner?.name ?? "unknown"} --worker ${target.workerId} --mode owner`,
+    assignmentPackCommand: `node ./src/index.js runtime:assignment-pack --role ${target.owner?.id ?? target.owner?.name ?? "unknown"} --worker ${target.workerId} --mode owner`,
+    launchCommand: `node ./src/index.js runtime:assignment-pack --role ${target.owner?.id ?? target.owner?.name ?? "unknown"} --worker ${target.workerId} --mode owner`,
+    previewCommand: target.previewCommand,
+    pickupCommand: target.pickupCommand,
+    command: target.command,
+    summary: target.summary
   }));
   const next = launches[0] ?? null;
   const recommendedReason = deriveLeaderAssignmentDispatchBundleReason({ dispatchPack, launches, next });
@@ -168,7 +336,8 @@ export function buildLeaderAssignmentDispatchBundleView(
     counts: {
       launches: launches.length,
       ownerGroups: dispatchPack?.counts?.ownerGroups ?? 0,
-      totalAssignments: dispatchPack?.counts?.totalAssignments ?? 0
+      totalAssignments: dispatchPack?.counts?.totalAssignments ?? 0,
+      workerTargets: dispatchPack?.counts?.workerTargets ?? launches.length
     },
     next,
     launches,
