@@ -1,4 +1,5 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
 import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildRuntimeFocusSummary(type, detail) {
@@ -60,10 +61,7 @@ export function buildRuntimeFocusView(
         lane: blockedAlert.lane,
         purpose: blockedAlert.lanePurpose ?? null,
         purposeGuidance: buildPurposeGuidanceForTaskLike({ lanePurpose: blockedAlert.lanePurpose ?? null }),
-        recommendedNextActor: brief?.recommendedNextActor ?? null,
-        recommendedNextAction: brief?.recommendedNextAction ?? null,
-        recommendedCommands: brief?.recommendedCommands ?? [],
-        taskBrief: brief,
+        ...buildRecommendedNextFields(brief, { includeTaskBrief: true, taskBrief: brief }),
         summary: blockedAlert.summary
       };
     return buildRuntimeFocusResult(
@@ -85,10 +83,7 @@ export function buildRuntimeFocusView(
         purpose: review.next.lanePurpose ?? null,
         purposeGuidance: review.next.purposeGuidance ?? buildPurposeGuidanceForTaskLike(review.next),
         verifier: review.groups?.[0]?.verifier ?? null,
-        recommendedNextActor: review.next.recommendedNextActor,
-        recommendedNextAction: review.next.recommendedNextAction,
-        recommendedCommands: review.next.recommendedCommands,
-        taskBrief: review.next.taskBrief,
+        ...buildRecommendedNextFields(review.next, { includeTaskBrief: true }),
         summary: review.next.summary
       };
     return buildRuntimeFocusResult(
@@ -110,10 +105,7 @@ export function buildRuntimeFocusView(
         purpose: dispatch.next.purpose ?? null,
         purposeGuidance: dispatch.next.purposeGuidance ?? buildPurposeGuidanceForTaskLike(dispatch.next),
         owner: dispatch.groups?.[0]?.owner ?? null,
-        recommendedNextActor: dispatch.next.recommendedNextActor,
-        recommendedNextAction: dispatch.next.recommendedNextAction,
-        recommendedCommands: dispatch.next.recommendedCommands,
-        taskBrief: dispatch.next.taskBrief,
+        ...buildRecommendedNextFields(dispatch.next, { includeTaskBrief: true }),
         summary: dispatch.next.summary
       };
     return buildRuntimeFocusResult(
@@ -133,9 +125,11 @@ export function buildRuntimeFocusView(
         lane: roles.next.nextAction?.lane ?? null,
         purpose: roles.next.nextAction?.task?.lanePurpose ?? null,
         purposeGuidance: roles.next.nextAction?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(roles.next.nextAction?.task ?? null),
-        recommendedNextActor: roles.next.role,
-        recommendedNextAction: roles.next.nextAction?.reason ?? null,
-        recommendedCommands: roles.next.nextAction?.command ? [roles.next.nextAction.command] : [],
+        ...buildRecommendedNextFields({
+          recommendedNextActor: roles.next.role,
+          recommendedNextAction: roles.next.nextAction?.reason ?? null,
+          recommendedCommands: roles.next.nextAction?.command ? [roles.next.nextAction.command] : []
+        }),
         task: roles.next.nextAction?.task ?? null,
         summary: roles.next.summary
       };
@@ -153,9 +147,7 @@ export function buildRuntimeFocusView(
         priority: "low",
         type: "leader_queue_item",
         swarmId: queueNext.swarmId,
-        recommendedNextActor: queueNext.recommendedNextActor ?? null,
-        recommendedNextAction: queueNext.recommendedNextAction ?? null,
-        recommendedCommands: queueNext.recommendedCommands ?? [],
+        ...buildRecommendedNextFields(queueNext),
         summary: queueNext.summary
       };
     return buildRuntimeFocusResult(
@@ -172,9 +164,7 @@ export function buildRuntimeFocusView(
       source: "idle",
       priority: "none",
       type: "idle",
-      recommendedNextActor: null,
-      recommendedNextAction: null,
-      recommendedCommands: [],
+      ...buildRecommendedNextFields(),
       summary: "Runtime focus has no active next action right now."
     },
     sources,

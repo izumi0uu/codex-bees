@@ -1,4 +1,5 @@
 import { compareLanePurposes } from "./state-queue-views.js";
+import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
 
 export function runtimeRolePriority(entry) {
   if (entry.counts.pendingReview > 0) {
@@ -52,9 +53,7 @@ export function buildLeaderWorkspaceSwarmEntry(overview, swarmBrief, buildSwarmB
     waveCount: brief?.orchestration?.waveCount ?? overview.swarm.waveCount ?? null,
     nextWave: brief?.orchestration?.nextWave ?? null,
     nextLane: overview.nextLane,
-    recommendedNextActor: brief?.recommendedNextActor ?? null,
-    recommendedNextAction: brief?.recommendedNextAction ?? null,
-    recommendedCommands: brief?.recommendedCommands ?? [],
+    ...buildRecommendedNextFields(brief),
     leaderHandoff: brief?.leaderHandoff ?? null,
     summary: buildSwarmBundleSummary(overview, overview.lanes),
     updatedAt: overview.swarm.updatedAt ?? null
@@ -147,9 +146,7 @@ export function buildLeaderWorkspaceView(
     focus: focusEntry
       ? {
           swarmId: focusEntry.id,
-          recommendedNextActor: focusEntry.recommendedNextActor,
-          recommendedNextAction: focusEntry.recommendedNextAction,
-          recommendedCommands: focusEntry.recommendedCommands,
+          ...buildRecommendedNextFields(focusEntry),
           bundle: swarmBundle(focusEntry.id)
         }
       : null,

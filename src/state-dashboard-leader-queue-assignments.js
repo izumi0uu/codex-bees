@@ -1,5 +1,6 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import { compareLanePurposes } from "./state-queue-views.js";
+import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
 import { findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
 
 export function buildLeaderQueueSummary(items) {
@@ -33,9 +34,7 @@ export function buildLeaderQueueView(
     status: swarm.status,
     derivedStatus: swarm.derivedStatus,
     readyToComplete: swarm.readyToComplete,
-    recommendedNextActor: swarm.recommendedNextActor,
-    recommendedNextAction: swarm.recommendedNextAction,
-    recommendedCommands: swarm.recommendedCommands,
+    ...buildRecommendedNextFields(swarm),
     summary: swarm.summary
   }));
   const next = items[0] ?? null;
@@ -136,10 +135,10 @@ export function buildLeaderAssignmentsView(
           verifier: lane.verifier,
           taskId: lane.taskId,
           taskQueueStatus: lane.taskQueueStatus,
-          recommendedNextActor: lane.recommendedNextActor,
-          recommendedNextAction: lane.recommendedNextAction,
-          recommendedCommands: lane.recommendedCommands,
-          taskBrief: lane.taskId ? taskBrief(lane.taskId) : null,
+          ...buildRecommendedNextFields(lane, {
+            includeTaskBrief: true,
+            taskBrief: lane.taskId ? taskBrief(lane.taskId) : null
+          }),
           swarmExecutionShape: orchestration?.executionShape ?? null,
           swarmWaveCount: orchestration?.waveCount ?? null,
           swarmMaxWorkers: orchestration?.maxWorkers ?? null,

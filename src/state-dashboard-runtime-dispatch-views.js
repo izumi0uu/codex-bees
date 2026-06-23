@@ -1,4 +1,5 @@
 import { buildPurposeGuidanceForTaskLike } from './state-lane-purpose.js';
+import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
 
 export function deriveRuntimeDispatchReason({ groups, totalAssignments, next }) {
   if ((groups?.length ?? 0) > 1) {
@@ -52,10 +53,7 @@ export function buildRuntimeDispatchView(
       taskId: assignment.taskId,
       taskQueueStatus: assignment.taskQueueStatus,
       verifier: assignment.verifier,
-      recommendedNextActor: assignment.recommendedNextActor,
-      recommendedNextAction: assignment.recommendedNextAction,
-      recommendedCommands: assignment.recommendedCommands,
-      taskBrief: assignment.taskBrief,
+      ...buildRecommendedNextFields(assignment, { includeTaskBrief: true }),
       summary: assignment.summary
     }))
   }));
