@@ -138,25 +138,8 @@ export function buildTaskBriefView(
   const history = buildHistoryView(task.history ?? []);
   const annotationEntries = task.annotations ?? [];
 
-  return {
-    kind: "task_execution_brief",
+  return createLoadedValueView("task_execution_brief", "task", task, {
     recommendedReason,
-    task,
-    objective: task.objective ?? task.title,
-    planning: buildPlanningView(task.plannerProvenance),
-    roles: {
-      owner: describeRole(task.owner, catalog),
-      verifier: describeRole(task.verifier, catalog)
-    },
-    coordination: {
-      swarmId: task.swarmId,
-      lane: task.lane,
-      lanePurpose: task.lanePurpose ?? null,
-      queueStatus: task.queueStatus,
-      claimedBy: task.claimedBy,
-      notes: task.notes,
-      dependsOn: dependencySummary.refs
-    },
     counts: {
       scopeEntries: scope.length,
       acceptanceItems: acceptance.length,
@@ -167,34 +150,51 @@ export function buildTaskBriefView(
       historyEntries: history.count,
       annotationEntries: annotationEntries.length
     },
-    execution: {
-      scope,
-      acceptance,
-      verification,
-      dependsOn: dependencySummary.refs
-    },
-    dependencies: dependencySummary,
-    review: {
-      state: deriveReviewState(task),
-      reviewedBy: task.reviewedBy,
-      reviewedAt: task.reviewedAt,
-      outcome: task.reviewOutcome,
-      notes: task.reviewNotes,
-      evidence: reviewEvidence
-    },
-    history: {
-      count: history.count,
-      entries: history.entries
-    },
-    annotations: {
-      count: annotationEntries.length,
-      entries: annotationEntries.slice(-5)
-    },
-    validation,
-    recommendedNextActor: recommended.actor,
-    recommendedNextAction: recommended.action,
-    recommendedCommands: recommended.commands
-  };
+    extra: {
+      objective: task.objective ?? task.title,
+      planning: buildPlanningView(task.plannerProvenance),
+      roles: {
+        owner: describeRole(task.owner, catalog),
+        verifier: describeRole(task.verifier, catalog)
+      },
+      coordination: {
+        swarmId: task.swarmId,
+        lane: task.lane,
+        lanePurpose: task.lanePurpose ?? null,
+        queueStatus: task.queueStatus,
+        claimedBy: task.claimedBy,
+        notes: task.notes,
+        dependsOn: dependencySummary.refs
+      },
+      execution: {
+        scope,
+        acceptance,
+        verification,
+        dependsOn: dependencySummary.refs
+      },
+      dependencies: dependencySummary,
+      review: {
+        state: deriveReviewState(task),
+        reviewedBy: task.reviewedBy,
+        reviewedAt: task.reviewedAt,
+        outcome: task.reviewOutcome,
+        notes: task.reviewNotes,
+        evidence: reviewEvidence
+      },
+      history: {
+        count: history.count,
+        entries: history.entries
+      },
+      annotations: {
+        count: annotationEntries.length,
+        entries: annotationEntries.slice(-5)
+      },
+      validation,
+      recommendedNextActor: recommended.actor,
+      recommendedNextAction: recommended.action,
+      recommendedCommands: recommended.commands
+    }
+  });
 }
 
 export function buildTaskBriefViewFromSources(
