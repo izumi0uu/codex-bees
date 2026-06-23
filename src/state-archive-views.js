@@ -21,6 +21,15 @@ function buildArchivedSwarmRestoreCommand(swarm) {
   return `node ./src/index.js swarm:restore --id ${swarm.id}`;
 }
 
+function buildArchivedEntityMetadata(entity, restoreCommand) {
+  return {
+    archivedAt: entity?.archivedAt ?? null,
+    archivedBy: entity?.archivedBy ?? null,
+    hasArchiveReason: Boolean(entity?.archiveReason),
+    restoreCommand
+  };
+}
+
 export function buildArchivedTaskListView(tasks = []) {
   return createCollectionView("task_archive_view", "tasks", tasks, {
     loadedReason: "task_archive_list_has_results",
@@ -49,12 +58,7 @@ export function buildArchivedTaskDetailView(id, { getArchivedTask }) {
   return createLoadedValueView("task_archive_detail", "task", task, {
     recommendedReason: "task_archive_loaded",
     extra: {
-      metadata: {
-        archivedAt: task.archivedAt ?? null,
-        archivedBy: task.archivedBy ?? null,
-        hasArchiveReason: Boolean(task.archiveReason),
-        restoreCommand: buildArchivedTaskRestoreCommand(task)
-      },
+      metadata: buildArchivedEntityMetadata(task, buildArchivedTaskRestoreCommand(task)),
       summary: buildArchivedTaskSummary(task)
     }
   });
@@ -115,12 +119,7 @@ export function buildArchivedSwarmDetailView(id, { getArchivedSwarm, getArchived
     },
     extra: {
       tasks: archivedTasks,
-      metadata: {
-        archivedAt: swarm.archivedAt ?? null,
-        archivedBy: swarm.archivedBy ?? null,
-        hasArchiveReason: Boolean(swarm.archiveReason),
-        restoreCommand: buildArchivedSwarmRestoreCommand(swarm)
-      },
+      metadata: buildArchivedEntityMetadata(swarm, buildArchivedSwarmRestoreCommand(swarm)),
       summary: buildArchivedSwarmSummary(swarm, archivedTasks)
     }
   });
