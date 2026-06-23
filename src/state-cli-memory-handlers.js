@@ -1,5 +1,7 @@
-import { exit, readListOption, readOption, requireOption, write, writeErr } from "./state-cli-helpers.js";
+import { readListOption, readOption, requireOption, write } from "./state-cli-helpers.js";
 import { getMemoryView, listMemoriesView, searchMemoriesView, storeMemoryMutation } from "./state-runtime.js";
+import { writeLookupView } from "./state-cli-lookup-writers.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function readMemoryFilters() {
   return {
@@ -18,21 +20,16 @@ function handleMemoryStore() {
     notes: readOption("--notes"),
     content
   });
-  write(JSON.stringify({ stored: memory }, null, 2) + "\n");
+  writeNamedView("stored", memory);
 }
 
 function handleMemoryGet() {
   const id = requireOption("--id");
-  const memory = getMemoryView(id);
-  if (!memory) {
-    writeErr(`Unknown memory id: ${id}\n`);
-    exit(1);
-  }
-  write(JSON.stringify({ memory }, null, 2) + "\n");
+  writeLookupView("memory", getMemoryView, id, "memory");
 }
 
 function handleMemoryList() {
-  write(JSON.stringify({ memories: listMemoriesView(readMemoryFilters()) }, null, 2) + "\n");
+  writeNamedView("memories", listMemoriesView(readMemoryFilters()));
 }
 
 function handleMemorySearch() {

@@ -1,5 +1,6 @@
-import { argv, readOption, write } from "./state-cli-helpers.js";
+import { argv, readOption } from "./state-cli-helpers.js";
 import { listArchivedSwarmsView, listSwarmsView } from "./state-runtime.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function readSwarmFilters() {
   return {
@@ -11,9 +12,9 @@ function readSwarmFilters() {
 
 export function printSwarms() {
   const detailed = argv.includes("--detailed");
-  write(JSON.stringify({ swarms: listSwarmsView(readSwarmFilters(), { detailed }) }, null, 2) + "\n");
+  writeNamedView("swarms", listSwarmsView(readSwarmFilters(), { detailed }));
 }
 
 export function handleSwarmArchiveList() {
-  write(JSON.stringify({ archivedSwarms: listArchivedSwarmsView() }, null, 2) + "\n");
+  writeNamedView("archivedSwarms", listArchivedSwarmsView());
 }

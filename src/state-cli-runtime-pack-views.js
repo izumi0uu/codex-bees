@@ -21,11 +21,8 @@ import {
   runtimeWorkerPack,
   runtimeWorkspacePack
 } from "./state-runtime.js";
-import { exit, readJsonOption, readOption, readPositiveIntegerOption, write, writeErr } from "./state-cli-helpers.js";
-
-function writePack(label, pack) {
-  write(JSON.stringify({ [label]: pack }, null, 2) + "\n");
-}
+import { exit, readJsonOption, readOption, readPositiveIntegerOption, writeErr } from "./state-cli-helpers.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function readWorkerSelectionOptions() {
   return {
@@ -61,49 +58,49 @@ function requireRoleOption(commandName) {
 }
 
 function printRuntimeAssignmentPack() {
-  writePack("assignmentPack", runtimeAssignmentPack({
+  writeNamedView("assignmentPack", runtimeAssignmentPack({
     ...requireRoleWorkerOptions("runtime:assignment-pack"),
     mode: readOption("--mode")
   }));
 }
 
 function printRuntimeCloseoutPack() {
-  writePack("closeoutPack", runtimeCloseoutPack(readWorkerSelectionOptions()));
+  writeNamedView("closeoutPack", runtimeCloseoutPack(readWorkerSelectionOptions()));
 }
 
 function printRuntimeControlPack() {
-  writePack("controlPack", runtimeControlPack(readWorkerSelectionDetailOptions()));
+  writeNamedView("controlPack", runtimeControlPack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimeSignalPack() {
-  writePack("signalPack", runtimeSignalPack({ limit: readPositiveIntegerOption("--limit") }));
+  writeNamedView("signalPack", runtimeSignalPack({ limit: readPositiveIntegerOption("--limit") }));
 }
 
 function printRuntimeExecutionPack() {
-  writePack("executionPack", runtimeExecutionPack(readWorkerSelectionDetailOptions()));
+  writeNamedView("executionPack", runtimeExecutionPack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimePickupPack() {
-  writePack("pickupPack", runtimePickupPack({
+  writeNamedView("pickupPack", runtimePickupPack({
     ...requireRoleWorkerOptions("runtime:pickup-pack"),
     mode: readOption("--mode")
   }));
 }
 
 function printRuntimeHandoffPack() {
-  writePack("handoffPack", runtimeHandoffPack());
+  writeNamedView("handoffPack", runtimeHandoffPack());
 }
 
 function printRuntimeTriagePack() {
-  writePack("triagePack", runtimeTriagePack());
+  writeNamedView("triagePack", runtimeTriagePack());
 }
 
 function printRuntimeSummaryPack() {
-  writePack("summaryPack", runtimeSummaryPack(readWorkerSelectionDetailOptions()));
+  writeNamedView("summaryPack", runtimeSummaryPack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimeLeaderPack() {
-  writePack("leaderPack", runtimeLeaderPack({
+  writeNamedView("leaderPack", runtimeLeaderPack({
     status: readOption("--status"),
     topology: readOption("--topology"),
     owner: readOption("--owner"),
@@ -112,41 +109,41 @@ function printRuntimeLeaderPack() {
 }
 
 function printRuntimeOperatorPack() {
-  writePack("operatorPack", runtimeOperatorPack());
+  writeNamedView("operatorPack", runtimeOperatorPack());
 }
 
 function printRuntimeRecoveryPack() {
-  writePack("recoveryPack", runtimeRecoveryPack());
+  writeNamedView("recoveryPack", runtimeRecoveryPack());
 }
 
 function printRuntimeReviewPack() {
-  writePack("reviewPack", runtimeReviewPack({
+  writeNamedView("reviewPack", runtimeReviewPack({
     role: readOption("--role"),
     workerId: readOption("--worker")
   }));
 }
 
 function printRuntimeSessionPack() {
-  writePack("sessionPack", runtimeSessionPack({
+  writeNamedView("sessionPack", runtimeSessionPack({
     ...requireRoleWorkerOptions("runtime:session-pack"),
     mode: readOption("--mode")
   }));
 }
 
 function printRuntimeQueuePack() {
-  writePack("queuePack", runtimeQueuePack(readWorkerSelectionDetailOptions()));
+  writeNamedView("queuePack", runtimeQueuePack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimeWorkspacePack() {
-  writePack("workspacePack", runtimeWorkspacePack(readWorkerSelectionDetailOptions()));
+  writeNamedView("workspacePack", runtimeWorkspacePack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimeOwnerPack() {
-  writePack("ownerPack", runtimeOwnerPack(requireRoleWorkerOptions("runtime:owner-pack")));
+  writeNamedView("ownerPack", runtimeOwnerPack(requireRoleWorkerOptions("runtime:owner-pack")));
 }
 
 function printRuntimeRolePack() {
-  writePack("rolePack", runtimeRolePack({
+  writeNamedView("rolePack", runtimeRolePack({
     role: requireRoleOption("runtime:role-pack"),
     workerId: readOption("--worker"),
     mode: readOption("--mode")
@@ -154,18 +151,18 @@ function printRuntimeRolePack() {
 }
 
 function printRuntimeVerifierPack() {
-  writePack("verifierPack", runtimeVerifierPack(requireRoleWorkerOptions("runtime:verifier-pack")));
+  writeNamedView("verifierPack", runtimeVerifierPack(requireRoleWorkerOptions("runtime:verifier-pack")));
 }
 
 function printRuntimeWorkerPack() {
-  writePack("workerPack", runtimeWorkerPack({
+  writeNamedView("workerPack", runtimeWorkerPack({
     ...requireRoleWorkerOptions("runtime:worker-pack"),
     mode: readOption("--mode")
   }));
 }
 
 function printRuntimeDispatchPack() {
-  writePack("dispatchPack", runtimeDispatchPack(readWorkerSelectionDetailOptions()));
+  writeNamedView("dispatchPack", runtimeDispatchPack(readWorkerSelectionDetailOptions()));
 }
 
 export {
