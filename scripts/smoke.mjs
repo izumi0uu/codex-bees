@@ -4525,15 +4525,18 @@ if (
   plannedRuntimeStateFacadeCli.kind !== "task_plan" ||
   plannedRuntimeStateFacadeCli.recommendedReason !== "multi_lane_plan_ready" ||
   plannedRuntimeStateFacadeCli.evidence?.strategy?.taskClass !== "coordination-kernel" ||
-  plannedRuntimeStateFacadeCli.evidence?.strategy?.laneStrategy !== "discover-implement-verify-docs" ||
-  plannedRuntimeStateFacadeCli.orchestration?.executionShape !== "parallel-handoff" ||
+  plannedRuntimeStateFacadeCli.evidence?.strategy?.laneStrategy !== "discover-implement-verify" ||
+  plannedRuntimeStateFacadeCli.orchestration?.executionShape !== "serial-handoff" ||
   plannedRuntimeStateFacadeCli.orchestration?.waveCount !== 3 ||
-  plannedRuntimeStateFacadeCli.orchestration?.maxWorkers !== 2 ||
+  plannedRuntimeStateFacadeCli.orchestration?.maxWorkers !== 1 ||
   JSON.stringify(plannedRuntimeStateFacadeCli.evidence?.scopeHints?.primary ?? []) !==
     JSON.stringify(["src/index.js", "src/mcp.js", "src/state-runtime.js"]) ||
+  (plannedRuntimeStateFacadeCli.evidence?.scopeHints?.documentation ?? []).length !== 0 ||
+  plannedRuntimeStateFacadeCli.lanes?.length !== 3 ||
   plannedRuntimeStateFacadeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/state.js") ||
   plannedRuntimeStateFacadeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/state-public.js") ||
-  plannedRuntimeStateFacadeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/api.js")
+  plannedRuntimeStateFacadeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/api.js") ||
+  plannedRuntimeStateFacadeCli.lanes?.some((lane) => lane.purpose === "documentation")
 ) {
   console.error("[smoke:plan-state-runtime-cli] expected planner to keep internal runtime state work on runtime facade files");
   process.exit(1);

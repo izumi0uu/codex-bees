@@ -301,6 +301,8 @@ function inferPlannerIntent(task, implementationScope = choosePrimaryScope(task)
   const lower = task.toLowerCase();
   const docs = includesAny(lower, ["readme", "docs", "documentation", "guide", "notes", "changelog", "example", "help"]);
   const runtime = includesAny(lower, ["runtime", "cli", "command", "mcp", "tool"]);
+  const internalRuntime = isInternalStateRuntimeTask(lower);
+  const publicRuntime = runtime && !internalRuntime;
   const coordination = includesAny(lower, [
     "task",
     "queue",
@@ -324,6 +326,8 @@ function inferPlannerIntent(task, implementationScope = choosePrimaryScope(task)
     docs,
     docsOnly,
     runtime,
+    publicRuntime,
+    internalRuntime,
     coordination,
     build,
     catalog,
@@ -360,7 +364,7 @@ function derivePlannerStrategy(
   intent = inferPlannerIntent(task, implementationScope),
   plannerProfile = getPlannerProfileRecord(DEFAULT_PLANNER_PROFILE_ID)
 ) {
-  const publicSurface = intent.runtime || intent.catalog || touchesPublicRuntime(implementationScope);
+  const publicSurface = intent.publicRuntime || intent.catalog || touchesPublicRuntime(implementationScope);
   const needsDiscovery = !intent.docsOnly && (
     intent.coordination ||
     (intent.catalog && implementationScope.length > 1) ||
@@ -372,7 +376,7 @@ function derivePlannerStrategy(
     plannerProfile?.planningHints?.documentationMode === "discovery-sidecar" && intent.coordination;
   const needsDocumentation = !intent.docsOnly && (
     intent.docs ||
-    intent.runtime ||
+    intent.publicRuntime ||
     intent.catalog ||
     coordinationDocumentationSidecar
   );
