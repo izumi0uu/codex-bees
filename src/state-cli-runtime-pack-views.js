@@ -23,224 +23,149 @@ import {
 } from "./state-runtime.js";
 import { exit, readJsonOption, readOption, readPositiveIntegerOption, write, writeErr } from "./state-cli-helpers.js";
 
-function printRuntimeAssignmentPack() {
+function writePack(label, pack) {
+  write(JSON.stringify({ [label]: pack }, null, 2) + "\n");
+}
+
+function readWorkerSelectionOptions() {
+  return {
+    workerId: readOption("--worker"),
+    workerIds: readJsonOption("--workers")
+  };
+}
+
+function readWorkerSelectionDetailOptions() {
+  return {
+    ...readWorkerSelectionOptions(),
+    detail: readOption("--detail")
+  };
+}
+
+function requireRoleWorkerOptions(commandName) {
   const role = readOption("--role");
   const workerId = readOption("--worker");
   if (!role || !workerId) {
-    writeErr("runtime:assignment-pack requires --role and --worker\n");
+    writeErr(`${commandName} requires --role and --worker\n`);
     exit(1);
   }
-  write(JSON.stringify({
-    assignmentPack: runtimeAssignmentPack({
-      role,
-      workerId,
-      mode: readOption("--mode")
-    })
-  }, null, 2) + "\n");
+  return { role, workerId };
+}
+
+function requireRoleOption(commandName) {
+  const role = readOption("--role");
+  if (!role) {
+    writeErr(`${commandName} requires --role\n`);
+    exit(1);
+  }
+  return role;
+}
+
+function printRuntimeAssignmentPack() {
+  writePack("assignmentPack", runtimeAssignmentPack({
+    ...requireRoleWorkerOptions("runtime:assignment-pack"),
+    mode: readOption("--mode")
+  }));
 }
 
 function printRuntimeCloseoutPack() {
-  write(JSON.stringify({
-    closeoutPack: runtimeCloseoutPack({
-      workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers")
-    })
-  }, null, 2) + "\n");
+  writePack("closeoutPack", runtimeCloseoutPack(readWorkerSelectionOptions()));
 }
 
 function printRuntimeControlPack() {
-  write(JSON.stringify({
-    controlPack: runtimeControlPack({
-      workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers"),
-      detail: readOption("--detail")
-    })
-  }, null, 2) + "\n");
+  writePack("controlPack", runtimeControlPack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimeSignalPack() {
-  write(JSON.stringify({ signalPack: runtimeSignalPack({ limit: readPositiveIntegerOption("--limit") }) }, null, 2) + "\n");
+  writePack("signalPack", runtimeSignalPack({ limit: readPositiveIntegerOption("--limit") }));
 }
 
 function printRuntimeExecutionPack() {
-  write(JSON.stringify({
-    executionPack: runtimeExecutionPack({
-      workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers"),
-      detail: readOption("--detail")
-    })
-  }, null, 2) + "\n");
+  writePack("executionPack", runtimeExecutionPack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimePickupPack() {
-  const role = readOption("--role");
-  const workerId = readOption("--worker");
-  if (!role || !workerId) {
-    writeErr("runtime:pickup-pack requires --role and --worker\n");
-    exit(1);
-  }
-  write(JSON.stringify({
-    pickupPack: runtimePickupPack({
-      role,
-      workerId,
-      mode: readOption("--mode")
-    })
-  }, null, 2) + "\n");
+  writePack("pickupPack", runtimePickupPack({
+    ...requireRoleWorkerOptions("runtime:pickup-pack"),
+    mode: readOption("--mode")
+  }));
 }
 
 function printRuntimeHandoffPack() {
-  write(JSON.stringify({ handoffPack: runtimeHandoffPack() }, null, 2) + "\n");
+  writePack("handoffPack", runtimeHandoffPack());
 }
 
 function printRuntimeTriagePack() {
-  write(JSON.stringify({ triagePack: runtimeTriagePack() }, null, 2) + "\n");
+  writePack("triagePack", runtimeTriagePack());
 }
 
 function printRuntimeSummaryPack() {
-  write(JSON.stringify({
-    summaryPack: runtimeSummaryPack({
-      workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers"),
-      detail: readOption("--detail")
-    })
-  }, null, 2) + "\n");
+  writePack("summaryPack", runtimeSummaryPack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimeLeaderPack() {
-  write(JSON.stringify({
-    leaderPack: runtimeLeaderPack({
-      status: readOption("--status"),
-      topology: readOption("--topology"),
-      owner: readOption("--owner"),
-      workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers"),
-      detail: readOption("--detail")
-    })
-  }, null, 2) + "\n");
+  writePack("leaderPack", runtimeLeaderPack({
+    status: readOption("--status"),
+    topology: readOption("--topology"),
+    owner: readOption("--owner"),
+    ...readWorkerSelectionDetailOptions()
+  }));
 }
 
 function printRuntimeOperatorPack() {
-  write(JSON.stringify({ operatorPack: runtimeOperatorPack() }, null, 2) + "\n");
+  writePack("operatorPack", runtimeOperatorPack());
 }
 
 function printRuntimeRecoveryPack() {
-  write(JSON.stringify({ recoveryPack: runtimeRecoveryPack() }, null, 2) + "\n");
+  writePack("recoveryPack", runtimeRecoveryPack());
 }
 
 function printRuntimeReviewPack() {
-  write(JSON.stringify({
-    reviewPack: runtimeReviewPack({
-      role: readOption("--role"),
-      workerId: readOption("--worker")
-    })
-  }, null, 2) + "\n");
+  writePack("reviewPack", runtimeReviewPack({
+    role: readOption("--role"),
+    workerId: readOption("--worker")
+  }));
 }
 
 function printRuntimeSessionPack() {
-  const role = readOption("--role");
-  const workerId = readOption("--worker");
-  if (!role || !workerId) {
-    writeErr("runtime:session-pack requires --role and --worker\n");
-    exit(1);
-  }
-  write(JSON.stringify({
-    sessionPack: runtimeSessionPack({
-      role,
-      workerId,
-      mode: readOption("--mode")
-    })
-  }, null, 2) + "\n");
+  writePack("sessionPack", runtimeSessionPack({
+    ...requireRoleWorkerOptions("runtime:session-pack"),
+    mode: readOption("--mode")
+  }));
 }
 
 function printRuntimeQueuePack() {
-  write(JSON.stringify({
-    queuePack: runtimeQueuePack({
-      workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers"),
-      detail: readOption("--detail")
-    })
-  }, null, 2) + "\n");
+  writePack("queuePack", runtimeQueuePack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimeWorkspacePack() {
-  write(JSON.stringify({
-    workspacePack: runtimeWorkspacePack({
-      workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers"),
-      detail: readOption("--detail")
-    })
-  }, null, 2) + "\n");
+  writePack("workspacePack", runtimeWorkspacePack(readWorkerSelectionDetailOptions()));
 }
 
 function printRuntimeOwnerPack() {
-  const role = readOption("--role");
-  const workerId = readOption("--worker");
-  if (!role || !workerId) {
-    writeErr("runtime:owner-pack requires --role and --worker\n");
-    exit(1);
-  }
-  write(JSON.stringify({
-    ownerPack: runtimeOwnerPack({
-      role,
-      workerId
-    })
-  }, null, 2) + "\n");
+  writePack("ownerPack", runtimeOwnerPack(requireRoleWorkerOptions("runtime:owner-pack")));
 }
 
 function printRuntimeRolePack() {
-  const role = readOption("--role");
-  if (!role) {
-    writeErr("runtime:role-pack requires --role\n");
-    exit(1);
-  }
-  write(JSON.stringify({
-    rolePack: runtimeRolePack({
-      role,
-      workerId: readOption("--worker"),
-      mode: readOption("--mode")
-    })
-  }, null, 2) + "\n");
+  writePack("rolePack", runtimeRolePack({
+    role: requireRoleOption("runtime:role-pack"),
+    workerId: readOption("--worker"),
+    mode: readOption("--mode")
+  }));
 }
 
 function printRuntimeVerifierPack() {
-  const role = readOption("--role");
-  const workerId = readOption("--worker");
-  if (!role || !workerId) {
-    writeErr("runtime:verifier-pack requires --role and --worker\n");
-    exit(1);
-  }
-  write(JSON.stringify({
-    verifierPack: runtimeVerifierPack({
-      role,
-      workerId
-    })
-  }, null, 2) + "\n");
+  writePack("verifierPack", runtimeVerifierPack(requireRoleWorkerOptions("runtime:verifier-pack")));
 }
 
 function printRuntimeWorkerPack() {
-  const role = readOption("--role");
-  const workerId = readOption("--worker");
-  if (!role || !workerId) {
-    writeErr("runtime:worker-pack requires --role and --worker\n");
-    exit(1);
-  }
-  write(JSON.stringify({
-    workerPack: runtimeWorkerPack({
-      role,
-      workerId,
-      mode: readOption("--mode")
-    })
-  }, null, 2) + "\n");
+  writePack("workerPack", runtimeWorkerPack({
+    ...requireRoleWorkerOptions("runtime:worker-pack"),
+    mode: readOption("--mode")
+  }));
 }
 
 function printRuntimeDispatchPack() {
-  write(JSON.stringify({
-    dispatchPack: runtimeDispatchPack({
-      workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers"),
-      detail: readOption("--detail")
-    })
-  }, null, 2) + "\n");
+  writePack("dispatchPack", runtimeDispatchPack(readWorkerSelectionDetailOptions()));
 }
 
 export {
