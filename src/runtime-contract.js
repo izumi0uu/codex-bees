@@ -8,6 +8,11 @@ export function getRuntimeContract(options = {}) {
     product: "codex-bees",
     mode: "codex-only",
     deliveryBoundary: "codex-only runtime",
+    positioning: {
+      productType: "Codex-specific product",
+      operatingModel: "local bounded orchestration kernel",
+      distributionModel: "repo-shipped CLI, MCP, and workspace assets"
+    },
     workingDirectory,
     node,
     architecture: ["cli", "mcp", "skills", "agents", "docs"],
@@ -16,7 +21,7 @@ export function getRuntimeContract(options = {}) {
       mcp: "stdio-jsonrpc"
     },
     responsibilities: [
-      "bootstrap codex-first runtime commands",
+      "boot the codex-first local CLI and MCP runtime surfaces",
       "expose MCP tool catalog for local coordination",
       "provide a stable diagnostics surface for later orchestration layers",
       "persist local work-item state for bounded multi-agent execution",
@@ -25,9 +30,9 @@ export function getRuntimeContract(options = {}) {
       "validate owner and verifier roles against shipped local agent prompts"
     ],
     exclusions: [
-      "third-party marketplace distribution",
       "multi-host runtime support",
-      "hosted backend control plane"
+      "hosted backend control plane",
+      "external plugin marketplace distribution"
     ]
   };
 }
@@ -38,6 +43,7 @@ export function getRuntimeContractView(options = {}) {
     kind: "runtime_contract_view",
     recommendedReason: "contract_loaded",
     counts: {
+      positioningFacets: Object.keys(contract.positioning).length,
       architectureLayers: contract.architecture.length,
       transports: Object.keys(contract.transport).length,
       responsibilities: contract.responsibilities.length,

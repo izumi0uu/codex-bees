@@ -17,6 +17,16 @@ const NPM_CACHE_DIR = mkdtempSync(join(tmpdir(), "codex-bees-smoke-npm-cache-"))
 const SMOKE_SPAWN_MAX_BUFFER = 32 * 1024 * 1024;
 let packedTarballPath = null;
 
+if (
+  README_TEXT.includes("starter surface") ||
+  README_TEXT.includes("project starter surface") ||
+  README_TEXT.includes("starter-template") ||
+  README_TEXT.includes("marketplace/plugin-distribution surfaces")
+) {
+  console.error("[smoke:readme-legacy-phrasing] expected README to avoid starter and marketplace residue");
+  process.exit(1);
+}
+
 function spawnSync(command, args, options = {}) {
   return childSpawnSync(command, args, {
     encoding: "utf8",
@@ -1076,7 +1086,7 @@ const installedRuntimeContractExample = spawnSync(
   [
     "--input-type=module",
     "-e",
-    `${documentedRuntimeContractExampleScript}\nconsole.log(JSON.stringify({ ok: contract.kind === "runtime_contract_view" && contract.contract.product === "codex-bees" && contract.contract.mode === "codex-only" && contract.contract.deliveryBoundary === "codex-only runtime" && contract.contract.transport?.mcp === "stdio-jsonrpc" && Array.isArray(contract.contract.responsibilities) && contract.contract.responsibilities.length > 0 && Array.isArray(contract.contract.exclusions) && contract.contract.exclusions.includes("hosted backend control plane") }));`
+    `${documentedRuntimeContractExampleScript}\nconsole.log(JSON.stringify({ ok: contract.kind === "runtime_contract_view" && contract.contract.product === "codex-bees" && contract.contract.mode === "codex-only" && contract.contract.deliveryBoundary === "codex-only runtime" && contract.contract.positioning?.operatingModel === "local bounded orchestration kernel" && contract.contract.positioning?.distributionModel === "repo-shipped CLI, MCP, and workspace assets" && contract.contract.transport?.mcp === "stdio-jsonrpc" && Array.isArray(contract.contract.responsibilities) && contract.contract.responsibilities.length > 0 && Array.isArray(contract.contract.exclusions) && contract.contract.exclusions.includes("hosted backend control plane") }));`
   ],
   {
     cwd: packedInstallAppDir,
@@ -2643,6 +2653,7 @@ if (
   doctorView.contract?.kind !== "runtime_contract_view" ||
   doctorView.contract?.recommendedReason !== "contract_loaded" ||
   doctorView.contract?.counts?.architectureLayers !== 5 ||
+  doctorView.contract?.counts?.positioningFacets !== 3 ||
   doctorView.contract?.contract?.deliveryBoundary !== "codex-only runtime" ||
   doctorView.contract?.contract?.transport?.mcp !== "stdio-jsonrpc"
 ) {
@@ -2924,7 +2935,9 @@ const cliContractView = JSON.parse(run("contract-verify", ["./src/index.js", "co
 if (
   cliContractView.kind !== "runtime_contract_view" ||
   cliContractView.recommendedReason !== "contract_loaded" ||
+  cliContractView.counts?.positioningFacets !== 3 ||
   cliContractView.contract?.mode !== "codex-only" ||
+  cliContractView.contract?.positioning?.productType !== "Codex-specific product" ||
   cliContractView.contract?.transport?.mcp !== "stdio-jsonrpc"
 ) {
   console.error("[smoke:contract] expected runtime contract view");
@@ -8913,8 +8926,10 @@ if (
   runtimeReadyMcpPayload.ready?.contract?.contract?.transport?.mcp !== "stdio-jsonrpc" ||
   runtimeContractMcpPayload.contract?.kind !== "runtime_contract_view" ||
   runtimeContractMcpPayload.contract?.recommendedReason !== "contract_loaded" ||
+  runtimeContractMcpPayload.contract?.counts?.positioningFacets !== 3 ||
   runtimeContractMcpPayload.contract?.counts?.responsibilities !== 7 ||
   runtimeContractMcpPayload.contract?.contract?.product !== "codex-bees" ||
+  runtimeContractMcpPayload.contract?.contract?.positioning?.operatingModel !== "local bounded orchestration kernel" ||
   runtimeContractMcpPayload.contract?.contract?.transport?.cli !== "stdio"
 ) {
   console.error("[smoke:metadata-doctor-commands-entry-help-init-option-help-mcp-options-option-help-ready-contract-mcp] expected MCP metadata, doctor, command catalog, command entry, command help, init options, init option, init help, MCP options, MCP option, MCP help, tool catalog, tool entry, readiness, and contract views");

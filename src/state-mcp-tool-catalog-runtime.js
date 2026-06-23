@@ -9,7 +9,7 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
   },
   {
     name: "runtime_contract",
-    description: "Return the Codex-only runtime contract and exclusions.",
+    description: "Return the Codex-only runtime contract, positioning, and exclusions.",
     inputSchema: {
       type: "object",
       properties: {}

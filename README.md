@@ -30,7 +30,7 @@ Current scope does **not** include:
 
 - multi-host orchestration
 - hosted control planes
-- marketplace/plugin-distribution surfaces
+- external plugin marketplace distribution
 
 ## Quick start
 
@@ -45,7 +45,7 @@ To materialize the shipped Codex project assets into the current working directo
 
 `npm run build` now rebuilds `dist/` from the shipped source modules and immediately verifies that the packaged CLI (`dist/index.js`) and MCP entrypoint (`dist/mcp.js`) both boot successfully, so the distributable surface cannot silently drift behind `src/`.
 
-The `init` command turns the shipped package into a project starter surface again, but now in a Codex-only, productized way: it copies the bundled `.codex` agents, skills, and config into your current project, preserves existing files by default, and adds `.codex-bees/` to `.gitignore` so local runtime state stays local. `codex-bees init --preview` returns the exact create/update/skip plan as structured JSON before anything is written, and both preview/apply payloads now include a stable `summary` object so tooling can read change totals without re-deriving them from raw entries.
+The `init` command turns the shipped package into a Codex project bootstrap surface: it copies the bundled `.codex` agents, skills, and config into your current project, preserves existing files by default, and adds `.codex-bees/` to `.gitignore` so local runtime state stays local. `codex-bees init --preview` returns the exact create/update/skip plan as structured JSON before anything is written, and both preview/apply payloads now include a stable `summary` object so tooling can read change totals without re-deriving them from raw entries.
 
 When the current working directory does not provide its own `.codex/agents` or `.codex/skills`, the packaged CLI and MCP server now fall back to the bundled `.codex` assets that ship inside `dist/`. That keeps installed builds usable outside the source repo instead of degrading into an empty agent/skill catalog.
 
@@ -163,7 +163,7 @@ const server = startMcpServer;
 const hasRuntimeContractTool = toolCatalog.some((tool) => tool.name === "runtime_contract");
 ```
 
-The `codex-bees/init` subpath exposes the same workspace bootstrap helpers that power `codex-bees init`, so tooling can preview or apply the shipped `.codex` starter surface without shelling out through the CLI.
+The `codex-bees/init` subpath exposes the same workspace bootstrap helpers that power `codex-bees init`, so tooling can preview or apply the shipped `.codex` workspace bootstrap surface without shelling out through the CLI.
 
 Example:
 
@@ -353,7 +353,7 @@ const runtimeCatalogCapability = getCapabilityCatalogEntry("runtime_catalog");
 const runtimeCatalogCapabilityView = getCapabilityCatalogEntryView("runtime_catalog");
 ```
 
-The `codex-bees/runtime-contract` subpath exposes the stable runtime boundary directly, so tooling can read delivery mode, transport shape, responsibilities, and exclusions without scraping CLI or MCP output.
+The `codex-bees/runtime-contract` subpath exposes the stable runtime boundary directly, so tooling can read delivery mode, product positioning, transport shape, responsibilities, and exclusions without scraping CLI or MCP output.
 
 Example:
 
