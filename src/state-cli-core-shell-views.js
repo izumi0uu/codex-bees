@@ -9,13 +9,14 @@ import { getCoordinationOverviewView, getWorkerGuidelinesView } from "./runtime-
 import { getRuntimeReadyView } from "./runtime-ready.js";
 import { renderHelpText } from "./commands.js";
 import { toolCatalog } from "./mcp.js";
+import { writeNamedView, writeView } from "./state-cli-view-writers.js";
 
 function printRunSurface() {
-  write(JSON.stringify(getRuntimeReadyView(), null, 2) + "\n");
+  writeView(getRuntimeReadyView());
 }
 
 function printReadyView() {
-  write(JSON.stringify({ ready: getRuntimeReadyView() }, null, 2) + "\n");
+  writeNamedView("ready", getRuntimeReadyView());
 }
 
 function printHelp() {
@@ -24,36 +25,36 @@ function printHelp() {
 
 function printDoctor() {
   const entryUrl = argv[1] ? pathToFileURL(realpathSync(argv[1])).href : import.meta.url;
-  write(JSON.stringify(getRuntimeDoctorView(entryUrl), null, 2) + "\n");
+  writeView(getRuntimeDoctorView(entryUrl));
 }
 
 function printGuidanceOverviewView() {
-  write(JSON.stringify({ overview: getCoordinationOverviewView() }, null, 2) + "\n");
+  writeNamedView("overview", getCoordinationOverviewView());
 }
 
 function printGuidanceWorkerView() {
-  write(JSON.stringify({ guidelines: getWorkerGuidelinesView() }, null, 2) + "\n");
+  writeNamedView("guidelines", getWorkerGuidelinesView());
 }
 
 function printContractView() {
-  write(JSON.stringify({ contract: getRuntimeContractView() }, null, 2) + "\n");
+  writeNamedView("contract", getRuntimeContractView());
 }
 
 function printMetadata() {
-  write(JSON.stringify({ metadata: getPackageMetadataView() }, null, 2) + "\n");
+  writeNamedView("metadata", getPackageMetadataView());
 }
 
 function printStatus() {
-  write(JSON.stringify({ status: getRuntimeStatusView({ version: PACKAGE_VERSION, toolCount: toolCatalog.length }) }, null, 2) + "\n");
+  writeNamedView("status", getRuntimeStatusView({ version: PACKAGE_VERSION, toolCount: toolCatalog.length }));
 }
 
 function printCapabilities() {
-  write(JSON.stringify({ capabilities: getCapabilityCatalogView() }, null, 2) + "\n");
+  writeNamedView("capabilities", getCapabilityCatalogView());
 }
 
 function printCapabilityView() {
   const id = requireOption("--id");
-  write(JSON.stringify({ capability: getCapabilityCatalogEntryView(id) }, null, 2) + "\n");
+  writeNamedView("capability", getCapabilityCatalogEntryView(id));
 }
 
 export {

@@ -10,46 +10,47 @@ import {
   runtimeReview,
   runtimeRoles
 } from "./state-runtime.js";
-import { readPositiveIntegerOption, write } from "./state-cli-helpers.js";
+import { readPositiveIntegerOption } from "./state-cli-helpers.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function printRuntimeActivity() {
-  write(JSON.stringify({ activity: runtimeActivity({ limit: readPositiveIntegerOption("--limit") }) }, null, 2) + "\n");
+  writeNamedView("activity", runtimeActivity({ limit: readPositiveIntegerOption("--limit") }));
 }
 
 function printRuntimeCloseout() {
-  write(JSON.stringify({ closeout: runtimeCloseout() }, null, 2) + "\n");
+  writeNamedView("closeout", runtimeCloseout());
 }
 
 function printRuntimeHandoffs() {
-  write(JSON.stringify({ handoffs: runtimeHandoffs() }, null, 2) + "\n");
+  writeNamedView("handoffs", runtimeHandoffs());
 }
 
 function printRuntimeRecovery() {
-  write(JSON.stringify({ recovery: runtimeRecovery() }, null, 2) + "\n");
+  writeNamedView("recovery", runtimeRecovery());
 }
 
 function printRuntimeDashboard() {
-  write(JSON.stringify({ dashboard: runtimeDashboard() }, null, 2) + "\n");
+  writeNamedView("dashboard", runtimeDashboard());
 }
 
 function printRuntimeDispatch() {
-  write(JSON.stringify({ dispatch: runtimeDispatch() }, null, 2) + "\n");
+  writeNamedView("dispatch", runtimeDispatch());
 }
 
 function printRuntimeFocus() {
-  write(JSON.stringify({ focus: runtimeFocus() }, null, 2) + "\n");
+  writeNamedView("focus", runtimeFocus());
 }
 
 function printRuntimeReview() {
-  write(JSON.stringify({ review: runtimeReview() }, null, 2) + "\n");
+  writeNamedView("review", runtimeReview());
 }
 
 function printRuntimeAlerts() {
-  write(JSON.stringify({ alerts: runtimeAlerts() }, null, 2) + "\n");
+  writeNamedView("alerts", runtimeAlerts());
 }
 
 function printRuntimeRoles() {
-  write(JSON.stringify({ roles: runtimeRoles({ limit: readPositiveIntegerOption("--limit") }) }, null, 2) + "\n");
+  writeNamedView("roles", runtimeRoles({ limit: readPositiveIntegerOption("--limit") }));
 }
 
 export {
