@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getRuntimeCatalogPaths, resolveRuntimeCatalogPath } from "./catalog.js";
+import { buildDependencyWaves, deriveExecutionShapeFromWaves, laneDependsOnList } from "./orchestration-waves.js";
 import {
   DEFAULT_PLANNER_PROFILE_ID,
   getPlannerProfileRecord,
@@ -407,11 +408,7 @@ function assignLaneIds(lanes) {
   }));
 }
 
-function laneDependsOnList(lane) {
-  return Array.isArray(lane?.dependsOn) ? lane.dependsOn.filter(Boolean) : [];
-}
-
-function buildWaveLaneView(lane) {
+function buildPlannerWaveLaneView(lane) {
   return {
     lane: lane.lane,
     purpose: lane.purpose,
@@ -421,78 +418,13 @@ function buildWaveLaneView(lane) {
   };
 }
 
-function buildPlannerWaves(lanes) {
-  const pending = new Map(
-    lanes.map((lane) => [lane.lane, new Set(laneDependsOnList(lane))])
-  );
-  const remaining = new Set(lanes.map((lane) => lane.lane));
-  const waves = [];
-
-  while (remaining.size > 0) {
-    const ready = lanes.filter((lane) => remaining.has(lane.lane) && (pending.get(lane.lane)?.size ?? 0) === 0);
-    if (ready.length === 0) {
-      const unresolved = lanes.filter((lane) => remaining.has(lane.lane));
-      waves.push({
-        wave: waves.length + 1,
-        parallelizable: unresolved.length > 1,
-        blocked: true,
-        laneCount: unresolved.length,
-        ownerCount: new Set(unresolved.map((lane) => lane.owner).filter(Boolean)).size,
-        purposes: Array.from(new Set(unresolved.map((lane) => lane.purpose).filter(Boolean))),
-        owners: Array.from(new Set(unresolved.map((lane) => lane.owner).filter(Boolean))),
-        lanes: unresolved.map(buildWaveLaneView)
-      });
-      break;
-    }
-
-    const readyIds = new Set(ready.map((lane) => lane.lane));
-    for (const laneId of readyIds) {
-      remaining.delete(laneId);
-    }
-    for (const [laneId, dependencySet] of pending.entries()) {
-      if (!remaining.has(laneId)) {
-        continue;
-      }
-      for (const resolvedId of readyIds) {
-        dependencySet.delete(resolvedId);
-      }
-    }
-
-    waves.push({
-      wave: waves.length + 1,
-      parallelizable: ready.length > 1,
-      blocked: false,
-      laneCount: ready.length,
-      ownerCount: new Set(ready.map((lane) => lane.owner).filter(Boolean)).size,
-      purposes: Array.from(new Set(ready.map((lane) => lane.purpose).filter(Boolean))),
-      owners: Array.from(new Set(ready.map((lane) => lane.owner).filter(Boolean))),
-      lanes: ready.map(buildWaveLaneView)
-    });
-  }
-
-  return waves;
-}
-
-function deriveExecutionShapeFromWaves(lanes, waves) {
-  if (lanes.length <= 1) {
-    return "solo-lane";
-  }
-
-  const peakParallelLanes = Math.max(...waves.map((wave) => wave.laneCount), 0);
-  if (peakParallelLanes <= 1) {
-    return "serial-handoff";
-  }
-
-  return "parallel-handoff";
-}
-
 function buildPlannerOrchestration(lanes) {
-  const waves = buildPlannerWaves(lanes);
+  const waves = buildDependencyWaves(lanes, buildPlannerWaveLaneView);
   const peakParallelLanes = Math.max(...waves.map((wave) => wave.laneCount), 0);
   const peakParallelOwners = Math.max(...waves.map((wave) => wave.ownerCount), 0);
 
   return {
-    executionShape: deriveExecutionShapeFromWaves(lanes, waves),
+    executionShape: deriveExecutionShapeFromWaves(null, lanes, waves),
     waveCount: waves.length,
     peakParallelLanes,
     peakParallelOwners,

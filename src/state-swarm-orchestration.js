@@ -1,6 +1,4 @@
-function laneDependsOnList(lane) {
-  return Array.isArray(lane?.dependsOn) ? lane.dependsOn.filter(Boolean) : [];
-}
+import { buildDependencyWaves, deriveExecutionShapeFromWaves, laneDependsOnList } from "./orchestration-waves.js";
 
 function buildFallbackWaveLaneView(lane) {
   return {
@@ -10,72 +8,6 @@ function buildFallbackWaveLaneView(lane) {
     verifier: lane.verifier ?? null,
     dependsOn: laneDependsOnList(lane)
   };
-}
-
-function buildFallbackWaves(lanes = []) {
-  const pending = new Map(
-    lanes.filter((lane) => lane?.lane).map((lane) => [lane.lane, new Set(laneDependsOnList(lane))])
-  );
-  const remaining = new Set(lanes.filter((lane) => lane?.lane).map((lane) => lane.lane));
-  const waves = [];
-
-  while (remaining.size > 0) {
-    const ready = lanes.filter((lane) => remaining.has(lane.lane) && (pending.get(lane.lane)?.size ?? 0) === 0);
-    if (ready.length === 0) {
-      const unresolved = lanes.filter((lane) => remaining.has(lane.lane));
-      waves.push({
-        wave: waves.length + 1,
-        parallelizable: unresolved.length > 1,
-        blocked: true,
-        laneCount: unresolved.length,
-        ownerCount: new Set(unresolved.map((lane) => lane.owner).filter(Boolean)).size,
-        purposes: Array.from(new Set(unresolved.map((lane) => lane.purpose).filter(Boolean))),
-        owners: Array.from(new Set(unresolved.map((lane) => lane.owner).filter(Boolean))),
-        lanes: unresolved.map(buildFallbackWaveLaneView)
-      });
-      break;
-    }
-
-    const readyIds = new Set(ready.map((lane) => lane.lane));
-    for (const laneId of readyIds) {
-      remaining.delete(laneId);
-    }
-    for (const [laneId, dependencySet] of pending.entries()) {
-      if (!remaining.has(laneId)) {
-        continue;
-      }
-      for (const resolvedId of readyIds) {
-        dependencySet.delete(resolvedId);
-      }
-    }
-
-    waves.push({
-      wave: waves.length + 1,
-      parallelizable: ready.length > 1,
-      blocked: false,
-      laneCount: ready.length,
-      ownerCount: new Set(ready.map((lane) => lane.owner).filter(Boolean)).size,
-      purposes: Array.from(new Set(ready.map((lane) => lane.purpose).filter(Boolean))),
-      owners: Array.from(new Set(ready.map((lane) => lane.owner).filter(Boolean))),
-      lanes: ready.map(buildFallbackWaveLaneView)
-    });
-  }
-
-  return waves;
-}
-
-function deriveExecutionShape(executionShape, lanes, waves) {
-  if (executionShape) {
-    return executionShape;
-  }
-  if (lanes.length <= 1) {
-    return "solo-lane";
-  }
-  const peakParallelLanes = Math.max(...waves.map((wave) => wave.laneCount ?? 0), 0);
-  if (peakParallelLanes <= 1) {
-    return "serial-handoff";
-  }
-  return "parallel-handoff";
 }
 
 function buildWaveLaneState(waveLane, laneSummary) {
@@ -116,7 +48,7 @@ export function buildSwarmOrchestrationView(swarm, laneSummaries = []) {
   const rawWaves =
     Array.isArray(swarm?.waves) && swarm.waves.length > 0
       ? swarm.waves
-      : buildFallbackWaves(lanes);
+      : buildDependencyWaves(lanes, buildFallbackWaveLaneView);
 
   const waves = rawWaves.map((wave, index) => {
     const waveLanes = Array.isArray(wave?.lanes) ? wave.lanes : [];
@@ -165,7 +97,7 @@ export function buildSwarmOrchestrationView(swarm, laneSummaries = []) {
   const activeWave = waves.find((wave) => wave.status === "active") ?? nextWave;
 
   return {
-    executionShape: deriveExecutionShape(swarm?.executionShape ?? null, lanes, waves),
+    executionShape: deriveExecutionShapeFromWaves(swarm?.executionShape ?? null, lanes, waves),
     waveCount:
       Number.isInteger(Number(swarm?.waveCount)) && Number(swarm.waveCount) >= 0
         ? Number(swarm.waveCount)
