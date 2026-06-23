@@ -25,7 +25,8 @@ const PUBLIC_RUNTIME_PATHS = new Set([
   "src/mcp.js",
   "src/planner.js",
   "src/state.js",
-  "src/state-public.js"
+  "src/state-public.js",
+  "src/api.js"
 ]);
 
 function directoryExists(path) {
@@ -101,6 +102,59 @@ function touchesPublicRuntime(paths) {
   return paths.some((path) => PUBLIC_RUNTIME_PATHS.has(path));
 }
 
+function selectSourceScope(paths) {
+  return sourceFilePaths().filter((path) => paths.includes(path));
+}
+
+function isPublicStateBridgeTask(lower) {
+  return (
+    lower.includes("state bridge") ||
+    lower.includes("public state") ||
+    (lower.includes("state") && lower.includes("public") && lower.includes("bridge")) ||
+    (lower.includes("state") && lower.includes("public") && lower.includes("facade")) ||
+    (lower.includes("state") && lower.includes("export"))
+  );
+}
+
+function isInternalStateRuntimeTask(lower) {
+  return (
+    lower.includes("state runtime") ||
+    lower.includes("runtime state") ||
+    lower.includes("runtime facade") ||
+    (lower.includes("internal") && lower.includes("state") && lower.includes("facade")) ||
+    (lower.includes("internal") && lower.includes("runtime") && lower.includes("state"))
+  );
+}
+
+function publicStateBridgeScope() {
+  return selectSourceScope([
+    "src/state.js",
+    "src/state-public.js",
+    "src/api.js"
+  ]);
+}
+
+function internalStateRuntimeScope() {
+  return selectSourceScope([
+    "src/state-runtime.js",
+    "src/index.js",
+    "src/mcp.js"
+  ]);
+}
+
+function plannerKernelScope(lower) {
+  const paths = ["src/planner.js", "src/index.js", "src/mcp.js"];
+  if (isPublicStateBridgeTask(lower)) {
+    paths.push("src/state.js", "src/state-public.js", "src/api.js");
+  } else if (
+    isInternalStateRuntimeTask(lower) ||
+    includesAny(lower, ["state", "queue", "claim", "review", "dispatch", "handoff", "worker", "leader"])
+  ) {
+    paths.push("src/state-runtime.js");
+  }
+  return selectSourceScope(paths);
+}
+
 function choosePrimaryScope(task) {
   const lower = task.toLowerCase();
 
@@ -115,22 +169,27 @@ function choosePrimaryScope(task) {
     return ["README.md"];
   }
 
+  if (isPublicStateBridgeTask(lower)) {
+    const bridgeScope = publicStateBridgeScope();
+    if (bridgeScope.length > 0) {
+      return bridgeScope;
+    }
+  }
+
+  if (isInternalStateRuntimeTask(lower)) {
+    const runtimeScope = internalStateRuntimeScope();
+    if (runtimeScope.length > 0) {
+      return runtimeScope;
+    }
+  }
+
   if (
     lower.includes("swarm") ||
     lower.includes("parallel") ||
     lower.includes("lane") ||
     lower.includes("planner")
   ) {
-    return sourceFilePaths().filter((path) =>
-      [
-        "src/planner.js",
-        "src/index.js",
-        "src/mcp.js",
-        "src/state.js",
-        "src/state-public.js",
-        "src/state-runtime.js"
-      ].includes(path)
-    );
+    return plannerKernelScope(lower);
   }
 
   if (
@@ -140,15 +199,10 @@ function choosePrimaryScope(task) {
     lower.includes("review") ||
     lower.includes("state")
   ) {
-    return sourceFilePaths().filter((path) =>
-      [
-        "src/state.js",
-        "src/state-public.js",
-        "src/state-runtime.js",
-        "src/index.js",
-        "src/mcp.js"
-      ].includes(path)
-    );
+    const runtimeScope = internalStateRuntimeScope();
+    if (runtimeScope.length > 0) {
+      return runtimeScope;
+    }
   }
 
   if (lower.includes("agent") || lower.includes("prompt")) {

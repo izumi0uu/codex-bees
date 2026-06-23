@@ -4497,6 +4497,48 @@ if (
   process.exit(1);
 }
 
+const plannedPublicStateBridgeCli = JSON.parse(
+  run("plan-state-bridge-cli", ["./src/index.js", "plan", "--task", "Refine the public state bridge exports"]).stdout
+);
+if (
+  plannedPublicStateBridgeCli.kind !== "task_plan" ||
+  plannedPublicStateBridgeCli.recommendedReason !== "multi_lane_plan_ready" ||
+  plannedPublicStateBridgeCli.evidence?.strategy?.taskClass !== "coordination-kernel" ||
+  plannedPublicStateBridgeCli.evidence?.strategy?.laneStrategy !== "discover-implement-verify" ||
+  plannedPublicStateBridgeCli.orchestration?.executionShape !== "serial-handoff" ||
+  plannedPublicStateBridgeCli.orchestration?.waveCount !== 3 ||
+  plannedPublicStateBridgeCli.orchestration?.maxWorkers !== 1 ||
+  JSON.stringify(plannedPublicStateBridgeCli.evidence?.scopeHints?.primary ?? []) !==
+    JSON.stringify(["src/api.js", "src/state-public.js", "src/state.js"]) ||
+  plannedPublicStateBridgeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/state-runtime.js") ||
+  plannedPublicStateBridgeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/index.js") ||
+  plannedPublicStateBridgeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/mcp.js")
+) {
+  console.error("[smoke:plan-state-bridge-cli] expected planner to keep public state bridge work on product-facing facade files");
+  process.exit(1);
+}
+
+const plannedRuntimeStateFacadeCli = JSON.parse(
+  run("plan-state-runtime-cli", ["./src/index.js", "plan", "--task", "Tighten the internal runtime state facade"]).stdout
+);
+if (
+  plannedRuntimeStateFacadeCli.kind !== "task_plan" ||
+  plannedRuntimeStateFacadeCli.recommendedReason !== "multi_lane_plan_ready" ||
+  plannedRuntimeStateFacadeCli.evidence?.strategy?.taskClass !== "coordination-kernel" ||
+  plannedRuntimeStateFacadeCli.evidence?.strategy?.laneStrategy !== "discover-implement-verify-docs" ||
+  plannedRuntimeStateFacadeCli.orchestration?.executionShape !== "parallel-handoff" ||
+  plannedRuntimeStateFacadeCli.orchestration?.waveCount !== 3 ||
+  plannedRuntimeStateFacadeCli.orchestration?.maxWorkers !== 2 ||
+  JSON.stringify(plannedRuntimeStateFacadeCli.evidence?.scopeHints?.primary ?? []) !==
+    JSON.stringify(["src/index.js", "src/mcp.js", "src/state-runtime.js"]) ||
+  plannedRuntimeStateFacadeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/state.js") ||
+  plannedRuntimeStateFacadeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/state-public.js") ||
+  plannedRuntimeStateFacadeCli.lanes?.find((lane) => lane.purpose === "implementation")?.scope?.includes("src/api.js")
+) {
+  console.error("[smoke:plan-state-runtime-cli] expected planner to keep internal runtime state work on runtime facade files");
+  process.exit(1);
+}
+
 const planMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({
