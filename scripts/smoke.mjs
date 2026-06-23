@@ -14,7 +14,7 @@ const README_PATH = join(REPO_ROOT, "README.md");
 const PACKAGE_JSON_PATH = join(REPO_ROOT, "package.json");
 const README_TEXT = readFileSync(README_PATH, "utf8");
 const CLI_SOURCE_TEXT = readFileSync(join(REPO_ROOT, "src", "index.js"), "utf8");
-const NPM_CACHE_DIR = mkdtempSync(join(tmpdir(), "codex-bees-smoke-npm-cache-"));
+const NPM_CACHE_DIR = process.env.npm_config_cache ?? join(tmpdir(), "codex-bees-smoke-npm-cache");
 const SMOKE_SPAWN_MAX_BUFFER = 32 * 1024 * 1024;
 let packedTarballPath = null;
 
@@ -72,7 +72,6 @@ function cleanupPackedTarball() {
     rmSync(packedTarballPath, { force: true });
   }
 
-  rmSync(NPM_CACHE_DIR, { recursive: true, force: true });
 }
 
 process.on("exit", cleanupPackedTarball);
@@ -128,22 +127,36 @@ function parseJsonRpcTextResult(message) {
   return JSON.parse(message.result.content[0].text);
 }
 
+function shouldRetryTypeScriptWithOnline(result) {
+  const output = `${result.stderr ?? ""}
+${result.stdout ?? ""}`;
+  return (
+    output.includes("npm error") ||
+    output.includes("ENOTFOUND") ||
+    output.includes("EAI_AGAIN") ||
+    output.includes("ECONNRESET") ||
+    output.includes("registry.npmjs.org") ||
+    output.includes("could not determine executable to run") ||
+    output.includes("No matching version found")
+  );
+}
+
+function runTypeScript(args, { cwd }) {
+  const offline = runNpm(
+    ["exec", "--yes", "--offline", "--package", "typescript", "tsc", "--", ...args],
+    { cwd }
+  );
+  if (offline.status === 0 || !shouldRetryTypeScriptWithOnline(offline)) {
+    return offline;
+  }
+  return runNpm(["exec", "--yes", "--package", "typescript", "tsc", "--", ...args], { cwd });
+}
+
 function runInstalledTypecheck(label, files) {
-  const command = [
-    "exec",
-    "--yes",
-    "--package",
-    "typescript",
-    "tsc",
-    "--",
-    "--noEmit",
-    "--module",
-    "NodeNext",
-    "--moduleResolution",
-    "NodeNext",
-    ...files
-  ];
-  return runNpm(command, { cwd: packedInstallAppDir });
+  return runTypeScript(
+    ["--noEmit", "--module", "NodeNext", "--moduleResolution", "NodeNext", ...files],
+    { cwd: packedInstallAppDir }
+  );
 }
 
 run("build-dist", ["./scripts/build.mjs"]);
@@ -1800,13 +1813,8 @@ writeFileSync(
   readFileSync(join(REPO_ROOT, "types-smoke.ts"), "utf8"),
   "utf8"
 );
-const installedTypecheck = spawnSync("npx", ["-y", "-p", "typescript", "tsc", "--noEmit", "./types-smoke.ts"], {
-  cwd: packedInstallAppDir,
-  encoding: "utf8",
-  env: {
-    ...process.env,
-    npm_config_cache: NPM_CACHE_DIR
-  }
+const installedTypecheck = runTypeScript(["--noEmit", "./types-smoke.ts"], {
+  cwd: packedInstallAppDir
 });
 if (installedTypecheck.status !== 0) {
   console.error("[smoke:installed-typecheck] expected installed codex-bees typings to compile in a downstream project");
@@ -8984,6 +8992,8 @@ if (
   runtimeHandoffPackMcpPayload.handoffPack?.counts?.surfacedNextEntries !==
     Object.values(runtimeHandoffPackMcpPayload.handoffPack?.next ?? {}).filter(Boolean).length ||
   runtimeHandoffPackMcpPayload.handoffPack?.next?.handoff?.taskId !== "task-2" ||
+  runtimeHandoffPackMcpPayload.handoffPack?.next?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeHandoffPackMcpPayload.handoffPack?.next?.review?.taskId !== "task-2" ||
   runtimeHandoffPackMcpPayload.handoffPack?.next?.recovery?.taskId !== "task-1"
 ) {
   console.error("[smoke:runtime-handoff-pack-mcp] expected MCP runtime handoff pack");

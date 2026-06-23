@@ -443,16 +443,45 @@ export interface PlannerEvidence {
   roleFiles: PlannerRoleFileEvidence[];
 }
 
+export interface PlannerProfileSelectionHints {
+  keywords: string[];
+  priority: number;
+}
+
+export interface PlannerProfilePlanningHints {
+  documentationMode: "serial" | "discovery-sidecar";
+  coordinationBias: boolean;
+}
+
+export interface PlannerProfileDefinition {
+  id: string;
+  extends?: string;
+  description?: string;
+  topology?: string;
+  laneSource?: string;
+  adaptive?: boolean;
+  laneModel?: string;
+  executionModel?: string;
+  roles?: string[];
+  constraints?: string[];
+  selectionHints?: Partial<PlannerProfileSelectionHints>;
+  planningHints?: Partial<PlannerProfilePlanningHints>;
+}
+
 export interface PlannerProfile {
   id: string;
   description: string;
-  topology: "bounded-local";
-  laneSource: "planner";
+  topology: string;
+  laneSource: string;
   adaptive: boolean;
-  laneModel: "adaptive-bounded-lanes" | "coordination-bounded-lanes";
-  executionModel: "dependency-wave-local" | "coordination-wave-local";
+  laneModel: string;
+  executionModel: string;
   roles: string[];
   constraints: string[];
+  selectionHints: PlannerProfileSelectionHints;
+  planningHints: PlannerProfilePlanningHints;
+  sourceKind: string;
+  sourcePath: string | null;
 }
 
 export interface PlannerProfileListView {
@@ -1441,6 +1470,9 @@ export declare function getPlannerProfiles(): PlannerProfile[];
 export declare function getPlannerProfilesView(): PlannerProfileListView;
 export declare function getPlannerProfile(id?: string): PlannerProfile | undefined;
 export declare function getPlannerProfileView(id?: string): PlannerProfileView;
+export declare function registerPlannerProfile(profile: PlannerProfileDefinition, options?: { defaultProfileId?: string; makeDefault?: boolean }): PlannerProfileDefinition;
+export declare function registerPlannerProfiles(profiles?: PlannerProfileDefinition[], options?: { defaultProfileId?: string; makeDefault?: boolean }): PlannerProfileDefinition[];
+export declare function resetPlannerProfiles(): void;
 export declare function planTask(task: string, options?: { profileId?: string }): TaskPlan;
 export declare function planSwarm(task: string, options?: { profileId?: string }): PlannedSwarm;
 export declare function queueTasksFromPlan(task: string, addTasksFn: (tasks: TaskInput[]) => TaskRecord[], options?: { profileId?: string }): QueuedPlan;
