@@ -1,4 +1,4 @@
-import { createLoadedValueView } from "./state-view-helpers.js";
+import { createCollectionView, createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildMemoryDetailView(
   id,
@@ -44,15 +44,13 @@ export function buildMemoryListView(
   }
 ) {
   const memories = listMemories(filters);
-  const recommendedReason = memories.length > 0 ? "memory_list_has_results" : "memory_list_empty";
-  return {
-    kind: "memory_view",
-    recommendedReason,
+  return createCollectionView("memory_view", "memories", memories, {
+    loadedReason: "memory_list_has_results",
+    emptyReason: "memory_list_empty",
     counts: {
       totalMemories: memories.length
-    },
-    memories
-  };
+    }
+  });
 }
 
 export function buildMemoryListViewFromSources(
@@ -79,16 +77,16 @@ export function buildMemorySearchView(
 ) {
   const normalizedLimit = Number.isFinite(Number(limit)) && Number(limit) > 0 ? Number(limit) : 10;
   const results = searchMemories(query, filters).slice(0, normalizedLimit);
-  const recommendedReason = results.length > 0 ? "memory_search_has_results" : "memory_search_empty";
-  return {
-    kind: "memory_search_view",
-    recommendedReason,
+  return createCollectionView("memory_search_view", "results", results, {
+    loadedReason: "memory_search_has_results",
+    emptyReason: "memory_search_empty",
     counts: {
       totalResults: results.length
     },
-    query,
-    results
-  };
+    extra: {
+      query
+    }
+  });
 }
 
 export function buildMemorySearchViewFromSources(

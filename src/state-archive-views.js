@@ -1,3 +1,5 @@
+import { createCollectionView, createLoadedValueView } from "./state-view-helpers.js";
+
 function buildArchivedTaskSummary(task) {
   const archivedAt = task?.archivedAt ?? "unknown time";
   return `Task ${task.id} was archived at ${archivedAt}.`;
@@ -20,14 +22,13 @@ function buildArchivedSwarmRestoreCommand(swarm) {
 }
 
 export function buildArchivedTaskListView(tasks = []) {
-  return {
-    kind: "task_archive_view",
-    recommendedReason: tasks.length > 0 ? "task_archive_list_has_results" : "task_archive_list_empty",
+  return createCollectionView("task_archive_view", "tasks", tasks, {
+    loadedReason: "task_archive_list_has_results",
+    emptyReason: "task_archive_list_empty",
     counts: {
       totalArchivedTasks: tasks.length
-    },
-    tasks
-  };
+    }
+  });
 }
 
 export function buildArchivedTaskListViewFromSources(
@@ -45,18 +46,18 @@ export function buildArchivedTaskDetailView(id, { getArchivedTask }) {
     return null;
   }
 
-  return {
-    kind: "task_archive_detail",
+  return createLoadedValueView("task_archive_detail", "task", task, {
     recommendedReason: "task_archive_loaded",
-    task,
-    metadata: {
-      archivedAt: task.archivedAt ?? null,
-      archivedBy: task.archivedBy ?? null,
-      hasArchiveReason: Boolean(task.archiveReason),
-      restoreCommand: buildArchivedTaskRestoreCommand(task)
-    },
-    summary: buildArchivedTaskSummary(task)
-  };
+    extra: {
+      metadata: {
+        archivedAt: task.archivedAt ?? null,
+        archivedBy: task.archivedBy ?? null,
+        hasArchiveReason: Boolean(task.archiveReason),
+        restoreCommand: buildArchivedTaskRestoreCommand(task)
+      },
+      summary: buildArchivedTaskSummary(task)
+    }
+  });
 }
 
 export function buildArchivedTaskDetailViewFromSources(
@@ -77,15 +78,14 @@ export function buildArchivedSwarmListView(swarms = []) {
     0
   );
 
-  return {
-    kind: "swarm_archive_view",
-    recommendedReason: swarms.length > 0 ? "swarm_archive_list_has_results" : "swarm_archive_list_empty",
+  return createCollectionView("swarm_archive_view", "swarms", swarms, {
+    loadedReason: "swarm_archive_list_has_results",
+    emptyReason: "swarm_archive_list_empty",
     counts: {
       totalArchivedSwarms: swarms.length,
       totalArchivedTasks
-    },
-    swarms
-  };
+    }
+  });
 }
 
 export function buildArchivedSwarmListViewFromSources(
@@ -108,22 +108,22 @@ export function buildArchivedSwarmDetailView(id, { getArchivedSwarm, getArchived
     ? archivedTaskIds.map((taskId) => getArchivedTask(taskId)).filter(Boolean)
     : listArchivedTasks().filter((task) => task.swarmId === swarm.id);
 
-  return {
-    kind: "swarm_archive_detail",
+  return createLoadedValueView("swarm_archive_detail", "swarm", swarm, {
     recommendedReason: "swarm_archive_loaded",
-    swarm,
-    tasks: archivedTasks,
     counts: {
       archivedTasks: archivedTasks.length
     },
-    metadata: {
-      archivedAt: swarm.archivedAt ?? null,
-      archivedBy: swarm.archivedBy ?? null,
-      hasArchiveReason: Boolean(swarm.archiveReason),
-      restoreCommand: buildArchivedSwarmRestoreCommand(swarm)
-    },
-    summary: buildArchivedSwarmSummary(swarm, archivedTasks)
-  };
+    extra: {
+      tasks: archivedTasks,
+      metadata: {
+        archivedAt: swarm.archivedAt ?? null,
+        archivedBy: swarm.archivedBy ?? null,
+        hasArchiveReason: Boolean(swarm.archiveReason),
+        restoreCommand: buildArchivedSwarmRestoreCommand(swarm)
+      },
+      summary: buildArchivedSwarmSummary(swarm, archivedTasks)
+    }
+  });
 }
 
 export function buildArchivedSwarmDetailViewFromSources(
