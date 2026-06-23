@@ -3,6 +3,19 @@ import { resolve } from "node:path";
 
 export const DEFAULT_PLANNER_PROFILE_ID = "bounded-local";
 export const COORDINATION_PLANNER_PROFILE_ID = "coordination-local";
+const COORDINATION_SIGNAL_TERMS = [
+  "swarm",
+  "parallel",
+  "dispatch",
+  "orchestrate",
+  "orchestration",
+  "leader",
+  "assignment",
+  "handoff",
+  "worker",
+  "multi-agent",
+  "multi agent"
+];
 
 const SHIPPED_PLANNER_PROFILE_SPECS = [
   {
@@ -331,17 +344,87 @@ export function getPlannerProfilesRecords(options = {}) {
   };
 }
 
+function buildPlannerProfileMatch(profile, taskLower) {
+  const matchedKeywords = profile.selectionHints.keywords.filter((keyword) => taskLower.includes(keyword));
+  const matchedCoordinationBias = profile.planningHints.coordinationBias && COORDINATION_SIGNAL_TERMS.some((term) => taskLower.includes(term));
+  return {
+    profileId: profile.id,
+    sourceKind: profile.sourceKind ?? "shipped",
+    priority: profile.selectionHints.priority,
+    matchedKeywords,
+    matchedCoordinationBias,
+    matchCount: matchedKeywords.length + (matchedCoordinationBias ? 1 : 0)
+  };
+}
+
+function rankPlannerProfileMatches(task, context) {
+  const lower = typeof task === "string" ? task.toLowerCase() : "";
+  return Array.from(context.registry.values())
+    .filter((profile) => profile.id !== context.defaultProfileId)
+    .map((profile) => buildPlannerProfileMatch(profile, lower))
+    .filter((entry) => entry.matchCount > 0)
+    .sort((left, right) => {
+      const priorityDelta = right.priority - left.priority;
+      if (priorityDelta !== 0) {
+        return priorityDelta;
+      }
+      const matchDelta = right.matchCount - left.matchCount;
+      if (matchDelta !== 0) {
+        return matchDelta;
+      }
+      return left.profileId.localeCompare(right.profileId);
+    });
+}
+
+function toPlannerSelectionPayload({
+  inputProfile,
+  requestedProfile,
+  resolvedProfile,
+  usedDefaultProfile,
+  selectionMode,
+  reason,
+  context,
+  heuristicMatches
+}) {
+  const resolvedProfileRecord = context.registry.get(resolvedProfile) ?? null;
+  const resolvedMatch =
+    heuristicMatches.find((entry) => entry.profileId === resolvedProfile) ??
+    buildPlannerProfileMatch(
+      resolvedProfileRecord ?? context.registry.get(context.defaultProfileId) ?? { id: resolvedProfile, selectionHints: { keywords: [], priority: 0 }, planningHints: { coordinationBias: false } },
+      ""
+    );
+
+  return {
+    inputProfile,
+    requestedProfile,
+    resolvedProfile,
+    resolvedSourceKind: resolvedProfileRecord?.sourceKind ?? null,
+    defaultProfile: context.defaultProfileId,
+    availableProfiles: Array.from(context.registry.keys()),
+    profileFiles: [...context.profileFiles],
+    usedDefaultProfile,
+    selectionMode,
+    reason,
+    matchedSignals: {
+      keywords: [...resolvedMatch.matchedKeywords],
+      coordinationBias: resolvedMatch.matchedCoordinationBias
+    },
+    heuristicMatches
+  };
+}
+
 export function selectPlannerProfile(task, profileId, context = resolvePlannerProfileContext()) {
   const trimmedProfileId =
     typeof profileId === "string" && profileId.trim().length > 0
       ? profileId.trim()
       : null;
+  const heuristicMatches = rankPlannerProfileMatches(task, context);
 
   if (trimmedProfileId) {
     const resolvedProfile = context.registry.has(trimmedProfileId)
       ? trimmedProfileId
       : context.defaultProfileId;
-    return {
+    return toPlannerSelectionPayload({
       inputProfile: trimmedProfileId,
       requestedProfile: trimmedProfileId,
       resolvedProfile,
@@ -350,49 +433,15 @@ export function selectPlannerProfile(task, profileId, context = resolvePlannerPr
       reason:
         resolvedProfile === trimmedProfileId
           ? "explicit_profile_requested"
-          : "missing_profile_fallback"
-    };
+          : "missing_profile_fallback",
+      context,
+      heuristicMatches
+    });
   }
 
-  const lower = task.toLowerCase();
-  const rankedProfiles = Array.from(context.registry.values())
-    .filter((profile) => profile.id !== context.defaultProfileId)
-    .map((profile) => {
-      const matchedKeywords = profile.selectionHints.keywords.filter((keyword) => lower.includes(keyword));
-      const matchedCoordinationBias = profile.planningHints.coordinationBias && (
-        lower.includes("swarm") ||
-        lower.includes("parallel") ||
-        lower.includes("dispatch") ||
-        lower.includes("orchestrate") ||
-        lower.includes("orchestration") ||
-        lower.includes("leader") ||
-        lower.includes("assignment") ||
-        lower.includes("handoff") ||
-        lower.includes("worker") ||
-        lower.includes("multi-agent") ||
-        lower.includes("multi agent")
-      );
-      return {
-        profile,
-        matchCount: matchedKeywords.length + (matchedCoordinationBias ? 1 : 0)
-      };
-    })
-    .filter((entry) => entry.matchCount > 0)
-    .sort((left, right) => {
-      const priorityDelta = right.profile.selectionHints.priority - left.profile.selectionHints.priority;
-      if (priorityDelta !== 0) {
-        return priorityDelta;
-      }
-      const matchDelta = right.matchCount - left.matchCount;
-      if (matchDelta !== 0) {
-        return matchDelta;
-      }
-      return left.profile.id.localeCompare(right.profile.id);
-    });
+  const inferredProfile = heuristicMatches[0]?.profileId ?? context.defaultProfileId;
 
-  const inferredProfile = rankedProfiles[0]?.profile.id ?? context.defaultProfileId;
-
-  return {
+  return toPlannerSelectionPayload({
     inputProfile: null,
     requestedProfile: inferredProfile,
     resolvedProfile: inferredProfile,
@@ -403,8 +452,10 @@ export function selectPlannerProfile(task, profileId, context = resolvePlannerPr
         ? "coordination_profile_inferred"
         : inferredProfile === context.defaultProfileId
           ? "default_profile_inferred"
-          : "profile_hint_inferred"
-  };
+          : "profile_hint_inferred",
+    context,
+    heuristicMatches
+  });
 }
 
 export function toPlannerProfile(profile) {

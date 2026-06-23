@@ -2823,8 +2823,13 @@ if (
   explicitCustomFilePlan.planner?.sourceKind !== "file" ||
   explicitCustomFilePlan.planner?.laneModel !== "release-bounded-lanes" ||
   explicitCustomFilePlan.plannerSelection?.resolvedProfile !== "release-local" ||
+  explicitCustomFilePlan.plannerSelection?.resolvedSourceKind !== "file" ||
+  explicitCustomFilePlan.plannerSelection?.defaultProfile !== "release-local" ||
+  !explicitCustomFilePlan.plannerSelection?.availableProfiles?.includes("release-local") ||
+  !explicitCustomFilePlan.plannerSelection?.profileFiles?.includes(customPlannerProfileFile) ||
   explicitCustomFilePlan.plannerSelection?.selectionMode !== "explicit" ||
-  explicitCustomFilePlan.plannerSelection?.reason !== "explicit_profile_requested"
+  explicitCustomFilePlan.plannerSelection?.reason !== "explicit_profile_requested" ||
+  explicitCustomFilePlan.plannerSelection?.matchedSignals?.coordinationBias !== false
 ) {
   console.error("[smoke:plan-explicit-custom-file-profile] expected explicit local file planner profile selection");
   process.exit(1);
@@ -2846,7 +2851,14 @@ if (
   registeredPlannerPlan.requestedProfile !== "docs-local" ||
   registeredPlannerPlan.planner?.sourceKind !== "registered" ||
   registeredPlannerPlan.plannerSelection?.resolvedProfile !== "docs-local" ||
-  registeredPlannerPlan.plannerSelection?.reason !== "profile_hint_inferred"
+  registeredPlannerPlan.plannerSelection?.resolvedSourceKind !== "registered" ||
+  registeredPlannerPlan.plannerSelection?.reason !== "profile_hint_inferred" ||
+  !registeredPlannerPlan.plannerSelection?.heuristicMatches?.some(
+    (entry) =>
+      entry.profileId === "docs-local" &&
+      entry.sourceKind === "registered" &&
+      entry.matchedKeywords?.includes("handbook")
+  )
 ) {
   console.error("[smoke:plan-registered-profile] expected programmatically registered planner profile to participate in heuristic selection");
   process.exit(1);
@@ -2858,9 +2870,13 @@ if (
   explicitProfilePlan.plannerSelection?.inputProfile !== "bounded-local" ||
   explicitProfilePlan.plannerSelection?.requestedProfile !== "bounded-local" ||
   explicitProfilePlan.plannerSelection?.resolvedProfile !== "bounded-local" ||
+  explicitProfilePlan.plannerSelection?.resolvedSourceKind !== "shipped" ||
+  explicitProfilePlan.plannerSelection?.defaultProfile !== "bounded-local" ||
+  !explicitProfilePlan.plannerSelection?.availableProfiles?.includes("coordination-local") ||
   explicitProfilePlan.plannerSelection?.usedDefaultProfile !== false ||
   explicitProfilePlan.plannerSelection?.selectionMode !== "explicit" ||
-  explicitProfilePlan.plannerSelection?.reason !== "explicit_profile_requested"
+  explicitProfilePlan.plannerSelection?.reason !== "explicit_profile_requested" ||
+  explicitProfilePlan.plannerSelection?.matchedSignals?.keywords?.length !== 0
 ) {
   console.error("[smoke:plan-explicit-profile] expected explicit profile selection to round-trip");
   process.exit(1);
@@ -2872,9 +2888,12 @@ if (
   fallbackProfilePlan.plannerSelection?.inputProfile !== "missing-profile" ||
   fallbackProfilePlan.plannerSelection?.requestedProfile !== "missing-profile" ||
   fallbackProfilePlan.plannerSelection?.resolvedProfile !== "bounded-local" ||
+  fallbackProfilePlan.plannerSelection?.resolvedSourceKind !== "shipped" ||
+  fallbackProfilePlan.plannerSelection?.defaultProfile !== "bounded-local" ||
   fallbackProfilePlan.plannerSelection?.usedDefaultProfile !== true ||
   fallbackProfilePlan.plannerSelection?.selectionMode !== "fallback" ||
-  fallbackProfilePlan.plannerSelection?.reason !== "missing_profile_fallback"
+  fallbackProfilePlan.plannerSelection?.reason !== "missing_profile_fallback" ||
+  fallbackProfilePlan.plannerSelection?.matchedSignals?.coordinationBias !== false
 ) {
   console.error("[smoke:plan-fallback-profile] expected missing profile to fall back to default planner");
   process.exit(1);
@@ -4385,6 +4404,9 @@ if (
   plannedTaskCli.requestedProfile !== "bounded-local" ||
   plannedTaskCli.planner?.executionModel !== "dependency-wave-local" ||
   plannedTaskCli.plannerSelection?.inputProfile !== null ||
+  plannedTaskCli.plannerSelection?.resolvedSourceKind !== "shipped" ||
+  plannedTaskCli.plannerSelection?.defaultProfile !== "bounded-local" ||
+  plannedTaskCli.plannerSelection?.heuristicMatches?.length !== 0 ||
   plannedTaskCli.plannerSelection?.selectionMode !== "heuristic" ||
   plannedTaskCli.plannerSelection?.reason !== "default_profile_inferred" ||
   plannedTaskCli.evidence?.strategy?.taskClass !== "runtime-surface" ||
@@ -4473,6 +4495,9 @@ if (
   planMcpPayload?.recommendedReason !== "multi_lane_plan_ready" ||
   planMcpPayload?.requestedProfile !== "bounded-local" ||
   planMcpPayload?.plannerSelection?.inputProfile !== null ||
+  planMcpPayload?.plannerSelection?.resolvedSourceKind !== "shipped" ||
+  planMcpPayload?.plannerSelection?.defaultProfile !== "bounded-local" ||
+  planMcpPayload?.plannerSelection?.heuristicMatches?.length !== 0 ||
   planMcpPayload?.plannerSelection?.selectionMode !== "heuristic" ||
   planMcpPayload?.plannerSelection?.reason !== "default_profile_inferred" ||
   planMcpPayload?.evidence?.strategy?.laneStrategy !== "implement-verify-docs" ||
@@ -4544,6 +4569,8 @@ if (
   planTaskCustomFileMcpPayload?.planner?.sourceKind !== "file" ||
   planTaskCustomFileMcpPayload?.planner?.laneModel !== "release-bounded-lanes" ||
   planTaskCustomFileMcpPayload?.plannerSelection?.resolvedProfile !== "release-local" ||
+  planTaskCustomFileMcpPayload?.plannerSelection?.resolvedSourceKind !== "file" ||
+  !planTaskCustomFileMcpPayload?.plannerSelection?.profileFiles?.includes(customPlannerProfileFile) ||
   planTaskCustomFileMcpPayload?.plannerSelection?.selectionMode !== "explicit" ||
   planTaskCustomFileMcpPayload?.plannerSelection?.reason !== "explicit_profile_requested"
 ) {
@@ -4861,6 +4888,10 @@ if (
   plannedSwarm.requestedProfile !== "coordination-local" ||
   plannedSwarm.planner?.executionModel !== "coordination-wave-local" ||
   plannedSwarm.plannerSelection?.inputProfile !== null ||
+  plannedSwarm.plannerSelection?.resolvedSourceKind !== "shipped" ||
+  plannedSwarm.plannerSelection?.matchedSignals?.coordinationBias !== true ||
+  !plannedSwarm.plannerSelection?.matchedSignals?.keywords?.includes("swarm") ||
+  plannedSwarm.plannerSelection?.heuristicMatches?.[0]?.profileId !== "coordination-local" ||
   plannedSwarm.plannerSelection?.selectionMode !== "heuristic" ||
   plannedSwarm.plannerSelection?.reason !== "coordination_profile_inferred" ||
   plannedSwarm.evidence?.strategy?.taskClass !== "coordination-kernel" ||
@@ -4913,6 +4944,10 @@ if (
   planSwarmPayload?.requestedProfile !== "coordination-local" ||
   planSwarmPayload?.planner?.executionModel !== "coordination-wave-local" ||
   planSwarmPayload?.plannerSelection?.inputProfile !== null ||
+  planSwarmPayload?.plannerSelection?.resolvedSourceKind !== "shipped" ||
+  planSwarmPayload?.plannerSelection?.matchedSignals?.coordinationBias !== true ||
+  !planSwarmPayload?.plannerSelection?.matchedSignals?.keywords?.includes("swarm") ||
+  planSwarmPayload?.plannerSelection?.heuristicMatches?.[0]?.profileId !== "coordination-local" ||
   planSwarmPayload?.plannerSelection?.selectionMode !== "heuristic" ||
   planSwarmPayload?.plannerSelection?.reason !== "coordination_profile_inferred" ||
   planSwarmPayload?.evidence?.strategy?.laneStrategy !== "discover-implement-verify-docs" ||
@@ -4945,6 +4980,8 @@ if (
   queuedPlanSwarm.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
   queuedPlanSwarm.requestedProfile !== "coordination-local" ||
   queuedPlanSwarm.planner?.executionModel !== "coordination-wave-local" ||
+  queuedPlanSwarm.plannerSelection?.resolvedSourceKind !== "shipped" ||
+  queuedPlanSwarm.plannerSelection?.matchedSignals?.coordinationBias !== true ||
   queuedPlanSwarm.plannerSelection?.selectionMode !== "heuristic" ||
   queuedPlanSwarm.plannerSelection?.reason !== "coordination_profile_inferred" ||
   queuedPlanSwarm.orchestration?.executionShape !== "parallel-handoff" ||
@@ -9474,6 +9511,8 @@ if (
   queuePlanSwarmPayload?.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
   queuePlanSwarmPayload?.requestedProfile !== "coordination-local" ||
   queuePlanSwarmPayload?.planner?.executionModel !== "coordination-wave-local" ||
+  queuePlanSwarmPayload?.plannerSelection?.resolvedSourceKind !== "shipped" ||
+  queuePlanSwarmPayload?.plannerSelection?.matchedSignals?.coordinationBias !== true ||
   queuePlanSwarmPayload?.plannerSelection?.selectionMode !== "heuristic" ||
   queuePlanSwarmPayload?.plannerSelection?.reason !== "coordination_profile_inferred" ||
   queuePlanSwarmPayload?.orchestration?.executionShape !== "parallel-handoff" ||
