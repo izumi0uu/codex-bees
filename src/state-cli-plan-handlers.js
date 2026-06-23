@@ -31,37 +31,44 @@ function readPlannerProfileOption() {
   return readOption("--profile");
 }
 
+function readPlannerProfileFileOption() {
+  return readOption("--profile-file");
+}
+
+function readPlannerOptions() {
+  return {
+    profileId: readPlannerProfileOption(),
+    profileFile: readPlannerProfileFileOption()
+  };
+}
+
 function handlePlanProfiles() {
-  write(JSON.stringify({ profiles: getPlannerProfilesView() }, null, 2) + "\n");
+  write(JSON.stringify({ profiles: getPlannerProfilesView(readPlannerOptions()) }, null, 2) + "\n");
 }
 
 function handlePlanProfile() {
   const profile = requireOption("--profile");
-  write(JSON.stringify({ profile: getPlannerProfileView(profile) }, null, 2) + "\n");
+  write(JSON.stringify({ profile: getPlannerProfileView(profile, readPlannerOptions()) }, null, 2) + "\n");
 }
 
 function handlePlan() {
   const task = requireOption("--task");
-  const profileId = readPlannerProfileOption();
-  write(JSON.stringify(planTask(task, { profileId }), null, 2) + "\n");
+  write(JSON.stringify(planTask(task, readPlannerOptions()), null, 2) + "\n");
 }
 
 function handlePlanQueue() {
   const task = requireOption("--task");
-  const profileId = readPlannerProfileOption();
-  write(JSON.stringify(queueTasksFromPlan(task, addTasks, { profileId }), null, 2) + "\n");
+  write(JSON.stringify(queueTasksFromPlan(task, addTasks, readPlannerOptions()), null, 2) + "\n");
 }
 
 function handlePlanSwarm() {
   const task = requireOption("--task");
-  const profileId = readPlannerProfileOption();
-  write(JSON.stringify(planSwarm(task, { profileId }), null, 2) + "\n");
+  write(JSON.stringify(planSwarm(task, readPlannerOptions()), null, 2) + "\n");
 }
 
 function handlePlanSwarmQueue() {
   const task = requireOption("--task");
-  const profileId = readPlannerProfileOption();
-  const planned = planSwarm(task, { profileId });
+  const planned = planSwarm(task, readPlannerOptions());
   const created = initSwarm(planned.swarm);
   const queued = queueSwarmTasks({ id: created.id });
   if (!queued) {

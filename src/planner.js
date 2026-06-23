@@ -1,9 +1,17 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getRuntimeCatalogPaths, resolveRuntimeCatalogPath } from "./catalog.js";
-
-const DEFAULT_PLANNER_PROFILE_ID = "bounded-local";
-const COORDINATION_PLANNER_PROFILE_ID = "coordination-local";
+import {
+  DEFAULT_PLANNER_PROFILE_ID,
+  getPlannerProfileRecord,
+  getPlannerProfilesRecords,
+  registerPlannerProfile,
+  registerPlannerProfiles,
+  resetRegisteredPlannerProfiles,
+  resolvePlannerProfileContext,
+  selectPlannerProfile,
+  toPlannerProfile
+} from "./planner-registry.js";
 const ROLE_FILES = {
   explore: "agents/explore.md",
   executor: "agents/executor.md",
@@ -80,23 +88,6 @@ function includesAny(text, terms) {
 
 function touchesPublicRuntime(paths) {
   return paths.some((path) => PUBLIC_RUNTIME_PATHS.has(path));
-}
-
-function shouldPreferCoordinationProfile(task) {
-  const lower = task.toLowerCase();
-  return includesAny(lower, [
-    "swarm",
-    "parallel",
-    "dispatch",
-    "orchestrate",
-    "orchestration",
-    "leader",
-    "assignment",
-    "handoff",
-    "worker",
-    "multi-agent",
-    "multi agent"
-  ]);
 }
 
 function choosePrimaryScope(task) {
@@ -271,7 +262,7 @@ function derivePlannerStrategy(
   task,
   implementationScope,
   intent = inferPlannerIntent(task, implementationScope),
-  plannerProfileId = DEFAULT_PLANNER_PROFILE_ID
+  plannerProfile = getPlannerProfileRecord(DEFAULT_PLANNER_PROFILE_ID)
 ) {
   const publicSurface = intent.runtime || intent.catalog || touchesPublicRuntime(implementationScope);
   const needsDiscovery = !intent.docsOnly && (
@@ -282,7 +273,7 @@ function derivePlannerStrategy(
   );
   const needsVerification = !intent.docsOnly && intent.verificationHeavy;
   const coordinationDocumentationSidecar =
-    plannerProfileId === COORDINATION_PLANNER_PROFILE_ID && intent.coordination;
+    plannerProfile?.planningHints?.documentationMode === "discovery-sidecar" && intent.coordination;
   const needsDocumentation = !intent.docsOnly && (
     intent.docs ||
     intent.runtime ||
@@ -311,11 +302,11 @@ function derivePlannerStrategy(
   };
 }
 
-function plannerEvidenceForProfile(task, plannerProfileId = DEFAULT_PLANNER_PROFILE_ID) {
+function plannerEvidenceForProfile(task, plannerProfile = getPlannerProfileRecord(DEFAULT_PLANNER_PROFILE_ID)) {
   const catalogPaths = getRuntimeCatalogPaths();
   const implementationScope = choosePrimaryScope(task);
   const intent = inferPlannerIntent(task, implementationScope);
-  const strategy = derivePlannerStrategy(task, implementationScope, intent, plannerProfileId);
+  const strategy = derivePlannerStrategy(task, implementationScope, intent, plannerProfile);
   const documentationScope = strategy.needsDocumentation || intent.docsOnly
     ? chooseDocumentationScope(implementationScope)
     : [];
@@ -510,20 +501,20 @@ function buildPlannerOrchestration(lanes) {
   };
 }
 
-function usesCoordinationDocumentationSidecar(plannerProfileId, strategy) {
+function usesCoordinationDocumentationSidecar(plannerProfile, strategy) {
   return (
-    plannerProfileId === COORDINATION_PLANNER_PROFILE_ID &&
+    plannerProfile?.planningHints?.documentationMode === "discovery-sidecar" &&
     strategy.taskClass === "coordination-kernel" &&
     strategy.needsDiscovery &&
     strategy.needsDocumentation
   );
 }
 
-function buildPlannerDependencies(lanes, plannerProfileId, strategy) {
+function buildPlannerDependencies(lanes, plannerProfile, strategy) {
   const discoveryLaneId = lanes.find((lane) => lane.purpose === "discovery")?.lane ?? null;
   const implementationLaneId = lanes.find((lane) => lane.purpose === "implementation")?.lane ?? null;
   const documentationLaneId = lanes.find((lane) => lane.purpose === "documentation")?.lane ?? null;
-  const coordinationDocumentationSidecar = usesCoordinationDocumentationSidecar(plannerProfileId, strategy);
+  const coordinationDocumentationSidecar = usesCoordinationDocumentationSidecar(plannerProfile, strategy);
 
   return lanes.map((lane) => {
     if (lane.purpose === "implementation" && discoveryLaneId) {
@@ -569,10 +560,10 @@ function buildPlannerDependencies(lanes, plannerProfileId, strategy) {
   });
 }
 
-function buildPlanLanes(task, plannerProfileId = DEFAULT_PLANNER_PROFILE_ID) {
+function buildPlanLanes(task, plannerProfile = getPlannerProfileRecord(DEFAULT_PLANNER_PROFILE_ID)) {
   const implementationScope = choosePrimaryScope(task);
   const intent = inferPlannerIntent(task, implementationScope);
-  const strategy = derivePlannerStrategy(task, implementationScope, intent, plannerProfileId);
+  const strategy = derivePlannerStrategy(task, implementationScope, intent, plannerProfile);
 
   if (strategy.laneStrategy === "documentation") {
     return assignLaneIds([
@@ -593,152 +584,54 @@ function buildPlanLanes(task, plannerProfileId = DEFAULT_PLANNER_PROFILE_ID) {
   }
 
   const assignedLanes = assignLaneIds(lanes);
-  return buildPlannerDependencies(assignedLanes, plannerProfileId, strategy);
+  return buildPlannerDependencies(assignedLanes, plannerProfile, strategy);
 }
 
-function buildBoundedLocalPlanLanes(task) {
-  return buildPlanLanes(task, DEFAULT_PLANNER_PROFILE_ID);
+export function getPlannerProfiles(options = {}) {
+  return getPlannerProfilesRecords(options).profiles.map(toPlannerProfile);
 }
 
-function buildCoordinationLocalPlanLanes(task) {
-  return buildPlanLanes(task, COORDINATION_PLANNER_PROFILE_ID);
-}
-
-const PLANNER_PROFILES = {
-  [DEFAULT_PLANNER_PROFILE_ID]: {
-    id: DEFAULT_PLANNER_PROFILE_ID,
-    description: "Adaptive local bounded planner for Codex-only execution.",
-    topology: "bounded-local",
-    laneSource: "planner",
-    adaptive: true,
-    laneModel: "adaptive-bounded-lanes",
-    executionModel: "dependency-wave-local",
-    roles: ["explore", "reviewer", "executor", "tester"],
-    constraints: [
-      "codex-only runtime boundary",
-      "disjoint lane ownership",
-      "local state-backed task queue"
-    ],
-    buildLanes: buildBoundedLocalPlanLanes
-  },
-  [COORDINATION_PLANNER_PROFILE_ID]: {
-    id: COORDINATION_PLANNER_PROFILE_ID,
-    description: "Parallel-biased bounded planner for swarm-heavy Codex coordination.",
-    topology: "bounded-local",
-    laneSource: "planner",
-    adaptive: true,
-    laneModel: "coordination-bounded-lanes",
-    executionModel: "coordination-wave-local",
-    roles: ["explore", "executor", "reviewer", "tester"],
-    constraints: [
-      "codex-only runtime boundary",
-      "disjoint lane ownership",
-      "wave-aware swarm launch sequencing",
-      "local state-backed task queue"
-    ],
-    buildLanes: buildCoordinationLocalPlanLanes
-  }
-};
-
-function toPlannerProfile(profile) {
-  return {
-    id: profile.id,
-    description: profile.description,
-    topology: profile.topology,
-    laneSource: profile.laneSource,
-    adaptive: profile.adaptive,
-    laneModel: profile.laneModel,
-    executionModel: profile.executionModel,
-    roles: [...profile.roles],
-    constraints: [...profile.constraints]
-  };
-}
-
-function getPlannerProfileRecord(id = DEFAULT_PLANNER_PROFILE_ID) {
-  const profile = PLANNER_PROFILES[id];
-  return profile ?? PLANNER_PROFILES[DEFAULT_PLANNER_PROFILE_ID];
-}
-
-function resolvePlannerProfileId(id = DEFAULT_PLANNER_PROFILE_ID) {
-  return PLANNER_PROFILES[id] ? id : DEFAULT_PLANNER_PROFILE_ID;
-}
-
-function selectPlannerProfile(task, profileId) {
-  const trimmedProfileId =
-    typeof profileId === "string" && profileId.trim().length > 0
-      ? profileId.trim()
-      : null;
-
-  if (trimmedProfileId) {
-    const resolvedProfile = resolvePlannerProfileId(trimmedProfileId);
-    return {
-      inputProfile: trimmedProfileId,
-      requestedProfile: trimmedProfileId,
-      resolvedProfile,
-      usedDefaultProfile: resolvedProfile !== trimmedProfileId,
-      selectionMode: resolvedProfile === trimmedProfileId ? "explicit" : "fallback",
-      reason:
-        resolvedProfile === trimmedProfileId
-          ? "explicit_profile_requested"
-          : "missing_profile_fallback"
-    };
-  }
-
-  const inferredProfile = shouldPreferCoordinationProfile(task)
-    ? COORDINATION_PLANNER_PROFILE_ID
-    : DEFAULT_PLANNER_PROFILE_ID;
-
-  return {
-    inputProfile: null,
-    requestedProfile: inferredProfile,
-    resolvedProfile: inferredProfile,
-    usedDefaultProfile: false,
-    selectionMode: "heuristic",
-    reason:
-      inferredProfile === COORDINATION_PLANNER_PROFILE_ID
-        ? "coordination_profile_inferred"
-        : "default_profile_inferred"
-  };
-}
-
-export function getPlannerProfiles() {
-  return Object.values(PLANNER_PROFILES).map(toPlannerProfile);
-}
-
-export function getPlannerProfile(id = DEFAULT_PLANNER_PROFILE_ID) {
-  const profile = PLANNER_PROFILES[id];
+export function getPlannerProfile(id = DEFAULT_PLANNER_PROFILE_ID, options = {}) {
+  const context = resolvePlannerProfileContext(options);
+  const profileId = typeof id === "string" && id.trim().length > 0 ? id.trim() : context.defaultProfileId;
+  const profile = context.registry.get(profileId);
   return profile ? toPlannerProfile(profile) : undefined;
 }
 
-export function getPlannerProfilesView() {
-  const profiles = getPlannerProfiles();
+export function getPlannerProfilesView(options = {}) {
+  const context = getPlannerProfilesRecords(options);
+  const profiles = context.profiles.map(toPlannerProfile);
   return {
     kind: "planner_profile_list_view",
     recommendedReason: profiles.length > 0 ? "planner_profiles_loaded" : "planner_profiles_empty",
     counts: {
       totalProfiles: profiles.length
     },
-    defaultProfile: DEFAULT_PLANNER_PROFILE_ID,
+    defaultProfile: context.defaultProfileId,
     profiles
   };
 }
 
-export function getPlannerProfileView(id = DEFAULT_PLANNER_PROFILE_ID) {
-  const profile = getPlannerProfile(id);
+export function getPlannerProfileView(id = DEFAULT_PLANNER_PROFILE_ID, options = {}) {
+  const context = resolvePlannerProfileContext(options);
+  const profileId = typeof id === "string" && id.trim().length > 0 ? id.trim() : context.defaultProfileId;
+  const profile = getPlannerProfile(profileId, options);
   return {
     kind: "planner_profile_view",
     recommendedReason: profile ? "planner_profile_loaded" : "planner_profile_missing",
-    id: id ?? null,
+    id: profileId ?? null,
     matchedProfile: profile?.id ?? null,
+    defaultProfile: context.defaultProfileId,
     profile: profile ?? null
   };
 }
 
 export function planTask(task, options = {}) {
-  const plannerSelection = selectPlannerProfile(task, options.profileId);
-  const profile = getPlannerProfileRecord(plannerSelection.resolvedProfile);
+  const plannerContext = resolvePlannerProfileContext(options);
+  const plannerSelection = selectPlannerProfile(task, options.profileId, plannerContext);
+  const profile = getPlannerProfileRecord(plannerSelection.resolvedProfile, options);
   const planner = toPlannerProfile(profile);
-  const lanes = profile.buildLanes(task);
+  const lanes = buildPlanLanes(task, profile);
   const orchestration = buildPlannerOrchestration(lanes);
   const recommendedReason = lanes.length > 1 ? "multi_lane_plan_ready" : "single_lane_plan_ready";
 
@@ -749,7 +642,7 @@ export function planTask(task, options = {}) {
     requestedProfile: plannerSelection.requestedProfile,
     planner,
     plannerSelection,
-    evidence: plannerEvidenceForProfile(task, planner.id),
+    evidence: plannerEvidenceForProfile(task, profile),
     orchestration,
     lanes
   };
@@ -812,4 +705,9 @@ export function queueTasksFromPlan(task, addTasks, options = {}) {
     lanes: plan.lanes,
     created
   };
+}
+
+export { registerPlannerProfile, registerPlannerProfiles };
+export function resetPlannerProfiles() {
+  resetRegisteredPlannerProfiles();
 }

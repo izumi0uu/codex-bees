@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PUBLIC_TYPE_ENTRYPOINTS } from "../src/typings.js";
+import { planSwarm as directPlanSwarm, registerPlannerProfile, resetPlannerProfiles } from "../src/planner.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "..");
@@ -782,7 +783,7 @@ writeFileSync(
     'import { initWorkspace, previewWorkspaceInit } from "codex-bees/init";',
     'import { getPackageMetadataView } from "codex-bees/metadata";',
     'import { getMcpToolView, serializeMcpMessage } from "codex-bees/mcp";',
-    'import { getPlannerProfilesView, planSwarm, queueTasksFromPlan } from "codex-bees/planner";',
+    'import { getPlannerProfilesView, planSwarm, queueTasksFromPlan, registerPlannerProfile, resetPlannerProfiles } from "codex-bees/planner";',
     'import { getCoordinationOverviewView } from "codex-bees/runtime-guidance";',
     'import { getRuntimeContractView } from "codex-bees/runtime-contract";',
     'import { getRuntimeReadyView } from "codex-bees/runtime-ready";',
@@ -801,6 +802,8 @@ writeFileSync(
     'serializeMcpMessage({ jsonrpc: "2.0", id: 1, method: "initialize" });',
     'getPlannerProfilesView().kind;','planSwarm("typed installed swarm", { profileId: "bounded-local" }).kind;',
     'queueTasksFromPlan("typed installed queue", (tasks) => tasks as unknown as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).kind;',
+    'registerPlannerProfile({ id: "typed-installed-custom", extends: "bounded-local", description: "typed installed custom", laneModel: "typed-installed-lanes", executionModel: "typed-installed-wave", roles: ["explore", "executor"], constraints: ["codex-only runtime boundary", "typed installed"], selectionHints: { keywords: ["typed"], priority: 10 }, planningHints: { documentationMode: "serial", coordinationBias: false } });',
+    'resetPlannerProfiles();',
     'getCoordinationOverviewView().kind;',
     'getRuntimeContractView().kind;',
     'getRuntimeReadyView().kind;',
@@ -2740,6 +2743,114 @@ if (
   console.error("[smoke:plan-profile-coordination] expected coordination planner profile detail view");
   process.exit(1);
 }
+const customPlannerProfileDir = mkdtempSync(join(tmpdir(), "codex-bees-planner-profile-"));
+const customPlannerProfileFile = join(customPlannerProfileDir, "release-local-planner.json");
+writeFileSync(
+  customPlannerProfileFile,
+  JSON.stringify(
+    {
+      defaultProfile: "release-local",
+      profiles: [
+        {
+          id: "release-local",
+          extends: "bounded-local",
+          description: "Release-focused bounded planner for local cut work.",
+          laneModel: "release-bounded-lanes",
+          executionModel: "release-wave-local",
+          constraints: ["codex-only runtime boundary", "release-doc parity"],
+          selectionHints: { keywords: ["release", "cutover"], priority: 90 },
+          planningHints: { documentationMode: "serial", coordinationBias: false }
+        }
+      ]
+    },
+    null,
+    2
+  ) + "\n"
+);
+const customPlannerProfilesView = JSON.parse(
+  run("plan-profiles-custom-file-verify", [
+    "./src/index.js",
+    "plan:profiles",
+    "--profile-file",
+    customPlannerProfileFile
+  ]).stdout
+).profiles;
+if (
+  customPlannerProfilesView.kind !== "planner_profile_list_view" ||
+  customPlannerProfilesView.defaultProfile !== "release-local" ||
+  customPlannerProfilesView.counts?.totalProfiles !== 3 ||
+  !customPlannerProfilesView.profiles?.some((profile) => profile.id === "release-local" && profile.sourceKind === "file")
+) {
+  console.error("[smoke:plan-profiles-custom-file] expected local planner profile file to extend the visible planner catalog");
+  process.exit(1);
+}
+const customPlannerProfileView = JSON.parse(
+  run("plan-profile-custom-file-verify", [
+    "./src/index.js",
+    "plan:profile",
+    "--profile",
+    "release-local",
+    "--profile-file",
+    customPlannerProfileFile
+  ]).stdout
+).profile;
+if (
+  customPlannerProfileView.kind !== "planner_profile_view" ||
+  customPlannerProfileView.defaultProfile !== "release-local" ||
+  customPlannerProfileView.matchedProfile !== "release-local" ||
+  customPlannerProfileView.profile?.sourceKind !== "file" ||
+  customPlannerProfileView.profile?.laneModel !== "release-bounded-lanes" ||
+  customPlannerProfileView.profile?.executionModel !== "release-wave-local"
+) {
+  console.error("[smoke:plan-profile-custom-file] expected local planner profile detail view");
+  process.exit(1);
+}
+const explicitCustomFilePlan = JSON.parse(
+  run("plan-explicit-custom-file-profile", [
+    "./src/index.js",
+    "plan",
+    "--task",
+    "prepare release cutover notes",
+    "--profile",
+    "release-local",
+    "--profile-file",
+    customPlannerProfileFile
+  ]).stdout
+);
+if (
+  explicitCustomFilePlan.kind !== "task_plan" ||
+  explicitCustomFilePlan.requestedProfile !== "release-local" ||
+  explicitCustomFilePlan.planner?.sourceKind !== "file" ||
+  explicitCustomFilePlan.planner?.laneModel !== "release-bounded-lanes" ||
+  explicitCustomFilePlan.plannerSelection?.resolvedProfile !== "release-local" ||
+  explicitCustomFilePlan.plannerSelection?.selectionMode !== "explicit" ||
+  explicitCustomFilePlan.plannerSelection?.reason !== "explicit_profile_requested"
+) {
+  console.error("[smoke:plan-explicit-custom-file-profile] expected explicit local file planner profile selection");
+  process.exit(1);
+}
+registerPlannerProfile({
+  id: "docs-local",
+  extends: "bounded-local",
+  description: "Docs-focused bounded planner.",
+  laneModel: "docs-bounded-lanes",
+  executionModel: "docs-wave-local",
+  constraints: ["codex-only runtime boundary", "docs parity"],
+  selectionHints: { keywords: ["handbook"], priority: 60 },
+  planningHints: { documentationMode: "serial", coordinationBias: false }
+});
+const registeredPlannerPlan = directPlanSwarm("refresh handbook references");
+resetPlannerProfiles();
+if (
+  registeredPlannerPlan.kind !== "planned_swarm" ||
+  registeredPlannerPlan.requestedProfile !== "docs-local" ||
+  registeredPlannerPlan.planner?.sourceKind !== "registered" ||
+  registeredPlannerPlan.plannerSelection?.resolvedProfile !== "docs-local" ||
+  registeredPlannerPlan.plannerSelection?.reason !== "profile_hint_inferred"
+) {
+  console.error("[smoke:plan-registered-profile] expected programmatically registered planner profile to participate in heuristic selection");
+  process.exit(1);
+}
 const explicitProfilePlan = JSON.parse(run("plan-explicit-profile", ["./src/index.js", "plan", "--task", "explicit profile runtime change", "--profile", "bounded-local"]).stdout);
 if (
   explicitProfilePlan.kind !== "task_plan" ||
@@ -4353,6 +4464,71 @@ if (
 ) {
   console.error("[smoke:plan-mcp] expected planner task payload with machine-readable reason");
   console.error(planMcp.stderr || planMcp.stdout);
+  process.exit(1);
+}
+const plannerProfilesCustomFileMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "planner_profiles",
+      arguments: { profileFile: customPlannerProfileFile }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "plan_task",
+      arguments: {
+        task: "prepare release cutover notes",
+        profile: "release-local",
+        profileFile: customPlannerProfileFile
+      }
+    }
+  })
+].join("\n") + "\n";
+const plannerProfilesCustomFileMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: plannerProfilesCustomFileMcpInput,
+  encoding: "utf8"
+});
+const plannerProfilesCustomFileMcpLines = plannerProfilesCustomFileMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const plannerProfilesCustomFileMcpResult = plannerProfilesCustomFileMcpLines.length >= 2
+  ? JSON.parse(plannerProfilesCustomFileMcpLines[1])
+  : null;
+const plannerProfilesCustomFileMcpText = plannerProfilesCustomFileMcpResult?.result?.content?.[0]?.text;
+const plannerProfilesCustomFileMcpPayload = plannerProfilesCustomFileMcpText
+  ? JSON.parse(plannerProfilesCustomFileMcpText)
+  : null;
+const planTaskCustomFileMcpResult = plannerProfilesCustomFileMcpLines.length >= 3
+  ? JSON.parse(plannerProfilesCustomFileMcpLines[2])
+  : null;
+const planTaskCustomFileMcpText = planTaskCustomFileMcpResult?.result?.content?.[0]?.text;
+const planTaskCustomFileMcpPayload = planTaskCustomFileMcpText ? JSON.parse(planTaskCustomFileMcpText) : null;
+if (
+  plannerProfilesCustomFileMcp.status !== 0 ||
+  plannerProfilesCustomFileMcpPayload?.profiles?.kind !== "planner_profile_list_view" ||
+  plannerProfilesCustomFileMcpPayload?.profiles?.defaultProfile !== "release-local" ||
+  plannerProfilesCustomFileMcpPayload?.profiles?.counts?.totalProfiles !== 3 ||
+  !plannerProfilesCustomFileMcpPayload?.profiles?.profiles?.some(
+    (profile) => profile.id === "release-local" && profile.sourceKind === "file"
+  ) ||
+  planTaskCustomFileMcpPayload?.kind !== "task_plan" ||
+  planTaskCustomFileMcpPayload?.requestedProfile !== "release-local" ||
+  planTaskCustomFileMcpPayload?.planner?.sourceKind !== "file" ||
+  planTaskCustomFileMcpPayload?.planner?.laneModel !== "release-bounded-lanes" ||
+  planTaskCustomFileMcpPayload?.plannerSelection?.resolvedProfile !== "release-local" ||
+  planTaskCustomFileMcpPayload?.plannerSelection?.selectionMode !== "explicit" ||
+  planTaskCustomFileMcpPayload?.plannerSelection?.reason !== "explicit_profile_requested"
+) {
+  console.error("[smoke:planner-profiles-custom-file-mcp] expected MCP planner tools to honor local planner profile files");
+  console.error(plannerProfilesCustomFileMcp.stderr || plannerProfilesCustomFileMcp.stdout);
   process.exit(1);
 }
 

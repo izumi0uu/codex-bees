@@ -3,6 +3,9 @@ export {
   getPlannerProfiles,
   getPlannerProfilesView,
   getPlannerProfileView,
+  registerPlannerProfile,
+  registerPlannerProfiles,
+  resetPlannerProfiles,
   planSwarm,
   planTask,
   queueTasksFromPlan

@@ -312,20 +312,23 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
   },
   {
     name: "planner_profiles",
-    description: "Return the shipped planner profile catalog view.",
+    description: "Return the available planner profile catalog view.",
     inputSchema: {
       type: "object",
-      properties: {}
+      properties: {
+        profileFile: { type: "string" }
+      }
     }
   },
   {
     name: "planner_profile",
-    description: "Return one shipped planner profile view.",
+    description: "Return one available planner profile view.",
     inputSchema: {
       type: "object",
       required: ["profile"],
       properties: {
-        profile: { type: "string" }
+        profile: { type: "string" },
+        profileFile: { type: "string" }
       }
     }
   },
@@ -337,7 +340,8 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
       required: ["task"],
       properties: {
         task: { type: "string" },
-        profile: { type: "string" }
+        profile: { type: "string" },
+        profileFile: { type: "string" }
       }
     }
   },
@@ -349,7 +353,8 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
       required: ["task"],
       properties: {
         task: { type: "string" },
-        profile: { type: "string" }
+        profile: { type: "string" },
+        profileFile: { type: "string" }
       }
     }
   },
@@ -361,7 +366,8 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
       required: ["task"],
       properties: {
         task: { type: "string" },
-        profile: { type: "string" }
+        profile: { type: "string" },
+        profileFile: { type: "string" }
       }
     }
   },
@@ -373,7 +379,8 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
       required: ["task"],
       properties: {
         task: { type: "string" },
-        profile: { type: "string" }
+        profile: { type: "string" },
+        profileFile: { type: "string" }
       }
     }
   },

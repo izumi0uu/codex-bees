@@ -30,7 +30,12 @@ import { createError, createSuccess, createTextPayload } from "./state-mcp-runti
 const PLAN_MCP_TOOL_HANDLERS = {
   planner_profiles({ id, args, metadata }) {
     const params = { arguments: args };
-    return createSuccess(id, createTextPayload({ profiles: getPlannerProfilesView() }));
+    return createSuccess(
+      id,
+      createTextPayload({
+        profiles: getPlannerProfilesView({ profileFile: params.arguments?.profileFile })
+      })
+    );
   },
 
   planner_profile({ id, args, metadata }) {
@@ -39,7 +44,12 @@ const PLAN_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, "planner_profile requires arguments.profile");
     }
 
-    return createSuccess(id, createTextPayload({ profile: getPlannerProfileView(params.arguments.profile) }));
+    return createSuccess(
+      id,
+      createTextPayload({
+        profile: getPlannerProfileView(params.arguments.profile, { profileFile: params.arguments?.profileFile })
+      })
+    );
   },
 
   plan_task({ id, args, metadata }) {
@@ -48,7 +58,15 @@ const PLAN_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, "plan_task requires arguments.task");
     }
     
-    return createSuccess(id, createTextPayload(planTask(params.arguments.task, { profileId: params.arguments.profile })));
+    return createSuccess(
+      id,
+      createTextPayload(
+        planTask(params.arguments.task, {
+          profileId: params.arguments.profile,
+          profileFile: params.arguments.profileFile
+        })
+      )
+    );
   },
 
   queue_plan({ id, args, metadata }) {
@@ -59,7 +77,12 @@ const PLAN_MCP_TOOL_HANDLERS = {
     
     return createSuccess(
       id,
-      createTextPayload(queueTasksFromPlan(params.arguments.task, addTasks, { profileId: params.arguments.profile }))
+      createTextPayload(
+        queueTasksFromPlan(params.arguments.task, addTasks, {
+          profileId: params.arguments.profile,
+          profileFile: params.arguments.profileFile
+        })
+      )
     );
   },
 
@@ -69,7 +92,15 @@ const PLAN_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, "plan_swarm requires arguments.task");
     }
     
-    return createSuccess(id, createTextPayload(planSwarm(params.arguments.task, { profileId: params.arguments.profile })));
+    return createSuccess(
+      id,
+      createTextPayload(
+        planSwarm(params.arguments.task, {
+          profileId: params.arguments.profile,
+          profileFile: params.arguments.profileFile
+        })
+      )
+    );
   },
 
   queue_plan_swarm({ id, args, metadata }) {
@@ -78,7 +109,10 @@ const PLAN_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, "queue_plan_swarm requires arguments.task");
     }
     
-    const planned = planSwarm(params.arguments.task, { profileId: params.arguments.profile });
+    const planned = planSwarm(params.arguments.task, {
+      profileId: params.arguments.profile,
+      profileFile: params.arguments.profileFile
+    });
     const swarm = initSwarm(planned.swarm);
     const queued = queueSwarmTasks({ id: swarm.id });
     if (!queued) {

@@ -18,7 +18,8 @@ export const TOOL_NAME_OPTION = option("--name <tool>", "Tool name from the ship
 export const AGENT_ID_OPTION = option("--id <agent-id>", "Agent id from the shipped local agent catalog");
 export const SKILL_ID_OPTION = option("--id <skill-id>", "Skill id from the shipped local skill catalog");
 export const CAPABILITY_ID_OPTION = option("--id <capability-id>", "Capability id from the shipped runtime capability inventory");
-export const PLANNER_PROFILE_ID_OPTION = option("--profile <planner-profile-id>", "Planner profile id from the shipped planner profile catalog");
+export const PLANNER_PROFILE_ID_OPTION = option("--profile <planner-profile-id>", "Planner profile id from the available planner profile catalog");
+export const PLANNER_PROFILE_FILE_OPTION = option("--profile-file <path>", "Local JSON planner profile file to merge into this command's bounded planner registry");
 export const ROLE_OPTION = option("--role <role>", "Role id to scope the view or action to");
 export const OWNER_OPTION = option("--owner <owner>", "Owner role to filter, assign, or reconcile against");
 export const WORKER_OPTION = option("--worker <worker-id>", "Worker id to bind the view or action to");
@@ -59,6 +60,7 @@ export const DETAILED_OPTION = option("--detailed", "Include nested lane and tas
 
 export const JSON_WORKERS_NOTE = "Pass --workers as a JSON object that maps role ids to worker ids or worker-id arrays when launch surfaces should emit concrete worker commands.";
 export const RUNTIME_PACK_DETAIL_NOTE = "Runtime summary/control/dispatch/execution/leader/queue/workspace packs default to compact output; pass --detail full to expand nested surfaces.";
+export const PLANNER_PROFILE_FILE_NOTE = "Pass --profile-file as a local JSON planner profile document to extend or override the bounded planner registry for this command.";
 export const JSON_LANES_NOTE = "Pass --lanes as a JSON array of lane contracts.";
 export const JSON_LANE_DEPENDENCY_NOTE = "Lane JSON may include dependsOn arrays that reference prerequisite lane ids.";
 export const PIPE_LIST_NOTE = "Pipe-delimited flags such as --acceptance, --verification, and --evidence accept multiple entries in one argument.";
