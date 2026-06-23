@@ -1,5 +1,6 @@
 import { buildHistoryView, buildPlanningView } from "./state-view-metadata.js";
 import { createCollectionView, createLoadedValueView } from "./state-view-helpers.js";
+import { buildRuntimeTaskDashboardFields } from "./state-runtime-task-entry-helpers.js";
 
 export function deriveTaskReportReason(task) {
   if (task.queueStatus === "ready_for_review") {
@@ -125,16 +126,10 @@ export function buildTaskReportView(
     "task_report",
     "task",
     {
-      id: task.id,
-      title: task.title,
+      ...buildRuntimeTaskDashboardFields(task),
       objective: task.objective,
       queueStatus: task.queueStatus,
-      owner: task.owner,
-      verifier: task.verifier,
       claimedBy: task.claimedBy,
-      swarmId: task.swarmId,
-      lane: task.lane,
-      lanePurpose: task.lanePurpose ?? null
     },
     {
       recommendedReason,

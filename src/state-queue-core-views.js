@@ -1,3 +1,5 @@
+import { buildRuntimeTaskDashboardFields } from "./state-runtime-task-entry-helpers.js";
+
 const LANE_PURPOSE_ORDER = new Map([
   ["discovery", 0],
   ["implementation", 1],
@@ -121,16 +123,10 @@ export function summarizeInboxTask(task, role, workerId) {
             : "verifier_observe";
 
   return {
-    id: task.id,
-    title: task.title,
+    ...buildRuntimeTaskDashboardFields(task),
     objective: task.objective,
-    lane: task.lane,
-    lanePurpose: task.lanePurpose ?? null,
-    swarmId: task.swarmId,
     queueStatus: task.queueStatus,
     claimedBy: task.claimedBy,
-    owner: task.owner,
-    verifier: task.verifier,
     scope: task.scope ?? [],
     dependsOn: task.dependsOn ?? [],
     dependencyReady: task.dependencyReady ?? true,
