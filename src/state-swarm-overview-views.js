@@ -120,20 +120,20 @@ export function buildSwarmOverviewView(
     deriveSwarmOverviewReason
   });
 
-  return {
-    kind: "swarm_overview",
+  return createLoadedValueView("swarm_overview", "swarm", normalizedSwarm, {
     recommendedReason: overview.recommendedReason,
-    swarm: normalizedSwarm,
-    planning: buildPlanningView(normalizedSwarm.plannerProvenance),
     counts: overview.counts,
-    lanes: overview.lanes,
-    tasks: overview.tasks,
-    nextLane: overview.nextLane,
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
-    readyToComplete: overview.readyToComplete,
-    dispatchableCount: overview.dispatchableCount
-  };
+    extra: {
+      planning: buildPlanningView(normalizedSwarm.plannerProvenance),
+      lanes: overview.lanes,
+      tasks: overview.tasks,
+      nextLane: overview.nextLane,
+      derivedStatus: overview.derivedStatus,
+      statusAligned: overview.statusAligned,
+      readyToComplete: overview.readyToComplete,
+      dispatchableCount: overview.dispatchableCount
+    }
+  });
 }
 
 export function buildSwarmOverviewViewFromSources(

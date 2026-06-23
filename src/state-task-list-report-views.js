@@ -1,5 +1,5 @@
 import { buildHistoryView, buildPlanningView } from "./state-view-metadata.js";
-import { createCollectionView } from "./state-view-helpers.js";
+import { createCollectionView, createLoadedValueView } from "./state-view-helpers.js";
 
 export function deriveTaskReportReason(task) {
   if (task.queueStatus === "ready_for_review") {
@@ -121,10 +121,10 @@ export function buildTaskReportView(
   const verification = task.verification ?? [];
   const reviewEvidence = task.reviewEvidence ?? [];
 
-  return {
-    kind: "task_report",
-    recommendedReason,
-    task: {
+  return createLoadedValueView(
+    "task_report",
+    "task",
+    {
       id: task.id,
       title: task.title,
       objective: task.objective,
@@ -136,32 +136,37 @@ export function buildTaskReportView(
       lane: task.lane,
       lanePurpose: task.lanePurpose ?? null
     },
-    planning: buildPlanningView(task.plannerProvenance),
-    closure: {
-      reviewState: deriveReviewState(task),
-      reviewedBy: task.reviewedBy,
-      reviewedAt: task.reviewedAt,
-      reviewOutcome: task.reviewOutcome,
-      reviewNotes: task.reviewNotes,
-      closureReady: task.queueStatus === "ready_for_review" || task.queueStatus === "done",
-      nextGate: taskReportNextGate(task)
-    },
-    counts: {
-      acceptanceItems: acceptance.length,
-      verificationSteps: verification.length,
-      reviewEvidenceEntries: reviewEvidence.length,
-      annotationEntries: reportEntries.annotations.length,
-      recentHistoryEntries: reportEntries.history.length
-    },
-    acceptance,
-    verification,
-    evidence: {
-      reviewEvidence,
-      annotations: reportEntries.annotations,
-      recentHistory: reportEntries.history
-    },
-    brief
-  };
+    {
+      recommendedReason,
+      counts: {
+        acceptanceItems: acceptance.length,
+        verificationSteps: verification.length,
+        reviewEvidenceEntries: reviewEvidence.length,
+        annotationEntries: reportEntries.annotations.length,
+        recentHistoryEntries: reportEntries.history.length
+      },
+      extra: {
+        planning: buildPlanningView(task.plannerProvenance),
+        closure: {
+          reviewState: deriveReviewState(task),
+          reviewedBy: task.reviewedBy,
+          reviewedAt: task.reviewedAt,
+          reviewOutcome: task.reviewOutcome,
+          reviewNotes: task.reviewNotes,
+          closureReady: task.queueStatus === "ready_for_review" || task.queueStatus === "done",
+          nextGate: taskReportNextGate(task)
+        },
+        acceptance,
+        verification,
+        evidence: {
+          reviewEvidence,
+          annotations: reportEntries.annotations,
+          recentHistory: reportEntries.history
+        },
+        brief
+      }
+    }
+  );
 }
 
 export function buildTaskReportViewFromSources(

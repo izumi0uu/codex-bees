@@ -17,17 +17,17 @@ export function buildTaskHistoryView(
   const next = history.at(-1) ?? null;
   const recommendedReason = deriveTaskHistoryReason({ history, next });
 
-  return {
-    kind: "task_history",
+  return createLoadedValueView("task_history", "history", history, {
     recommendedReason,
-    taskId: task.id,
-    title: task.title,
-    queueStatus: task.queueStatus,
     counts: {
       totalHistoryEntries: history.length
     },
-    history
-  };
+    extra: {
+      taskId: task.id,
+      title: task.title,
+      queueStatus: task.queueStatus
+    }
+  });
 }
 
 export function buildTaskHistoryViewFromSources(
