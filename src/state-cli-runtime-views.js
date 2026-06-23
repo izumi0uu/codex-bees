@@ -30,7 +30,7 @@ import {
   runtimeVerifierPack,
   runtimeWorkerPack,
   runtimeWorkspacePack
-} from "./state.js";
+} from "./state-runtime.js";
 import { exit, readJsonOption, readOption, readPositiveIntegerOption, write, writeErr } from "./state-cli-helpers.js";
 
 function printRuntimeActivity() {

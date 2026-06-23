@@ -322,6 +322,37 @@ if (!importedSourceApi.includes("getRuntimeCatalogView")) {
   process.exit(1);
 }
 
+const importedSourceState = JSON.parse(
+  run("import-src-state", [
+    "-e",
+    'import("./src/state.js").then((m) => console.log(JSON.stringify(Object.keys(m).sort())))'
+  ]).stdout
+);
+if (
+  !importedSourceState.includes("getTaskView") ||
+  !importedSourceState.includes("validateTask") ||
+  importedSourceState.includes("leaderAssignments") ||
+  importedSourceState.includes("runtimeDashboard")
+) {
+  console.error("[smoke:import-src-state] expected source state bridge to stay product-facing");
+  process.exit(1);
+}
+
+const importedSourceRuntimeState = JSON.parse(
+  run("import-src-state-runtime", [
+    "-e",
+    'import("./src/state-runtime.js").then((m) => console.log(JSON.stringify(Object.keys(m).sort())))'
+  ]).stdout
+);
+if (
+  !importedSourceRuntimeState.includes("getTaskView") ||
+  !importedSourceRuntimeState.includes("leaderAssignments") ||
+  !importedSourceRuntimeState.includes("runtimeDashboard")
+) {
+  console.error("[smoke:import-src-state-runtime] expected internal runtime state facade to expose runtime surfaces");
+  process.exit(1);
+}
+
 const importedDistApi = JSON.parse(
   run("import-dist-api", [
     "-e",

@@ -120,4 +120,4 @@ export {
   storeMemory,
   validateSwarm,
   validateTask
-} from "./state.js";
+} from "./state-public.js";

@@ -25,7 +25,7 @@ import {
   syncSwarmStatus,
   updateSwarmMutation,
   validateSwarm
-} from "./state.js";
+} from "./state-runtime.js";
 
 function handleMemoryStore() {
   const content = requireOption("--content");

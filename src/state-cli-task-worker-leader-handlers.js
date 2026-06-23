@@ -32,7 +32,7 @@ import {
   workerCloseout,
   workerHandoff,
   workerSession
-} from "./state.js";
+} from "./state-runtime.js";
 import { exit, readJsonOption, readListOption, readOption, readPositiveIntegerOption, requireOption, write, writeErr } from "./state-cli-helpers.js";
 
 function handleWorkerSession() {

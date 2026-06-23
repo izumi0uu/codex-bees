@@ -29,7 +29,7 @@ import {
   syncSwarmStatus,
   updateSwarmMutation,
   validateSwarm
-} from "./state.js";
+} from "./state-runtime.js";
 import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
 
 const SWARM_MCP_TOOL_HANDLERS = {

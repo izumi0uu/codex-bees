@@ -24,7 +24,8 @@ const PUBLIC_RUNTIME_PATHS = new Set([
   "src/index.js",
   "src/mcp.js",
   "src/planner.js",
-  "src/state.js"
+  "src/state.js",
+  "src/state-public.js"
 ]);
 
 function directoryExists(path) {
@@ -120,7 +121,16 @@ function choosePrimaryScope(task) {
     lower.includes("lane") ||
     lower.includes("planner")
   ) {
-    return sourceFilePaths().filter((path) => ["src/planner.js", "src/index.js", "src/mcp.js", "src/state.js"].includes(path));
+    return sourceFilePaths().filter((path) =>
+      [
+        "src/planner.js",
+        "src/index.js",
+        "src/mcp.js",
+        "src/state.js",
+        "src/state-public.js",
+        "src/state-runtime.js"
+      ].includes(path)
+    );
   }
 
   if (
@@ -131,7 +141,13 @@ function choosePrimaryScope(task) {
     lower.includes("state")
   ) {
     return sourceFilePaths().filter((path) =>
-      ["src/state.js", "src/index.js", "src/mcp.js"].includes(path)
+      [
+        "src/state.js",
+        "src/state-public.js",
+        "src/state-runtime.js",
+        "src/index.js",
+        "src/mcp.js"
+      ].includes(path)
     );
   }
 
@@ -196,7 +212,16 @@ function chooseVerificationScope(task, implementationScope) {
     (
       lower.includes("build") ||
       lower.includes("package") ||
-      implementationScope.some((path) => ["src/index.js", "src/mcp.js", "src/planner.js"].includes(path))
+      implementationScope.some((path) =>
+        [
+          "src/index.js",
+          "src/mcp.js",
+          "src/planner.js",
+          "src/state.js",
+          "src/state-public.js",
+          "src/state-runtime.js"
+        ].includes(path)
+      )
     )
   ) {
     candidates.push("scripts/build.mjs");
