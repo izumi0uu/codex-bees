@@ -1,60 +1,20 @@
-import {
-  leaderAssignmentDispatchBundleSurface,
-  leaderAssignmentDispatchPackSurface,
-  leaderAssignmentDispatchSurface,
-  leaderAssignmentLaunchPlanSurface,
-  leaderAssignmentsSurface,
-  leaderQueueSurface,
-  leaderWorkspaceSurface
-} from "./state-runtime-entry-surfaces.js";
+import { createStateRuntimeLeaderDispatchEntryPoints } from "./state-public-runtime-leader-dispatch-entrypoints.js";
+import { createStateRuntimeLeaderWorkspaceEntryPoints } from "./state-public-runtime-leader-workspace-entrypoints.js";
 
 export function createStateRuntimeLeaderEntryPoints(api) {
-  function leaderWorkspace(input = {}) {
-    return leaderWorkspaceSurface(input, {
-      listSwarmOverviews: api.listSwarmOverviews,
-      swarmBrief: api.swarmBrief,
-      swarmBundle: api.swarmBundle
-    });
-  }
-
-  function leaderQueue(input = {}) {
-    return leaderQueueSurface(input, {
-      leaderWorkspace
-    });
-  }
-
-  function leaderAssignments(input = {}) {
-    return leaderAssignmentsSurface(input, {
-      leaderWorkspace,
-      swarmBrief: api.swarmBrief,
-      taskBrief: api.taskBrief
-    });
-  }
-
-  function leaderAssignmentDispatch(input = {}) {
-    return leaderAssignmentDispatchSurface(input, {
-      leaderAssignments
-    });
-  }
-
-  function leaderAssignmentDispatchPack(input = {}) {
-    return leaderAssignmentDispatchPackSurface(input, {
-      leaderAssignments,
-      leaderAssignmentDispatch
-    });
-  }
-
-  function leaderAssignmentDispatchBundle(input = {}) {
-    return leaderAssignmentDispatchBundleSurface(input, {
-      leaderAssignmentDispatchPack
-    });
-  }
-
-  function leaderAssignmentLaunchPlan(input = {}) {
-    return leaderAssignmentLaunchPlanSurface(input, {
-      leaderAssignmentDispatchBundle
-    });
-  }
+  const runtimeLeaderWorkspace = createStateRuntimeLeaderWorkspaceEntryPoints(api);
+  const runtimeLeaderDispatch = createStateRuntimeLeaderDispatchEntryPoints(runtimeLeaderWorkspace);
+  const {
+    leaderQueue,
+    leaderAssignments,
+    leaderWorkspace
+  } = runtimeLeaderWorkspace;
+  const {
+    leaderAssignmentDispatch,
+    leaderAssignmentDispatchPack,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  } = runtimeLeaderDispatch;
 
   return {
     leaderQueue,
