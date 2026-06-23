@@ -83,6 +83,14 @@ function uniquePaths(paths) {
   return Array.from(new Set(paths.filter(Boolean)));
 }
 
+function fallbackPrimaryScope() {
+  return uniquePaths([
+    fileExists("README.md") ? "README.md" : null,
+    directoryExists("src") ? "src" : null,
+    directoryExists("scripts") ? "scripts" : null
+  ]);
+}
+
 function includesAny(text, terms) {
   return terms.some((term) => text.includes(term));
 }
@@ -94,7 +102,14 @@ function touchesPublicRuntime(paths) {
 function choosePrimaryScope(task) {
   const lower = task.toLowerCase();
 
-  if (lower.includes("readme") || lower.includes("docs") || lower.includes("documentation")) {
+  if (
+    lower.includes("readme") ||
+    lower.includes("docs") ||
+    lower.includes("documentation") ||
+    lower.includes("guide") ||
+    lower.includes("notes") ||
+    lower.includes("changelog")
+  ) {
     return ["README.md"];
   }
 
@@ -140,9 +155,9 @@ function choosePrimaryScope(task) {
     return scriptFilePaths();
   }
 
-  const srcFiles = sourceFilePaths();
-  if (srcFiles.length > 0) {
-    return srcFiles;
+  const fallbackScope = fallbackPrimaryScope();
+  if (fallbackScope.length > 0) {
+    return fallbackScope;
   }
 
   return baseRepoPaths();
@@ -204,7 +219,7 @@ function chooseDocumentationScope(implementationScope) {
 
 function inferPlannerIntent(task, implementationScope = choosePrimaryScope(task)) {
   const lower = task.toLowerCase();
-  const docs = includesAny(lower, ["readme", "docs", "documentation", "guide", "example", "help"]);
+  const docs = includesAny(lower, ["readme", "docs", "documentation", "guide", "notes", "changelog", "example", "help"]);
   const runtime = includesAny(lower, ["runtime", "cli", "command", "mcp", "tool"]);
   const coordination = includesAny(lower, [
     "task",

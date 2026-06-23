@@ -4423,6 +4423,26 @@ if (
   console.error("[smoke:plan-docs-cli] expected single reviewer lane for docs-only work");
   process.exit(1);
 }
+const plannedNotesTaskCli = JSON.parse(
+  run("plan-notes-cli", ["./src/index.js", "plan", "--task", "Prepare release cutover notes"]).stdout
+);
+if (
+  plannedNotesTaskCli.kind !== "task_plan" ||
+  plannedNotesTaskCli.recommendedReason !== "single_lane_plan_ready" ||
+  plannedNotesTaskCli.evidence?.strategy?.taskClass !== "docs-only" ||
+  plannedNotesTaskCli.evidence?.strategy?.laneStrategy !== "documentation" ||
+  plannedNotesTaskCli.evidence?.scopeHints?.primary?.[0] !== "README.md" ||
+  plannedNotesTaskCli.orchestration?.executionShape !== "solo-lane" ||
+  plannedNotesTaskCli.orchestration?.maxWorkers !== 1 ||
+  plannedNotesTaskCli.orchestration?.waveCount !== 1 ||
+  !Array.isArray(plannedNotesTaskCli.lanes) ||
+  plannedNotesTaskCli.lanes.length !== 1 ||
+  plannedNotesTaskCli.lanes[0]?.owner !== "reviewer" ||
+  plannedNotesTaskCli.lanes[0]?.purpose !== "documentation"
+) {
+  console.error("[smoke:plan-notes-cli] expected release notes work to stay on the documentation lane");
+  process.exit(1);
+}
 
 const planMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
