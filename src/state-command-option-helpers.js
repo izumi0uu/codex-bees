@@ -9,6 +9,48 @@ export function cloneEntries(entries = []) {
   return entries.map((entry) => ({ ...entry }));
 }
 
+export function findOptionEntry(entries, option) {
+  if (!option) {
+    return undefined;
+  }
+
+  return entries.find((entry) => entry.option === option);
+}
+
+export function createOptionCatalogView(kind, options, {
+  loadedReason,
+  emptyReason
+}) {
+  return {
+    kind,
+    recommendedReason: options.length > 0 ? loadedReason : emptyReason,
+    counts: {
+      totalOptions: options.length
+    },
+    options
+  };
+}
+
+export function createResolvedOptionView(kind, option, matchedEntry, {
+  loadedReason,
+  missingReason,
+  text
+} = {}) {
+  const view = {
+    kind,
+    recommendedReason: matchedEntry ? loadedReason : missingReason,
+    option: option ?? null,
+    matchedOption: matchedEntry?.option ?? null,
+    entry: matchedEntry ?? null
+  };
+
+  if (text !== undefined) {
+    view.text = text;
+  }
+
+  return view;
+}
+
 export function formatOptionLines(options) {
   if (options.length === 0) {
     return [];

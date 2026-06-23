@@ -1,6 +1,9 @@
 export {
   COMMAND_ALIASES,
   cloneEntries,
+  createOptionCatalogView,
+  createResolvedOptionView,
+  findOptionEntry,
   formatOptionLines,
   getCommandAliases,
   normalizeCommand,

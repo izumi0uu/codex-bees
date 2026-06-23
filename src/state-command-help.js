@@ -15,6 +15,7 @@ import {
   normalizeCommand,
   pushCommandHelpSection
 } from "./state-command-core.js";
+import { createResolvedOptionView } from "./state-command-options.js";
 
 export function getCommandHelpView(command) {
   const matchedEntry = getCommandCatalogEntry(command);
@@ -59,15 +60,11 @@ export function renderInitHelpText() {
 export function getInitHelpView(option) {
   const matchedOption = getInitCommandCatalogEntry(option);
   const text = renderInitHelpText();
-
-  return {
-    kind: "init_help_view",
-    recommendedReason: matchedOption ? "init_help_loaded" : "init_help_fallback_loaded",
-    option: option ?? null,
-    matchedOption: matchedOption?.option ?? null,
-    text,
-    entry: matchedOption ?? null
-  };
+  return createResolvedOptionView("init_help_view", option, matchedOption, {
+    loadedReason: "init_help_loaded",
+    missingReason: "init_help_fallback_loaded",
+    text
+  });
 }
 
 export function renderCommandHelpText(command) {
