@@ -1,3 +1,8 @@
+import {
+  buildRuntimeTaskIdentityFields,
+  buildRuntimeTaskRecommendationFields
+} from "./state-runtime-task-entry-helpers.js";
+
 export function isRuntimeRecoveryTask(task) {
   if (task.queueStatus === "blocked" || task.queueStatus === "released") {
     return true;
@@ -25,21 +30,12 @@ export function buildRuntimeRecoveryEntrySummary(task) {
 export function buildRuntimeRecoveryEntry(task, taskBrief) {
   const brief = taskBrief(task.id);
   return {
-    taskId: task.id,
-    title: task.title,
+    ...buildRuntimeTaskIdentityFields(task),
     queueStatus: task.queueStatus,
     reviewOutcome: task.reviewOutcome,
-    owner: task.owner,
-    verifier: task.verifier,
     claimedBy: task.claimedBy,
-    swarmId: task.swarmId,
-    lane: task.lane,
-    lanePurpose: task.lanePurpose ?? null,
     recoveryType: runtimeRecoveryType(task),
-    recommendedNextActor: brief?.recommendedNextActor ?? null,
-    recommendedNextAction: brief?.recommendedNextAction ?? null,
-    recommendedCommands: brief?.recommendedCommands ?? [],
-    taskBrief: brief,
+    ...buildRuntimeTaskRecommendationFields(brief),
     updatedAt: task.updatedAt ?? null,
     summary: buildRuntimeRecoveryEntrySummary(task)
   };

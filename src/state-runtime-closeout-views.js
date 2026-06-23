@@ -1,3 +1,5 @@
+import { buildRuntimeTaskIdentityFields } from "./state-runtime-task-entry-helpers.js";
+
 export function buildRuntimeCloseoutTaskSummary(task) {
   if (task.reviewOutcome === "approved") {
     return `Task ${task.id} was approved and is ready for final archive.`;
@@ -8,13 +10,7 @@ export function buildRuntimeCloseoutTaskEntry(task, taskReport) {
   const report = taskReport(task.id);
   return {
     kind: "task",
-    taskId: task.id,
-    title: task.title,
-    owner: task.owner,
-    verifier: task.verifier,
-    swarmId: task.swarmId,
-    lane: task.lane,
-    lanePurpose: task.lanePurpose ?? null,
+    ...buildRuntimeTaskIdentityFields(task),
     reviewOutcome: task.reviewOutcome,
     reviewedBy: task.reviewedBy,
     reviewedAt: task.reviewedAt,

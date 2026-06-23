@@ -1,3 +1,8 @@
+import {
+  buildRuntimeTaskIdentityFields,
+  buildRuntimeTaskRecommendationFields
+} from "./state-runtime-task-entry-helpers.js";
+
 export function runtimeHandoffType(task) {
   if (task.queueStatus === "ready_for_review") {
     return "verifier_decision";
@@ -22,20 +27,12 @@ export function buildRuntimeHandoffEntrySummary(task) {
 export function buildRuntimeHandoffEntry(task, taskBrief) {
   const brief = taskBrief(task.id);
   return {
-    taskId: task.id,
-    title: task.title,
+    ...buildRuntimeTaskIdentityFields(task),
     queueStatus: task.queueStatus,
     handoffType: runtimeHandoffType(task),
-    owner: task.owner,
-    verifier: task.verifier,
     claimedBy: task.claimedBy,
-    swarmId: task.swarmId,
-    lane: task.lane,
-    lanePurpose: task.lanePurpose ?? null,
     actor: brief?.recommendedNextActor ?? null,
-    recommendedNextAction: brief?.recommendedNextAction ?? null,
-    recommendedCommands: brief?.recommendedCommands ?? [],
-    taskBrief: brief,
+    ...buildRuntimeTaskRecommendationFields(brief),
     updatedAt: task.updatedAt ?? null,
     summary: buildRuntimeHandoffEntrySummary(task)
   };
