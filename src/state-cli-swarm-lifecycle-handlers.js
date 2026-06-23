@@ -1,4 +1,4 @@
-import { exit, readJsonOption, readOption, readPositiveIntegerOption, requireOption, write, writeErr } from "./state-cli-helpers.js";
+import { readJsonOption, readOption, readPositiveIntegerOption, requireOption } from "./state-cli-helpers.js";
 import {
   activateSwarm,
   archiveSwarmMutation,
@@ -13,6 +13,8 @@ import {
   syncSwarmStatus,
   updateSwarmMutation
 } from "./state-runtime.js";
+import { writeMutationView } from "./state-cli-mutation-writers.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function requireSwarmId() {
   return requireOption("--id");
@@ -36,30 +38,18 @@ function readSwarmOwnerNotesOptions() {
   };
 }
 
-function writeSwarmMutation(label, result, { id, missingLabel = "swarm", wrap = true } = {}) {
-  if (!result) {
-    writeErr(`Unknown ${missingLabel} id: ${id}\n`);
-    exit(1);
-  }
-  if (result.error) {
-    writeErr(`${result.error}\n`);
-    exit(1);
-  }
-  write(JSON.stringify(wrap ? { [label]: result } : result, null, 2) + "\n");
-}
-
 function handleSwarmInit() {
   const objective = requireOption("--objective");
   const swarm = initSwarmMutation({
     objective,
     ...readSwarmDefinitionOptions()
   });
-  write(JSON.stringify({ created: swarm }, null, 2) + "\n");
+  writeNamedView("created", swarm);
 }
 
 function handleSwarmArchive() {
   const id = requireSwarmId();
-  writeSwarmMutation("archived", archiveSwarmMutation({
+  writeMutationView("archived", archiveSwarmMutation({
     id,
     archivedBy: readOption("--by"),
     notes: readOption("--notes")
@@ -68,7 +58,7 @@ function handleSwarmArchive() {
 
 function handleSwarmRestore() {
   const id = requireSwarmId();
-  writeSwarmMutation("restored", restoreSwarmMutation({
+  writeMutationView("restored", restoreSwarmMutation({
     id,
     restoredBy: readOption("--by"),
     notes: readOption("--notes")
@@ -77,7 +67,7 @@ function handleSwarmRestore() {
 
 function handleSwarmReopen() {
   const id = requireSwarmId();
-  writeSwarmMutation("reopened", reopenSwarmMutation({
+  writeMutationView("reopened", reopenSwarmMutation({
     id,
     reopenedBy: readOption("--by"),
     notes: readOption("--notes")
@@ -86,7 +76,7 @@ function handleSwarmReopen() {
 
 function handleSwarmUpdate() {
   const id = requireSwarmId();
-  writeSwarmMutation("updated", updateSwarmMutation({
+  writeMutationView("updated", updateSwarmMutation({
     id,
     objective: readOption("--objective"),
     ...readSwarmDefinitionOptions()
@@ -96,7 +86,7 @@ function handleSwarmUpdate() {
 function handleSwarmDispatch() {
   const id = requireSwarmId();
   const claimedBy = requireOption("--by");
-  writeSwarmMutation("dispatched", dispatchSwarmLane({
+  writeMutationView("dispatched", dispatchSwarmLane({
     id,
     claimedBy,
     owner: readOption("--owner")
@@ -105,12 +95,12 @@ function handleSwarmDispatch() {
 
 function handleSwarmSync() {
   const id = requireSwarmId();
-  writeSwarmMutation("synced", syncSwarmStatus(id), { id });
+  writeMutationView("synced", syncSwarmStatus(id), { id });
 }
 
 function handleSwarmStart() {
   const id = requireSwarmId();
-  writeSwarmMutation("activated", activateSwarm({
+  writeMutationView("activated", activateSwarm({
     id,
     ...readSwarmOwnerNotesOptions()
   }), { id });
@@ -118,7 +108,7 @@ function handleSwarmStart() {
 
 function handleSwarmBlock() {
   const id = requireSwarmId();
-  writeSwarmMutation("blocked", blockSwarm({
+  writeMutationView("blocked", blockSwarm({
     id,
     ...readSwarmOwnerNotesOptions()
   }), { id });
@@ -126,7 +116,7 @@ function handleSwarmBlock() {
 
 function handleSwarmDone() {
   const id = requireSwarmId();
-  writeSwarmMutation("completed", completeSwarm({
+  writeMutationView("completed", completeSwarm({
     id,
     ...readSwarmOwnerNotesOptions()
   }), { id });
@@ -134,7 +124,7 @@ function handleSwarmDone() {
 
 function handleSwarmCancel() {
   const id = requireSwarmId();
-  writeSwarmMutation("cancelled", cancelSwarm({
+  writeMutationView("cancelled", cancelSwarm({
     id,
     ...readSwarmOwnerNotesOptions()
   }), { id });
@@ -142,7 +132,7 @@ function handleSwarmCancel() {
 
 function handleSwarmQueue() {
   const id = requireSwarmId();
-  writeSwarmMutation(null, queueSwarmTasks({ id }), { id, wrap: false });
+  writeMutationView(null, queueSwarmTasks({ id }), { id, wrap: false });
 }
 
 export {

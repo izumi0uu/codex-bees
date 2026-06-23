@@ -16,7 +16,9 @@ import {
   updateTaskMutation,
   validateTask
 } from "./state-runtime.js";
-import { exit, readListOption, readOption, requireOption, write, writeErr } from "./state-cli-helpers.js";
+import { exit, readListOption, readOption, requireOption, writeErr } from "./state-cli-helpers.js";
+import { writeMutationView } from "./state-cli-mutation-writers.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function requireTaskId() {
   return requireOption("--id");
@@ -55,30 +57,18 @@ function readTaskReviewOptions() {
   };
 }
 
-function writeTaskMutation(label, result, { id, missingLabel = "task" } = {}) {
-  if (!result) {
-    writeErr(`Unknown ${missingLabel} id: ${id}\n`);
-    exit(1);
-  }
-  if (result.error) {
-    writeErr(`${result.error}\n`);
-    exit(1);
-  }
-  write(JSON.stringify({ [label]: result }, null, 2) + "\n");
-}
-
 function handleTaskAdd() {
   const title = requireOption("--title");
   const task = addTaskLifecycle({
     title,
     ...readTaskDefinitionOptions()
   });
-  write(JSON.stringify({ created: task }, null, 2) + "\n");
+  writeNamedView("created", task);
 }
 
 function handleTaskUpdate() {
   const id = requireTaskId();
-  writeTaskMutation("updated", updateTaskMutation({
+  writeMutationView("updated", updateTaskMutation({
     id,
     title: readOption("--title"),
     ...readTaskDefinitionOptions()
@@ -87,7 +77,7 @@ function handleTaskUpdate() {
 
 function handleTaskArchive() {
   const id = requireTaskId();
-  writeTaskMutation("archived", archiveTaskMutation({
+  writeMutationView("archived", archiveTaskMutation({
     id,
     archivedBy: readOption("--by"),
     notes: readOption("--notes")
@@ -96,7 +86,7 @@ function handleTaskArchive() {
 
 function handleTaskRestore() {
   const id = requireTaskId();
-  writeTaskMutation("restored", restoreTaskMutation({
+  writeMutationView("restored", restoreTaskMutation({
     id,
     restoredBy: readOption("--by"),
     notes: readOption("--notes")
@@ -105,7 +95,7 @@ function handleTaskRestore() {
 
 function handleTaskReopen() {
   const id = requireTaskId();
-  writeTaskMutation("reopened", reopenTaskMutation({
+  writeMutationView("reopened", reopenTaskMutation({
     id,
     reopenedBy: readOption("--by"),
     notes: readOption("--notes")
@@ -114,7 +104,7 @@ function handleTaskReopen() {
 
 function handleTaskAnnotate() {
   const id = requireTaskId();
-  writeTaskMutation("annotated", annotateTaskMutation({
+  writeMutationView("annotated", annotateTaskMutation({
     id,
     actor: readOption("--by"),
     kind: readOption("--kind"),
@@ -127,12 +117,12 @@ function handleTaskAssignmentPickup() {
     ...readTaskWorkerOptions(),
     taskId: readOption("--task")
   });
-  write(JSON.stringify({ assignmentPickup }, null, 2) + "\n");
+  writeNamedView("assignmentPickup", assignmentPickup);
 }
 
 function handleTaskPickup() {
   const pickup = taskPickup(readTaskWorkerOptions());
-  write(JSON.stringify({ pickup }, null, 2) + "\n");
+  writeNamedView("pickup", pickup);
 }
 
 function handleTaskCheck() {
@@ -142,48 +132,48 @@ function handleTaskCheck() {
     writeErr(`Unknown task id: ${id}\n`);
     exit(1);
   }
-  write(JSON.stringify({ validation }, null, 2) + "\n");
+  writeNamedView("validation", validation);
 }
 
 function handleTaskClaim() {
   const id = requireTaskId();
   const claimedBy = requireOption("--by");
-  writeTaskMutation("claimed", claimTaskLifecycle({ id, claimedBy }), { id });
+  writeMutationView("claimed", claimTaskLifecycle({ id, claimedBy }), { id });
 }
 
 function handleTaskRelease() {
   const id = requireTaskId();
   const claimedBy = readOption("--by");
-  writeTaskMutation("released", releaseTaskLifecycle({ id, claimedBy }), { id });
+  writeMutationView("released", releaseTaskLifecycle({ id, claimedBy }), { id });
 }
 
 function handleTaskBlock() {
   const id = requireTaskId();
   const claimedBy = readOption("--by");
   const notes = readOption("--notes");
-  writeTaskMutation("blocked", blockTaskLifecycle({ id, claimedBy, notes }), { id });
+  writeMutationView("blocked", blockTaskLifecycle({ id, claimedBy, notes }), { id });
 }
 
 function handleTaskReview() {
   const id = requireTaskId();
   const claimedBy = readOption("--by");
   const notes = readOption("--notes");
-  writeTaskMutation("readyForReview", markTaskReadyForReviewLifecycle({ id, claimedBy, notes }), { id });
+  writeMutationView("readyForReview", markTaskReadyForReviewLifecycle({ id, claimedBy, notes }), { id });
 }
 
 function handleTaskDone() {
   const id = requireTaskId();
-  writeTaskMutation("completed", completeTaskLifecycle({ id, ...readTaskReviewOptions() }), { id });
+  writeMutationView("completed", completeTaskLifecycle({ id, ...readTaskReviewOptions() }), { id });
 }
 
 function handleTaskApprove() {
   const id = requireTaskId();
-  writeTaskMutation("approved", approveTaskLifecycle({ id, ...readTaskReviewOptions() }), { id });
+  writeMutationView("approved", approveTaskLifecycle({ id, ...readTaskReviewOptions() }), { id });
 }
 
 function handleTaskReject() {
   const id = requireTaskId();
-  writeTaskMutation("rejected", rejectTaskLifecycle({
+  writeMutationView("rejected", rejectTaskLifecycle({
     id,
     nextQueueStatus: readOption("--status"),
     ...readTaskReviewOptions()

@@ -1,4 +1,5 @@
-import { readJsonOption, readOption, write } from "./state-cli-helpers.js";
+import { readJsonOption, readOption } from "./state-cli-helpers.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 import {
   leaderAssignmentDispatch,
   leaderAssignmentDispatchBundle,
@@ -31,35 +32,35 @@ function readLeaderAssignmentOptions() {
 
 export function handleLeaderWorkspace() {
   const workspace = leaderWorkspace(readLeaderSurfaceOptions());
-  write(JSON.stringify({ workspace }, null, 2) + "\n");
+  writeNamedView("workspace", workspace);
 }
 
 export function handleLeaderQueue() {
   const queue = leaderQueue(readLeaderSurfaceOptions());
-  write(JSON.stringify({ queue }, null, 2) + "\n");
+  writeNamedView("queue", queue);
 }
 
 export function handleLeaderAssignments() {
   const assignments = leaderAssignments(readLeaderSurfaceOptions());
-  write(JSON.stringify({ assignments }, null, 2) + "\n");
+  writeNamedView("assignments", assignments);
 }
 
 export function handleLeaderAssignmentDispatch() {
   const dispatch = leaderAssignmentDispatch(readLeaderAssignmentOptions());
-  write(JSON.stringify({ assignmentDispatch: dispatch }, null, 2) + "\n");
+  writeNamedView("assignmentDispatch", dispatch);
 }
 
 export function handleLeaderAssignmentDispatchPack() {
   const dispatchPack = leaderAssignmentDispatchPack(readLeaderAssignmentOptions());
-  write(JSON.stringify({ assignmentDispatchPack: dispatchPack }, null, 2) + "\n");
+  writeNamedView("assignmentDispatchPack", dispatchPack);
 }
 
 export function handleLeaderAssignmentDispatchBundle() {
   const dispatchBundle = leaderAssignmentDispatchBundle(readLeaderAssignmentOptions());
-  write(JSON.stringify({ assignmentDispatchBundle: dispatchBundle }, null, 2) + "\n");
+  writeNamedView("assignmentDispatchBundle", dispatchBundle);
 }
 
 export function handleLeaderAssignmentLaunchPlan() {
   const launchPlan = leaderAssignmentLaunchPlan(readLeaderAssignmentOptions());
-  write(JSON.stringify({ assignmentLaunchPlan: launchPlan }, null, 2) + "\n");
+  writeNamedView("assignmentLaunchPlan", launchPlan);
 }

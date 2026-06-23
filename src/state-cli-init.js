@@ -2,6 +2,7 @@ import { argv } from "./state-cli-helpers.js";
 import { renderInitHelpText } from "./commands.js";
 import { initWorkspace, previewWorkspaceInit } from "./init.js";
 import { readOption, write } from "./state-cli-helpers.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function handleInit() {
   if (argv.includes("--help") || argv.includes("help")) {
@@ -14,11 +15,11 @@ function handleInit() {
   const targetDirectory = readOption("--dir") ?? readOption("--target") ?? undefined;
 
   if (preview) {
-    write(JSON.stringify({ init: previewWorkspaceInit({ targetDirectory, force }) }, null, 2) + "\n");
+    writeNamedView("init", previewWorkspaceInit({ targetDirectory, force }));
     return;
   }
 
-  write(JSON.stringify({ init: initWorkspace({ targetDirectory, force }) }, null, 2) + "\n");
+  writeNamedView("init", initWorkspace({ targetDirectory, force }));
 }
 
 export { handleInit };

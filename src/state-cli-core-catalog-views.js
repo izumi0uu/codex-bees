@@ -1,4 +1,4 @@
-import { requireOption, write } from "./state-cli-helpers.js";
+import { requireOption } from "./state-cli-helpers.js";
 import {
   getAgentCatalogDocumentView,
   getAgentCatalogEntryView,
@@ -23,88 +23,89 @@ import {
   getMcpToolView,
   getToolCatalogView
 } from "./mcp.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function printToolsView() {
-  write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
+  writeNamedView("tools", getToolCatalogView());
 }
 
 function printCommandView() {
   const name = requireOption("--name");
-  write(JSON.stringify({ command: getCommandCatalogEntryView(name) }, null, 2) + "\n");
+  writeNamedView("command", getCommandCatalogEntryView(name));
 }
 
 function printCommandsView() {
-  write(JSON.stringify({ commands: getCommandCatalogView() }, null, 2) + "\n");
+  writeNamedView("commands", getCommandCatalogView());
 }
 
 function printCommandHelpView() {
   const name = requireOption("--name");
-  write(JSON.stringify({ help: getCommandHelpView(name) }, null, 2) + "\n");
+  writeNamedView("help", getCommandHelpView(name));
 }
 
 function printInitOptionView() {
   const option = requireOption("--option");
-  write(JSON.stringify({ option: getInitCommandCatalogEntryView(option) }, null, 2) + "\n");
+  writeNamedView("option", getInitCommandCatalogEntryView(option));
 }
 
 function printInitOptionsView() {
-  write(JSON.stringify({ options: getInitCommandCatalogView() }, null, 2) + "\n");
+  writeNamedView("options", getInitCommandCatalogView());
 }
 
 function printInitHelpView() {
   const option = requireOption("--option");
-  write(JSON.stringify({ help: getInitHelpView(option) }, null, 2) + "\n");
+  writeNamedView("help", getInitHelpView(option));
 }
 
 function printMcpOptionsView() {
-  write(JSON.stringify({ options: getMcpCommandCatalogView() }, null, 2) + "\n");
+  writeNamedView("options", getMcpCommandCatalogView());
 }
 
 function printMcpOptionView() {
   const option = requireOption("--option");
-  write(JSON.stringify({ option: getMcpCommandCatalogEntryView(option) }, null, 2) + "\n");
+  writeNamedView("option", getMcpCommandCatalogEntryView(option));
 }
 
 function printMcpHelpView() {
   const option = requireOption("--option");
-  write(JSON.stringify({ help: getMcpHelpView(option) }, null, 2) + "\n");
+  writeNamedView("help", getMcpHelpView(option));
 }
 
 function printToolView() {
   const name = requireOption("--name");
-  write(JSON.stringify({ tool: getMcpToolView(name) }, null, 2) + "\n");
+  writeNamedView("tool", getMcpToolView(name));
 }
 
 function printCatalog() {
-  write(JSON.stringify({ catalog: getRuntimeCatalogView() }, null, 2) + "\n");
+  writeNamedView("catalog", getRuntimeCatalogView());
 }
 
 function printCatalogAgentsView() {
-  write(JSON.stringify({ agents: getAgentCatalogListView() }, null, 2) + "\n");
+  writeNamedView("agents", getAgentCatalogListView());
 }
 
 function printCatalogAgentView() {
   const id = requireOption("--id");
-  write(JSON.stringify({ agent: getAgentCatalogEntryView(id) }, null, 2) + "\n");
+  writeNamedView("agent", getAgentCatalogEntryView(id));
 }
 
 function printCatalogAgentDocumentView() {
   const id = requireOption("--id");
-  write(JSON.stringify({ agent: getAgentCatalogDocumentView(id) }, null, 2) + "\n");
+  writeNamedView("agent", getAgentCatalogDocumentView(id));
 }
 
 function printCatalogSkillsView() {
-  write(JSON.stringify({ skills: getSkillCatalogListView() }, null, 2) + "\n");
+  writeNamedView("skills", getSkillCatalogListView());
 }
 
 function printCatalogSkillView() {
   const id = requireOption("--id");
-  write(JSON.stringify({ skill: getSkillCatalogEntryView(id) }, null, 2) + "\n");
+  writeNamedView("skill", getSkillCatalogEntryView(id));
 }
 
 function printCatalogSkillDocumentView() {
   const id = requireOption("--id");
-  write(JSON.stringify({ skill: getSkillCatalogDocumentView(id) }, null, 2) + "\n");
+  writeNamedView("skill", getSkillCatalogDocumentView(id));
 }
 
 export {

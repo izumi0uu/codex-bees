@@ -1,28 +1,29 @@
-import { requireOption, write } from "./state-cli-helpers.js";
+import { requireOption } from "./state-cli-helpers.js";
 import { getPlannerProfileView, getPlannerProfilesView, planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import { addTasks } from "./state-runtime.js";
 import { readPlannerOptions } from "./state-cli-plan-options.js";
+import { writeNamedView, writeView } from "./state-cli-view-writers.js";
 
 export function handlePlanProfiles() {
-  write(JSON.stringify({ profiles: getPlannerProfilesView(readPlannerOptions()) }, null, 2) + "\n");
+  writeNamedView("profiles", getPlannerProfilesView(readPlannerOptions()));
 }
 
 export function handlePlanProfile() {
   const profile = requireOption("--profile");
-  write(JSON.stringify({ profile: getPlannerProfileView(profile, readPlannerOptions()) }, null, 2) + "\n");
+  writeNamedView("profile", getPlannerProfileView(profile, readPlannerOptions()));
 }
 
 export function handlePlan() {
   const task = requireOption("--task");
-  write(JSON.stringify(planTask(task, readPlannerOptions()), null, 2) + "\n");
+  writeView(planTask(task, readPlannerOptions()));
 }
 
 export function handlePlanQueue() {
   const task = requireOption("--task");
-  write(JSON.stringify(queueTasksFromPlan(task, addTasks, readPlannerOptions()), null, 2) + "\n");
+  writeView(queueTasksFromPlan(task, addTasks, readPlannerOptions()));
 }
 
 export function handlePlanSwarm() {
   const task = requireOption("--task");
-  write(JSON.stringify(planSwarm(task, readPlannerOptions()), null, 2) + "\n");
+  writeView(planSwarm(task, readPlannerOptions()));
 }
