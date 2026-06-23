@@ -147,6 +147,7 @@ function runInstalledTypecheck(label, files) {
 }
 
 run("build-dist", ["./scripts/build.mjs"]);
+run("runtime-pack-probes", ["./scripts/runtime-pack-probes.mjs"]);
 rmSync(".codex-bees", { recursive: true, force: true });
 
 const checks = [
