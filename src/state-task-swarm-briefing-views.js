@@ -1,5 +1,6 @@
 import { recommendTaskAction } from "./state-task-core-views.js";
 import { compareLanePurposes, pickPriorityEntry } from "./state-queue-views.js";
+import { summarizePlannerProvenance } from "./planner-provenance.js";
 import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
 
 export function buildSwarmBriefView(
@@ -67,6 +68,7 @@ export function buildSwarmBriefView(
     kind: "swarm_execution_brief",
     recommendedReason,
     swarm: overview.swarm,
+    planning: summarizePlannerProvenance(overview.swarm.plannerProvenance),
     derivedStatus: overview.derivedStatus,
     statusAligned: overview.statusAligned,
     counts: overview.counts,

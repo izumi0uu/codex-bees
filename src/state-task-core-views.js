@@ -1,3 +1,4 @@
+import { summarizePlannerProvenance } from "./planner-provenance.js";
 import { summarizeTaskDependencies } from "./state-task-core.js";
 
 export function deriveTaskReportReason(task) {
@@ -132,6 +133,7 @@ export function buildTaskReportView(
       lane: task.lane,
       lanePurpose: task.lanePurpose ?? null
     },
+    planning: summarizePlannerProvenance(task.plannerProvenance),
     closure: {
       reviewState: deriveReviewState(task),
       reviewedBy: task.reviewedBy,
@@ -241,7 +243,8 @@ export function buildTaskDetailView(
     metadata: {
       hasHistory: (task.history ?? []).length > 0,
       hasAnnotations: (task.annotations ?? []).length > 0,
-      reviewState: deriveReviewState(task)
+      reviewState: deriveReviewState(task),
+      plannerProvenance: summarizePlannerProvenance(task.plannerProvenance)
     },
     task
   };
@@ -321,6 +324,7 @@ export function buildTaskBriefView(
     recommendedReason,
     task,
     objective: task.objective ?? task.title,
+    planning: summarizePlannerProvenance(task.plannerProvenance),
     roles: {
       owner: describeRole(task.owner, catalog),
       verifier: describeRole(task.verifier, catalog)

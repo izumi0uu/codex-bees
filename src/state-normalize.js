@@ -1,4 +1,5 @@
 import { VALID_QUEUE_STATUSES, VALID_SWARM_STATUSES } from "./state-rules.js";
+import { buildPlannerProvenance } from "./planner-provenance.js";
 
 export const STATE_VERSION = 4;
 
@@ -28,6 +29,7 @@ export function normalizeTask(task) {
     lane: task.lane ?? null,
     lanePurpose: task.lanePurpose ?? null,
     swarmId: task.swarmId ?? null,
+    plannerProvenance: buildPlannerProvenance(task.plannerProvenance),
     scope: Array.isArray(task.scope) ? task.scope : null,
     dependsOn: Array.isArray(task.dependsOn) ? Array.from(new Set(task.dependsOn.filter(Boolean))) : null,
     acceptance: Array.isArray(task.acceptance) ? task.acceptance : null,
@@ -130,6 +132,7 @@ export function normalizeSwarm(swarm) {
     waves: Array.isArray(swarm.waves) ? swarm.waves : null,
     owner: swarm.owner ?? null,
     laneSource: swarm.laneSource ?? "manual",
+    plannerProvenance: buildPlannerProvenance(swarm.plannerProvenance),
     lanes: Array.isArray(swarm.lanes)
       ? swarm.lanes.map((lane, index) => normalizeSwarmLane(lane, index))
       : [],

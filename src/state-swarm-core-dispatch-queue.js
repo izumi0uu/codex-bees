@@ -133,6 +133,7 @@ export function buildQueuedSwarmLaneTaskInput(current, lane) {
     lane: lane.lane,
     lanePurpose: lane.purpose ?? null,
     swarmId: current.id,
+    plannerProvenance: current.plannerProvenance ?? null,
     scope: lane.scope,
     dependsOn: lane.dependsOn ?? null,
     acceptance: lane.acceptance,

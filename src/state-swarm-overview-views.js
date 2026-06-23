@@ -1,3 +1,4 @@
+import { summarizePlannerProvenance } from "./planner-provenance.js";
 import { annotateTasksWithDependencyState } from "./state-task-core.js";
 import { pickPriorityEntry } from "./state-queue-views.js";
 
@@ -122,6 +123,7 @@ export function buildSwarmOverviewView(
     kind: "swarm_overview",
     recommendedReason: overview.recommendedReason,
     swarm: normalizedSwarm,
+    planning: summarizePlannerProvenance(normalizedSwarm.plannerProvenance),
     counts: overview.counts,
     lanes: overview.lanes,
     tasks: overview.tasks,
@@ -176,7 +178,8 @@ export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
       readyToComplete: overview?.readyToComplete ?? false,
       dispatchableCount: overview?.dispatchableCount ?? 0,
       hasHistory: history.length > 0,
-      historyEntries: history.length
+      historyEntries: history.length,
+      plannerProvenance: summarizePlannerProvenance(swarm.plannerProvenance)
     },
     swarm
   };

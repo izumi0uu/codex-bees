@@ -3,6 +3,7 @@ import {
   normalizeSwarm,
   normalizeTask
 } from "./state-normalize.js";
+import { buildPlannerProvenance } from "./planner-provenance.js";
 
 export function buildTask(input, nextId) {
   return normalizeTask({
@@ -16,6 +17,7 @@ export function buildTask(input, nextId) {
     lane: input.lane ?? null,
     lanePurpose: input.lanePurpose ?? null,
     swarmId: input.swarmId ?? null,
+    plannerProvenance: buildPlannerProvenance(input.plannerProvenance),
     scope: input.scope ?? null,
     dependsOn: input.dependsOn ?? null,
     acceptance: input.acceptance ?? null,
@@ -132,6 +134,7 @@ export function buildSwarm(input, nextSwarmId) {
     waves: input.waves ?? null,
     owner: input.owner ?? null,
     laneSource: input.laneSource ?? "manual",
+    plannerProvenance: buildPlannerProvenance(input.plannerProvenance),
     lanes: input.lanes ?? [],
     history: [
       {

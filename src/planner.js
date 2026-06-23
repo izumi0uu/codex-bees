@@ -2,6 +2,7 @@ import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getRuntimeCatalogPaths, resolveRuntimeCatalogPath } from "./catalog.js";
 import { buildDependencyWaves, deriveExecutionShapeFromWaves, laneDependsOnList } from "./orchestration-waves.js";
+import { buildPlannerProvenance } from "./planner-provenance.js";
 import {
   DEFAULT_PLANNER_PROFILE_ID,
   getPlannerProfileRecord,
@@ -598,6 +599,11 @@ export function planTask(task, options = {}) {
 export function planSwarm(task, options = {}) {
   const plan = planTask(task, options);
   const recommendedReason = plan.lanes.length > 1 ? "multi_lane_swarm_ready" : "single_lane_swarm_ready";
+  const plannerProvenance = buildPlannerProvenance({
+    requestedProfile: plan.requestedProfile,
+    planner: plan.planner,
+    plannerSelection: plan.plannerSelection
+  });
   return {
     kind: "planned_swarm",
     recommendedReason,
@@ -615,6 +621,7 @@ export function planSwarm(task, options = {}) {
       waveCount: plan.orchestration.waveCount,
       waves: plan.orchestration.waves,
       laneSource: plan.planner.laneSource,
+      plannerProvenance,
       lanes: plan.lanes,
       notes: `Generated from plan for: ${task}`
     }
@@ -623,6 +630,11 @@ export function planSwarm(task, options = {}) {
 
 export function queueTasksFromPlan(task, addTasks, options = {}) {
   const plan = planTask(task, options);
+  const plannerProvenance = buildPlannerProvenance({
+    requestedProfile: plan.requestedProfile,
+    planner: plan.planner,
+    plannerSelection: plan.plannerSelection
+  });
   const tasks = plan.lanes.map((lane) => ({
     title: lane.summary,
     status: "todo",
@@ -632,6 +644,7 @@ export function queueTasksFromPlan(task, addTasks, options = {}) {
     objective: task,
     lane: lane.lane,
     lanePurpose: lane.purpose,
+    plannerProvenance,
     scope: lane.scope,
     dependsOn: lane.dependsOn ?? null,
     acceptance: lane.acceptance,

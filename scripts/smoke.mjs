@@ -4595,6 +4595,12 @@ if (
   queuedPlanPayload.orchestration?.maxWorkers !== 1 ||
   !Array.isArray(queuedPlanPayload.created) ||
   queuedPlanPayload.created.length !== 3 ||
+  !queuedPlanPayload.created.every(
+    (task) =>
+      task.plannerProvenance?.requestedProfile === "bounded-local" &&
+      task.plannerProvenance?.planner?.id === "bounded-local" &&
+      task.plannerProvenance?.plannerSelection?.resolvedProfile === "bounded-local"
+  ) ||
   !queuedPlanPayload.created.some((task) => task.lanePurpose === "discovery") ||
   !queuedPlanPayload.created.some((task) => task.lanePurpose === "implementation") ||
   !queuedPlanPayload.created.some((task) => task.lanePurpose === "verification") ||
@@ -4606,9 +4612,32 @@ if (
 if (
   !queuedPlanPayload.created[0].lane ||
   !Array.isArray(queuedPlanPayload.created[0].scope) ||
-  !queuedPlanPayload.created[0].lanePurpose
+  !queuedPlanPayload.created[0].lanePurpose ||
+  queuedPlanPayload.created[0].plannerProvenance?.plannerSelection?.selectionMode !== "heuristic"
 ) {
   console.error("[smoke:queue-plan-cli] expected lane metadata on queued tasks");
+  process.exit(1);
+}
+const queuedPlanTaskDetail = JSON.parse(
+  run("queue-plan-task-get", ["./src/index.js", "task:get", "--id", "task-1"]).stdout
+).task;
+if (
+  queuedPlanTaskDetail?.task?.plannerProvenance?.plannerSelection?.resolvedProfile !== "bounded-local" ||
+  queuedPlanTaskDetail?.metadata?.plannerProvenance?.resolvedProfile !== "bounded-local" ||
+  queuedPlanTaskDetail?.metadata?.plannerProvenance?.sourceKind !== "shipped"
+) {
+  console.error("[smoke:queue-plan-task-get] expected persisted planner provenance on queued task");
+  process.exit(1);
+}
+const queuedPlanTaskBrief = JSON.parse(
+  run("queue-plan-task-brief", ["./src/index.js", "task:brief", "--id", "task-1"]).stdout
+).brief;
+if (
+  queuedPlanTaskBrief?.planning?.resolvedProfile !== "bounded-local" ||
+  queuedPlanTaskBrief?.planning?.selectionMode !== "heuristic" ||
+  queuedPlanTaskBrief?.task?.plannerProvenance?.planner?.id !== "bounded-local"
+) {
+  console.error("[smoke:queue-plan-task-brief] expected planner provenance summary in task brief");
   process.exit(1);
 }
 
@@ -4647,6 +4676,11 @@ if (
   queuePlanPayloadMcp?.orchestration?.executionShape !== "parallel-handoff" ||
   queuePlanPayloadMcp?.orchestration?.waveCount !== 3 ||
   queuePlanPayloadMcp?.orchestration?.maxWorkers !== 2 ||
+  !queuePlanPayloadMcp?.created?.every(
+    (task) =>
+      task.plannerProvenance?.requestedProfile === "bounded-local" &&
+      task.plannerProvenance?.plannerSelection?.resolvedProfile === "bounded-local"
+  ) ||
   !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "discovery") ||
   !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "verification") ||
   !queuePlanPayloadMcp?.created?.some((task) => task.lanePurpose === "documentation")
@@ -4993,6 +5027,13 @@ if (
   queuedPlanSwarm.swarm?.maxWorkers !== 2 ||
   queuedPlanSwarm.swarm?.waveCount !== 3 ||
   queuedPlanSwarm.swarm?.waves?.[0]?.lanes?.[0]?.purpose !== "discovery" ||
+  queuedPlanSwarm.swarm?.plannerProvenance?.plannerSelection?.resolvedProfile !== "coordination-local" ||
+  queuedPlanSwarm.swarm?.plannerProvenance?.planner?.id !== "coordination-local" ||
+  !queuedPlanSwarm.created.every(
+    (task) =>
+      task.plannerProvenance?.requestedProfile === "coordination-local" &&
+      task.plannerProvenance?.plannerSelection?.resolvedProfile === "coordination-local"
+  ) ||
   !queuedPlanSwarm.created.some((task) => task.lanePurpose === "discovery") ||
   !queuedPlanSwarm.created.some((task) => task.lanePurpose === "documentation") ||
   !queuedPlanSwarm.swarm?.lanes?.some((lane) => lane.purpose === "verification") ||
@@ -5016,9 +5057,33 @@ const queuedPlanSwarmTaskBrief = JSON.parse(
 ).brief;
 if (
   queuedPlanSwarmTaskBrief?.task?.lanePurpose !== "discovery" ||
-  queuedPlanSwarmTaskBrief?.coordination?.lanePurpose !== "discovery"
+  queuedPlanSwarmTaskBrief?.coordination?.lanePurpose !== "discovery" ||
+  queuedPlanSwarmTaskBrief?.planning?.resolvedProfile !== "coordination-local" ||
+  queuedPlanSwarmTaskBrief?.planning?.selectionMode !== "heuristic" ||
+  queuedPlanSwarmTaskBrief?.task?.plannerProvenance?.planner?.id !== "coordination-local"
 ) {
   console.error("[smoke:plan-swarm-queue-task-brief] expected planner lane purpose in task brief");
+  process.exit(1);
+}
+const queuedPlanSwarmTaskDetail = JSON.parse(
+  run("plan-swarm-queue-task-get", ["./src/index.js", "task:get", "--id", "task-1"]).stdout
+).task;
+if (
+  queuedPlanSwarmTaskDetail?.task?.plannerProvenance?.plannerSelection?.resolvedProfile !== "coordination-local" ||
+  queuedPlanSwarmTaskDetail?.metadata?.plannerProvenance?.resolvedProfile !== "coordination-local"
+) {
+  console.error("[smoke:plan-swarm-queue-task-get] expected persisted planner provenance on swarm lane task");
+  process.exit(1);
+}
+const queuedPlanSwarmGet = JSON.parse(
+  run("plan-swarm-queue-swarm-get", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
+).swarm;
+if (
+  queuedPlanSwarmGet?.swarm?.plannerProvenance?.plannerSelection?.resolvedProfile !== "coordination-local" ||
+  queuedPlanSwarmGet?.metadata?.plannerProvenance?.resolvedProfile !== "coordination-local" ||
+  queuedPlanSwarmGet?.metadata?.plannerProvenance?.selectionMode !== "heuristic"
+) {
+  console.error("[smoke:plan-swarm-queue-swarm-get] expected persisted planner provenance on queued swarm");
   process.exit(1);
 }
 const queuedPlanSwarmBrief = JSON.parse(
@@ -5028,7 +5093,9 @@ if (
   queuedPlanSwarmBrief?.lanes?.[0]?.purpose !== "discovery" ||
   queuedPlanSwarmBrief?.lanes?.[1]?.purpose !== "implementation" ||
   queuedPlanSwarmBrief?.lanes?.[2]?.purpose !== "verification" ||
-  queuedPlanSwarmBrief?.lanes?.[3]?.purpose !== "documentation"
+  queuedPlanSwarmBrief?.lanes?.[3]?.purpose !== "documentation" ||
+  queuedPlanSwarmBrief?.planning?.resolvedProfile !== "coordination-local" ||
+  queuedPlanSwarmBrief?.planning?.selectionMode !== "heuristic"
 ) {
   console.error("[smoke:plan-swarm-queue-swarm-brief] expected planner lane purpose in swarm brief");
   process.exit(1);
@@ -9522,6 +9589,12 @@ if (
   queuePlanSwarmPayload?.swarm?.maxWorkers !== 2 ||
   queuePlanSwarmPayload?.swarm?.waveCount !== 3 ||
   queuePlanSwarmPayload?.created?.length !== 4 ||
+  queuePlanSwarmPayload?.swarm?.plannerProvenance?.plannerSelection?.resolvedProfile !== "coordination-local" ||
+  !queuePlanSwarmPayload?.created?.every(
+    (task) =>
+      task.plannerProvenance?.requestedProfile === "coordination-local" &&
+      task.plannerProvenance?.plannerSelection?.resolvedProfile === "coordination-local"
+  ) ||
   !queuePlanSwarmPayload?.swarm?.lanes?.some((lane) => lane.purpose === "documentation")
 ) {
   console.error("[smoke:queue-plan-swarm-mcp] expected queued_plan_swarm response");
