@@ -449,8 +449,8 @@ export interface PlannerProfile {
   topology: "bounded-local";
   laneSource: "planner";
   adaptive: boolean;
-  laneModel: "adaptive-bounded-lanes";
-  executionModel: "dependency-wave-local";
+  laneModel: "adaptive-bounded-lanes" | "coordination-bounded-lanes";
+  executionModel: "dependency-wave-local" | "coordination-wave-local";
   roles: string[];
   constraints: string[];
 }
@@ -474,9 +474,16 @@ export interface PlannerProfileView {
 }
 
 export interface PlannerSelection {
+  inputProfile: string | null;
   requestedProfile: string;
   resolvedProfile: string;
   usedDefaultProfile: boolean;
+  selectionMode: "explicit" | "fallback" | "heuristic";
+  reason:
+    | "explicit_profile_requested"
+    | "missing_profile_fallback"
+    | "coordination_profile_inferred"
+    | "default_profile_inferred";
 }
 
 export type PlannerExecutionShape =

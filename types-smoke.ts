@@ -297,13 +297,22 @@ const rootPlannerDefaultProfile: string = getPlannerProfilesView().defaultProfil
 const rootPlannerProfileTopology: "bounded-local" | undefined = getPlannerProfile()?.topology;
 const rootPlannerProfileLaneSource: "planner" | undefined = getPlannerProfile()?.laneSource;
 const rootPlannerProfileAdaptive: boolean | undefined = getPlannerProfile()?.adaptive;
-const rootPlannerProfileExecutionModel: "dependency-wave-local" | undefined = getPlannerProfile()?.executionModel;
+const rootPlannerProfileExecutionModel: "dependency-wave-local" | "coordination-wave-local" | undefined = getPlannerProfile()?.executionModel;
+const coordinationPlannerProfileExecutionModel: "dependency-wave-local" | "coordination-wave-local" | undefined = getPlannerProfile("coordination-local")?.executionModel;
+const coordinationPlannerProfileLaneModel: "adaptive-bounded-lanes" | "coordination-bounded-lanes" | undefined = getPlannerProfile("coordination-local")?.laneModel;
 const rootPlannerProfileViewReason: "planner_profile_loaded" | "planner_profile_missing" = getPlannerProfileView().recommendedReason;
 const rootPlannerProfileViewKind: "planner_profile_view" = getPlannerProfileView().kind;
 const rootPlanTaskClass: "docs-only" | "docs-runtime" | "coordination-kernel" | "catalog-contract" | "runtime-surface" | "build-verification" | "general" = planTask("typed smoke", { profileId: "bounded-local" }).evidence.strategy.taskClass;
 const rootPlanLaneStrategy: "documentation" | "implement-verify" | "implement-verify-docs" | "discover-implement-verify" | "discover-implement-verify-docs" = planTask("typed smoke", { profileId: "bounded-local" }).evidence.strategy.laneStrategy;
 const rootPlanRequestedProfile: string = planTask("typed smoke", { profileId: "bounded-local" }).requestedProfile;
 const rootPlanResolvedProfile: string = planTask("typed smoke", { profileId: "missing-profile" }).plannerSelection.resolvedProfile;
+const rootPlanSelectionMode: "explicit" | "fallback" | "heuristic" = planTask("typed smoke").plannerSelection.selectionMode;
+const rootPlanSelectionReason:
+  | "explicit_profile_requested"
+  | "missing_profile_fallback"
+  | "coordination_profile_inferred"
+  | "default_profile_inferred" = planTask("typed smoke").plannerSelection.reason;
+const rootPlanInputProfile: string | null = planTask("typed smoke").plannerSelection.inputProfile;
 const rootPlanExecutionShape: "solo-lane" | "serial-handoff" | "parallel-handoff" = planTask("typed smoke", { profileId: "bounded-local" }).orchestration.executionShape;
 const rootPlanWaveCount: number = planTask("typed smoke", { profileId: "bounded-local" }).orchestration.waveCount;
 const rootPlanPeakParallelOwners: number = planTask("typed smoke", { profileId: "bounded-local" }).orchestration.peakParallelOwners;
@@ -331,6 +340,7 @@ const plannerRolePath: string | undefined = planTask("typed smoke").evidence.rol
 const apiPlannerProfileId: string | undefined = getApiPlannerProfiles()[0]?.id;
 const apiPlannerProfilesViewKind: "planner_profile_list_view" = getApiPlannerProfilesView().kind;
 const apiPlannerProfileTopology: "bounded-local" | undefined = getApiPlannerProfile()?.topology;
+const apiPlannerProfileExecutionModel: "dependency-wave-local" | "coordination-wave-local" | undefined = getApiPlannerProfile()?.executionModel;
 const apiPlannerProfileViewKind: "planner_profile_view" = getApiPlannerProfileView().kind;
 const apiArchivedTaskListKind: "task_archive_view" = listArchivedTasksViewApi().kind;
 const apiArchivedTaskDetailKind: "task_archive_detail" | undefined = getArchivedTaskViewApi("task-1")?.kind;
@@ -656,7 +666,9 @@ const plannedSwarmLaneSource: "planner" = planSwarmSubpath("typed downstream swa
 const subpathPlannerProfileId: string | undefined = getPlannerProfilesSubpath()[0]?.id;
 const subpathPlannerProfilesViewKind: "planner_profile_list_view" = getPlannerProfilesViewSubpath().kind;
 const subpathPlannerProfileTopology: "bounded-local" | undefined = getPlannerProfileSubpath()?.topology;
-const subpathPlannerProfileExecutionModel: "dependency-wave-local" | undefined = getPlannerProfileSubpath()?.executionModel;
+const subpathPlannerProfileExecutionModel: "dependency-wave-local" | "coordination-wave-local" | undefined = getPlannerProfileSubpath()?.executionModel;
+const coordinationSubpathPlannerProfileExecutionModel: "dependency-wave-local" | "coordination-wave-local" | undefined = getPlannerProfileSubpath("coordination-local")?.executionModel;
+const coordinationSubpathPlannerProfileLaneModel: "adaptive-bounded-lanes" | "coordination-bounded-lanes" | undefined = getPlannerProfileSubpath("coordination-local")?.laneModel;
 const subpathPlannerProfileViewKind: "planner_profile_view" = getPlannerProfileViewSubpath().kind;
 const queuedPlanKind: "queued_plan" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).kind;
 const queuedPlanReason: "multiple_plan_tasks_queued" | "single_plan_task_queued" = queueTasksFromPlan("typed queued plan", (tasks) => tasks as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).recommendedReason;

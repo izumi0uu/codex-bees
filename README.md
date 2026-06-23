@@ -98,7 +98,7 @@ const releaseTask = addTask({
   verification: ["npm run smoke"]
 });
 const taskPlan = planTask("Ship a bounded runtime slice", { profileId: "bounded-local" });
-const swarmPlan = planSwarm("Parallelize a bounded runtime slice", { profileId: "bounded-local" });
+const swarmPlan = planSwarm("Coordinate a planner-driven swarm");
 const status = getRuntimeStatusView({
   version: metadata.version,
   toolCount: getToolCatalogView().tools.length
@@ -374,7 +374,7 @@ const metadata = getPackageMetadata();
 const view = getPackageMetadataView();
 ```
 
-The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI. The default exported planner profile stays local and bounded, but it now adapts both lane count and execution shape to the task: simple docs work can collapse to one reviewer lane, while runtime or coordination work expands into discovery, implementation, verification, and docs sidecars as needed. Planner output now also includes dependency-wave orchestration metadata, so callers can see whether the work is effectively solo, serial handoff, or genuinely parallel inside the same bounded-local host boundary, and size worker startup from peak ready waves instead of raw lane count. Planner profiles are now also explicitly inspectable from CLI, MCP, and the public JS surface, and the planning entrypoints accept an explicit `profileId` / `--profile` selector so automation can pin the shipped planner profile it expects instead of assuming the current default implicitly.
+The `codex-bees/planner` subpath exposes the bounded planning helpers directly, so tools can derive task lanes and swarm shapes from a prompt without shelling out through the CLI. The shipped planner now has two local profiles: `bounded-local` for the compact default path, and `coordination-local` for swarm-heavy briefs that need a parallel docs sidecar. Planner output now also includes dependency-wave orchestration metadata and explicit selection metadata, so callers can see whether the work is effectively solo, serial handoff, or genuinely parallel inside the same bounded-local host boundary, and whether a profile was explicit, fallback, or heuristic. Planner profiles are now also explicitly inspectable from CLI, MCP, and the public JS surface, and the planning entrypoints accept an explicit `profileId` / `--profile` selector so automation can pin the shipped planner profile it expects instead of assuming the current default implicitly.
 
 Example:
 
@@ -384,7 +384,7 @@ import { getPlannerProfile, getPlannerProfilesView, planSwarm, planTask } from "
 const planner = getPlannerProfile();
 const profiles = getPlannerProfilesView();
 const taskPlan = planTask("Document the README entry", { profileId: "bounded-local" });
-const swarmPlan = planSwarm("Coordinate a planner-driven swarm", { profileId: "bounded-local" });
+const swarmPlan = planSwarm("Coordinate a planner-driven swarm");
 ```
 
 The `codex-bees/commands` subpath exposes the shipped CLI command catalog and renders the same help contract that `codex-bees --help` prints, so tooling can inspect the command surface without scraping ad hoc docs. Its `mcp` and `init` command entries both carry structured option lists, and it now also exposes direct command lookup plus machine-readable single-command and help views, so one command-catalog read is enough to discover the top-level runtime bootstrap surface as well as the shipped MCP flags. Those single-command help views now render command-specific usage, description, alias, and option sections for normal CLI commands instead of falling back to the top-level catalog for every non-`init` command. The broader command catalog now also promotes those same usage lines, aliases, option lists, and notes into machine-readable command entries for core orchestration commands such as `task:add`, `swarm:init`, `leader:assignment-launch-plan`, and `memory:search`, so automation can discover required flags, alternative spellings, and operator notes without parsing rendered help text. For the bootstrap path specifically, it also exposes a machine-readable `init` option catalog, direct `init` option lookup, a machine-readable single-option view, and an `init` help view so tooling can stay inside the init surface without first traversing the broader command catalog. For the shipped MCP flag surface, it also exposes the dedicated `mcp` option catalog, single-option lookup, single-option view, paired `mcp` help view, and rendered MCP help text directly from the same `commands` subpath.
@@ -496,8 +496,9 @@ node ./src/index.js plan:profiles
 node ./src/index.js plan:profile --profile bounded-local
 node ./src/index.js plan --task "Map a runtime change" --profile bounded-local
 node ./src/index.js plan:queue --task "Queue a runtime change" --profile bounded-local
-node ./src/index.js plan:swarm --task "Parallelize a runtime change" --profile bounded-local
-node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm" --profile bounded-local
+node ./src/index.js plan:profile --profile coordination-local
+node ./src/index.js plan:swarm --task "Coordinate a planner-driven swarm"
+node ./src/index.js plan:swarm:queue --task "Queue a planner-driven swarm"
 node ./src/index.js task:add --title "Wire a new MCP tool" --owner executor --verifier tester --scope src/mcp.js --depends-on task-7
 node ./src/index.js task:get --id task-1
 node ./src/index.js task:archive:list
@@ -656,15 +657,15 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `plan` / `plan_task` return the explicit planner task payload. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane planning outcomes without inferring that only from the returned lane array length. Each returned lane now carries a stable `purpose` (`discovery`, `implementation`, `verification`, or `documentation`), `evidence.strategy` reports how the planner classified the task plus which lane strategy it chose, and the top-level `orchestration` block exposes dependency-wave shape (`solo-lane`, `serial-handoff`, or `parallel-handoff`), peak parallelism, and the ready-at-the-same-time lane waves.
 
-`plan:profiles` / `planner_profiles` return the shipped planner profile catalog, including the current default profile and total profile count, so automation can discover which bounded planning profiles are actually available before selecting one.
+`plan:profiles` / `planner_profiles` return the shipped planner profile catalog, including the current default profile and total profile count, so automation can discover which bounded planning profiles are actually available before selecting one. The catalog currently ships `bounded-local` and `coordination-local`.
 
 `plan:profile` / `planner_profile` return one shipped planner profile view by id, so automation can inspect the selected planner's topology boundary, execution model, lane model, roles, and constraints without shelling into the implementation module.
 
-`plan`, `plan:queue`, `plan:swarm`, and `plan:swarm:queue` all accept `--profile <planner-profile-id>` on CLI and `profile` over MCP. Their returned payloads now echo `requestedProfile` and `plannerSelection`, so callers can tell whether the requested planner id was used directly or fell back to the shipped default profile.
+`plan`, `plan:queue`, `plan:swarm`, and `plan:swarm:queue` all accept `--profile <planner-profile-id>` on CLI and `profile` over MCP. Their returned payloads now echo `requestedProfile` and `plannerSelection`, so callers can tell whether the requested planner id was used directly, fell back to the shipped default profile, or was chosen heuristically for a coordination-heavy brief.
 
 `plan:queue` / `queue_plan` return the explicit planner queue result: the planned lanes plus the local tasks created from them. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane planner queue events without inferring from the created-task array length alone. Planner-created tasks preserve the lane `purpose` as `lanePurpose`, and the queue result now also carries the same top-level `orchestration` block, so downstream automation can tell whether the work stays serial or has a genuine parallel wave before starting workers.
 
-`plan:swarm` / `plan_swarm` return the explicit planner swarm payload. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane swarm planning outcomes without inferring that only from the returned lane array length. Planner-generated swarm lanes preserve that same `purpose`, and the generated swarm now carries `executionShape`, `waveCount`, `waves`, and a more realistic `maxWorkers` derived from peak ready waves instead of raw lane count. `plan:swarm:queue` keeps that same orchestration shape attached when the lanes become queued local tasks.
+`plan:swarm` / `plan_swarm` return the explicit planner swarm payload. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane swarm planning outcomes without inferring that only from the returned lane array length. Swarm-heavy briefs now heuristically select `coordination-local`, which adds a docs sidecar lane and makes the generated swarm explicitly parallel-handoff when the brief needs it. Planner-generated swarm lanes preserve that same `purpose`, and the generated swarm now carries `executionShape`, `waveCount`, `waves`, and a more realistic `maxWorkers` derived from peak ready waves instead of raw lane count. `plan:swarm:queue` keeps that same orchestration shape attached when the lanes become queued local tasks.
 
 `plan:swarm:queue` / `queue_plan_swarm` return the explicit planner swarm queue result: the generated swarm contract plus the local lane tasks created from it. They emit a machine-readable `recommendedReason` so automation can distinguish single-lane and multi-lane swarm queue events without inferring from the created-task array length alone, and they now also echo the planner plus top-level `orchestration` metadata so queue-time automation can reuse the same dependency-wave shape without re-planning.
 

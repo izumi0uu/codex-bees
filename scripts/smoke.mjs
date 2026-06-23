@@ -1142,12 +1142,12 @@ if (
   process.exit(installedMetadataExample.status ?? 1);
 }
 const installedPlannerExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: planner?.id === "bounded-local" && planner?.adaptive === true && planner?.executionModel === "dependency-wave-local" && taskPlan.kind === "task_plan" && taskPlan.objective === "Document the README entry" && taskPlan.planner?.topology === "bounded-local" && taskPlan.planner?.adaptive === true && taskPlan.orchestration?.executionShape === "solo-lane" && taskPlan.orchestration?.waveCount >= 1 && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "Coordinate a planner-driven swarm" && swarmPlan.swarm?.topology === "bounded-local" && swarmPlan.swarm?.executionShape === "serial-handoff" && swarmPlan.swarm?.maxWorkers === 1 && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 1 }));`
-  ],
+    "node",
+    [
+      "--input-type=module",
+      "-e",
+      `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: planner?.id === "bounded-local" && planner?.adaptive === true && planner?.executionModel === "dependency-wave-local" && taskPlan.kind === "task_plan" && taskPlan.objective === "Document the README entry" && taskPlan.planner?.topology === "bounded-local" && taskPlan.planner?.adaptive === true && taskPlan.orchestration?.executionShape === "solo-lane" && taskPlan.orchestration?.waveCount >= 1 && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "Coordinate a planner-driven swarm" && swarmPlan.requestedProfile === "coordination-local" && swarmPlan.planner?.executionModel === "coordination-wave-local" && swarmPlan.swarm?.topology === "bounded-local" && swarmPlan.swarm?.executionShape === "parallel-handoff" && swarmPlan.swarm?.maxWorkers === 2 && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 4 && swarmPlan.swarm.lanes.some((lane) => lane.purpose === "documentation") }));`
+    ],
   {
     cwd: packedInstallAppDir,
     encoding: "utf8"
@@ -2708,9 +2708,10 @@ if (
   plannerProfilesView.kind !== "planner_profile_list_view" ||
   plannerProfilesView.recommendedReason !== "planner_profiles_loaded" ||
   plannerProfilesView.defaultProfile !== "bounded-local" ||
-  plannerProfilesView.counts?.totalProfiles < 1 ||
+  plannerProfilesView.counts?.totalProfiles !== 2 ||
   !Array.isArray(plannerProfilesView.profiles) ||
-  !plannerProfilesView.profiles.some((profile) => profile.id === "bounded-local")
+  !plannerProfilesView.profiles.some((profile) => profile.id === "bounded-local") ||
+  !plannerProfilesView.profiles.some((profile) => profile.id === "coordination-local")
 ) {
   console.error("[smoke:plan-profiles] expected planner profile catalog view");
   process.exit(1);
@@ -2726,13 +2727,29 @@ if (
   console.error("[smoke:plan-profile] expected planner profile detail view");
   process.exit(1);
 }
+const coordinationPlannerProfileView = JSON.parse(
+  run("plan-profile-coordination-verify", ["./src/index.js", "plan:profile", "--profile", "coordination-local"]).stdout
+).profile;
+if (
+  coordinationPlannerProfileView.kind !== "planner_profile_view" ||
+  coordinationPlannerProfileView.recommendedReason !== "planner_profile_loaded" ||
+  coordinationPlannerProfileView.matchedProfile !== "coordination-local" ||
+  coordinationPlannerProfileView.profile?.laneModel !== "coordination-bounded-lanes" ||
+  coordinationPlannerProfileView.profile?.executionModel !== "coordination-wave-local"
+) {
+  console.error("[smoke:plan-profile-coordination] expected coordination planner profile detail view");
+  process.exit(1);
+}
 const explicitProfilePlan = JSON.parse(run("plan-explicit-profile", ["./src/index.js", "plan", "--task", "explicit profile runtime change", "--profile", "bounded-local"]).stdout);
 if (
   explicitProfilePlan.kind !== "task_plan" ||
   explicitProfilePlan.requestedProfile !== "bounded-local" ||
+  explicitProfilePlan.plannerSelection?.inputProfile !== "bounded-local" ||
   explicitProfilePlan.plannerSelection?.requestedProfile !== "bounded-local" ||
   explicitProfilePlan.plannerSelection?.resolvedProfile !== "bounded-local" ||
-  explicitProfilePlan.plannerSelection?.usedDefaultProfile !== false
+  explicitProfilePlan.plannerSelection?.usedDefaultProfile !== false ||
+  explicitProfilePlan.plannerSelection?.selectionMode !== "explicit" ||
+  explicitProfilePlan.plannerSelection?.reason !== "explicit_profile_requested"
 ) {
   console.error("[smoke:plan-explicit-profile] expected explicit profile selection to round-trip");
   process.exit(1);
@@ -2741,9 +2758,12 @@ const fallbackProfilePlan = JSON.parse(run("plan-fallback-profile", ["./src/inde
 if (
   fallbackProfilePlan.kind !== "task_plan" ||
   fallbackProfilePlan.requestedProfile !== "missing-profile" ||
+  fallbackProfilePlan.plannerSelection?.inputProfile !== "missing-profile" ||
   fallbackProfilePlan.plannerSelection?.requestedProfile !== "missing-profile" ||
   fallbackProfilePlan.plannerSelection?.resolvedProfile !== "bounded-local" ||
-  fallbackProfilePlan.plannerSelection?.usedDefaultProfile !== true
+  fallbackProfilePlan.plannerSelection?.usedDefaultProfile !== true ||
+  fallbackProfilePlan.plannerSelection?.selectionMode !== "fallback" ||
+  fallbackProfilePlan.plannerSelection?.reason !== "missing_profile_fallback"
 ) {
   console.error("[smoke:plan-fallback-profile] expected missing profile to fall back to default planner");
   process.exit(1);
@@ -4236,7 +4256,11 @@ const plannedTaskCli = JSON.parse(
 if (
   plannedTaskCli.kind !== "task_plan" ||
   plannedTaskCli.recommendedReason !== "multi_lane_plan_ready" ||
+  plannedTaskCli.requestedProfile !== "bounded-local" ||
   plannedTaskCli.planner?.executionModel !== "dependency-wave-local" ||
+  plannedTaskCli.plannerSelection?.inputProfile !== null ||
+  plannedTaskCli.plannerSelection?.selectionMode !== "heuristic" ||
+  plannedTaskCli.plannerSelection?.reason !== "default_profile_inferred" ||
   plannedTaskCli.evidence?.strategy?.taskClass !== "runtime-surface" ||
   plannedTaskCli.evidence?.strategy?.laneStrategy !== "implement-verify-docs" ||
   plannedTaskCli.orchestration?.executionShape !== "parallel-handoff" ||
@@ -4301,6 +4325,10 @@ if (
   planMcp.status !== 0 ||
   planMcpPayload?.kind !== "task_plan" ||
   planMcpPayload?.recommendedReason !== "multi_lane_plan_ready" ||
+  planMcpPayload?.requestedProfile !== "bounded-local" ||
+  planMcpPayload?.plannerSelection?.inputProfile !== null ||
+  planMcpPayload?.plannerSelection?.selectionMode !== "heuristic" ||
+  planMcpPayload?.plannerSelection?.reason !== "default_profile_inferred" ||
   planMcpPayload?.evidence?.strategy?.laneStrategy !== "implement-verify-docs" ||
   planMcpPayload?.orchestration?.executionShape !== "parallel-handoff" ||
   planMcpPayload?.orchestration?.maxWorkers !== 2 ||
@@ -4374,6 +4402,9 @@ if (
   queuePlanMcp.status !== 0 ||
   queuePlanPayloadMcp?.kind !== "queued_plan" ||
   queuePlanPayloadMcp?.recommendedReason !== "multiple_plan_tasks_queued" ||
+  queuePlanPayloadMcp?.requestedProfile !== "bounded-local" ||
+  queuePlanPayloadMcp?.plannerSelection?.selectionMode !== "heuristic" ||
+  queuePlanPayloadMcp?.plannerSelection?.reason !== "default_profile_inferred" ||
   queuePlanPayloadMcp?.planner?.executionModel !== "dependency-wave-local" ||
   queuePlanPayloadMcp?.orchestration?.executionShape !== "parallel-handoff" ||
   queuePlanPayloadMcp?.orchestration?.waveCount !== 3 ||
@@ -4575,6 +4606,36 @@ if (
 
 
 rmSync(".codex-bees", { recursive: true, force: true });
+const plannedSwarmBoundedLocal = JSON.parse(
+  run("plan-swarm-bounded-local-verify", [
+    "./src/index.js",
+    "plan:swarm",
+    "--task",
+    "Coordinate a planner-driven swarm",
+    "--profile",
+    "bounded-local"
+  ]).stdout
+);
+if (
+  plannedSwarmBoundedLocal.kind !== "planned_swarm" ||
+  plannedSwarmBoundedLocal.requestedProfile !== "bounded-local" ||
+  plannedSwarmBoundedLocal.planner?.executionModel !== "dependency-wave-local" ||
+  plannedSwarmBoundedLocal.plannerSelection?.selectionMode !== "explicit" ||
+  plannedSwarmBoundedLocal.evidence?.strategy?.taskClass !== "coordination-kernel" ||
+  plannedSwarmBoundedLocal.evidence?.strategy?.laneStrategy !== "discover-implement-verify" ||
+  plannedSwarmBoundedLocal.orchestration?.executionShape !== "serial-handoff" ||
+  plannedSwarmBoundedLocal.orchestration?.waveCount !== 3 ||
+  plannedSwarmBoundedLocal.swarm?.laneSource !== "planner" ||
+  plannedSwarmBoundedLocal.swarm?.executionShape !== "serial-handoff" ||
+  plannedSwarmBoundedLocal.swarm?.maxWorkers !== 1 ||
+  plannedSwarmBoundedLocal.swarm?.lanes?.length !== 3 ||
+  plannedSwarmBoundedLocal.swarm?.lanes?.[0]?.purpose !== "discovery" ||
+  plannedSwarmBoundedLocal.swarm?.lanes?.[1]?.purpose !== "implementation" ||
+  plannedSwarmBoundedLocal.swarm?.lanes?.[2]?.purpose !== "verification"
+) {
+  console.error("[smoke:plan-swarm-bounded-local] expected explicit bounded-local swarm payload");
+  process.exit(1);
+}
 const plannedSwarm = JSON.parse(
   run("plan-swarm-verify", [
     "./src/index.js",
@@ -4586,17 +4647,27 @@ const plannedSwarm = JSON.parse(
 if (
   plannedSwarm.kind !== "planned_swarm" ||
   plannedSwarm.recommendedReason !== "multi_lane_swarm_ready" ||
+  plannedSwarm.requestedProfile !== "coordination-local" ||
+  plannedSwarm.planner?.executionModel !== "coordination-wave-local" ||
+  plannedSwarm.plannerSelection?.inputProfile !== null ||
+  plannedSwarm.plannerSelection?.selectionMode !== "heuristic" ||
+  plannedSwarm.plannerSelection?.reason !== "coordination_profile_inferred" ||
   plannedSwarm.evidence?.strategy?.taskClass !== "coordination-kernel" ||
-  plannedSwarm.evidence?.strategy?.laneStrategy !== "discover-implement-verify" ||
-  plannedSwarm.orchestration?.executionShape !== "serial-handoff" ||
+  plannedSwarm.evidence?.strategy?.laneStrategy !== "discover-implement-verify-docs" ||
+  plannedSwarm.orchestration?.executionShape !== "parallel-handoff" ||
   plannedSwarm.orchestration?.waveCount !== 3 ||
+  plannedSwarm.orchestration?.peakParallelLanes !== 2 ||
   plannedSwarm.swarm?.laneSource !== "planner" ||
-  plannedSwarm.swarm?.executionShape !== "serial-handoff" ||
-  plannedSwarm.swarm?.maxWorkers !== 1 ||
-  plannedSwarm.swarm?.lanes?.length !== 3 ||
+  plannedSwarm.swarm?.executionShape !== "parallel-handoff" ||
+  plannedSwarm.swarm?.maxWorkers !== 2 ||
+  plannedSwarm.swarm?.lanes?.length !== 4 ||
   plannedSwarm.swarm?.lanes?.[0]?.purpose !== "discovery" ||
   plannedSwarm.swarm?.lanes?.[1]?.purpose !== "implementation" ||
-  plannedSwarm.swarm?.lanes?.[2]?.purpose !== "verification"
+  plannedSwarm.swarm?.lanes?.[2]?.purpose !== "verification" ||
+  plannedSwarm.swarm?.lanes?.[3]?.purpose !== "documentation" ||
+  plannedSwarm.swarm?.lanes?.[3]?.dependsOn?.[0] !== "lane-1" ||
+  !plannedSwarm.swarm?.lanes?.[2]?.dependsOn?.includes("lane-2") ||
+  !plannedSwarm.swarm?.lanes?.[2]?.dependsOn?.includes("lane-4")
 ) {
   console.error("[smoke:plan-swarm] expected planner swarm payload");
   process.exit(1);
@@ -4628,6 +4699,11 @@ if (
   planSwarmMcp.status !== 0 ||
   planSwarmPayload?.kind !== "planned_swarm" ||
   planSwarmPayload?.recommendedReason !== "multi_lane_swarm_ready" ||
+  planSwarmPayload?.requestedProfile !== "coordination-local" ||
+  planSwarmPayload?.planner?.executionModel !== "coordination-wave-local" ||
+  planSwarmPayload?.plannerSelection?.inputProfile !== null ||
+  planSwarmPayload?.plannerSelection?.selectionMode !== "heuristic" ||
+  planSwarmPayload?.plannerSelection?.reason !== "coordination_profile_inferred" ||
   planSwarmPayload?.evidence?.strategy?.laneStrategy !== "discover-implement-verify-docs" ||
   planSwarmPayload?.orchestration?.executionShape !== "parallel-handoff" ||
   planSwarmPayload?.orchestration?.maxWorkers !== 2 ||
@@ -4636,7 +4712,10 @@ if (
   planSwarmPayload?.swarm?.maxWorkers !== 2 ||
   planSwarmPayload?.swarm?.lanes?.length !== 4 ||
   planSwarmPayload?.swarm?.lanes?.[0]?.purpose !== "discovery" ||
-  planSwarmPayload?.swarm?.lanes?.[3]?.purpose !== "documentation"
+  planSwarmPayload?.swarm?.lanes?.[3]?.purpose !== "documentation" ||
+  planSwarmPayload?.swarm?.lanes?.[3]?.dependsOn?.[0] !== "lane-1" ||
+  !planSwarmPayload?.swarm?.lanes?.[2]?.dependsOn?.includes("lane-2") ||
+  !planSwarmPayload?.swarm?.lanes?.[2]?.dependsOn?.includes("lane-4")
 ) {
   console.error("[smoke:plan-swarm-mcp] expected planner swarm payload with machine-readable reason");
   console.error(planSwarmMcp.stderr || planSwarmMcp.stdout);
@@ -4653,18 +4732,23 @@ const queuedPlanSwarm = JSON.parse(
 if (
   queuedPlanSwarm.kind !== "queued_plan_swarm" ||
   queuedPlanSwarm.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
-  queuedPlanSwarm.planner?.executionModel !== "dependency-wave-local" ||
-  queuedPlanSwarm.orchestration?.executionShape !== "serial-handoff" ||
-  queuedPlanSwarm.orchestration?.maxWorkers !== 1 ||
-  queuedPlanSwarm.created.length !== 3 ||
+  queuedPlanSwarm.requestedProfile !== "coordination-local" ||
+  queuedPlanSwarm.planner?.executionModel !== "coordination-wave-local" ||
+  queuedPlanSwarm.plannerSelection?.selectionMode !== "heuristic" ||
+  queuedPlanSwarm.plannerSelection?.reason !== "coordination_profile_inferred" ||
+  queuedPlanSwarm.orchestration?.executionShape !== "parallel-handoff" ||
+  queuedPlanSwarm.orchestration?.maxWorkers !== 2 ||
+  queuedPlanSwarm.created.length !== 4 ||
   queuedPlanSwarm.swarm?.status !== "active" ||
   queuedPlanSwarm.swarm?.laneSource !== "planner" ||
-  queuedPlanSwarm.swarm?.executionShape !== "serial-handoff" ||
-  queuedPlanSwarm.swarm?.maxWorkers !== 1 ||
+  queuedPlanSwarm.swarm?.executionShape !== "parallel-handoff" ||
+  queuedPlanSwarm.swarm?.maxWorkers !== 2 ||
   queuedPlanSwarm.swarm?.waveCount !== 3 ||
   queuedPlanSwarm.swarm?.waves?.[0]?.lanes?.[0]?.purpose !== "discovery" ||
   !queuedPlanSwarm.created.some((task) => task.lanePurpose === "discovery") ||
-  !queuedPlanSwarm.swarm?.lanes?.some((lane) => lane.purpose === "verification")
+  !queuedPlanSwarm.created.some((task) => task.lanePurpose === "documentation") ||
+  !queuedPlanSwarm.swarm?.lanes?.some((lane) => lane.purpose === "verification") ||
+  !queuedPlanSwarm.swarm?.lanes?.some((lane) => lane.purpose === "documentation")
 ) {
   console.error("[smoke:plan-swarm-queue] expected queued planner swarm tasks");
   process.exit(1);
@@ -4695,7 +4779,8 @@ const queuedPlanSwarmBrief = JSON.parse(
 if (
   queuedPlanSwarmBrief?.lanes?.[0]?.purpose !== "discovery" ||
   queuedPlanSwarmBrief?.lanes?.[1]?.purpose !== "implementation" ||
-  queuedPlanSwarmBrief?.lanes?.[2]?.purpose !== "verification"
+  queuedPlanSwarmBrief?.lanes?.[2]?.purpose !== "verification" ||
+  queuedPlanSwarmBrief?.lanes?.[3]?.purpose !== "documentation"
 ) {
   console.error("[smoke:plan-swarm-queue-swarm-brief] expected planner lane purpose in swarm brief");
   process.exit(1);
@@ -8926,13 +9011,17 @@ if (
   queuePlanSwarmMcp.status !== 0 ||
   queuePlanSwarmPayload?.kind !== "queued_plan_swarm" ||
   queuePlanSwarmPayload?.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
-  queuePlanSwarmPayload?.planner?.executionModel !== "dependency-wave-local" ||
+  queuePlanSwarmPayload?.requestedProfile !== "coordination-local" ||
+  queuePlanSwarmPayload?.planner?.executionModel !== "coordination-wave-local" ||
+  queuePlanSwarmPayload?.plannerSelection?.selectionMode !== "heuristic" ||
+  queuePlanSwarmPayload?.plannerSelection?.reason !== "coordination_profile_inferred" ||
   queuePlanSwarmPayload?.orchestration?.executionShape !== "parallel-handoff" ||
   queuePlanSwarmPayload?.orchestration?.waveCount !== 3 ||
   queuePlanSwarmPayload?.orchestration?.maxWorkers !== 2 ||
   queuePlanSwarmPayload?.swarm?.executionShape !== "parallel-handoff" ||
   queuePlanSwarmPayload?.swarm?.maxWorkers !== 2 ||
   queuePlanSwarmPayload?.swarm?.waveCount !== 3 ||
+  queuePlanSwarmPayload?.created?.length !== 4 ||
   !queuePlanSwarmPayload?.swarm?.lanes?.some((lane) => lane.purpose === "documentation")
 ) {
   console.error("[smoke:queue-plan-swarm-mcp] expected queued_plan_swarm response");
