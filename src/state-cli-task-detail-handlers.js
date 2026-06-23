@@ -1,4 +1,4 @@
-import { exit, requireOption, write, writeErr } from "./state-cli-helpers.js";
+import { requireOption } from "./state-cli-helpers.js";
 import {
   getArchivedTaskView,
   getTaskView,
@@ -8,45 +8,38 @@ import {
   taskHistory,
   taskReport
 } from "./state-runtime.js";
-
-function writeTaskLookup(label, lookup, id, missingLabel = "task") {
-  const value = lookup(id);
-  if (!value) {
-    writeErr(`Unknown ${missingLabel} id: ${id}\n`);
-    exit(1);
-  }
-  write(JSON.stringify({ [label]: value }, null, 2) + "\n");
-}
+import { writeLookupView } from "./state-cli-lookup-writers.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 export function printTasks() {
-  write(JSON.stringify({ tasks: listTasksView() }, null, 2) + "\n");
+  writeNamedView("tasks", listTasksView());
 }
 
 export function handleTaskGet() {
   const id = requireOption("--id");
-  writeTaskLookup("task", getTaskView, id);
+  writeLookupView("task", getTaskView, id, "task");
 }
 
 export function handleTaskArchiveList() {
-  write(JSON.stringify({ archivedTasks: listArchivedTasksView() }, null, 2) + "\n");
+  writeNamedView("archivedTasks", listArchivedTasksView());
 }
 
 export function handleTaskArchiveGet() {
   const id = requireOption("--id");
-  writeTaskLookup("archivedTask", getArchivedTaskView, id, "archived task");
+  writeLookupView("archivedTask", getArchivedTaskView, id, "archived task");
 }
 
 export function handleTaskHistory() {
   const id = requireOption("--id");
-  writeTaskLookup("history", taskHistory, id);
+  writeLookupView("history", taskHistory, id, "task");
 }
 
 export function handleTaskReport() {
   const id = requireOption("--id");
-  writeTaskLookup("report", taskReport, id);
+  writeLookupView("report", taskReport, id, "task");
 }
 
 export function handleTaskBrief() {
   const id = requireOption("--id");
-  writeTaskLookup("brief", taskBrief, id);
+  writeLookupView("brief", taskBrief, id, "task");
 }

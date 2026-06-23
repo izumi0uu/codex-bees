@@ -1,4 +1,4 @@
-import { exit, requireOption, write, writeErr } from "./state-cli-helpers.js";
+import { requireOption } from "./state-cli-helpers.js";
 import {
   getArchivedSwarmView,
   getSwarmView,
@@ -10,57 +10,49 @@ import {
   swarmOverview,
   validateSwarm
 } from "./state-runtime.js";
-
-function writeSwarmLookup(label, lookup, id, missingLabel = "swarm") {
-  const value = lookup(id);
-  if (!value) {
-    writeErr(`Unknown ${missingLabel} id: ${id}\n`);
-    exit(1);
-  }
-  write(JSON.stringify({ [label]: value }, null, 2) + "\n");
-}
+import { writeLookupView } from "./state-cli-lookup-writers.js";
 
 export function handleSwarmGet() {
   const id = requireOption("--id");
-  writeSwarmLookup("swarm", getSwarmView, id);
+  writeLookupView("swarm", getSwarmView, id, "swarm");
 }
 
 export function handleSwarmArchiveGet() {
   const id = requireOption("--id");
-  writeSwarmLookup("archivedSwarm", getArchivedSwarmView, id, "archived swarm");
+  writeLookupView("archivedSwarm", getArchivedSwarmView, id, "archived swarm");
 }
 
 export function handleSwarmBrief() {
   const id = requireOption("--id");
-  writeSwarmLookup("brief", swarmBrief, id);
+  writeLookupView("brief", swarmBrief, id, "swarm");
 }
 
 export function handleSwarmBundle() {
   const id = requireOption("--id");
-  writeSwarmLookup("bundle", swarmBundle, id);
+  writeLookupView("bundle", swarmBundle, id, "swarm");
 }
 
 export function handleSwarmBlockers() {
   const id = requireOption("--id");
-  writeSwarmLookup("blockers", swarmBlockers, id);
+  writeLookupView("blockers", swarmBlockers, id, "swarm");
 }
 
 export function handleSwarmCloseout() {
   const id = requireOption("--id");
-  writeSwarmLookup("closeout", swarmCloseout, id);
+  writeLookupView("closeout", swarmCloseout, id, "swarm");
 }
 
 export function handleSwarmDispatchBundle() {
   const id = requireOption("--id");
-  writeSwarmLookup("dispatchBundle", swarmDispatchBundle, id);
+  writeLookupView("dispatchBundle", swarmDispatchBundle, id, "swarm");
 }
 
 export function handleSwarmCheck() {
   const id = requireOption("--id");
-  writeSwarmLookup("validation", validateSwarm, id);
+  writeLookupView("validation", validateSwarm, id, "swarm");
 }
 
 export function handleSwarmOverview() {
   const id = requireOption("--id");
-  writeSwarmLookup("overview", swarmOverview, id);
+  writeLookupView("overview", swarmOverview, id, "swarm");
 }
