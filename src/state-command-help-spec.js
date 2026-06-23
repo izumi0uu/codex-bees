@@ -240,6 +240,14 @@ export const COMMAND_HELP_OVERRIDES = {
     usage: [commandUsage("task:get", "--id <task-id>")],
     options: [TASK_RECORD_ID_OPTION]
   },
+  "task:archive:list": {
+    usage: [commandUsage("task:archive:list")],
+    options: []
+  },
+  "task:archive:get": {
+    usage: [commandUsage("task:archive:get", "--id <task-id>")],
+    options: [TASK_RECORD_ID_OPTION]
+  },
   "task:history": {
     usage: [commandUsage("task:history", "--id <task-id>")],
     options: [TASK_RECORD_ID_OPTION]
@@ -354,6 +362,10 @@ export const COMMAND_HELP_OVERRIDES = {
     options: [TASK_RECORD_ID_OPTION, ACTOR_OPTION, NOTES_OPTION, REVIEW_EVIDENCE_OPTION],
     notes: [PIPE_LIST_NOTE]
   },
+  "task:archive": {
+    usage: [commandUsage("task:archive", "--id <task-id> [--by <actor>] [--notes <text>]")],
+    options: [TASK_RECORD_ID_OPTION, ACTOR_OPTION, NOTES_OPTION]
+  },
   "task:release": {
     usage: [commandUsage("task:release", "--id <task-id> [--by <actor>]")],
     options: [TASK_RECORD_ID_OPTION, ACTOR_OPTION]
@@ -394,6 +406,14 @@ export const COMMAND_HELP_OVERRIDES = {
     usage: [commandUsage("swarm:get", "--id <swarm-id>")],
     options: [SWARM_ID_OPTION]
   },
+  "swarm:archive:list": {
+    usage: [commandUsage("swarm:archive:list")],
+    options: []
+  },
+  "swarm:archive:get": {
+    usage: [commandUsage("swarm:archive:get", "--id <swarm-id>")],
+    options: [SWARM_ID_OPTION]
+  },
   "swarm:brief": {
     usage: [commandUsage("swarm:brief", "--id <swarm-id>")],
     options: [SWARM_ID_OPTION]
@@ -409,6 +429,10 @@ export const COMMAND_HELP_OVERRIDES = {
   "swarm:closeout": {
     usage: [commandUsage("swarm:closeout", "--id <swarm-id>")],
     options: [SWARM_ID_OPTION]
+  },
+  "swarm:archive": {
+    usage: [commandUsage("swarm:archive", "--id <swarm-id> [--by <actor>] [--notes <text>]")],
+    options: [SWARM_ID_OPTION, ACTOR_OPTION, NOTES_OPTION]
   },
   "swarm:dispatch-bundle": {
     usage: [commandUsage("swarm:dispatch-bundle", "--id <swarm-id>")],

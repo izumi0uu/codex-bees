@@ -2,6 +2,7 @@ import {
   addTaskLifecycle,
   annotateTaskMutation,
   approveTaskLifecycle,
+  archiveTaskMutation,
   blockTaskLifecycle,
   claimTaskLifecycle,
   completeTaskLifecycle,
@@ -96,6 +97,26 @@ function handleTaskUpdate() {
   }
 
   write(JSON.stringify({ updated: task }, null, 2) + "\n");
+}
+
+function handleTaskArchive() {
+  const id = requireOption("--id");
+  const archived = archiveTaskMutation({
+    id,
+    archivedBy: readOption("--by"),
+    notes: readOption("--notes")
+  });
+
+  if (!archived) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (archived.error) {
+    writeErr(`${archived.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ archived }, null, 2) + "\n");
 }
 
 function handleTaskAnnotate() {
@@ -267,6 +288,7 @@ function handleTaskReject() {
 export {
   handleTaskAdd,
   handleTaskUpdate,
+  handleTaskArchive,
   handleTaskAnnotate,
   handleTaskAssignmentPickup,
   handleTaskPickup,

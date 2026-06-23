@@ -533,6 +533,9 @@ export function buildSwarmHandoff(overview, recommended, orchestration = null) {
 }
 
 export function deriveSwarmCloseoutCommand(overview, brief) {
+  if (["completed", "cancelled"].includes(overview?.swarm?.status)) {
+    return `node ./src/index.js swarm:archive --id ${overview.swarm.id}`;
+  }
   if (overview.readyToComplete) {
     return `node ./src/index.js swarm:done --id ${overview.swarm.id}`;
   }

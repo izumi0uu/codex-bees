@@ -817,6 +817,9 @@ export interface TaskRecord {
   reviewOutcome: string | null;
   reviewNotes: string | null;
   reviewEvidence: unknown[] | null;
+  archivedAt: string | null;
+  archivedBy: string | null;
+  archiveReason: string | null;
   dependencyReady?: boolean;
   dependencySummary?: TaskDependencySummary;
   annotations: TaskAnnotation[];
@@ -841,6 +844,11 @@ export interface SwarmRecord {
   history: SwarmHistoryEntry[];
   queuedAt: string | null;
   notes: string | null;
+  archivedAt: string | null;
+  archivedBy: string | null;
+  archiveReason: string | null;
+  archivedTaskIds: string[];
+  archivedTaskCount: number;
   createdAt: string | null;
   updatedAt: string | null;
   [key: string]: unknown;
@@ -934,11 +942,32 @@ export interface TaskListView {
   tasks: TaskRecord[];
 }
 
+export interface TaskArchiveListView {
+  kind: "task_archive_view";
+  recommendedReason: "task_archive_list_has_results" | "task_archive_list_empty";
+  counts: {
+    totalArchivedTasks: number;
+  };
+  tasks: TaskRecord[];
+}
+
 export interface TaskDetailView {
   kind: "task_detail";
   recommendedReason: "task_detail_loaded";
   metadata: TaskDetailMetadata;
   task: TaskRecord;
+}
+
+export interface TaskArchiveDetailView {
+  kind: "task_archive_detail";
+  recommendedReason: "task_archive_loaded";
+  metadata: {
+    archivedAt: string | null;
+    archivedBy: string | null;
+    hasArchiveReason: boolean;
+  };
+  task: TaskRecord;
+  summary: string;
 }
 
 export interface SwarmListView {
@@ -947,6 +976,16 @@ export interface SwarmListView {
   detailed: false;
   counts: {
     totalSwarms: number;
+  };
+  swarms: SwarmRecord[];
+}
+
+export interface SwarmArchiveListView {
+  kind: "swarm_archive_view";
+  recommendedReason: "swarm_archive_list_has_results" | "swarm_archive_list_empty";
+  counts: {
+    totalArchivedSwarms: number;
+    totalArchivedTasks: number;
   };
   swarms: SwarmRecord[];
 }
@@ -972,6 +1011,22 @@ export interface SwarmDetailView {
   recommendedReason: "swarm_detail_loaded";
   metadata: SwarmDetailMetadata;
   swarm: SwarmRecord;
+}
+
+export interface SwarmArchiveDetailView {
+  kind: "swarm_archive_detail";
+  recommendedReason: "swarm_archive_loaded";
+  swarm: SwarmRecord;
+  tasks: TaskRecord[];
+  counts: {
+    archivedTasks: number;
+  };
+  metadata: {
+    archivedAt: string | null;
+    archivedBy: string | null;
+    hasArchiveReason: boolean;
+  };
+  summary: string;
 }
 
 export interface TaskDetailMetadata {
@@ -1219,6 +1274,9 @@ export interface TaskInput {
   reviewOutcome?: string | null;
   reviewNotes?: string | null;
   reviewEvidence?: unknown[] | null;
+  archivedAt?: string | null;
+  archivedBy?: string | null;
+  archiveReason?: string | null;
   annotations?: unknown[];
 }
 
@@ -1248,6 +1306,11 @@ export interface SwarmInput {
   lanes?: SwarmLaneInput[];
   queuedAt?: string | null;
   notes?: string | null;
+  archivedAt?: string | null;
+  archivedBy?: string | null;
+  archiveReason?: string | null;
+  archivedTaskIds?: string[];
+  archivedTaskCount?: number;
 }
 
 export interface ValidationIssue {
@@ -1386,12 +1449,22 @@ export declare function startMcpServer(): Promise<void>;
 export declare function addTask(input: TaskInput): TaskRecord;
 export declare function getTask(id: string): TaskRecord | null;
 export declare function getTaskView(id: string): TaskDetailView | null;
+export declare function listArchivedTasks(): TaskRecord[];
+export declare function getArchivedTask(id: string): TaskRecord | null;
+export declare function listArchivedTasksView(): TaskArchiveListView;
+export declare function getArchivedTaskView(id: string): TaskArchiveDetailView | null;
 export declare function taskHistory(id: string): TaskHistoryView | null;
 export declare function taskBrief(id: string): TaskExecutionBrief | null;
 export declare function taskReport(id: string): TaskReportView | null;
 export declare function initSwarm(input: SwarmInput): SwarmRecord;
 export declare function getSwarm(id: string): SwarmRecord | null;
 export declare function getSwarmView(id: string): SwarmDetailView | null;
+export declare function listArchivedSwarms(): SwarmRecord[];
+export declare function getArchivedSwarm(id: string): SwarmRecord | null;
+export declare function listArchivedSwarmsView(): SwarmArchiveListView;
+export declare function getArchivedSwarmView(id: string): SwarmArchiveDetailView | null;
+export declare function archiveTask(input: { id: string; archivedBy?: string | null; notes?: string | null }): TaskRecord | { error: string };
+export declare function archiveSwarm(input: { id: string; archivedBy?: string | null; notes?: string | null }): SwarmRecord | { error: string };
 export declare function getMemory(id: string): MemoryRecord | null;
 export declare function getMemoryView(id: string): MemoryDetailView | null;
 export declare function listTasksView(): TaskListView;

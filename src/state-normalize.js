@@ -1,6 +1,6 @@
 import { VALID_QUEUE_STATUSES, VALID_SWARM_STATUSES } from "./state-rules.js";
 
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 
 export function defaultState() {
   return {
@@ -11,6 +11,8 @@ export function defaultState() {
     tasks: [],
     memories: [],
     swarms: [],
+    archivedTasks: [],
+    archivedSwarms: [],
     updatedAt: null
   };
 }
@@ -36,6 +38,9 @@ export function normalizeTask(task) {
     reviewOutcome: task.reviewOutcome ?? null,
     reviewNotes: task.reviewNotes ?? null,
     reviewEvidence: Array.isArray(task.reviewEvidence) ? task.reviewEvidence : null,
+    archivedAt: task.archivedAt ?? null,
+    archivedBy: task.archivedBy ?? null,
+    archiveReason: task.archiveReason ?? null,
     history: Array.isArray(task.history) ? task.history.map(normalizeTaskHistoryEntry) : [],
     annotations: Array.isArray(task.annotations) ? task.annotations.map(normalizeTaskAnnotation) : []
   };
@@ -130,6 +135,16 @@ export function normalizeSwarm(swarm) {
       : [],
     history: Array.isArray(swarm.history) ? swarm.history.map(normalizeSwarmHistoryEntry) : [],
     queuedAt: swarm.queuedAt ?? null,
+    archivedAt: swarm.archivedAt ?? null,
+    archivedBy: swarm.archivedBy ?? null,
+    archiveReason: swarm.archiveReason ?? null,
+    archivedTaskIds: Array.isArray(swarm.archivedTaskIds)
+      ? Array.from(new Set(swarm.archivedTaskIds.filter(Boolean)))
+      : [],
+    archivedTaskCount:
+      Number.isInteger(Number(swarm.archivedTaskCount)) && Number(swarm.archivedTaskCount) >= 0
+        ? Number(swarm.archivedTaskCount)
+        : null,
     notes: swarm.notes ?? null
   };
 }
@@ -185,6 +200,8 @@ export function normalizeState(state) {
     tasks,
     memories,
     swarms,
+    archivedTasks: Array.isArray(state.archivedTasks) ? state.archivedTasks.map(normalizeTask) : [],
+    archivedSwarms: Array.isArray(state.archivedSwarms) ? state.archivedSwarms.map(normalizeSwarm) : [],
     updatedAt: state.updatedAt ?? null
   };
 }

@@ -1,4 +1,8 @@
 import {
+  archiveSwarmMutationOperation,
+  archiveSwarmOperation,
+  archiveTaskMutationOperation,
+  archiveTaskOperation,
   addTaskMutationOperation,
   addTaskOperation,
   addTasksOperation,
@@ -88,6 +92,19 @@ export function createStateWriteEntryPoints(shared, api) {
       return updateTaskMutationOperation(input, { updateTask });
     }
 
+    function archiveTask(input) {
+      return archiveTaskOperation(input, {
+        loadState,
+        saveState,
+        findTaskIndex,
+        normalizeTask
+      });
+    }
+
+    function archiveTaskMutation(input) {
+      return archiveTaskMutationOperation(input, { archiveTask });
+    }
+
     function updateSwarm(input) {
       return updateSwarmOperation(input, {
         loadState,
@@ -99,6 +116,20 @@ export function createStateWriteEntryPoints(shared, api) {
 
     function updateSwarmMutation(input) {
       return updateSwarmMutationOperation(input, { updateSwarm });
+    }
+
+    function archiveSwarm(input) {
+      return archiveSwarmOperation(input, {
+        loadState,
+        saveState,
+        findSwarmIndex,
+        normalizeSwarm,
+        normalizeTask
+      });
+    }
+
+    function archiveSwarmMutation(input) {
+      return archiveSwarmMutationOperation(input, { archiveSwarm });
     }
 
     function queueSwarmTasks(input) {
@@ -136,8 +167,12 @@ export function createStateWriteEntryPoints(shared, api) {
     initSwarmMutation,
     updateTask,
     updateTaskMutation,
+    archiveTask,
+    archiveTaskMutation,
     updateSwarm,
     updateSwarmMutation,
+    archiveSwarm,
+    archiveSwarmMutation,
     queueSwarmTasks,
     dispatchSwarmLane,
   };

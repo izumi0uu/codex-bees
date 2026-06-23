@@ -4,6 +4,10 @@ import {
   buildSwarmMutationResult,
   buildTaskMutationResult
 } from "./state-lifecycle-views.js";
+import {
+  archiveSwarmFromSources,
+  archiveTaskFromSources
+} from "./state-archive-core.js";
 import { storeMemoryFromSources } from "./state-memory-core.js";
 import { runtimeRoleCatalog } from "./state-role-catalog.js";
 import { validateSwarmValue, validateTaskValue } from "./state-rules.js";
@@ -116,6 +120,27 @@ export function updateTaskMutationOperation(input, { updateTask }) {
   return buildTaskMutationResult(updateTask(input), "task_updated");
 }
 
+export function archiveTaskOperation(
+  input,
+  {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask
+  }
+) {
+  return archiveTaskFromSources(input, {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask
+  });
+}
+
+export function archiveTaskMutationOperation(input, { archiveTask }) {
+  return buildTaskMutationResult(archiveTask(input), "task_archived");
+}
+
 export function updateSwarmOperation(
   input,
   {
@@ -136,6 +161,29 @@ export function updateSwarmOperation(
 
 export function updateSwarmMutationOperation(input, { updateSwarm }) {
   return buildSwarmMutationResult(updateSwarm(input), "swarm_updated");
+}
+
+export function archiveSwarmOperation(
+  input,
+  {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  }
+) {
+  return archiveSwarmFromSources(input, {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  });
+}
+
+export function archiveSwarmMutationOperation(input, { archiveSwarm }) {
+  return buildSwarmMutationResult(archiveSwarm(input), "swarm_archived");
 }
 
 export function queueSwarmTasksOperation(

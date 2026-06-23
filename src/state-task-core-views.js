@@ -47,9 +47,15 @@ export function buildTaskListViewFromSources(
 }
 export function taskReportNextGate(task) {
   if (task.queueStatus === "done") {
+    if (task.swarmId) {
+      return {
+        action: "swarm_closeout",
+        command: `node ./src/index.js swarm:closeout --id ${task.swarmId}`
+      };
+    }
     return {
-      action: "archive_or_handoff",
-      command: null
+      action: "archive_task",
+      command: `node ./src/index.js task:archive --id ${task.id}`
     };
   }
   if (task.queueStatus === "ready_for_review") {
@@ -402,10 +408,17 @@ export function buildTaskBriefViewFromSources(
 export function recommendTaskAction(task, dependencyTasks = []) {
   const dependencySummary = task.dependencySummary ?? summarizeTaskDependencies(task, dependencyTasks);
   if (task.queueStatus === "done") {
+    if (task.swarmId) {
+      return {
+        actor: null,
+        action: "swarm_closeout",
+        commands: [`node ./src/index.js swarm:closeout --id ${task.swarmId}`]
+      };
+    }
     return {
       actor: null,
-      action: "complete",
-      commands: []
+      action: "archive",
+      commands: [`node ./src/index.js task:archive --id ${task.id}`]
     };
   }
 

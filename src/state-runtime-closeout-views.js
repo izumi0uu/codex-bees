@@ -1,8 +1,8 @@
 export function buildRuntimeCloseoutTaskSummary(task) {
   if (task.reviewOutcome === "approved") {
-    return `Task ${task.id} was approved and is ready for final archive or handoff.`;
+    return `Task ${task.id} was approved and is ready for final archive.`;
   }
-  return `Task ${task.id} is done and ready for closeout packaging.`;
+  return `Task ${task.id} is done and ready for archive.`;
 }
 export function buildRuntimeCloseoutTaskEntry(task, taskReport) {
   const report = taskReport(task.id);
@@ -72,11 +72,11 @@ export function buildRuntimeCloseoutView(
 ) {
   const tasks = loadState().tasks
     .map(normalizeTask)
-    .filter((task) => task.queueStatus === "done")
+    .filter((task) => task.queueStatus === "done" && !task.swarmId)
     .map((task) => buildRuntimeCloseoutTaskEntry(task, taskReport))
     .sort(compareRuntimeCloseoutTasks);
   const swarms = listSwarmOverviews()
-    .filter((overview) => overview.readyToComplete)
+    .filter((overview) => overview.readyToComplete || ["completed", "cancelled"].includes(overview?.swarm?.status))
     .map((overview) => buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout))
     .sort(compareRuntimeCloseoutSwarms);
   const nextTask = tasks[0] ?? null;

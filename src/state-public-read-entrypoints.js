@@ -11,10 +11,18 @@ import {
   taskReportFromSources
 } from "./state-task-swarm-surfaces.js";
 import {
+  getArchivedSwarmSurface,
+  getArchivedSwarmViewSurface,
+  getArchivedTaskSurface,
+  getArchivedTaskViewSurface,
   getMemorySurface,
   getMemoryViewSurface,
   getSwarmSurface,
   getTaskSurface,
+  listArchivedSwarmsSurface,
+  listArchivedSwarmsViewSurface,
+  listArchivedTasksSurface,
+  listArchivedTasksViewSurface,
   listMemoriesSurface,
   listMemoriesViewSurface,
   listSwarmOverviewsSurface,
@@ -117,6 +125,32 @@ export function createStateReadEntryPoints(shared, api) {
       });
     }
 
+    function listArchivedTasks() {
+      return listArchivedTasksSurface({
+        loadState,
+        normalizeTask
+      });
+    }
+
+    function getArchivedTask(id) {
+      return getArchivedTaskSurface(id, {
+        loadState,
+        normalizeTask
+      });
+    }
+
+    function listArchivedTasksView() {
+      return listArchivedTasksViewSurface({
+        listArchivedTasks
+      });
+    }
+
+    function getArchivedTaskView(id) {
+      return getArchivedTaskViewSurface(id, {
+        getArchivedTask
+      });
+    }
+
     function getTaskView(id) {
       return getTaskViewFromSources(id, { getTask });
     }
@@ -133,6 +167,34 @@ export function createStateReadEntryPoints(shared, api) {
       return getSwarmSurface(id, {
         loadState,
         normalizeSwarm
+      });
+    }
+
+    function listArchivedSwarms() {
+      return listArchivedSwarmsSurface({
+        loadState,
+        normalizeSwarm
+      });
+    }
+
+    function getArchivedSwarm(id) {
+      return getArchivedSwarmSurface(id, {
+        loadState,
+        normalizeSwarm
+      });
+    }
+
+    function listArchivedSwarmsView() {
+      return listArchivedSwarmsViewSurface({
+        listArchivedSwarms
+      });
+    }
+
+    function getArchivedSwarmView(id) {
+      return getArchivedSwarmViewSurface(id, {
+        getArchivedSwarm,
+        getArchivedTask,
+        listArchivedTasks
       });
     }
 
@@ -225,10 +287,18 @@ export function createStateReadEntryPoints(shared, api) {
     listSwarmOverviews,
     listSwarmsView,
     getTask,
+    listArchivedTasks,
+    getArchivedTask,
+    listArchivedTasksView,
+    getArchivedTaskView,
     getTaskView,
     taskHistory,
     taskReport,
     getSwarm,
+    listArchivedSwarms,
+    getArchivedSwarm,
+    listArchivedSwarmsView,
+    getArchivedSwarmView,
     getSwarmView,
     taskBrief,
     swarmBrief,

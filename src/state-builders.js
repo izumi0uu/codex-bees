@@ -27,6 +27,9 @@ export function buildTask(input, nextId) {
     reviewOutcome: input.reviewOutcome ?? null,
     reviewNotes: input.reviewNotes ?? null,
     reviewEvidence: input.reviewEvidence ?? null,
+    archivedAt: input.archivedAt ?? null,
+    archivedBy: input.archivedBy ?? null,
+    archiveReason: input.archiveReason ?? null,
     annotations: input.annotations ?? [],
     history: [
       {
@@ -139,6 +142,11 @@ export function buildSwarm(input, nextSwarmId) {
       }
     ],
     queuedAt: input.queuedAt ?? null,
+    archivedAt: input.archivedAt ?? null,
+    archivedBy: input.archivedBy ?? null,
+    archiveReason: input.archiveReason ?? null,
+    archivedTaskIds: input.archivedTaskIds ?? [],
+    archivedTaskCount: input.archivedTaskCount ?? null,
     notes: input.notes ?? null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()

@@ -61,18 +61,28 @@ import {
   listSkillCatalog,
   runMcpCli,
   addTask,
+  archiveTask,
+  archiveSwarm,
   startMcpServer,
   callMcpTool,
   getMemory,
   getMemoryView,
   getTask,
+  getArchivedTask,
+  getArchivedTaskView,
   taskHistory,
   taskBrief,
   taskReport,
   getTaskView,
   initSwarm,
   getSwarm,
+  getArchivedSwarm,
+  getArchivedSwarmView,
   getSwarmView,
+  listArchivedSwarms,
+  listArchivedSwarmsView,
+  listArchivedTasks,
+  listArchivedTasksView,
   listMemoriesView,
   listSwarmsView,
   listTasksView,
@@ -104,13 +114,26 @@ import {
   PACKAGE_VERSION as metadataSubpathVersion,
   PRODUCT_NAME as metadataSubpathProductName
 } from "codex-bees/metadata";
-import { addTask as addTaskStateSubpath, listTasksView as listTasksViewStateSubpath, stateFilePath as stateFilePathStateSubpath } from "codex-bees/state";
 import {
+  addTask as addTaskStateSubpath,
+  archiveTask as archiveTaskStateSubpath,
+  getArchivedTaskView as getArchivedTaskViewStateSubpath,
+  listArchivedTasksView as listArchivedTasksViewStateSubpath,
+  listTasksView as listTasksViewStateSubpath,
+  stateFilePath as stateFilePathStateSubpath
+} from "codex-bees/state";
+import {
+  archiveSwarm as archiveSwarmApi,
+  archiveTask as archiveTaskApi,
+  getArchivedSwarmView as getArchivedSwarmViewApi,
+  getArchivedTaskView as getArchivedTaskViewApi,
   getPackageMetadata as getApiPackageMetadata,
   getPlannerProfile as getApiPlannerProfile,
   getPlannerProfileView as getApiPlannerProfileView,
   getPlannerProfiles as getApiPlannerProfiles,
   getPlannerProfilesView as getApiPlannerProfilesView,
+  listArchivedSwarmsView as listArchivedSwarmsViewApi,
+  listArchivedTasksView as listArchivedTasksViewApi,
   getRuntimeReadyView as getApiRuntimeReadyView,
   getToolCatalogView as getApiToolCatalogView,
   runMcpCli as runMcpCliApi,
@@ -299,6 +322,12 @@ const apiPlannerProfileId: string | undefined = getApiPlannerProfiles()[0]?.id;
 const apiPlannerProfilesViewKind: "planner_profile_list_view" = getApiPlannerProfilesView().kind;
 const apiPlannerProfileTopology: "bounded-local" | undefined = getApiPlannerProfile()?.topology;
 const apiPlannerProfileViewKind: "planner_profile_view" = getApiPlannerProfileView().kind;
+const apiArchivedTaskListKind: "task_archive_view" = listArchivedTasksViewApi().kind;
+const apiArchivedTaskDetailKind: "task_archive_detail" | undefined = getArchivedTaskViewApi("task-1")?.kind;
+const apiArchivedSwarmListKind: "swarm_archive_view" = listArchivedSwarmsViewApi().kind;
+const apiArchivedSwarmDetailKind: "swarm_archive_detail" | undefined = getArchivedSwarmViewApi("swarm-1")?.kind;
+const apiArchiveTaskResult = archiveTaskApi({ id: "task-1", archivedBy: "tester" });
+const apiArchiveSwarmResult = archiveSwarmApi({ id: "swarm-1", archivedBy: "leader" });
 
 const subpathMcpResult: unknown = handleMcpRequestSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
 const subpathMcpToolResult: unknown = callMcpToolSubpath("runtime_contract", {});
@@ -375,6 +404,11 @@ const taskValidationReason:
   | undefined = validateTask(task.id)?.recommendedReason;
 const taskValidationReady: boolean | undefined = validateTask(task.id)?.ready;
 const taskValidationIssueCode: string | undefined = validateTask(task.id)?.issues[0]?.code;
+const taskArchiveListKind: "task_archive_view" = listArchivedTasksView().kind;
+const taskArchiveDetailKind: "task_archive_detail" | undefined = getArchivedTaskView(task.id)?.kind;
+const archivedTaskResult = archiveTask({ id: task.id, archivedBy: "tester" });
+const archivedTaskId: string | undefined = getArchivedTask(task.id)?.id;
+const archivedTaskCount: number = listArchivedTasks().length;
 
 const swarm = initSwarm({
   objective: "typed swarm",
@@ -421,6 +455,11 @@ const swarmValidationReason:
 const swarmValidationReady: boolean | undefined = validateSwarm(swarm.id)?.ready;
 const swarmValidationLane: string | undefined = validateSwarm(swarm.id)?.lanes[0]?.lane;
 const swarmValidationOverlapPath: string | undefined = validateSwarm(swarm.id)?.overlaps[0]?.path;
+const swarmArchiveListKind: "swarm_archive_view" = listArchivedSwarmsView().kind;
+const swarmArchiveDetailKind: "swarm_archive_detail" | undefined = getArchivedSwarmView(swarm.id)?.kind;
+const archivedSwarmResult = archiveSwarm({ id: swarm.id, archivedBy: "leader" });
+const archivedSwarmId: string | undefined = getArchivedSwarm(swarm.id)?.id;
+const archivedSwarmCount: number = listArchivedSwarms().length;
 
 const typedMemory = storeMemory({ content: "typed memory", namespace: "types", kind: "note", title: "typed", tags: ["types"], agent: "tester" });
 typedMemory.id;

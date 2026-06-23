@@ -6,6 +6,7 @@ import {
   claimTaskLifecycle,
   completeTaskLifecycle,
   getTaskView,
+  getArchivedTaskView,
   leaderAssignmentDispatch,
   leaderAssignmentDispatchBundle,
   leaderAssignmentDispatchPack,
@@ -14,6 +15,7 @@ import {
   leaderQueue,
   leaderWorkspace,
   listTasksView,
+  listArchivedTasksView,
   markTaskReadyForReviewLifecycle,
   previewTaskAssignment,
   previewTaskPickup,
@@ -41,6 +43,11 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createTextPayload({ tasks: listTasksView() }));
   },
 
+  task_archive_list({ id, args, metadata }) {
+    const params = { arguments: args };
+    return createSuccess(id, createTextPayload({ archivedTasks: listArchivedTasksView() }));
+  },
+
   task_get({ id, args, metadata }) {
     const params = { arguments: args };
     if (!params.arguments?.id) {
@@ -53,6 +60,20 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
     }
     
     return createSuccess(id, createTextPayload({ task }));
+  },
+
+  task_archive_get({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "task_archive_get requires arguments.id");
+    }
+    
+    const archivedTask = getArchivedTaskView(params.arguments.id);
+    if (!archivedTask) {
+      return createError(id, -32602, `Unknown archived task id: ${params.arguments.id}`);
+    }
+    
+    return createSuccess(id, createTextPayload({ archivedTask }));
   },
 
   task_history({ id, args, metadata }) {

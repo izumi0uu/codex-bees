@@ -1,9 +1,4 @@
-import {
-  filterMemories,
-  filterSwarms,
-  scoreMemory,
-  tokenize
-} from "./state-query.js";
+import { filterMemories, filterSwarms, scoreMemory, tokenize } from "./state-query.js";
 import {
   getMemoryFromSources,
   listMemoriesFromSources,
@@ -26,6 +21,22 @@ import {
   buildSwarmListView,
   buildSwarmListViewFromSources
 } from "./state-swarm-views.js";
+import {
+  buildArchivedSwarmDetailView,
+  buildArchivedSwarmListView,
+  buildArchivedTaskDetailView,
+  buildArchivedTaskListView,
+  buildArchivedSwarmDetailViewFromSources,
+  buildArchivedSwarmListViewFromSources,
+  buildArchivedTaskDetailViewFromSources,
+  buildArchivedTaskListViewFromSources
+} from "./state-archive-views.js";
+import {
+  getArchivedSwarmFromSources,
+  getArchivedTaskFromSources,
+  listArchivedSwarmsFromSources,
+  listArchivedTasksFromSources
+} from "./state-archive-core.js";
 import {
   getTaskFromSources,
   listTasksFromSources
@@ -124,6 +135,82 @@ export function getTaskSurface(id, { loadState, normalizeTask }) {
     loadState,
     normalizeTask
   });
+}
+
+export function listArchivedTasksSurface({ loadState, normalizeTask }) {
+  return listArchivedTasksFromSources({
+    loadState,
+    normalizeTask
+  });
+}
+
+export function getArchivedTaskSurface(id, { loadState, normalizeTask }) {
+  return getArchivedTaskFromSources(id, {
+    loadState,
+    normalizeTask
+  });
+}
+
+export function listArchivedTasksViewSurface({ listArchivedTasks }) {
+  return buildArchivedTaskListViewFromSources(
+    {
+      listArchivedTasks
+    },
+    {
+      buildArchivedTaskListView
+    }
+  );
+}
+
+export function getArchivedTaskViewSurface(id, { getArchivedTask }) {
+  return buildArchivedTaskDetailViewFromSources(
+    id,
+    {
+      getArchivedTask
+    },
+    {
+      buildArchivedTaskDetailView
+    }
+  );
+}
+
+export function listArchivedSwarmsSurface({ loadState, normalizeSwarm }) {
+  return listArchivedSwarmsFromSources({
+    loadState,
+    normalizeSwarm
+  });
+}
+
+export function getArchivedSwarmSurface(id, { loadState, normalizeSwarm }) {
+  return getArchivedSwarmFromSources(id, {
+    loadState,
+    normalizeSwarm
+  });
+}
+
+export function listArchivedSwarmsViewSurface({ listArchivedSwarms }) {
+  return buildArchivedSwarmListViewFromSources(
+    {
+      listArchivedSwarms
+    },
+    {
+      buildArchivedSwarmListView
+    }
+  );
+}
+
+export function getArchivedSwarmViewSurface(id, { getArchivedSwarm, getArchivedTask, listArchivedTasks }) {
+  return buildArchivedSwarmDetailViewFromSources(
+    id,
+    {
+      getArchivedSwarm,
+      getArchivedTask,
+      listArchivedTasks
+    },
+    {
+      buildArchivedSwarmDetailView
+    }
+  );
 }
 
 export function getSwarmSurface(id, { loadState, normalizeSwarm }) {

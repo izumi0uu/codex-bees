@@ -81,6 +81,9 @@ import {
   handleTaskAdd,
   handleTaskAnnotate,
   handleTaskApprove,
+  handleTaskArchive,
+  handleTaskArchiveGet,
+  handleTaskArchiveList,
   handleTaskAssignmentPickup,
   handleTaskAssignmentPreview,
   handleTaskBlock,
@@ -116,6 +119,9 @@ import {
   handlePlanQueue,
   handlePlanSwarm,
   handlePlanSwarmQueue,
+  handleSwarmArchive,
+  handleSwarmArchiveGet,
+  handleSwarmArchiveList,
   handleSwarmBlock,
   handleSwarmBlockers,
   handleSwarmBrief,
@@ -352,6 +358,12 @@ async function runCommand(command) {
     case "task:get":
       handleTaskGet();
       return;
+    case "task:archive:list":
+      handleTaskArchiveList();
+      return;
+    case "task:archive:get":
+      handleTaskArchiveGet();
+      return;
     case "task:history":
       handleTaskHistory();
       return;
@@ -433,6 +445,9 @@ async function runCommand(command) {
     case "task:done":
       handleTaskDone();
       return;
+    case "task:archive":
+      handleTaskArchive();
+      return;
     case "task:release":
       handleTaskRelease();
       return;
@@ -451,6 +466,12 @@ async function runCommand(command) {
     case "swarm:get":
       handleSwarmGet();
       return;
+    case "swarm:archive:list":
+      handleSwarmArchiveList();
+      return;
+    case "swarm:archive:get":
+      handleSwarmArchiveGet();
+      return;
     case "swarm:brief":
       handleSwarmBrief();
       return;
@@ -462,6 +483,9 @@ async function runCommand(command) {
       return;
     case "swarm:closeout":
       handleSwarmCloseout();
+      return;
+    case "swarm:archive":
+      handleSwarmArchive();
       return;
     case "swarm:dispatch-bundle":
       handleSwarmDispatchBundle();

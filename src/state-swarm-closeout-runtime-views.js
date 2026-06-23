@@ -16,15 +16,19 @@ export function buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout) {
 
 export function buildRuntimeCloseoutSummary(tasks, swarms, next) {
   if (tasks.length === 0 && swarms.length === 0) {
-    return "Runtime closeout has no finished tasks or swarms waiting on final closure.";
+    return "Runtime closeout has no finished tasks or swarms waiting on final archive.";
   }
 
   if (!next) {
-    return `Runtime closeout is tracking ${tasks.length + swarms.length} finished artifact${tasks.length + swarms.length === 1 ? "" : "s"}.`;
+    return `Runtime closeout is tracking ${tasks.length + swarms.length} finished artifact${tasks.length + swarms.length === 1 ? "" : "s"} ready for archive.`;
   }
 
   if (next.kind === "task") {
-    return `Runtime closeout should package ${next.taskId} first.`;
+    return `Runtime closeout should archive task ${next.taskId} first.`;
+  }
+
+  if (next.command?.includes("swarm:archive")) {
+    return `Runtime closeout should archive swarm ${next.swarmId} first.`;
   }
 
   return `Runtime closeout should finish swarm ${next.swarmId} first.`;

@@ -3,14 +3,17 @@ import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import {
   activateSwarm,
   addTasks,
+  archiveSwarmMutation,
   blockSwarm,
   cancelSwarm,
   completeSwarm,
   dispatchSwarmLane,
+  getArchivedSwarmView,
   getMemoryView,
   getSwarmView,
   initSwarm,
   initSwarmMutation,
+  listArchivedSwarmsView,
   listMemoriesView,
   listSwarmsView,
   queueSwarmTasks,
@@ -69,6 +72,20 @@ function handleSwarmGet() {
   write(JSON.stringify({ swarm }, null, 2) + "\n");
 }
 
+function handleSwarmArchiveList() {
+  write(JSON.stringify({ archivedSwarms: listArchivedSwarmsView() }, null, 2) + "\n");
+}
+
+function handleSwarmArchiveGet() {
+  const id = requireOption("--id");
+  const archivedSwarm = getArchivedSwarmView(id);
+  if (!archivedSwarm) {
+    writeErr(`Unknown archived swarm id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ archivedSwarm }, null, 2) + "\n");
+}
+
 function handleSwarmBrief() {
   const id = requireOption("--id");
   const brief = swarmBrief(id);
@@ -107,6 +124,24 @@ function handleSwarmCloseout() {
     exit(1);
   }
   write(JSON.stringify({ closeout }, null, 2) + "\n");
+}
+
+function handleSwarmArchive() {
+  const id = requireOption("--id");
+  const archived = archiveSwarmMutation({
+    id,
+    archivedBy: readOption("--by"),
+    notes: readOption("--notes")
+  });
+  if (!archived) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (archived.error) {
+    writeErr(`${archived.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ archived }, null, 2) + "\n");
 }
 
 function handleSwarmDispatchBundle() {
@@ -294,10 +329,13 @@ export {
   printSwarms,
   handleSwarmInit,
   handleSwarmGet,
+  handleSwarmArchiveList,
+  handleSwarmArchiveGet,
   handleSwarmBrief,
   handleSwarmBundle,
   handleSwarmBlockers,
   handleSwarmCloseout,
+  handleSwarmArchive,
   handleSwarmDispatchBundle,
   handleSwarmUpdate,
   handleSwarmCheck,

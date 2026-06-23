@@ -36,6 +36,10 @@ export function buildSwarmBundleSummary(overview, laneBundles) {
 }
 
 export function buildSwarmCloseoutSummary(overview, command) {
+  if (command?.includes("swarm:archive")) {
+    return `Swarm ${overview.swarm.id} is ${overview.swarm.status} and ready for final archive.`;
+  }
+
   if (overview.readyToComplete) {
     return `Swarm ${overview.swarm.id} can be explicitly closed out now that all ${overview.counts.totalLanes} lanes are done.`;
   }
@@ -153,6 +157,9 @@ export function deriveSwarmBlockersReason({ blockedLanes }) {
 }
 
 export function deriveSwarmCloseoutReason({ overview, command }) {
+  if (command?.includes("swarm:archive")) {
+    return "swarm_archive_ready";
+  }
   if (overview?.readyToComplete) {
     return "swarm_closeout_ready";
   }

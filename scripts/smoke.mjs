@@ -107,6 +107,26 @@ function runNpm(args, options = {}) {
   });
 }
 
+function parseJsonRpcLines(stdout) {
+  return stdout
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
+function indexJsonRpcById(messages) {
+  return new Map(
+    messages
+      .filter((message) => typeof message?.id !== "undefined")
+      .map((message) => [message.id, message])
+  );
+}
+
+function parseJsonRpcTextResult(message) {
+  return JSON.parse(message.result.content[0].text);
+}
+
 function runInstalledTypecheck(label, files) {
   const command = [
     "exec",
@@ -3506,7 +3526,7 @@ if (
     rule.includes("Run the smallest fresh checks that can prove or disprove acceptance.")
   ) ||
   taskExecutionBrief.roles?.verifier?.promptPath !== ".codex/agents/tester.md" ||
-  taskExecutionBrief.recommendedNextAction !== "complete"
+  taskExecutionBrief.recommendedNextAction !== "archive"
 ) {
   console.error("[smoke:task-brief] expected execution brief with owner/verifier prompt paths");
   process.exit(1);
@@ -3568,6 +3588,8 @@ if (
   taskReportDone.counts?.annotationEntries !== taskReportDone.evidence?.annotations.length ||
   taskReportDone.counts?.recentHistoryEntries !== taskReportDone.evidence?.recentHistory.length ||
   taskReportDone.closure?.reviewOutcome !== "approved" ||
+  taskReportDone.closure?.nextGate?.action !== "archive_task" ||
+  taskReportDone.closure?.nextGate?.command !== `node ./src/index.js task:archive --id ${smokeTaskId}` ||
   taskReportDone.acceptance?.[0]?.status !== "verified" ||
   taskReportDone.evidence?.annotations?.at(-1)?.content !== "verified with smoke coverage"
 ) {
@@ -3851,9 +3873,8 @@ if (
   process.exit(1);
 }
 
-const corruptExists = existsSync(".codex-bees") &&
-  readFileSync(statePath, "utf8").includes("\"version\": 3");
-if (!corruptExists) {
+const recoveredState = existsSync(".codex-bees") ? JSON.parse(readFileSync(statePath, "utf8")) : null;
+if (!Number.isInteger(recoveredState?.version) || recoveredState.version < 1) {
   console.error("[smoke:durability-recover] expected rebuilt state file with version");
   process.exit(1);
 }
@@ -5304,9 +5325,9 @@ const swarmCloseoutCli = JSON.parse(
 ).closeout;
 if (
   swarmCloseoutCli.kind !== "swarm_closeout" ||
-  swarmCloseoutCli.recommendedReason !== "swarm_closeout_ready" ||
+  swarmCloseoutCli.recommendedReason !== "swarm_archive_ready" ||
   swarmCloseoutCli.readyToComplete !== true ||
-  swarmCloseoutCli.command !== "node ./src/index.js swarm:done --id swarm-1" ||
+  swarmCloseoutCli.command !== "node ./src/index.js swarm:archive --id swarm-1" ||
   swarmCloseoutCli.bundle?.swarm?.id !== "swarm-1"
 ) {
   console.error("[smoke:swarm-closeout] expected CLI swarm closeout bundle with explicit close command");
@@ -5423,6 +5444,151 @@ if (
 }
 run("swarm-dispatch-none", ["./src/index.js", "swarm:dispatch", "--id", "swarm-1", "--by", "worker-gamma"], 1);
 run("swarm-queue-invalid", ["./src/index.js", "swarm:queue", "--id", "swarm-1"], 1);
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("archive-cli-task-add", [
+  "./src/index.js",
+  "task:add",
+  "--title",
+  "Archive standalone smoke",
+  "--owner",
+  "executor",
+  "--verifier",
+  "tester",
+  "--scope",
+  "src/index.js",
+  "--acceptance",
+  "archive standalone",
+  "--verification",
+  "archive standalone"
+]);
+run("archive-cli-task-claim", ["./src/index.js", "task:claim", "--id", "task-1", "--by", "worker-archive"]);
+run("archive-cli-task-review", ["./src/index.js", "task:review", "--id", "task-1", "--by", "worker-archive"]);
+run("archive-cli-task-approve", [
+  "./src/index.js",
+  "task:approve",
+  "--id",
+  "task-1",
+  "--by",
+  "tester",
+  "--evidence",
+  "archive smoke"
+]);
+const archiveCliTaskCloseout = JSON.parse(
+  run("archive-cli-runtime-closeout-before", ["./src/index.js", "runtime:closeout"]).stdout
+).closeout;
+if (
+  archiveCliTaskCloseout.recommendedReason !== "approved_task_ready" ||
+  archiveCliTaskCloseout.counts?.tasksReady !== 1 ||
+  archiveCliTaskCloseout.counts?.swarmsReady !== 0 ||
+  archiveCliTaskCloseout.next?.kind !== "task" ||
+  archiveCliTaskCloseout.next?.command !== "node ./src/index.js task:archive --id task-1"
+) {
+  console.error("[smoke:archive-cli-task-closeout] expected standalone task archive closeout");
+  process.exit(1);
+}
+const archiveCliTask = JSON.parse(
+  run("archive-cli-task-archive", ["./src/index.js", "task:archive", "--id", "task-1", "--by", "tester", "--notes", "standalone closeout archived"]).stdout
+).archived;
+const archiveCliTaskList = JSON.parse(
+  run("archive-cli-task-archive-list", ["./src/index.js", "task:archive:list"]).stdout
+).archivedTasks;
+const archiveCliTaskGet = JSON.parse(
+  run("archive-cli-task-archive-get", ["./src/index.js", "task:archive:get", "--id", "task-1"]).stdout
+).archivedTask;
+const archiveCliTaskCloseoutAfter = JSON.parse(
+  run("archive-cli-runtime-closeout-after", ["./src/index.js", "runtime:closeout"]).stdout
+).closeout;
+if (
+  archiveCliTask?.kind !== "task_mutation" ||
+  archiveCliTask?.recommendedReason !== "task_archived" ||
+  archiveCliTask?.task?.archivedBy !== "tester" ||
+  archiveCliTask?.task?.archiveReason !== "standalone closeout archived" ||
+  archiveCliTaskList?.kind !== "task_archive_view" ||
+  archiveCliTaskList?.recommendedReason !== "task_archive_list_has_results" ||
+  archiveCliTaskList?.counts?.totalArchivedTasks !== 1 ||
+  archiveCliTaskGet?.kind !== "task_archive_detail" ||
+  archiveCliTaskGet?.metadata?.archivedBy !== "tester" ||
+  archiveCliTaskGet?.metadata?.hasArchiveReason !== true ||
+  archiveCliTaskGet?.task?.id !== "task-1" ||
+  archiveCliTaskCloseoutAfter?.recommendedReason !== "no_closeout_ready" ||
+  archiveCliTaskCloseoutAfter?.counts?.totalReady !== 0
+) {
+  console.error("[smoke:archive-cli-task] expected standalone archive lifecycle and archive views");
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+run("archive-cli-swarm-init", [
+  "./src/index.js",
+  "swarm:init",
+  "--objective",
+  "Archive swarm smoke",
+  "--owner",
+  "leader",
+  "--max-workers",
+  "1",
+  "--lanes",
+  JSON.stringify([
+    {
+      lane: "lane-archive",
+      summary: "Archive a swarm lane",
+      owner: "executor",
+      verifier: "tester",
+      scope: ["src/state.js"],
+      acceptance: ["lane archived"],
+      verification: ["swarm archive closeout ready"]
+    }
+  ])
+]);
+run("archive-cli-swarm-queue", ["./src/index.js", "swarm:queue", "--id", "swarm-1"]);
+run("archive-cli-swarm-dispatch", ["./src/index.js", "swarm:dispatch", "--id", "swarm-1", "--by", "worker-archive", "--owner", "executor"]);
+run("archive-cli-swarm-review", ["./src/index.js", "task:review", "--id", "task-1", "--by", "worker-archive"]);
+run("archive-cli-swarm-approve", ["./src/index.js", "task:approve", "--id", "task-1", "--by", "tester", "--notes", "swarm lane approved"]);
+run("archive-cli-swarm-done", ["./src/index.js", "swarm:done", "--id", "swarm-1"]);
+const archiveCliSwarmCloseout = JSON.parse(
+  run("archive-cli-swarm-closeout", ["./src/index.js", "swarm:closeout", "--id", "swarm-1"]).stdout
+).closeout;
+if (
+  archiveCliSwarmCloseout.recommendedReason !== "swarm_archive_ready" ||
+  archiveCliSwarmCloseout.command !== "node ./src/index.js swarm:archive --id swarm-1"
+) {
+  console.error("[smoke:archive-cli-swarm-closeout] expected swarm archive closeout command");
+  process.exit(1);
+}
+const archiveCliSwarmTaskArchiveAttempt = run("archive-cli-swarm-task-archive-attempt", ["./src/index.js", "task:archive", "--id", "task-1"], 1);
+if (!String(archiveCliSwarmTaskArchiveAttempt.stderr || archiveCliSwarmTaskArchiveAttempt.stdout).includes("must be archived through swarm:archive")) {
+  console.error("[smoke:archive-cli-swarm-task-archive-attempt] expected task archive guard for swarm-linked task");
+  process.exit(1);
+}
+const archiveCliSwarm = JSON.parse(
+  run("archive-cli-swarm-archive", ["./src/index.js", "swarm:archive", "--id", "swarm-1", "--by", "leader", "--notes", "swarm archive smoke"]).stdout
+).archived;
+const archiveCliSwarmList = JSON.parse(
+  run("archive-cli-swarm-archive-list", ["./src/index.js", "swarm:archive:list"]).stdout
+).archivedSwarms;
+const archiveCliSwarmGet = JSON.parse(
+  run("archive-cli-swarm-archive-get", ["./src/index.js", "swarm:archive:get", "--id", "swarm-1"]).stdout
+).archivedSwarm;
+if (
+  archiveCliSwarm?.kind !== "swarm_mutation" ||
+  archiveCliSwarm?.recommendedReason !== "swarm_archived" ||
+  archiveCliSwarm?.swarm?.archivedBy !== "leader" ||
+  archiveCliSwarm?.swarm?.archivedTaskCount !== 1 ||
+  archiveCliSwarm?.swarm?.archivedTaskIds?.length !== 1 ||
+  archiveCliSwarmList?.kind !== "swarm_archive_view" ||
+  archiveCliSwarmList?.recommendedReason !== "swarm_archive_list_has_results" ||
+  archiveCliSwarmList?.counts?.totalArchivedSwarms !== 1 ||
+  archiveCliSwarmList?.counts?.totalArchivedTasks !== 1 ||
+  archiveCliSwarmGet?.kind !== "swarm_archive_detail" ||
+  archiveCliSwarmGet?.metadata?.archivedBy !== "leader" ||
+  archiveCliSwarmGet?.metadata?.hasArchiveReason !== true ||
+  archiveCliSwarmGet?.counts?.archivedTasks !== 1 ||
+  archiveCliSwarmGet?.tasks?.[0]?.swarmId !== "swarm-1"
+) {
+  console.error("[smoke:archive-cli-swarm] expected swarm archive lifecycle and archive views");
+  process.exit(1);
+}
 
 rmSync(".codex-bees", { recursive: true, force: true });
 const invalidSwarmJson = JSON.stringify([
@@ -8542,8 +8708,8 @@ if (
   swarmSyncPayload?.synced?.recommendedReason !== "completed_swarm_unchanged" ||
   swarmBundlePayload?.bundle?.recommendedReason !== "swarm_ready_to_complete" ||
   swarmBundlePayload?.bundle?.lanes?.[0]?.report?.task?.id !== "task-1" ||
-  swarmCloseoutPayload?.closeout?.recommendedReason !== "swarm_closeout_ready" ||
-  swarmCloseoutPayload?.closeout?.command !== "node ./src/index.js swarm:done --id swarm-1" ||
+  swarmCloseoutPayload?.closeout?.recommendedReason !== "swarm_archive_ready" ||
+  swarmCloseoutPayload?.closeout?.command !== "node ./src/index.js swarm:archive --id swarm-1" ||
   leaderWorkspacePayload?.workspace?.recommendedReason !== "closeout_focus_priority" ||
   leaderWorkspacePayload?.workspace?.focus?.swarmId !== "swarm-1" ||
   leaderWorkspacePayload?.workspace?.focus?.bundle?.swarm?.id !== "swarm-1" ||
@@ -8938,6 +9104,251 @@ if (
 ) {
   console.error("[smoke:task-add-mcp] expected persisted MCP metadata");
   console.error(taskAddMcp.stderr || taskAddMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const taskArchiveMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_add",
+      arguments: {
+        title: "mcp archive task",
+        owner: "executor",
+        verifier: "tester",
+        scope: ["src/index.js"],
+        acceptance: ["archived through MCP"],
+        verification: ["archive list returns archived task"]
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "task_claim",
+      arguments: { id: "task-1", claimedBy: "mcp-worker" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "task_ready_for_review",
+      arguments: { id: "task-1", claimedBy: "mcp-worker" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "task_approve",
+      arguments: { id: "task-1", reviewedBy: "tester", reviewEvidence: ["archive through MCP"] }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
+      name: "task_archive",
+      arguments: { id: "task-1", archivedBy: "tester", notes: "mcp archive smoke" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 7,
+    method: "tools/call",
+    params: {
+      name: "task_archive_list",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 8,
+    method: "tools/call",
+    params: {
+      name: "task_archive_get",
+      arguments: { id: "task-1" }
+    }
+  })
+].join("\n") + "\n";
+const taskArchiveMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: taskArchiveMcpInput,
+  encoding: "utf8"
+});
+const taskArchiveMcpMessages = parseJsonRpcLines(taskArchiveMcp.stdout);
+const taskArchiveMcpById = indexJsonRpcById(taskArchiveMcpMessages);
+const taskArchiveMcpPayload = parseJsonRpcTextResult(taskArchiveMcpById.get(6));
+const taskArchiveMcpListPayload = parseJsonRpcTextResult(taskArchiveMcpById.get(7));
+const taskArchiveMcpGetPayload = parseJsonRpcTextResult(taskArchiveMcpById.get(8));
+if (
+  taskArchiveMcp.status !== 0 ||
+  taskArchiveMcpPayload?.archived?.kind !== "task_mutation" ||
+  taskArchiveMcpPayload?.archived?.recommendedReason !== "task_archived" ||
+  taskArchiveMcpPayload?.archived?.task?.archiveReason !== "mcp archive smoke" ||
+  taskArchiveMcpListPayload?.archivedTasks?.kind !== "task_archive_view" ||
+  taskArchiveMcpListPayload?.archivedTasks?.recommendedReason !== "task_archive_list_has_results" ||
+  taskArchiveMcpGetPayload?.archivedTask?.kind !== "task_archive_detail" ||
+  taskArchiveMcpGetPayload?.archivedTask?.metadata?.archivedBy !== "tester"
+) {
+  console.error("[smoke:task-archive-mcp] expected MCP task archive lifecycle and archive views");
+  console.error(taskArchiveMcp.stderr || taskArchiveMcp.stdout);
+  process.exit(1);
+}
+
+rmSync(".codex-bees", { recursive: true, force: true });
+const swarmArchiveMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "swarm_init",
+      arguments: {
+        objective: "mcp swarm archive",
+        owner: "leader",
+        maxWorkers: 1,
+        lanes: [
+          {
+            lane: "lane-archive",
+            summary: "Archive lane",
+            owner: "executor",
+            verifier: "tester",
+            scope: ["src/mcp.js"],
+            acceptance: ["lane archived"],
+            verification: ["swarm archive surfaced"]
+          }
+        ]
+      }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "swarm_queue_tasks",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "swarm_dispatch",
+      arguments: { id: "swarm-1", claimedBy: "mcp-worker", owner: "executor" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "task_ready_for_review",
+      arguments: { id: "task-1", claimedBy: "mcp-worker" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
+      name: "task_done",
+      arguments: { id: "task-1", reviewedBy: "tester", reviewEvidence: ["mcp swarm archive"] }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 7,
+    method: "tools/call",
+    params: {
+      name: "swarm_done",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 8,
+    method: "tools/call",
+    params: {
+      name: "swarm_closeout",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 9,
+    method: "tools/call",
+    params: {
+      name: "task_archive",
+      arguments: { id: "task-1", archivedBy: "tester" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 10,
+    method: "tools/call",
+    params: {
+      name: "swarm_archive",
+      arguments: { id: "swarm-1", archivedBy: "leader", notes: "mcp swarm archive smoke" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 11,
+    method: "tools/call",
+    params: {
+      name: "swarm_archive_list",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 12,
+    method: "tools/call",
+    params: {
+      name: "swarm_archive_get",
+      arguments: { id: "swarm-1" }
+    }
+  })
+].join("\n") + "\n";
+const swarmArchiveMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: swarmArchiveMcpInput,
+  encoding: "utf8"
+});
+const swarmArchiveMcpMessages = parseJsonRpcLines(swarmArchiveMcp.stdout);
+const swarmArchiveMcpById = indexJsonRpcById(swarmArchiveMcpMessages);
+const swarmArchiveCloseoutPayload = parseJsonRpcTextResult(swarmArchiveMcpById.get(8));
+const swarmArchiveTaskAttempt = swarmArchiveMcpById.get(9);
+const swarmArchiveMcpPayload = parseJsonRpcTextResult(swarmArchiveMcpById.get(10));
+const swarmArchiveMcpListPayload = parseJsonRpcTextResult(swarmArchiveMcpById.get(11));
+const swarmArchiveMcpGetPayload = parseJsonRpcTextResult(swarmArchiveMcpById.get(12));
+if (
+  swarmArchiveMcp.status !== 0 ||
+  swarmArchiveCloseoutPayload?.closeout?.recommendedReason !== "swarm_archive_ready" ||
+  swarmArchiveCloseoutPayload?.closeout?.command !== "node ./src/index.js swarm:archive --id swarm-1" ||
+  !swarmArchiveTaskAttempt?.error?.message?.includes("must be archived through swarm:archive") ||
+  swarmArchiveMcpPayload?.archived?.kind !== "swarm_mutation" ||
+  swarmArchiveMcpPayload?.archived?.recommendedReason !== "swarm_archived" ||
+  swarmArchiveMcpPayload?.archived?.swarm?.archivedTaskCount !== 1 ||
+  swarmArchiveMcpListPayload?.archivedSwarms?.kind !== "swarm_archive_view" ||
+  swarmArchiveMcpListPayload?.archivedSwarms?.recommendedReason !== "swarm_archive_list_has_results" ||
+  swarmArchiveMcpGetPayload?.archivedSwarm?.kind !== "swarm_archive_detail" ||
+  swarmArchiveMcpGetPayload?.archivedSwarm?.metadata?.archivedBy !== "leader"
+) {
+  console.error("[smoke:swarm-archive-mcp] expected MCP swarm archive lifecycle and archive views");
+  console.error(swarmArchiveMcp.stderr || swarmArchiveMcp.stdout);
   process.exit(1);
 }
 

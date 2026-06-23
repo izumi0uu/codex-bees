@@ -1,4 +1,5 @@
 import {
+  getArchivedTaskView,
   addTaskLifecycle,
   annotateTaskMutation,
   approveTaskLifecycle,
@@ -13,6 +14,7 @@ import {
   leaderAssignments,
   leaderQueue,
   leaderWorkspace,
+  listArchivedTasksView,
   listTasksView,
   markTaskReadyForReviewLifecycle,
   previewTaskAssignment,
@@ -47,6 +49,20 @@ function handleTaskGet() {
     exit(1);
   }
   write(JSON.stringify({ task }, null, 2) + "\n");
+}
+
+function handleTaskArchiveList() {
+  write(JSON.stringify({ archivedTasks: listArchivedTasksView() }, null, 2) + "\n");
+}
+
+function handleTaskArchiveGet() {
+  const id = requireOption("--id");
+  const archivedTask = getArchivedTaskView(id);
+  if (!archivedTask) {
+    writeErr(`Unknown archived task id: ${id}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ archivedTask }, null, 2) + "\n");
 }
 
 function handleTaskHistory() {
@@ -125,6 +141,8 @@ function handleTaskAssignmentPreview() {
 export {
   printTasks,
   handleTaskGet,
+  handleTaskArchiveList,
+  handleTaskArchiveGet,
   handleTaskHistory,
   handleTaskReport,
   handleTaskBrief,

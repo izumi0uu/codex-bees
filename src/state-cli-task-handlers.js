@@ -1,6 +1,8 @@
 export {
   printTasks,
   handleTaskGet,
+  handleTaskArchiveList,
+  handleTaskArchiveGet,
   handleTaskHistory,
   handleTaskReport,
   handleTaskBrief,
@@ -13,6 +15,7 @@ export {
 export {
   handleTaskAdd,
   handleTaskUpdate,
+  handleTaskArchive,
   handleTaskAnnotate,
   handleTaskAssignmentPickup,
   handleTaskPickup,

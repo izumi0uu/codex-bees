@@ -2,6 +2,7 @@ import {
   addTaskLifecycle,
   annotateTaskMutation,
   approveTaskLifecycle,
+  archiveTaskMutation,
   blockTaskLifecycle,
   claimTaskLifecycle,
   completeTaskLifecycle,
@@ -168,6 +169,28 @@ const TASK_LIFECYCLE_MCP_TOOL_HANDLERS = {
     }
     
     return createSuccess(id, createTextPayload({ validation }));
+  },
+
+  task_archive({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "task_archive requires arguments.id");
+    }
+
+    const archived = archiveTaskMutation({
+      id: params.arguments.id,
+      archivedBy: params.arguments.archivedBy,
+      notes: params.arguments.notes
+    });
+
+    if (!archived) {
+      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+    }
+    if (archived.error) {
+      return createError(id, -32602, archived.error);
+    }
+
+    return createSuccess(id, createTextPayload({ archived }));
   },
 
   task_claim({ id, args, metadata }) {

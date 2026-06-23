@@ -56,6 +56,25 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "swarm_archive_list",
+    description: "List archived local swarm contracts from the persistent state store.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "swarm_archive_get",
+    description: "Get one archived local swarm contract by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
     name: "swarm_brief",
     description: "Render an execution brief for one local swarm contract.",
     inputSchema: {
@@ -96,6 +115,19 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
       required: ["id"],
       properties: {
         id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_archive",
+    description: "Archive one completed or cancelled swarm together with its linked lane tasks.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        archivedBy: { type: "string" },
+        notes: { type: "string" }
       }
     }
   },

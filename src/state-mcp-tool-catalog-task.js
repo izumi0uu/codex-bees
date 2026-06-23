@@ -72,6 +72,25 @@ export const TASK_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "task_archive_list",
+    description: "List archived local coordination tasks from the persistent state store.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "task_archive_get",
+    description: "Get one archived local coordination task by id.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" }
+      }
+    }
+  },
+  {
     name: "task_history",
     description: "Get structured handoff history for one local coordination task.",
     inputSchema: {
@@ -360,6 +379,19 @@ export const TASK_MCP_TOOL_CATALOG = [
       required: ["id"],
       properties: {
         id: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_archive",
+    description: "Archive one completed standalone local coordination task.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        archivedBy: { type: "string" },
+        notes: { type: "string" }
       }
     }
   },

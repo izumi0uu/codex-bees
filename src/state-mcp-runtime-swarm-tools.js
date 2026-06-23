@@ -2,14 +2,17 @@ import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
 import {
   activateSwarm,
   addTasks,
+  archiveSwarmMutation,
   blockSwarm,
   cancelSwarm,
   completeSwarm,
   dispatchSwarmLane,
+  getArchivedSwarmView,
   getMemoryView,
   getSwarmView,
   initSwarm,
   initSwarmMutation,
+  listArchivedSwarmsView,
   listMemoriesView,
   listSwarmsView,
   queueSwarmTasks,
@@ -73,6 +76,25 @@ const SWARM_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createTextPayload({ swarm }));
   },
 
+  swarm_archive_list({ id, args, metadata }) {
+    const params = { arguments: args };
+    return createSuccess(id, createTextPayload({ archivedSwarms: listArchivedSwarmsView() }));
+  },
+
+  swarm_archive_get({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "swarm_archive_get requires arguments.id");
+    }
+
+    const archivedSwarm = getArchivedSwarmView(params.arguments.id);
+    if (!archivedSwarm) {
+      return createError(id, -32602, `Unknown archived swarm id: ${params.arguments.id}`);
+    }
+
+    return createSuccess(id, createTextPayload({ archivedSwarm }));
+  },
+
   swarm_bundle({ id, args, metadata }) {
     const params = { arguments: args };
     if (!params.arguments?.id) {
@@ -113,6 +135,28 @@ const SWARM_MCP_TOOL_HANDLERS = {
     }
     
     return createSuccess(id, createTextPayload({ closeout }));
+  },
+
+  swarm_archive({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "swarm_archive requires arguments.id");
+    }
+
+    const archived = archiveSwarmMutation({
+      id: params.arguments.id,
+      archivedBy: params.arguments.archivedBy,
+      notes: params.arguments.notes
+    });
+
+    if (!archived) {
+      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+    }
+    if (archived.error) {
+      return createError(id, -32602, archived.error);
+    }
+
+    return createSuccess(id, createTextPayload({ archived }));
   },
 
   swarm_dispatch_bundle({ id, args, metadata }) {
