@@ -1,10 +1,15 @@
 import { buildSwarmHistoryEntry } from "./state-builders.js";
+import { derivePersistedSwarmOrchestration } from "./state-swarm-orchestration-persist.js";
 import { appendSwarmHistoryEntry } from "./state-swarm-history.js";
 
 export function buildSyncedSwarmState(current, derivedStatus, updatedAt = new Date().toISOString()) {
+  const orchestration = derivePersistedSwarmOrchestration(current);
   const next = {
     ...current,
     status: derivedStatus,
+    executionShape: orchestration.executionShape,
+    waveCount: orchestration.waveCount,
+    waves: orchestration.waves,
     updatedAt
   };
 
@@ -108,6 +113,7 @@ export function syncLoadedSwarmState(
 
 export function buildTransitionedSwarmState(current, input, updatedAt = new Date().toISOString()) {
   const nextStatus = input.nextStatus;
+  const orchestration = derivePersistedSwarmOrchestration(current);
   const statusType =
     nextStatus === "active"
       ? "activated"
@@ -122,6 +128,9 @@ export function buildTransitionedSwarmState(current, input, updatedAt = new Date
   return {
     ...current,
     status: nextStatus,
+    executionShape: orchestration.executionShape,
+    waveCount: orchestration.waveCount,
+    waves: orchestration.waves,
     ...(input.owner !== undefined ? { owner: input.owner } : {}),
     ...(input.notes !== undefined ? { notes: input.notes } : {}),
     history: appendSwarmHistoryEntry(
