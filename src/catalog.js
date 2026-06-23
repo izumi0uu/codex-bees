@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { cwd } from "node:process";
 import { fileURLToPath } from "node:url";
+import { createCollectionView, createResolvedItemView } from "./state-view-helpers.js";
 
 const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -263,35 +264,33 @@ function resolveCatalogEntryFilePath(entryType, id) {
 }
 
 function createCatalogDocumentView(entryType, id, entry) {
-  if (!entry) {
-    return {
-      kind: "runtime_catalog_document_view",
-      recommendedReason: "catalog_document_missing",
-      entryType,
-      id: id ?? null,
-      matchedId: null,
-      document: null
-    };
-  }
-
-  const resolvedPath = resolveCatalogEntryFilePath(entryType, entry.id);
-  const parsed = parseCatalogDocument(readText(resolvedPath ?? ""));
-
-  return {
-    kind: "runtime_catalog_document_view",
-    recommendedReason: "catalog_document_loaded",
-    entryType,
-    id: id ?? null,
-    matchedId: entry.id,
-    document: {
+  let document = null;
+  if (entry) {
+    const resolvedPath = resolveCatalogEntryFilePath(entryType, entry.id);
+    const parsed = parseCatalogDocument(readText(resolvedPath ?? ""));
+    document = {
       entry,
       title: parsed.title,
       summary: parsed.summary,
       frontmatter: parsed.frontmatter,
       counts: parsed.counts,
       sections: parsed.sections
+    };
+  }
+
+  return createResolvedItemView("runtime_catalog_document_view", {
+    requestLabel: "id",
+    requestValue: id,
+    matchedLabel: "matchedId",
+    matchedValue: entry?.id,
+    valueLabel: "document",
+    value: document,
+    loadedReason: "catalog_document_loaded",
+    missingReason: "catalog_document_missing",
+    extra: {
+      entryType
     }
-  };
+  });
 }
 
 export function listAgentCatalog() {
@@ -326,14 +325,19 @@ export function getAgentCatalogEntry(id) {
 }
 
 function createCatalogEntryView(entryType, id, entry) {
-  return {
-    kind: "runtime_catalog_entry_view",
-    recommendedReason: entry ? "catalog_entry_loaded" : "catalog_entry_missing",
-    entryType,
-    id: id ?? null,
-    matchedId: entry?.id ?? null,
-    entry: entry ?? null
-  };
+  return createResolvedItemView("runtime_catalog_entry_view", {
+    requestLabel: "id",
+    requestValue: id,
+    matchedLabel: "matchedId",
+    matchedValue: entry?.id,
+    valueLabel: "entry",
+    value: entry,
+    loadedReason: "catalog_entry_loaded",
+    missingReason: "catalog_entry_missing",
+    extra: {
+      entryType
+    }
+  });
 }
 
 export function getAgentCatalogEntryView(id) {
@@ -346,15 +350,16 @@ export function getAgentCatalogDocumentView(id) {
 
 export function getAgentCatalogListView() {
   const agents = listAgentCatalog();
-  return {
-    kind: "runtime_catalog_lane_view",
-    recommendedReason: agents.length > 0 ? "catalog_lane_loaded" : "catalog_lane_empty",
-    entryType: "agent",
+  return createCollectionView("runtime_catalog_lane_view", "entries", agents, {
+    loadedReason: "catalog_lane_loaded",
+    emptyReason: "catalog_lane_empty",
     counts: {
       totalEntries: agents.length
     },
-    entries: agents
-  };
+    extra: {
+      entryType: "agent"
+    }
+  });
 }
 
 export function listSkillCatalog() {
@@ -403,15 +408,16 @@ export function getSkillCatalogDocumentView(id) {
 
 export function getSkillCatalogListView() {
   const skills = listSkillCatalog();
-  return {
-    kind: "runtime_catalog_lane_view",
-    recommendedReason: skills.length > 0 ? "catalog_lane_loaded" : "catalog_lane_empty",
-    entryType: "skill",
+  return createCollectionView("runtime_catalog_lane_view", "entries", skills, {
+    loadedReason: "catalog_lane_loaded",
+    emptyReason: "catalog_lane_empty",
     counts: {
       totalEntries: skills.length
     },
-    entries: skills
-  };
+    extra: {
+      entryType: "skill"
+    }
+  });
 }
 
 export function listAgentRoleIds() {

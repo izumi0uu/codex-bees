@@ -25,6 +25,7 @@ import {
   selectPlannerProfile,
   toPlannerProfile
 } from "./planner-registry.js";
+import { createCollectionView, createResolvedItemView } from "./state-view-helpers.js";
 
 function plannerEvidenceForProfile(task, plannerProfile = getPlannerProfileRecord(DEFAULT_PLANNER_PROFILE_ID)) {
   const catalogPaths = getRuntimeCatalogPaths();
@@ -72,29 +73,35 @@ export function getPlannerProfile(id = DEFAULT_PLANNER_PROFILE_ID, options = {})
 export function getPlannerProfilesView(options = {}) {
   const context = getPlannerProfilesRecords(options);
   const profiles = context.profiles.map(toPlannerProfile);
-  return {
-    kind: "planner_profile_list_view",
-    recommendedReason: profiles.length > 0 ? "planner_profiles_loaded" : "planner_profiles_empty",
+  return createCollectionView("planner_profile_list_view", "profiles", profiles, {
+    loadedReason: "planner_profiles_loaded",
+    emptyReason: "planner_profiles_empty",
     counts: {
       totalProfiles: profiles.length
     },
-    defaultProfile: context.defaultProfileId,
-    profiles
-  };
+    extra: {
+      defaultProfile: context.defaultProfileId
+    }
+  });
 }
 
 export function getPlannerProfileView(id = DEFAULT_PLANNER_PROFILE_ID, options = {}) {
   const context = resolvePlannerProfileContext(options);
   const profileId = typeof id === "string" && id.trim().length > 0 ? id.trim() : context.defaultProfileId;
   const profile = getPlannerProfile(profileId, options);
-  return {
-    kind: "planner_profile_view",
-    recommendedReason: profile ? "planner_profile_loaded" : "planner_profile_missing",
-    id: profileId ?? null,
-    matchedProfile: profile?.id ?? null,
-    defaultProfile: context.defaultProfileId,
-    profile: profile ?? null
-  };
+  return createResolvedItemView("planner_profile_view", {
+    requestLabel: "id",
+    requestValue: profileId,
+    matchedLabel: "matchedProfile",
+    matchedValue: profile?.id,
+    valueLabel: "profile",
+    value: profile,
+    loadedReason: "planner_profile_loaded",
+    missingReason: "planner_profile_missing",
+    extra: {
+      defaultProfile: context.defaultProfileId
+    }
+  });
 }
 
 export function planTask(task, options = {}) {
