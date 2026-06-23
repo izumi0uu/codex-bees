@@ -33,7 +33,7 @@ import {
   workerHandoff,
   workerSession
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
 
 const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
   worker_session({ id, args, metadata }) {
@@ -52,7 +52,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       limit: params.arguments.limit
     });
     
-    return createSuccess(id, createTextPayload({ session }));
+    return createSuccess(id, createNamedTextPayload("session", session));
   },
 
   worker_handoff({ id, args, metadata }) {
@@ -71,7 +71,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       limit: params.arguments.limit
     });
     
-    return createSuccess(id, createTextPayload({ handoff }));
+    return createSuccess(id, createNamedTextPayload("handoff", handoff));
   },
 
   worker_closeout({ id, args, metadata }) {
@@ -90,7 +90,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       limit: params.arguments.limit
     });
     
-    return createSuccess(id, createTextPayload({ closeout }));
+    return createSuccess(id, createNamedTextPayload("closeout", closeout));
   },
 
   verifier_bundle({ id, args, metadata }) {
@@ -108,7 +108,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       limit: params.arguments.limit
     });
     
-    return createSuccess(id, createTextPayload({ bundle }));
+    return createSuccess(id, createNamedTextPayload("bundle", bundle));
   },
 
   leader_workspace({ id, args, metadata }) {
@@ -119,7 +119,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       owner: params.arguments?.owner
     });
     
-    return createSuccess(id, createTextPayload({ workspace }));
+    return createSuccess(id, createNamedTextPayload("workspace", workspace));
   },
 
   leader_queue({ id, args, metadata }) {
@@ -130,7 +130,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       owner: params.arguments?.owner
     });
     
-    return createSuccess(id, createTextPayload({ queue }));
+    return createSuccess(id, createNamedTextPayload("queue", queue));
   },
 
   leader_assignments({ id, args, metadata }) {
@@ -141,7 +141,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       owner: params.arguments?.owner
     });
     
-    return createSuccess(id, createTextPayload({ assignments }));
+    return createSuccess(id, createNamedTextPayload("assignments", assignments));
   },
 
   leader_assignment_dispatch({ id, args, metadata }) {
@@ -155,7 +155,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       topology: params.arguments?.topology
     });
     
-    return createSuccess(id, createTextPayload({ assignmentDispatch }));
+    return createSuccess(id, createNamedTextPayload("assignmentDispatch", assignmentDispatch));
   },
 
   leader_assignment_dispatch_pack({ id, args, metadata }) {
@@ -170,7 +170,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       topology: params.arguments?.topology
     });
     
-    return createSuccess(id, createTextPayload({ assignmentDispatchPack }));
+    return createSuccess(id, createNamedTextPayload("assignmentDispatchPack", assignmentDispatchPack));
   },
 
   leader_assignment_dispatch_bundle({ id, args, metadata }) {
@@ -185,7 +185,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       topology: params.arguments?.topology
     });
     
-    return createSuccess(id, createTextPayload({ assignmentDispatchBundle }));
+    return createSuccess(id, createNamedTextPayload("assignmentDispatchBundle", assignmentDispatchBundle));
   },
 
   leader_assignment_launch_plan({ id, args, metadata }) {
@@ -200,7 +200,7 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
       topology: params.arguments?.topology
     });
     
-    return createSuccess(id, createTextPayload({ assignmentLaunchPlan }));
+    return createSuccess(id, createNamedTextPayload("assignmentLaunchPlan", assignmentLaunchPlan));
   }
 };
 

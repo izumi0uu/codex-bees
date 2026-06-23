@@ -16,4 +16,8 @@ function createTextPayload(value) {
   };
 }
 
-export { createError, createSuccess, createTextPayload };
+function createNamedTextPayload(label, value) {
+  return createTextPayload({ [label]: value });
+}
+
+export { createError, createNamedTextPayload, createSuccess, createTextPayload };

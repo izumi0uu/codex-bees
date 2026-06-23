@@ -21,7 +21,7 @@ import {
   runtimeWorkerPack,
   runtimeWorkspacePack
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
 
 const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
   runtime_assignment_pack({ id, args, metadata }) {
@@ -34,13 +34,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     }
     return createSuccess(
       id,
-      createTextPayload({
-        assignmentPack: runtimeAssignmentPack({
-          role: params.arguments.role,
-          workerId: params.arguments.workerId,
-          mode: params.arguments.mode
-        })
-      })
+      createNamedTextPayload("assignmentPack", runtimeAssignmentPack({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode
+      }))
     );
   },
 
@@ -48,12 +46,10 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        closeoutPack: runtimeCloseoutPack({
-          workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds
-        })
-      })
+      createNamedTextPayload("closeoutPack", runtimeCloseoutPack({
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds
+      }))
     );
   },
 
@@ -61,13 +57,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        controlPack: runtimeControlPack({
-          workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds,
-          detail: params.arguments?.detail
-        })
-      })
+      createNamedTextPayload("controlPack", runtimeControlPack({
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
+      }))
     );
   },
 
@@ -75,32 +69,30 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({ signalPack: runtimeSignalPack({ limit: params.arguments?.limit }) })
+      createNamedTextPayload("signalPack", runtimeSignalPack({ limit: params.arguments?.limit }))
     );
   },
 
   runtime_handoff_pack({ id, args, metadata }) {
-    return createSuccess(id, createTextPayload({ handoffPack: runtimeHandoffPack() }));
+    return createSuccess(id, createNamedTextPayload("handoffPack", runtimeHandoffPack()));
   },
 
   runtime_triage_pack({ id, args, metadata }) {
-    return createSuccess(id, createTextPayload({ triagePack: runtimeTriagePack() }));
+    return createSuccess(id, createNamedTextPayload("triagePack", runtimeTriagePack()));
   },
 
   runtime_recovery_pack({ id, args, metadata }) {
-    return createSuccess(id, createTextPayload({ recoveryPack: runtimeRecoveryPack() }));
+    return createSuccess(id, createNamedTextPayload("recoveryPack", runtimeRecoveryPack()));
   },
 
   runtime_review_pack({ id, args, metadata }) {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        reviewPack: runtimeReviewPack({
-          role: params.arguments?.role,
-          workerId: params.arguments?.workerId
-        })
-      })
+      createNamedTextPayload("reviewPack", runtimeReviewPack({
+        role: params.arguments?.role,
+        workerId: params.arguments?.workerId
+      }))
     );
   },
 
@@ -114,13 +106,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     }
     return createSuccess(
       id,
-      createTextPayload({
-        sessionPack: runtimeSessionPack({
-          role: params.arguments.role,
-          workerId: params.arguments.workerId,
-          mode: params.arguments.mode
-        })
-      })
+      createNamedTextPayload("sessionPack", runtimeSessionPack({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode
+      }))
     );
   },
 
@@ -128,13 +118,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        queuePack: runtimeQueuePack({
-          workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds,
-          detail: params.arguments?.detail
-        })
-      })
+      createNamedTextPayload("queuePack", runtimeQueuePack({
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
+      }))
     );
   },
 
@@ -142,13 +130,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        workspacePack: runtimeWorkspacePack({
-          workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds,
-          detail: params.arguments?.detail
-        })
-      })
+      createNamedTextPayload("workspacePack", runtimeWorkspacePack({
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
+      }))
     );
   },
 
@@ -156,21 +142,19 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        leaderPack: runtimeLeaderPack({
-          status: params.arguments?.status,
-          topology: params.arguments?.topology,
-          owner: params.arguments?.owner,
-          workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds,
-          detail: params.arguments?.detail
-        })
-      })
+      createNamedTextPayload("leaderPack", runtimeLeaderPack({
+        status: params.arguments?.status,
+        topology: params.arguments?.topology,
+        owner: params.arguments?.owner,
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
+      }))
     );
   },
 
   runtime_operator_pack({ id, args, metadata }) {
-    return createSuccess(id, createTextPayload({ operatorPack: runtimeOperatorPack() }));
+    return createSuccess(id, createNamedTextPayload("operatorPack", runtimeOperatorPack()));
   },
 
   runtime_owner_pack({ id, args, metadata }) {
@@ -183,12 +167,10 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     }
     return createSuccess(
       id,
-      createTextPayload({
-        ownerPack: runtimeOwnerPack({
-          role: params.arguments.role,
-          workerId: params.arguments.workerId
-        })
-      })
+      createNamedTextPayload("ownerPack", runtimeOwnerPack({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId
+      }))
     );
   },
 
@@ -202,13 +184,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     }
     return createSuccess(
       id,
-      createTextPayload({
-        pickupPack: runtimePickupPack({
-          role: params.arguments.role,
-          workerId: params.arguments.workerId,
-          mode: params.arguments.mode
-        })
-      })
+      createNamedTextPayload("pickupPack", runtimePickupPack({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode
+      }))
     );
   },
 
@@ -219,13 +199,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     }
     return createSuccess(
       id,
-      createTextPayload({
-        rolePack: runtimeRolePack({
-          role: params.arguments.role,
-          workerId: params.arguments.workerId,
-          mode: params.arguments.mode
-        })
-      })
+      createNamedTextPayload("rolePack", runtimeRolePack({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode
+      }))
     );
   },
 
@@ -233,13 +211,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        summaryPack: runtimeSummaryPack({
-          workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds,
-          detail: params.arguments?.detail
-        })
-      })
+      createNamedTextPayload("summaryPack", runtimeSummaryPack({
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
+      }))
     );
   },
 
@@ -253,12 +229,10 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     }
     return createSuccess(
       id,
-      createTextPayload({
-        verifierPack: runtimeVerifierPack({
-          role: params.arguments.role,
-          workerId: params.arguments.workerId
-        })
-      })
+      createNamedTextPayload("verifierPack", runtimeVerifierPack({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId
+      }))
     );
   },
 
@@ -272,13 +246,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     }
     return createSuccess(
       id,
-      createTextPayload({
-        workerPack: runtimeWorkerPack({
-          role: params.arguments.role,
-          workerId: params.arguments.workerId,
-          mode: params.arguments.mode
-        })
-      })
+      createNamedTextPayload("workerPack", runtimeWorkerPack({
+        role: params.arguments.role,
+        workerId: params.arguments.workerId,
+        mode: params.arguments.mode
+      }))
     );
   },
 
@@ -286,13 +258,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        dispatchPack: runtimeDispatchPack({
-          workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds,
-          detail: params.arguments?.detail
-        })
-      })
+      createNamedTextPayload("dispatchPack", runtimeDispatchPack({
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
+      }))
     );
   },
 
@@ -300,13 +270,11 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        executionPack: runtimeExecutionPack({
-          workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds,
-          detail: params.arguments?.detail
-        })
-      })
+      createNamedTextPayload("executionPack", runtimeExecutionPack({
+        workerId: params.arguments?.workerId,
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
+      }))
     );
   }
 };

@@ -11,7 +11,7 @@ import {
   swarmOverview,
   validateSwarm
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
 
 const SWARM_QUERY_MCP_TOOL_HANDLERS = {
   swarm_list({ id, args, metadata }) {
@@ -23,7 +23,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
     };
     const swarms = listSwarmsView(filters, { detailed: params.arguments?.detailed === true });
 
-    return createSuccess(id, createTextPayload({ swarms }));
+    return createSuccess(id, createNamedTextPayload("swarms", swarms));
   },
 
   swarm_get({ id, args, metadata }) {
@@ -37,11 +37,11 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ swarm }));
+    return createSuccess(id, createNamedTextPayload("swarm", swarm));
   },
 
   swarm_archive_list({ id, args, metadata }) {
-    return createSuccess(id, createTextPayload({ archivedSwarms: listArchivedSwarmsView() }));
+    return createSuccess(id, createNamedTextPayload("archivedSwarms", listArchivedSwarmsView()));
   },
 
   swarm_archive_get({ id, args, metadata }) {
@@ -55,7 +55,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown archived swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ archivedSwarm }));
+    return createSuccess(id, createNamedTextPayload("archivedSwarm", archivedSwarm));
   },
 
   swarm_bundle({ id, args, metadata }) {
@@ -69,7 +69,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ bundle }));
+    return createSuccess(id, createNamedTextPayload("bundle", bundle));
   },
 
   swarm_blockers({ id, args, metadata }) {
@@ -83,7 +83,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ blockers }));
+    return createSuccess(id, createNamedTextPayload("blockers", blockers));
   },
 
   swarm_closeout({ id, args, metadata }) {
@@ -97,7 +97,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ closeout }));
+    return createSuccess(id, createNamedTextPayload("closeout", closeout));
   },
 
   swarm_dispatch_bundle({ id, args, metadata }) {
@@ -111,7 +111,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ dispatchBundle }));
+    return createSuccess(id, createNamedTextPayload("dispatchBundle", dispatchBundle));
   },
 
   swarm_brief({ id, args, metadata }) {
@@ -125,7 +125,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ brief }));
+    return createSuccess(id, createNamedTextPayload("brief", brief));
   },
 
   swarm_check({ id, args, metadata }) {
@@ -139,7 +139,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ validation }));
+    return createSuccess(id, createNamedTextPayload("validation", validation));
   },
 
   swarm_overview({ id, args, metadata }) {
@@ -153,7 +153,7 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ overview }));
+    return createSuccess(id, createNamedTextPayload("overview", overview));
   }
 };
 

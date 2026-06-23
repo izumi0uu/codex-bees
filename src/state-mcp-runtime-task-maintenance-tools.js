@@ -7,7 +7,7 @@ import {
   updateTaskMutation,
   validateTask
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
 
 const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
   task_add({ id, args, metadata }) {
@@ -32,7 +32,7 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
       notes: params.arguments.notes
     });
 
-    return createSuccess(id, createTextPayload({ created: task }));
+    return createSuccess(id, createNamedTextPayload("created", task));
   },
 
   task_annotate({ id, args, metadata }) {
@@ -57,7 +57,7 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, annotated.error);
     }
 
-    return createSuccess(id, createTextPayload({ annotated }));
+    return createSuccess(id, createNamedTextPayload("annotated", annotated));
   },
 
   task_update({ id, args, metadata }) {
@@ -90,7 +90,7 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, task.error);
     }
 
-    return createSuccess(id, createTextPayload({ updated: task }));
+    return createSuccess(id, createNamedTextPayload("updated", task));
   },
 
   task_check({ id, args, metadata }) {
@@ -104,7 +104,7 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ validation }));
+    return createSuccess(id, createNamedTextPayload("validation", validation));
   },
 
   task_archive({ id, args, metadata }) {
@@ -126,7 +126,7 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, archived.error);
     }
 
-    return createSuccess(id, createTextPayload({ archived }));
+    return createSuccess(id, createNamedTextPayload("archived", archived));
   },
 
   task_restore({ id, args, metadata }) {
@@ -148,7 +148,7 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, restored.error);
     }
 
-    return createSuccess(id, createTextPayload({ restored }));
+    return createSuccess(id, createNamedTextPayload("restored", restored));
   },
 
   task_reopen({ id, args, metadata }) {
@@ -170,7 +170,7 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, reopened.error);
     }
 
-    return createSuccess(id, createTextPayload({ reopened }));
+    return createSuccess(id, createNamedTextPayload("reopened", reopened));
   }
 };
 

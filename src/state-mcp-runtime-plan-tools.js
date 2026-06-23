@@ -25,16 +25,14 @@ import {
   updateSwarmMutation,
   validateSwarm
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
 
 const PLAN_MCP_TOOL_HANDLERS = {
   planner_profiles({ id, args, metadata }) {
     const params = { arguments: args };
     return createSuccess(
       id,
-      createTextPayload({
-        profiles: getPlannerProfilesView({ profileFile: params.arguments?.profileFile })
-      })
+      createNamedTextPayload("profiles", getPlannerProfilesView({ profileFile: params.arguments?.profileFile }))
     );
   },
 
@@ -46,9 +44,7 @@ const PLAN_MCP_TOOL_HANDLERS = {
 
     return createSuccess(
       id,
-      createTextPayload({
-        profile: getPlannerProfileView(params.arguments.profile, { profileFile: params.arguments?.profileFile })
-      })
+      createNamedTextPayload("profile", getPlannerProfileView(params.arguments.profile, { profileFile: params.arguments?.profileFile }))
     );
   },
 

@@ -35,17 +35,17 @@ import {
   workerHandoff,
   workerSession
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
 
 const TASK_QUERY_MCP_TOOL_HANDLERS = {
   task_list({ id, args, metadata }) {
     const params = { arguments: args };
-    return createSuccess(id, createTextPayload({ tasks: listTasksView() }));
+    return createSuccess(id, createNamedTextPayload("tasks", listTasksView()));
   },
 
   task_archive_list({ id, args, metadata }) {
     const params = { arguments: args };
-    return createSuccess(id, createTextPayload({ archivedTasks: listArchivedTasksView() }));
+    return createSuccess(id, createNamedTextPayload("archivedTasks", listArchivedTasksView()));
   },
 
   task_get({ id, args, metadata }) {
@@ -59,7 +59,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
     }
     
-    return createSuccess(id, createTextPayload({ task }));
+    return createSuccess(id, createNamedTextPayload("task", task));
   },
 
   task_archive_get({ id, args, metadata }) {
@@ -73,7 +73,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown archived task id: ${params.arguments.id}`);
     }
     
-    return createSuccess(id, createTextPayload({ archivedTask }));
+    return createSuccess(id, createNamedTextPayload("archivedTask", archivedTask));
   },
 
   task_history({ id, args, metadata }) {
@@ -87,7 +87,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
     }
     
-    return createSuccess(id, createTextPayload({ history }));
+    return createSuccess(id, createNamedTextPayload("history", history));
   },
 
   task_report({ id, args, metadata }) {
@@ -101,7 +101,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
     }
     
-    return createSuccess(id, createTextPayload({ report }));
+    return createSuccess(id, createNamedTextPayload("report", report));
   },
 
   task_brief({ id, args, metadata }) {
@@ -115,7 +115,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
     }
     
-    return createSuccess(id, createTextPayload({ brief }));
+    return createSuccess(id, createNamedTextPayload("brief", brief));
   },
 
   task_inbox({ id, args, metadata }) {
@@ -130,7 +130,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       limit: params.arguments.limit
     });
     
-    return createSuccess(id, createTextPayload({ inbox }));
+    return createSuccess(id, createNamedTextPayload("inbox", inbox));
   },
 
   task_next({ id, args, metadata }) {
@@ -145,7 +145,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       mode: params.arguments.mode
     });
     
-    return createSuccess(id, createTextPayload({ next }));
+    return createSuccess(id, createNamedTextPayload("next", next));
   },
 
   task_assignment_preview({ id, args, metadata }) {
@@ -164,7 +164,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       taskId: params.arguments.taskId
     });
     
-    return createSuccess(id, createTextPayload({ assignmentPreview }));
+    return createSuccess(id, createNamedTextPayload("assignmentPreview", assignmentPreview));
   },
 
   task_pickup_preview({ id, args, metadata }) {
@@ -182,7 +182,7 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
       mode: params.arguments.mode
     });
     
-    return createSuccess(id, createTextPayload({ pickupPreview }));
+    return createSuccess(id, createNamedTextPayload("pickupPreview", pickupPreview));
   }
 };
 

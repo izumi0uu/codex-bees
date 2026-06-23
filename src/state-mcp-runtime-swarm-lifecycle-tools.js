@@ -12,7 +12,7 @@ import {
   syncSwarmStatus,
   updateSwarmMutation
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
 
 const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
   swarm_init({ id, args, metadata }) {
@@ -31,7 +31,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       lanes: params.arguments.lanes
     });
 
-    return createSuccess(id, createTextPayload({ created: swarm }));
+    return createSuccess(id, createNamedTextPayload("created", swarm));
   },
 
   swarm_archive({ id, args, metadata }) {
@@ -53,7 +53,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, archived.error);
     }
 
-    return createSuccess(id, createTextPayload({ archived }));
+    return createSuccess(id, createNamedTextPayload("archived", archived));
   },
 
   swarm_restore({ id, args, metadata }) {
@@ -75,7 +75,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, restored.error);
     }
 
-    return createSuccess(id, createTextPayload({ restored }));
+    return createSuccess(id, createNamedTextPayload("restored", restored));
   },
 
   swarm_reopen({ id, args, metadata }) {
@@ -97,7 +97,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, reopened.error);
     }
 
-    return createSuccess(id, createTextPayload({ reopened }));
+    return createSuccess(id, createNamedTextPayload("reopened", reopened));
   },
 
   swarm_update({ id, args, metadata }) {
@@ -124,7 +124,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, swarm.error);
     }
 
-    return createSuccess(id, createTextPayload({ updated: swarm }));
+    return createSuccess(id, createNamedTextPayload("updated", swarm));
   },
 
   swarm_dispatch({ id, args, metadata }) {
@@ -148,7 +148,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, result.error);
     }
 
-    return createSuccess(id, createTextPayload({ dispatched: result }));
+    return createSuccess(id, createNamedTextPayload("dispatched", result));
   },
 
   swarm_sync({ id, args, metadata }) {
@@ -162,7 +162,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
     }
 
-    return createSuccess(id, createTextPayload({ synced: result }));
+    return createSuccess(id, createNamedTextPayload("synced", result));
   },
 
   swarm_activate({ id, args, metadata }) {
@@ -184,7 +184,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, swarm.error);
     }
 
-    return createSuccess(id, createTextPayload({ activated: swarm }));
+    return createSuccess(id, createNamedTextPayload("activated", swarm));
   },
 
   swarm_block({ id, args, metadata }) {
@@ -206,7 +206,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, swarm.error);
     }
 
-    return createSuccess(id, createTextPayload({ blocked: swarm }));
+    return createSuccess(id, createNamedTextPayload("blocked", swarm));
   },
 
   swarm_done({ id, args, metadata }) {
@@ -228,7 +228,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, swarm.error);
     }
 
-    return createSuccess(id, createTextPayload({ completed: swarm }));
+    return createSuccess(id, createNamedTextPayload("completed", swarm));
   },
 
   swarm_cancel({ id, args, metadata }) {
@@ -250,7 +250,7 @@ const SWARM_LIFECYCLE_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, swarm.error);
     }
 
-    return createSuccess(id, createTextPayload({ cancelled: swarm }));
+    return createSuccess(id, createNamedTextPayload("cancelled", swarm));
   },
 
   swarm_queue_tasks({ id, args, metadata }) {

@@ -9,7 +9,7 @@ import {
   taskAssignmentPickup,
   taskPickup
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
 
 const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
   task_pickup({ id, args, metadata }) {
@@ -27,7 +27,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       mode: params.arguments.mode
     });
 
-    return createSuccess(id, createTextPayload({ pickup }));
+    return createSuccess(id, createNamedTextPayload("pickup", pickup));
   },
 
   task_assignment_pickup({ id, args, metadata }) {
@@ -46,7 +46,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       taskId: params.arguments.taskId
     });
 
-    return createSuccess(id, createTextPayload({ assignmentPickup }));
+    return createSuccess(id, createNamedTextPayload("assignmentPickup", assignmentPickup));
   },
 
   task_claim({ id, args, metadata }) {
@@ -70,7 +70,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, task.error);
     }
 
-    return createSuccess(id, createTextPayload({ claimed: task }));
+    return createSuccess(id, createNamedTextPayload("claimed", task));
   },
 
   task_block({ id, args, metadata }) {
@@ -92,7 +92,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, task.error);
     }
 
-    return createSuccess(id, createTextPayload({ blocked: task }));
+    return createSuccess(id, createNamedTextPayload("blocked", task));
   },
 
   task_ready_for_review({ id, args, metadata }) {
@@ -114,7 +114,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, task.error);
     }
 
-    return createSuccess(id, createTextPayload({ readyForReview: task }));
+    return createSuccess(id, createNamedTextPayload("readyForReview", task));
   },
 
   task_done({ id, args, metadata }) {
@@ -137,7 +137,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, task.error);
     }
 
-    return createSuccess(id, createTextPayload({ completed: task }));
+    return createSuccess(id, createNamedTextPayload("completed", task));
   },
 
   task_approve({ id, args, metadata }) {
@@ -163,7 +163,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, task.error);
     }
 
-    return createSuccess(id, createTextPayload({ approved: task }));
+    return createSuccess(id, createNamedTextPayload("approved", task));
   },
 
   task_reject({ id, args, metadata }) {
@@ -190,7 +190,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, task.error);
     }
 
-    return createSuccess(id, createTextPayload({ rejected: task }));
+    return createSuccess(id, createNamedTextPayload("rejected", task));
   },
 
   task_release({ id, args, metadata }) {
@@ -211,7 +211,7 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, task.error);
     }
 
-    return createSuccess(id, createTextPayload({ released: task }));
+    return createSuccess(id, createNamedTextPayload("released", task));
   }
 };
 

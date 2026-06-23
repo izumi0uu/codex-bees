@@ -25,7 +25,7 @@ import {
   updateSwarmMutation,
   validateSwarm
 } from "./state-runtime.js";
-import { createError, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createError, createNamedTextPayload, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
 
 const MEMORY_MCP_TOOL_HANDLERS = {
   memory_store({ id, args, metadata }) {
@@ -44,7 +44,7 @@ const MEMORY_MCP_TOOL_HANDLERS = {
       notes: params.arguments.notes
     });
     
-    return createSuccess(id, createTextPayload({ stored: memory }));
+    return createSuccess(id, createNamedTextPayload("stored", memory));
   },
 
   memory_get({ id, args, metadata }) {
@@ -58,7 +58,7 @@ const MEMORY_MCP_TOOL_HANDLERS = {
       return createError(id, -32602, `Unknown memory id: ${params.arguments.id}`);
     }
     
-    return createSuccess(id, createTextPayload({ memory }));
+    return createSuccess(id, createNamedTextPayload("memory", memory));
   },
 
   memory_list({ id, args, metadata }) {
@@ -70,7 +70,7 @@ const MEMORY_MCP_TOOL_HANDLERS = {
       tags: params.arguments?.tags
     });
     
-    return createSuccess(id, createTextPayload({ memories }));
+    return createSuccess(id, createNamedTextPayload("memories", memories));
   },
 
   memory_search({ id, args, metadata }) {
