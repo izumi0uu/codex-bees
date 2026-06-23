@@ -1,4 +1,5 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildRuntimeFocusSummary(type, detail) {
   if (type === "blocked_task") {
@@ -18,6 +19,18 @@ export function buildRuntimeFocusSummary(type, detail) {
   }
   return detail;
 }
+
+function buildRuntimeFocusResult(recommendedReason, focus, sources, summary) {
+  return createLoadedValueView("runtime_focus", "focus", focus, {
+    recommendedReason,
+    includeCounts: false,
+    extra: {
+      sources,
+      summary
+    }
+  });
+}
+
 export function buildRuntimeFocusView(
   {
     dashboard,
@@ -33,14 +46,12 @@ export function buildRuntimeFocusView(
   }
 ) {
   const queueNext = dashboard?.leader?.queue?.next ?? null;
+  const sources = buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles);
 
   const blockedAlert = alerts.alerts?.find((alert) => alert.kind === "blocked_task") ?? null;
   if (blockedAlert?.taskId) {
     const brief = taskBrief(blockedAlert.taskId);
-    return {
-      kind: "runtime_focus",
-      recommendedReason: "blocked_focus_priority",
-      focus: {
+    const focus = {
         source: "alerts",
         priority: "high",
         type: "blocked_task",
@@ -54,17 +65,17 @@ export function buildRuntimeFocusView(
         recommendedCommands: brief?.recommendedCommands ?? [],
         taskBrief: brief,
         summary: blockedAlert.summary
-      },
-      sources: buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles),
-      summary: buildRuntimeFocusSummary("blocked_task", blockedAlert.summary)
-    };
+      };
+    return buildRuntimeFocusResult(
+      "blocked_focus_priority",
+      focus,
+      sources,
+      buildRuntimeFocusSummary("blocked_task", blockedAlert.summary)
+    );
   }
 
   if (review.next?.taskId) {
-    return {
-      kind: "runtime_focus",
-      recommendedReason: "review_focus_priority",
-      focus: {
+    const focus = {
         source: "review",
         priority: "medium",
         type: "review_task",
@@ -79,17 +90,17 @@ export function buildRuntimeFocusView(
         recommendedCommands: review.next.recommendedCommands,
         taskBrief: review.next.taskBrief,
         summary: review.next.summary
-      },
-      sources: buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles),
-      summary: buildRuntimeFocusSummary("review_task", review.next.summary)
-    };
+      };
+    return buildRuntimeFocusResult(
+      "review_focus_priority",
+      focus,
+      sources,
+      buildRuntimeFocusSummary("review_task", review.next.summary)
+    );
   }
 
   if (dispatch.next?.lane) {
-    return {
-      kind: "runtime_focus",
-      recommendedReason: "dispatch_focus_priority",
-      focus: {
+    const focus = {
         source: "dispatch",
         priority: "medium",
         type: "dispatch_lane",
@@ -104,17 +115,17 @@ export function buildRuntimeFocusView(
         recommendedCommands: dispatch.next.recommendedCommands,
         taskBrief: dispatch.next.taskBrief,
         summary: dispatch.next.summary
-      },
-      sources: buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles),
-      summary: buildRuntimeFocusSummary("dispatch_lane", dispatch.next.summary)
-    };
+      };
+    return buildRuntimeFocusResult(
+      "dispatch_focus_priority",
+      focus,
+      sources,
+      buildRuntimeFocusSummary("dispatch_lane", dispatch.next.summary)
+    );
   }
 
   if (roles.next?.nextAction?.task || (roles.next?.counts?.total ?? 0) > 0) {
-    return {
-      kind: "runtime_focus",
-      recommendedReason: "role_focus_priority",
-      focus: {
+    const focus = {
         source: "roles",
         priority: "low",
         type: "role_pressure",
@@ -127,17 +138,17 @@ export function buildRuntimeFocusView(
         recommendedCommands: roles.next.nextAction?.command ? [roles.next.nextAction.command] : [],
         task: roles.next.nextAction?.task ?? null,
         summary: roles.next.summary
-      },
-      sources: buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles),
-      summary: buildRuntimeFocusSummary("role_pressure", roles.next.summary)
-    };
+      };
+    return buildRuntimeFocusResult(
+      "role_focus_priority",
+      focus,
+      sources,
+      buildRuntimeFocusSummary("role_pressure", roles.next.summary)
+    );
   }
 
   if (queueNext?.swarmId) {
-    return {
-      kind: "runtime_focus",
-      recommendedReason: "leader_queue_focus_priority",
-      focus: {
+    const focus = {
         source: "leader_queue",
         priority: "low",
         type: "leader_queue_item",
@@ -146,16 +157,18 @@ export function buildRuntimeFocusView(
         recommendedNextAction: queueNext.recommendedNextAction ?? null,
         recommendedCommands: queueNext.recommendedCommands ?? [],
         summary: queueNext.summary
-      },
-      sources: buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles),
-      summary: buildRuntimeFocusSummary("leader_queue_item", queueNext.summary)
-    };
+      };
+    return buildRuntimeFocusResult(
+      "leader_queue_focus_priority",
+      focus,
+      sources,
+      buildRuntimeFocusSummary("leader_queue_item", queueNext.summary)
+    );
   }
 
-  return {
-    kind: "runtime_focus",
-    recommendedReason: "idle_focus_priority",
-    focus: {
+  return buildRuntimeFocusResult(
+    "idle_focus_priority",
+    {
       source: "idle",
       priority: "none",
       type: "idle",
@@ -164,7 +177,7 @@ export function buildRuntimeFocusView(
       recommendedCommands: [],
       summary: "Runtime focus has no active next action right now."
     },
-    sources: buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles),
-    summary: buildRuntimeFocusSummary("idle", "Runtime focus has no active next action right now.")
-  };
+    sources,
+    buildRuntimeFocusSummary("idle", "Runtime focus has no active next action right now.")
+  );
 }

@@ -1,4 +1,5 @@
 import { buildPurposeGuidanceForTaskLike, buildPurposeSentence } from "./state-lane-purpose.js";
+import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildSessionTaskSnapshot(task, role, workerId, summarizeInboxTask, taskBrief) {
   const summary = summarizeInboxTask(task, role, workerId);
@@ -273,22 +274,23 @@ export function buildWorkerHandoffView(
 
   const purposeGuidance = focusTaskSnapshot?.purposeGuidance ?? session.purposeGuidance ?? buildPurposeGuidanceForTaskLike(session.next?.candidate ?? null);
 
-  return {
-    kind: "worker_handoff",
-    role: session.role,
-    workerId: session.workerId,
-    mode: session.mode,
+  return createLoadedValueView("worker_handoff", "currentTask", focusTaskSnapshot?.summary ?? null, {
     recommendedReason,
-    focus: session.focus,
-    currentTask: focusTaskSnapshot?.summary ?? null,
-    brief: focusBrief,
-    purposeGuidance,
-    recentHistory: focusTaskSnapshot?.recentHistory ?? [],
-    recentAnnotations: focusTaskSnapshot?.recentAnnotations ?? [],
-    nextCandidate: session.next?.candidate ?? null,
-    nextCommand: session.focus?.command ?? null,
-    summary: buildWorkerHandoffSummary(session, focusTaskSnapshot)
-  };
+    includeCounts: false,
+    extra: {
+      role: session.role,
+      workerId: session.workerId,
+      mode: session.mode,
+      focus: session.focus,
+      brief: focusBrief,
+      purposeGuidance,
+      recentHistory: focusTaskSnapshot?.recentHistory ?? [],
+      recentAnnotations: focusTaskSnapshot?.recentAnnotations ?? [],
+      nextCandidate: session.next?.candidate ?? null,
+      nextCommand: session.focus?.command ?? null,
+      summary: buildWorkerHandoffSummary(session, focusTaskSnapshot)
+    }
+  });
 }
 
 export function buildWorkerHandoffViewFromSources(
@@ -311,4 +313,3 @@ export function buildWorkerHandoffViewFromSources(
     }
   );
 }
-
