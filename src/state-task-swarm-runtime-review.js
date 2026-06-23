@@ -1,14 +1,11 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+import { buildRuntimeTaskIdentityFields } from "./state-runtime-task-entry-helpers.js";
 
 export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBrief) {
   return {
     position,
-    taskId: task.id,
-    title: task.title,
+    ...buildRuntimeTaskIdentityFields(task),
     objective: task.objective,
-    swarmId: task.swarmId,
-    lane: task.lane,
-    lanePurpose: task.lanePurpose ?? null,
     purposeGuidance: buildPurposeGuidanceForTaskLike(task),
     owner: describeRole(task.owner),
     claimedBy: task.claimedBy,

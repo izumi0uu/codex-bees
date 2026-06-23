@@ -1,3 +1,8 @@
+import {
+  buildRuntimeTaskIdentityFields,
+  buildRuntimeTaskRecommendationFields
+} from "./state-runtime-task-entry-helpers.js";
+
 export function buildRuntimeActivityEventSummary(entity, event) {
   if (entity.entityType === "swarm") {
     if (event.type === "blocked") {
@@ -69,14 +74,8 @@ export function buildRuntimeTaskActivityEntry(task, event, taskBrief) {
     entityType: "task",
     at: event.at,
     type: event.type,
-    taskId: task.id,
-    title: task.title,
-    owner: task.owner,
-    verifier: task.verifier,
-    swarmId: task.swarmId,
     objective: task.objective ?? null,
-    lane: task.lane,
-    lanePurpose: task.lanePurpose ?? null,
+    ...buildRuntimeTaskIdentityFields(task),
     queueStatus: task.queueStatus,
     actor: event.actor,
     fromQueueStatus: event.fromQueueStatus,
@@ -85,9 +84,7 @@ export function buildRuntimeTaskActivityEntry(task, event, taskBrief) {
     toStatus: null,
     outcome: event.outcome,
     notes: event.notes,
-    recommendedNextActor: brief?.recommendedNextActor ?? null,
-    recommendedNextAction: brief?.recommendedNextAction ?? null,
-    recommendedCommands: brief?.recommendedCommands ?? [],
+    ...buildRuntimeTaskRecommendationFields(brief),
     summary: buildRuntimeActivityEventSummary(
       {
         entityType: "task",
