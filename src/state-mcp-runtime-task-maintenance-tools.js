@@ -7,14 +7,19 @@ import {
   updateTaskMutation,
   validateTask
 } from "./state-runtime.js";
-import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import {
+  createMcpResultError,
+  createUnknownEntityError,
+  requireArgument,
+  requireArguments
+} from "./state-mcp-runtime-tool-helpers.js";
 
 const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
   task_add({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.title) {
-      return createError(id, -32602, "task_add requires arguments.title");
-    }
+    const titleRequired = requireArgument(id, "task_add", params.arguments, "title");
+    if (titleRequired) return titleRequired;
 
     const task = addTaskLifecycle({
       title: params.arguments.title,
@@ -37,12 +42,8 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
 
   task_annotate({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_annotate requires arguments.id");
-    }
-    if (!params.arguments?.content) {
-      return createError(id, -32602, "task_annotate requires arguments.content");
-    }
+    const annotateRequired = requireArguments(id, "task_annotate", params.arguments, ["id", "content"]);
+    if (annotateRequired) return annotateRequired;
 
     const annotated = annotateTaskMutation({
       id: params.arguments.id,
@@ -51,10 +52,10 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
       content: params.arguments.content
     });
     if (!annotated) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (annotated.error) {
-      return createError(id, -32602, annotated.error);
+      return createMcpResultError(id, annotated);
     }
 
     return createSuccess(id, createNamedTextPayload("annotated", annotated));
@@ -62,9 +63,8 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
 
   task_update({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_update requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_update", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const task = updateTaskMutation({
       id: params.arguments.id,
@@ -84,10 +84,10 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
     });
 
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (task.error) {
-      return createError(id, -32602, task.error);
+      return createMcpResultError(id, task);
     }
 
     return createSuccess(id, createNamedTextPayload("updated", task));
@@ -95,13 +95,12 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
 
   task_check({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_check requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_check", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const validation = validateTask(params.arguments.id);
     if (!validation) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("validation", validation));
@@ -109,9 +108,8 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
 
   task_archive({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_archive requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_archive", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const archived = archiveTaskMutation({
       id: params.arguments.id,
@@ -120,10 +118,10 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
     });
 
     if (!archived) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (archived.error) {
-      return createError(id, -32602, archived.error);
+      return createMcpResultError(id, archived);
     }
 
     return createSuccess(id, createNamedTextPayload("archived", archived));
@@ -131,9 +129,8 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
 
   task_restore({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_restore requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_restore", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const restored = restoreTaskMutation({
       id: params.arguments.id,
@@ -142,10 +139,10 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
     });
 
     if (!restored) {
-      return createError(id, -32602, `Unknown archived task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id, { archived: true });
     }
     if (restored.error) {
-      return createError(id, -32602, restored.error);
+      return createMcpResultError(id, restored);
     }
 
     return createSuccess(id, createNamedTextPayload("restored", restored));
@@ -153,9 +150,8 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
 
   task_reopen({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_reopen requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_reopen", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const reopened = reopenTaskMutation({
       id: params.arguments.id,
@@ -164,10 +160,10 @@ const TASK_MAINTENANCE_MCP_TOOL_HANDLERS = {
     });
 
     if (!reopened) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (reopened.error) {
-      return createError(id, -32602, reopened.error);
+      return createMcpResultError(id, reopened);
     }
 
     return createSuccess(id, createNamedTextPayload("reopened", reopened));

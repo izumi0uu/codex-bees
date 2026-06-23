@@ -33,17 +33,14 @@ import {
   workerHandoff,
   workerSession
 } from "./state-runtime.js";
-import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { requireRoleAndWorker } from "./state-mcp-runtime-tool-helpers.js";
 
 const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
   worker_session({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "worker_session requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "worker_session requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "worker_session", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     
     const session = workerSession({
       role: params.arguments.role,
@@ -57,12 +54,8 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
 
   worker_handoff({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "worker_handoff requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "worker_handoff requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "worker_handoff", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     
     const handoff = workerHandoff({
       role: params.arguments.role,
@@ -76,12 +69,8 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
 
   worker_closeout({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "worker_closeout requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "worker_closeout requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "worker_closeout", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     
     const closeout = workerCloseout({
       role: params.arguments.role,
@@ -95,12 +84,8 @@ const TASK_WORKER_LEADER_MCP_TOOL_HANDLERS = {
 
   verifier_bundle({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "verifier_bundle requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "verifier_bundle requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "verifier_bundle", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     
     const bundle = verifierBundle({
       role: params.arguments.role,

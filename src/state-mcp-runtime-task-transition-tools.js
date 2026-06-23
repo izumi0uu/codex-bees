@@ -9,17 +9,20 @@ import {
   taskAssignmentPickup,
   taskPickup
 } from "./state-runtime.js";
-import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import {
+  createMcpResultError,
+  createUnknownEntityError,
+  requireArgument,
+  requireArguments,
+  requireRoleAndWorker
+} from "./state-mcp-runtime-tool-helpers.js";
 
 const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
   task_pickup({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "task_pickup requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "task_pickup requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "task_pickup", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
 
     const pickup = taskPickup({
       role: params.arguments.role,
@@ -32,12 +35,8 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
 
   task_assignment_pickup({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "task_assignment_pickup requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "task_assignment_pickup requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "task_assignment_pickup", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
 
     const assignmentPickup = taskAssignmentPickup({
       role: params.arguments.role,
@@ -51,12 +50,8 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
 
   task_claim({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_claim requires arguments.id");
-    }
-    if (!params.arguments?.claimedBy) {
-      return createError(id, -32602, "task_claim requires arguments.claimedBy");
-    }
+    const claimRequired = requireArguments(id, "task_claim", params.arguments, ["id", "claimedBy"]);
+    if (claimRequired) return claimRequired;
 
     const task = claimTaskLifecycle({
       id: params.arguments.id,
@@ -64,10 +59,10 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
     });
 
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (task.error) {
-      return createError(id, -32602, task.error);
+      return createMcpResultError(id, task);
     }
 
     return createSuccess(id, createNamedTextPayload("claimed", task));
@@ -75,9 +70,8 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
 
   task_block({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_block requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_block", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const task = blockTaskLifecycle({
       id: params.arguments.id,
@@ -86,10 +80,10 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
     });
 
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (task.error) {
-      return createError(id, -32602, task.error);
+      return createMcpResultError(id, task);
     }
 
     return createSuccess(id, createNamedTextPayload("blocked", task));
@@ -97,9 +91,8 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
 
   task_ready_for_review({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_ready_for_review requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_ready_for_review", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const task = markTaskReadyForReviewLifecycle({
       id: params.arguments.id,
@@ -108,10 +101,10 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
     });
 
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (task.error) {
-      return createError(id, -32602, task.error);
+      return createMcpResultError(id, task);
     }
 
     return createSuccess(id, createNamedTextPayload("readyForReview", task));
@@ -119,9 +112,8 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
 
   task_done({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_done requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_done", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const task = completeTaskLifecycle({
       id: params.arguments.id,
@@ -131,10 +123,10 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
     });
 
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (task.error) {
-      return createError(id, -32602, task.error);
+      return createMcpResultError(id, task);
     }
 
     return createSuccess(id, createNamedTextPayload("completed", task));
@@ -142,12 +134,8 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
 
   task_approve({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_approve requires arguments.id");
-    }
-    if (!params.arguments?.reviewedBy) {
-      return createError(id, -32602, "task_approve requires arguments.reviewedBy");
-    }
+    const approveRequired = requireArguments(id, "task_approve", params.arguments, ["id", "reviewedBy"]);
+    if (approveRequired) return approveRequired;
 
     const task = approveTaskLifecycle({
       id: params.arguments.id,
@@ -157,10 +145,10 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
     });
 
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (task.error) {
-      return createError(id, -32602, task.error);
+      return createMcpResultError(id, task);
     }
 
     return createSuccess(id, createNamedTextPayload("approved", task));
@@ -168,12 +156,8 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
 
   task_reject({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_reject requires arguments.id");
-    }
-    if (!params.arguments?.reviewedBy) {
-      return createError(id, -32602, "task_reject requires arguments.reviewedBy");
-    }
+    const rejectRequired = requireArguments(id, "task_reject", params.arguments, ["id", "reviewedBy"]);
+    if (rejectRequired) return rejectRequired;
 
     const task = rejectTaskLifecycle({
       id: params.arguments.id,
@@ -184,10 +168,10 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
     });
 
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (task.error) {
-      return createError(id, -32602, task.error);
+      return createMcpResultError(id, task);
     }
 
     return createSuccess(id, createNamedTextPayload("rejected", task));
@@ -195,9 +179,8 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
 
   task_release({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_release requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_release", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const task = releaseTaskLifecycle({
       id: params.arguments.id,
@@ -205,10 +188,10 @@ const TASK_TRANSITION_MCP_TOOL_HANDLERS = {
     });
 
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     if (task.error) {
-      return createError(id, -32602, task.error);
+      return createMcpResultError(id, task);
     }
 
     return createSuccess(id, createNamedTextPayload("released", task));

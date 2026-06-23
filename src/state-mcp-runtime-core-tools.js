@@ -17,7 +17,8 @@ import { getCommandCatalogEntryView, getCommandCatalogView, getInitCommandCatalo
 import { getCommandHelpView, getInitHelpView } from "./state-command-help.js";
 import { getMcpCommandCatalogEntryView, getMcpCommandCatalogView, getMcpHelpView } from "./state-mcp-cli.js";
 import { getMcpToolView, getToolCatalogView, toolCatalog } from "./state-mcp-tool-catalog.js";
-import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { requireArgument } from "./state-mcp-runtime-tool-helpers.js";
 
 const MCP_ENTRY_URL = new URL("./mcp.js", import.meta.url).href;
 
@@ -44,17 +45,15 @@ const CORE_MCP_TOOL_HANDLERS = {
 
   command_catalog_entry({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.command) {
-      return createError(id, -32602, "command_catalog_entry requires arguments.command");
-    }
+    const commandRequired = requireArgument(id, "command_catalog_entry", params.arguments, "command");
+    if (commandRequired) return commandRequired;
     return createSuccess(id, createNamedTextPayload("command", getCommandCatalogEntryView(params.arguments.command)));
   },
 
   command_help({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.command) {
-      return createError(id, -32602, "command_help requires arguments.command");
-    }
+    const commandRequired = requireArgument(id, "command_help", params.arguments, "command");
+    if (commandRequired) return commandRequired;
     return createSuccess(id, createNamedTextPayload("help", getCommandHelpView(params.arguments.command)));
   },
 
@@ -65,17 +64,15 @@ const CORE_MCP_TOOL_HANDLERS = {
 
   init_command_option({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.option) {
-      return createError(id, -32602, "init_command_option requires arguments.option");
-    }
+    const optionRequired = requireArgument(id, "init_command_option", params.arguments, "option");
+    if (optionRequired) return optionRequired;
     return createSuccess(id, createNamedTextPayload("option", getInitCommandCatalogEntryView(params.arguments.option)));
   },
 
   init_help({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.option) {
-      return createError(id, -32602, "init_help requires arguments.option");
-    }
+    const optionRequired = requireArgument(id, "init_help", params.arguments, "option");
+    if (optionRequired) return optionRequired;
     return createSuccess(id, createNamedTextPayload("help", getInitHelpView(params.arguments.option)));
   },
 
@@ -86,17 +83,15 @@ const CORE_MCP_TOOL_HANDLERS = {
 
   mcp_command_option({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.option) {
-      return createError(id, -32602, "mcp_command_option requires arguments.option");
-    }
+    const optionRequired = requireArgument(id, "mcp_command_option", params.arguments, "option");
+    if (optionRequired) return optionRequired;
     return createSuccess(id, createNamedTextPayload("option", getMcpCommandCatalogEntryView(params.arguments.option)));
   },
 
   mcp_help({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.option) {
-      return createError(id, -32602, "mcp_help requires arguments.option");
-    }
+    const optionRequired = requireArgument(id, "mcp_help", params.arguments, "option");
+    if (optionRequired) return optionRequired;
     return createSuccess(id, createNamedTextPayload("help", getMcpHelpView(params.arguments.option)));
   },
 
@@ -107,9 +102,8 @@ const CORE_MCP_TOOL_HANDLERS = {
 
   tool_catalog_entry({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.name) {
-      return createError(id, -32602, "tool_catalog_entry requires arguments.name");
-    }
+    const nameRequired = requireArgument(id, "tool_catalog_entry", params.arguments, "name");
+    if (nameRequired) return nameRequired;
     return createSuccess(id, createNamedTextPayload("tool", getMcpToolView(params.arguments.name)));
   },
 
@@ -145,33 +139,29 @@ const CORE_MCP_TOOL_HANDLERS = {
 
   runtime_catalog_agent({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "runtime_catalog_agent requires arguments.id");
-    }
+    const agentIdRequired = requireArgument(id, "runtime_catalog_agent", params.arguments, "id");
+    if (agentIdRequired) return agentIdRequired;
     return createSuccess(id, createNamedTextPayload("agent", getAgentCatalogEntryView(params.arguments.id)));
   },
 
   runtime_catalog_agent_document({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "runtime_catalog_agent_document requires arguments.id");
-    }
+    const agentIdRequired = requireArgument(id, "runtime_catalog_agent_document", params.arguments, "id");
+    if (agentIdRequired) return agentIdRequired;
     return createSuccess(id, createNamedTextPayload("agent", getAgentCatalogDocumentView(params.arguments.id)));
   },
 
   runtime_catalog_skill({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "runtime_catalog_skill requires arguments.id");
-    }
+    const skillIdRequired = requireArgument(id, "runtime_catalog_skill", params.arguments, "id");
+    if (skillIdRequired) return skillIdRequired;
     return createSuccess(id, createNamedTextPayload("skill", getSkillCatalogEntryView(params.arguments.id)));
   },
 
   runtime_catalog_skill_document({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "runtime_catalog_skill_document requires arguments.id");
-    }
+    const skillIdRequired = requireArgument(id, "runtime_catalog_skill_document", params.arguments, "id");
+    if (skillIdRequired) return skillIdRequired;
     return createSuccess(id, createNamedTextPayload("skill", getSkillCatalogDocumentView(params.arguments.id)));
   },
 
@@ -190,9 +180,8 @@ const CORE_MCP_TOOL_HANDLERS = {
 
   runtime_capability({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "runtime_capability requires arguments.id");
-    }
+    const capabilityIdRequired = requireArgument(id, "runtime_capability", params.arguments, "id");
+    if (capabilityIdRequired) return capabilityIdRequired;
     return createSuccess(id, createNamedTextPayload("capability", getCapabilityCatalogEntryView(params.arguments.id)));
   }
 };

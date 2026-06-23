@@ -11,7 +11,8 @@ import {
   swarmOverview,
   validateSwarm
 } from "./state-runtime.js";
-import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { createUnknownEntityError, requireArgument } from "./state-mcp-runtime-tool-helpers.js";
 
 const SWARM_QUERY_MCP_TOOL_HANDLERS = {
   swarm_list({ id, args, metadata }) {
@@ -28,13 +29,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_get({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_get requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_get", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const swarm = getSwarmView(params.arguments.id);
     if (!swarm) {
-      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("swarm", swarm));
@@ -46,13 +46,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_archive_get({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_archive_get requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_archive_get", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const archivedSwarm = getArchivedSwarmView(params.arguments.id);
     if (!archivedSwarm) {
-      return createError(id, -32602, `Unknown archived swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id, { archived: true });
     }
 
     return createSuccess(id, createNamedTextPayload("archivedSwarm", archivedSwarm));
@@ -60,13 +59,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_bundle({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_bundle requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_bundle", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const bundle = swarmBundle(params.arguments.id);
     if (!bundle) {
-      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("bundle", bundle));
@@ -74,13 +72,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_blockers({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_blockers requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_blockers", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const blockers = swarmBlockers(params.arguments.id);
     if (!blockers) {
-      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("blockers", blockers));
@@ -88,13 +85,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_closeout({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_closeout requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_closeout", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const closeout = swarmCloseout(params.arguments.id);
     if (!closeout) {
-      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("closeout", closeout));
@@ -102,13 +98,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_dispatch_bundle({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_dispatch_bundle requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_dispatch_bundle", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const dispatchBundle = swarmDispatchBundle(params.arguments.id);
     if (!dispatchBundle) {
-      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("dispatchBundle", dispatchBundle));
@@ -116,13 +111,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_brief({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_brief requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_brief", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const brief = swarmBrief(params.arguments.id);
     if (!brief) {
-      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("brief", brief));
@@ -130,13 +124,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_check({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_check requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_check", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const validation = validateSwarm(params.arguments.id);
     if (!validation) {
-      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("validation", validation));
@@ -144,13 +137,12 @@ const SWARM_QUERY_MCP_TOOL_HANDLERS = {
 
   swarm_overview({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "swarm_overview requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "swarm_overview", params.arguments, "id");
+    if (idRequired) return idRequired;
 
     const overview = swarmOverview(params.arguments.id);
     if (!overview) {
-      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "swarm", params.arguments.id);
     }
 
     return createSuccess(id, createNamedTextPayload("overview", overview));

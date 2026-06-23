@@ -25,14 +25,14 @@ import {
   updateSwarmMutation,
   validateSwarm
 } from "./state-runtime.js";
-import { createError, createNamedTextPayload, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createNamedTextPayload, createSuccess, createTextPayload } from "./state-mcp-runtime-response.js";
+import { createUnknownEntityError, requireArgument } from "./state-mcp-runtime-tool-helpers.js";
 
 const MEMORY_MCP_TOOL_HANDLERS = {
   memory_store({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.content) {
-      return createError(id, -32602, "memory_store requires arguments.content");
-    }
+    const contentRequired = requireArgument(id, "memory_store", params.arguments, "content");
+    if (contentRequired) return contentRequired;
     
     const memory = storeMemoryMutation({
       content: params.arguments.content,
@@ -49,13 +49,12 @@ const MEMORY_MCP_TOOL_HANDLERS = {
 
   memory_get({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "memory_get requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "memory_get", params.arguments, "id");
+    if (idRequired) return idRequired;
     
     const memory = getMemoryView(params.arguments.id);
     if (!memory) {
-      return createError(id, -32602, `Unknown memory id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "memory", params.arguments.id);
     }
     
     return createSuccess(id, createNamedTextPayload("memory", memory));
@@ -75,9 +74,8 @@ const MEMORY_MCP_TOOL_HANDLERS = {
 
   memory_search({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.query) {
-      return createError(id, -32602, "memory_search requires arguments.query");
-    }
+    const queryRequired = requireArgument(id, "memory_search", params.arguments, "query");
+    if (queryRequired) return queryRequired;
     
     const limit =
       Number.isFinite(Number(params.arguments.limit)) && Number(params.arguments.limit) > 0

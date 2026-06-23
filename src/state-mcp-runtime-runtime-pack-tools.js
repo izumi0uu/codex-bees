@@ -21,17 +21,14 @@ import {
   runtimeWorkerPack,
   runtimeWorkspacePack
 } from "./state-runtime.js";
-import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { requireArgument, requireRoleAndWorker } from "./state-mcp-runtime-tool-helpers.js";
 
 const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
   runtime_assignment_pack({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "runtime_assignment_pack requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "runtime_assignment_pack requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "runtime_assignment_pack", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     return createSuccess(
       id,
       createNamedTextPayload("assignmentPack", runtimeAssignmentPack({
@@ -98,12 +95,8 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
 
   runtime_session_pack({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "runtime_session_pack requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "runtime_session_pack requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "runtime_session_pack", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     return createSuccess(
       id,
       createNamedTextPayload("sessionPack", runtimeSessionPack({
@@ -159,12 +152,8 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
 
   runtime_owner_pack({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "runtime_owner_pack requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "runtime_owner_pack requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "runtime_owner_pack", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     return createSuccess(
       id,
       createNamedTextPayload("ownerPack", runtimeOwnerPack({
@@ -176,12 +165,8 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
 
   runtime_pickup_pack({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "runtime_pickup_pack requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "runtime_pickup_pack requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "runtime_pickup_pack", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     return createSuccess(
       id,
       createNamedTextPayload("pickupPack", runtimePickupPack({
@@ -194,9 +179,8 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
 
   runtime_role_pack({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "runtime_role_pack requires arguments.role");
-    }
+    const roleRequired = requireArgument(id, "runtime_role_pack", params.arguments, "role");
+    if (roleRequired) return roleRequired;
     return createSuccess(
       id,
       createNamedTextPayload("rolePack", runtimeRolePack({
@@ -221,12 +205,8 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
 
   runtime_verifier_pack({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "runtime_verifier_pack requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "runtime_verifier_pack requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "runtime_verifier_pack", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     return createSuccess(
       id,
       createNamedTextPayload("verifierPack", runtimeVerifierPack({
@@ -238,12 +218,8 @@ const RUNTIME_PACK_MCP_TOOL_HANDLERS = {
 
   runtime_worker_pack({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "runtime_worker_pack requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "runtime_worker_pack requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "runtime_worker_pack", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     return createSuccess(
       id,
       createNamedTextPayload("workerPack", runtimeWorkerPack({

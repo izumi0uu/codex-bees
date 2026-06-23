@@ -35,7 +35,12 @@ import {
   workerHandoff,
   workerSession
 } from "./state-runtime.js";
-import { createError, createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import { createNamedTextPayload, createSuccess } from "./state-mcp-runtime-response.js";
+import {
+  createUnknownEntityError,
+  requireArgument,
+  requireRoleAndWorker
+} from "./state-mcp-runtime-tool-helpers.js";
 
 const TASK_QUERY_MCP_TOOL_HANDLERS = {
   task_list({ id, args, metadata }) {
@@ -50,13 +55,12 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_get({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_get requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_get", params.arguments, "id");
+    if (idRequired) return idRequired;
     
     const task = getTaskView(params.arguments.id);
     if (!task) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     
     return createSuccess(id, createNamedTextPayload("task", task));
@@ -64,13 +68,12 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_archive_get({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_archive_get requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_archive_get", params.arguments, "id");
+    if (idRequired) return idRequired;
     
     const archivedTask = getArchivedTaskView(params.arguments.id);
     if (!archivedTask) {
-      return createError(id, -32602, `Unknown archived task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id, { archived: true });
     }
     
     return createSuccess(id, createNamedTextPayload("archivedTask", archivedTask));
@@ -78,13 +81,12 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_history({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_history requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_history", params.arguments, "id");
+    if (idRequired) return idRequired;
     
     const history = taskHistory(params.arguments.id);
     if (!history) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     
     return createSuccess(id, createNamedTextPayload("history", history));
@@ -92,13 +94,12 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_report({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_report requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_report", params.arguments, "id");
+    if (idRequired) return idRequired;
     
     const report = taskReport(params.arguments.id);
     if (!report) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     
     return createSuccess(id, createNamedTextPayload("report", report));
@@ -106,13 +107,12 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_brief({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.id) {
-      return createError(id, -32602, "task_brief requires arguments.id");
-    }
+    const idRequired = requireArgument(id, "task_brief", params.arguments, "id");
+    if (idRequired) return idRequired;
     
     const brief = taskBrief(params.arguments.id);
     if (!brief) {
-      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+      return createUnknownEntityError(id, "task", params.arguments.id);
     }
     
     return createSuccess(id, createNamedTextPayload("brief", brief));
@@ -120,9 +120,8 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_inbox({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "task_inbox requires arguments.role");
-    }
+    const roleRequired = requireArgument(id, "task_inbox", params.arguments, "role");
+    if (roleRequired) return roleRequired;
     
     const inbox = taskInbox({
       role: params.arguments.role,
@@ -135,9 +134,8 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_next({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "task_next requires arguments.role");
-    }
+    const roleRequired = requireArgument(id, "task_next", params.arguments, "role");
+    if (roleRequired) return roleRequired;
     
     const next = taskNext({
       role: params.arguments.role,
@@ -150,12 +148,8 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_assignment_preview({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "task_assignment_preview requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "task_assignment_preview requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "task_assignment_preview", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     
     const assignmentPreview = previewTaskAssignment({
       role: params.arguments.role,
@@ -169,12 +163,8 @@ const TASK_QUERY_MCP_TOOL_HANDLERS = {
 
   task_pickup_preview({ id, args, metadata }) {
     const params = { arguments: args };
-    if (!params.arguments?.role) {
-      return createError(id, -32602, "task_pickup_preview requires arguments.role");
-    }
-    if (!params.arguments?.workerId) {
-      return createError(id, -32602, "task_pickup_preview requires arguments.workerId");
-    }
+    const roleAndWorkerRequired = requireRoleAndWorker(id, "task_pickup_preview", params.arguments);
+    if (roleAndWorkerRequired) return roleAndWorkerRequired;
     
     const pickupPreview = previewTaskPickup({
       role: params.arguments.role,
