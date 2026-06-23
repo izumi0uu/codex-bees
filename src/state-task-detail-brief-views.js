@@ -1,5 +1,5 @@
 import { summarizeTaskDependencies } from "./state-task-core.js";
-import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
+import { buildRecommendedFieldsFromResult } from "./state-runtime-recommendation-helpers.js";
 import { buildHistoryView, buildPlanningView, buildTaskDetailMetadata } from "./state-view-metadata.js";
 import { createLoadedValueView } from "./state-view-helpers.js";
 
@@ -191,11 +191,7 @@ export function buildTaskBriefView(
         entries: annotationEntries.slice(-5)
       },
       validation,
-      ...buildRecommendedNextFields({
-        recommendedNextActor: recommended.actor,
-        recommendedNextAction: recommended.action,
-        recommendedCommands: recommended.commands
-      })
+      ...buildRecommendedFieldsFromResult(recommended)
     }
   });
 }

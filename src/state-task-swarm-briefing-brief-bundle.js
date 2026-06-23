@@ -1,5 +1,5 @@
 import { compareLanePurposes } from "./state-queue-views.js";
-import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
+import { buildRecommendedFieldsFromResult } from "./state-runtime-recommendation-helpers.js";
 import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
 import { createLoadedValueView } from "./state-view-helpers.js";
 import { buildHistoryView, buildPlanningView } from "./state-view-metadata.js";
@@ -57,11 +57,7 @@ export function buildSwarmBriefView(
       waveParallelizable: laneOrchestration?.waveParallelizable ?? null,
       waveLaneCount: laneOrchestration?.waveLaneCount ?? null,
       waveOwnerCount: laneOrchestration?.waveOwnerCount ?? null,
-      ...buildRecommendedNextFields({
-        recommendedNextActor: recommended.actor,
-        recommendedNextAction: recommended.action,
-        recommendedCommands: recommended.commands
-      })
+      ...buildRecommendedFieldsFromResult(recommended)
     };
   });
   const recommended = recommendSwarmAction(overview, lanes);
@@ -83,11 +79,7 @@ export function buildSwarmBriefView(
       nextLane: lanes.find((lane) => lane.lane === overview.nextLane?.lane) ?? null,
       validation,
       leaderHandoff: buildSwarmHandoff(overview, recommended, orchestration),
-      ...buildRecommendedNextFields({
-        recommendedNextActor: recommended.actor,
-        recommendedNextAction: recommended.action,
-        recommendedCommands: recommended.commands
-      })
+      ...buildRecommendedFieldsFromResult(recommended)
     }
   });
 }

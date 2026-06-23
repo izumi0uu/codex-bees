@@ -1,5 +1,8 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
-import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
+import {
+  buildRecommendedFieldsFromResult,
+  buildRecommendedNextFields
+} from "./state-runtime-recommendation-helpers.js";
 import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildRuntimeFocusSummary(type, detail) {
@@ -125,10 +128,10 @@ export function buildRuntimeFocusView(
         lane: roles.next.nextAction?.lane ?? null,
         purpose: roles.next.nextAction?.task?.lanePurpose ?? null,
         purposeGuidance: roles.next.nextAction?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(roles.next.nextAction?.task ?? null),
-        ...buildRecommendedNextFields({
-          recommendedNextActor: roles.next.role,
-          recommendedNextAction: roles.next.nextAction?.reason ?? null,
-          recommendedCommands: roles.next.nextAction?.command ? [roles.next.nextAction.command] : []
+        ...buildRecommendedFieldsFromResult({
+          actor: roles.next.role,
+          action: roles.next.nextAction?.reason ?? null,
+          commands: roles.next.nextAction?.command ? [roles.next.nextAction.command] : []
         }),
         task: roles.next.nextAction?.task ?? null,
         summary: roles.next.summary

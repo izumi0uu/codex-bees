@@ -11,3 +11,14 @@ export function buildRecommendedNextFields(source = {}, { includeTaskBrief = fal
 
   return fields;
 }
+
+export function buildRecommendedFieldsFromResult(recommended = {}, options = {}) {
+  return buildRecommendedNextFields(
+    {
+      recommendedNextActor: recommended?.actor ?? null,
+      recommendedNextAction: recommended?.action ?? null,
+      recommendedCommands: recommended?.commands ?? []
+    },
+    options
+  );
+}
