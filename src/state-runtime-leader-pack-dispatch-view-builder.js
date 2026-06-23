@@ -1,4 +1,10 @@
-import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from './state-runtime-pack-detail.js';
+import {
+  buildRuntimePackCommand,
+  buildRuntimePackExpansionEntry,
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries,
+  normalizeRuntimePackDetail
+} from './state-runtime-pack-detail.js';
 
 export function buildRuntimeDispatchPackView(
   input,
@@ -58,15 +64,15 @@ export function buildRuntimeDispatchPackView(
     availableDetails: ['compact', 'full'],
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasDispatch: Boolean(dispatch?.next),
-      hasAssignmentDispatch: Boolean(assignmentDispatchPack?.next),
-      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
-      hasRole: Boolean(roles?.next),
-      hasHandoff: Boolean(handoffs?.next)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasDispatch: dispatch?.next,
+      hasAssignmentDispatch: assignmentDispatchPack?.next,
+      hasAssignmentLaunch: assignmentDispatchBundle?.next,
+      hasRole: roles?.next,
+      hasHandoff: handoffs?.next
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       dispatch: dispatch?.counts ?? null,

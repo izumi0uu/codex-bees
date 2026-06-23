@@ -1,4 +1,10 @@
-import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from './state-runtime-pack-detail.js';
+import {
+  buildRuntimePackCommand,
+  buildRuntimePackExpansionEntry,
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries,
+  normalizeRuntimePackDetail
+} from './state-runtime-pack-detail.js';
 
 export function buildRuntimeSummaryPackView(
   input,
@@ -60,15 +66,15 @@ export function buildRuntimeSummaryPackView(
     availableDetails: ['compact', 'full'],
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasFocus: Boolean(focus.focus),
-      hasRecovery: Boolean(recovery.next),
-      hasCloseout: Boolean(closeout.next),
-      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
-      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasFocus: focus.focus,
+      hasRecovery: recovery.next,
+      hasCloseout: closeout.next,
+      hasAssignmentLaunch: assignmentDispatchBundle?.next,
+      hasAssignmentLaunchPlan: assignmentLaunchPlan?.next
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     focus,
     overview: {

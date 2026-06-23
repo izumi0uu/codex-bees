@@ -49,3 +49,13 @@ export function buildRuntimePackExpansionEntry(surface, command) {
     command
   };
 }
+
+export function buildRuntimePackPresenceMetadata(entries = {}) {
+  return Object.fromEntries(
+    Object.entries(entries).map(([key, value]) => [key, Boolean(value)])
+  );
+}
+
+export function countRuntimePackEntries(entries = {}) {
+  return Object.values(entries).filter(Boolean).length;
+}

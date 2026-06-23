@@ -1,4 +1,10 @@
-import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from './state-runtime-pack-detail.js';
+import {
+  buildRuntimePackCommand,
+  buildRuntimePackExpansionEntry,
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries,
+  normalizeRuntimePackDetail
+} from './state-runtime-pack-detail.js';
 
 export function buildRuntimeQueuePackView(
   input,
@@ -53,14 +59,14 @@ export function buildRuntimeQueuePackView(
     availableDetails: ['compact', 'full'],
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasQueue: Boolean(queue?.next),
-      hasFocus: Boolean(focus?.focus),
-      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
-      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasQueue: queue?.next,
+      hasFocus: focus?.focus,
+      hasAssignmentLaunch: assignmentDispatchBundle?.next,
+      hasAssignmentLaunchPlan: assignmentLaunchPlan?.next
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       queue: queue?.counts ?? null,
