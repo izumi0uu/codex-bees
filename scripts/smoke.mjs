@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PUBLIC_TYPE_ENTRYPOINTS } from "../src/typings.js";
+import { getCliDispatchCommands } from "../src/state-cli-command-dispatch.js";
 import { planSwarm as directPlanSwarm, registerPlannerProfile, resetPlannerProfiles } from "../src/planner.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -13,7 +14,6 @@ const DIST_DIR = join(REPO_ROOT, "dist");
 const README_PATH = join(REPO_ROOT, "README.md");
 const PACKAGE_JSON_PATH = join(REPO_ROOT, "package.json");
 const README_TEXT = readFileSync(README_PATH, "utf8");
-const CLI_SOURCE_TEXT = readFileSync(join(REPO_ROOT, "src", "index.js"), "utf8");
 const NPM_CACHE_DIR = process.env.npm_config_cache ?? join(tmpdir(), "codex-bees-smoke-npm-cache");
 const SMOKE_SPAWN_MAX_BUFFER = 32 * 1024 * 1024;
 let packedTarballPath = null;
@@ -48,23 +48,6 @@ function assertMatchingKeys(label, actual, expected) {
     console.error(JSON.stringify({ actualKeys, expectedKeys }, null, 2));
     process.exit(1);
   }
-}
-
-function getCliSwitchCommands() {
-  const switchMatch = CLI_SOURCE_TEXT.match(/async function runCommand\(command\) \{([\s\S]*?)\n\}/);
-  if (!switchMatch) {
-    console.error("[smoke:commands-parity-source] expected runCommand switch in src/index.js");
-    process.exit(1);
-  }
-
-  const aliasMap = new Map([
-    ["help", "--help"],
-    ["version", "--version"]
-  ]);
-
-  return [...switchMatch[1].matchAll(/case\s+"([^"]+)":/g)]
-    .map((match) => aliasMap.get(match[1]) ?? match[1])
-    .filter((command, index, commands) => commands.indexOf(command) === index);
 }
 
 function cleanupPackedTarball() {
@@ -2952,12 +2935,12 @@ if (!requiredCliCatalogCommands.every((command) => cliCommandsView.commands?.som
   console.error("[smoke:commands-parity] expected command catalog to include shipped swarm and planner commands");
   process.exit(1);
 }
-const cliDispatchCommands = getCliSwitchCommands();
+const cliDispatchCommands = getCliDispatchCommands();
 const commandCatalogCommands = cliCommandsView.commands.map((entry) => entry.command);
 const missingCatalogCommands = cliDispatchCommands.filter((command) => !commandCatalogCommands.includes(command));
 const undocumentedDispatchCommands = commandCatalogCommands.filter((command) => !cliDispatchCommands.includes(command));
 if (missingCatalogCommands.length > 0 || undocumentedDispatchCommands.length > 0) {
-  console.error("[smoke:commands-parity-source] expected command catalog to match the CLI dispatch switch");
+  console.error("[smoke:commands-parity-dispatch] expected command catalog to match the structured CLI dispatch contract");
   console.error(JSON.stringify({ missingCatalogCommands, undocumentedDispatchCommands }, null, 2));
   process.exit(1);
 }
