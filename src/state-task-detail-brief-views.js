@@ -1,5 +1,6 @@
 import { summarizeTaskDependencies } from "./state-task-core.js";
 import { buildHistoryView, buildPlanningView, buildTaskDetailMetadata } from "./state-view-metadata.js";
+import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildTaskHistoryView(
   id,
@@ -57,12 +58,12 @@ export function buildTaskDetailView(
     return null;
   }
 
-  return {
-    kind: "task_detail",
+  return createLoadedValueView("task_detail", "task", task, {
     recommendedReason: "task_detail_loaded",
-    metadata: buildTaskDetailMetadata(task, deriveReviewState(task)),
-    task
-  };
+    extra: {
+      metadata: buildTaskDetailMetadata(task, deriveReviewState(task))
+    }
+  });
 }
 
 export function buildTaskDetailViewFromSources(

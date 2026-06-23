@@ -1,4 +1,5 @@
 import { buildHistoryView, buildPlanningView } from "./state-view-metadata.js";
+import { createCollectionView } from "./state-view-helpers.js";
 
 export function deriveTaskReportReason(task) {
   if (task.queueStatus === "ready_for_review") {
@@ -24,15 +25,13 @@ export function deriveTaskReportReason(task) {
 
 export function buildTaskListView({ listTasks }) {
   const tasks = listTasks();
-  const recommendedReason = tasks.length > 0 ? "task_list_has_results" : "task_list_empty";
-  return {
-    kind: "task_view",
-    recommendedReason,
+  return createCollectionView("task_view", "tasks", tasks, {
+    loadedReason: "task_list_has_results",
+    emptyReason: "task_list_empty",
     counts: {
       totalTasks: tasks.length
-    },
-    tasks
-  };
+    }
+  });
 }
 
 export function buildTaskListViewFromSources(

@@ -1,6 +1,7 @@
 import { annotateTasksWithDependencyState } from "./state-task-core.js";
 import { pickPriorityEntry } from "./state-queue-views.js";
 import { buildPlanningView, buildSwarmDetailMetadata } from "./state-view-metadata.js";
+import { createCollectionView, createLoadedValueView } from "./state-view-helpers.js";
 
 export function findSwarmLaneTask(lane, swarmTasks) {
   if (lane.taskId) {
@@ -168,13 +169,12 @@ export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
     return null;
   }
   const overview = swarmOverview(id);
-  const history = Array.isArray(swarm.history) ? swarm.history : [];
-  return {
-    kind: "swarm_detail",
+  return createLoadedValueView("swarm_detail", "swarm", swarm, {
     recommendedReason: "swarm_detail_loaded",
-    metadata: buildSwarmDetailMetadata(swarm, overview),
-    swarm
-  };
+    extra: {
+      metadata: buildSwarmDetailMetadata(swarm, overview)
+    }
+  });
 }
 
 export function buildSwarmDetailViewFromSources(
@@ -196,16 +196,16 @@ export function buildSwarmDetailViewFromSources(
 export function buildSwarmListView(filters = {}, options = {}, { listSwarms, listSwarmOverviews }) {
   const detailed = options.detailed === true;
   const swarms = detailed ? listSwarmOverviews(filters) : listSwarms(filters);
-  const recommendedReason = swarms.length > 0 ? "swarm_list_has_results" : "swarm_list_empty";
-  return {
-    kind: "swarm_view",
-    recommendedReason,
-    detailed,
+  return createCollectionView("swarm_view", "swarms", swarms, {
+    loadedReason: "swarm_list_has_results",
+    emptyReason: "swarm_list_empty",
     counts: {
       totalSwarms: swarms.length
     },
-    swarms
-  };
+    extra: {
+      detailed
+    }
+  });
 }
 
 export function buildSwarmListViewFromSources(
