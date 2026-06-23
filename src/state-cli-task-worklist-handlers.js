@@ -1,29 +1,21 @@
-import { readOption, readPositiveIntegerOption, requireOption } from "./state-cli-helpers.js";
+import { readOption } from "./state-cli-helpers.js";
+import {
+  readRequiredRoleWorkerOptions,
+  readRoleOptionalWorkerOptions
+} from "./state-cli-role-worker-options.js";
 import { previewTaskAssignment, previewTaskPickup, taskInbox, taskNext } from "./state-runtime.js";
 import { writeNamedView } from "./state-cli-view-writers.js";
 
 function readTaskInboxOptions() {
-  return {
-    role: requireOption("--role"),
-    workerId: readOption("--worker"),
-    limit: readPositiveIntegerOption("--limit")
-  };
+  return readRoleOptionalWorkerOptions({ limit: true });
 }
 
 function readTaskNextOptions() {
-  return {
-    role: requireOption("--role"),
-    workerId: readOption("--worker"),
-    mode: readOption("--mode")
-  };
+  return readRoleOptionalWorkerOptions({ mode: true });
 }
 
 function readTaskWorkerOptions() {
-  return {
-    role: requireOption("--role"),
-    workerId: requireOption("--worker"),
-    mode: readOption("--mode")
-  };
+  return readRequiredRoleWorkerOptions({ mode: true });
 }
 
 export function handleTaskInbox() {

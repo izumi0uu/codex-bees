@@ -16,8 +16,10 @@ import {
   updateTaskMutation,
   validateTask
 } from "./state-runtime.js";
-import { exit, readListOption, readOption, requireOption, writeErr } from "./state-cli-helpers.js";
+import { readListOption, readOption, requireOption } from "./state-cli-helpers.js";
+import { writeLookupView } from "./state-cli-lookup-writers.js";
 import { writeMutationView } from "./state-cli-mutation-writers.js";
+import { readRequiredRoleWorkerOptions } from "./state-cli-role-worker-options.js";
 import { writeNamedView } from "./state-cli-view-writers.js";
 
 function requireTaskId() {
@@ -42,11 +44,7 @@ function readTaskDefinitionOptions() {
 }
 
 function readTaskWorkerOptions() {
-  return {
-    role: requireOption("--role"),
-    workerId: requireOption("--worker"),
-    mode: readOption("--mode")
-  };
+  return readRequiredRoleWorkerOptions({ mode: true });
 }
 
 function readTaskReviewOptions() {
@@ -127,12 +125,7 @@ function handleTaskPickup() {
 
 function handleTaskCheck() {
   const id = requireTaskId();
-  const validation = validateTask(id);
-  if (!validation) {
-    writeErr(`Unknown task id: ${id}\n`);
-    exit(1);
-  }
-  writeNamedView("validation", validation);
+  writeLookupView("validation", validateTask, id, "task");
 }
 
 function handleTaskClaim() {
