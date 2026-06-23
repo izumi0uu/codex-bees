@@ -1,5 +1,6 @@
-import { requireOption, readPositiveIntegerOption, write } from "./state-cli-helpers.js";
+import { requireOption, readPositiveIntegerOption } from "./state-cli-helpers.js";
 import { verifierBundle } from "./state-runtime.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 export function handleVerifierBundle() {
   const role = requireOption("--role");
@@ -9,5 +10,5 @@ export function handleVerifierBundle() {
     workerId,
     limit: readPositiveIntegerOption("--limit")
   });
-  write(JSON.stringify({ bundle }, null, 2) + "\n");
+  writeNamedView("bundle", bundle);
 }

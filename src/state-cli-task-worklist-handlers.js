@@ -1,5 +1,6 @@
-import { readOption, readPositiveIntegerOption, requireOption, write } from "./state-cli-helpers.js";
+import { readOption, readPositiveIntegerOption, requireOption } from "./state-cli-helpers.js";
 import { previewTaskAssignment, previewTaskPickup, taskInbox, taskNext } from "./state-runtime.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 function readTaskInboxOptions() {
   return {
@@ -27,17 +28,17 @@ function readTaskWorkerOptions() {
 
 export function handleTaskInbox() {
   const inbox = taskInbox(readTaskInboxOptions());
-  write(JSON.stringify({ inbox }, null, 2) + "\n");
+  writeNamedView("inbox", inbox);
 }
 
 export function handleTaskNext() {
   const next = taskNext(readTaskNextOptions());
-  write(JSON.stringify({ next }, null, 2) + "\n");
+  writeNamedView("next", next);
 }
 
 export function handleTaskPickupPreview() {
   const pickupPreview = previewTaskPickup(readTaskWorkerOptions());
-  write(JSON.stringify({ pickupPreview }, null, 2) + "\n");
+  writeNamedView("pickupPreview", pickupPreview);
 }
 
 export function handleTaskAssignmentPreview() {
@@ -45,5 +46,5 @@ export function handleTaskAssignmentPreview() {
     ...readTaskWorkerOptions(),
     taskId: readOption("--task")
   });
-  write(JSON.stringify({ assignmentPreview }, null, 2) + "\n");
+  writeNamedView("assignmentPreview", assignmentPreview);
 }

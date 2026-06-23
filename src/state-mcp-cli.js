@@ -2,6 +2,7 @@ import { stdout } from "node:process";
 import { PACKAGE_VERSION, PRODUCT_NAME } from "./metadata.js";
 import { getCapabilityCatalogView } from "./runtime-status.js";
 import { getToolCatalogView } from "./state-mcp-tool-catalog.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 const MCP_CLI_USAGE_ERROR_CODE = "CODEX_BEES_MCP_USAGE";
 
@@ -95,12 +96,12 @@ export async function runMcpCli(args = []) {
   }
 
   if (args.includes("--tools")) {
-    stdout.write(JSON.stringify({ tools: getToolCatalogView() }, null, 2) + "\n");
+    writeNamedView("tools", getToolCatalogView());
     return;
   }
 
   if (args.includes("--capabilities")) {
-    stdout.write(JSON.stringify({ capabilities: getCapabilityCatalogView() }, null, 2) + "\n");
+    writeNamedView("capabilities", getCapabilityCatalogView());
     return;
   }
 

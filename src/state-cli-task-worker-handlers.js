@@ -1,5 +1,6 @@
-import { requireOption, readOption, readPositiveIntegerOption, write } from "./state-cli-helpers.js";
+import { requireOption, readOption, readPositiveIntegerOption } from "./state-cli-helpers.js";
 import { workerCloseout, workerHandoff, workerSession } from "./state-runtime.js";
+import { writeNamedView } from "./state-cli-view-writers.js";
 
 export function handleWorkerSession() {
   const role = requireOption("--role");
@@ -10,7 +11,7 @@ export function handleWorkerSession() {
     mode: readOption("--mode"),
     limit: readPositiveIntegerOption("--limit")
   });
-  write(JSON.stringify({ session }, null, 2) + "\n");
+  writeNamedView("session", session);
 }
 
 export function handleWorkerHandoff() {
@@ -22,7 +23,7 @@ export function handleWorkerHandoff() {
     mode: readOption("--mode"),
     limit: readPositiveIntegerOption("--limit")
   });
-  write(JSON.stringify({ handoff }, null, 2) + "\n");
+  writeNamedView("handoff", handoff);
 }
 
 export function handleWorkerCloseout() {
@@ -34,5 +35,5 @@ export function handleWorkerCloseout() {
     mode: readOption("--mode"),
     limit: readPositiveIntegerOption("--limit")
   });
-  write(JSON.stringify({ closeout }, null, 2) + "\n");
+  writeNamedView("closeout", closeout);
 }
