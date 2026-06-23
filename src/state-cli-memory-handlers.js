@@ -1,40 +1,20 @@
-import { argv, exit, readJsonOption, readListOption, readOption, readPositiveIntegerOption, requireOption, write, writeErr } from "./state-cli-helpers.js";
-import { planSwarm, planTask, queueTasksFromPlan } from "./planner.js";
-import {
-  activateSwarm,
-  addTasks,
-  blockSwarm,
-  cancelSwarm,
-  completeSwarm,
-  dispatchSwarmLane,
-  getMemoryView,
-  getSwarmView,
-  initSwarm,
-  initSwarmMutation,
-  listMemoriesView,
-  listSwarmsView,
-  queueSwarmTasks,
-  searchMemoriesView,
-  storeMemoryMutation,
-  swarmBlockers,
-  swarmBrief,
-  swarmBundle,
-  swarmCloseout,
-  swarmDispatchBundle,
-  swarmOverview,
-  syncSwarmStatus,
-  updateSwarmMutation,
-  validateSwarm
-} from "./state-runtime.js";
+import { exit, readListOption, readOption, requireOption, write, writeErr } from "./state-cli-helpers.js";
+import { getMemoryView, listMemoriesView, searchMemoriesView, storeMemoryMutation } from "./state-runtime.js";
+
+function readMemoryFilters() {
+  return {
+    namespace: readOption("--namespace"),
+    kind: readOption("--kind"),
+    agent: readOption("--agent"),
+    tags: readListOption("--tags")
+  };
+}
 
 function handleMemoryStore() {
   const content = requireOption("--content");
   const memory = storeMemoryMutation({
-    namespace: readOption("--namespace"),
-    kind: readOption("--kind"),
+    ...readMemoryFilters(),
     title: readOption("--title"),
-    agent: readOption("--agent"),
-    tags: readListOption("--tags"),
     notes: readOption("--notes"),
     content
   });
@@ -52,35 +32,13 @@ function handleMemoryGet() {
 }
 
 function handleMemoryList() {
-  write(
-    JSON.stringify(
-      {
-        memories: listMemoriesView({
-          namespace: readOption("--namespace"),
-          kind: readOption("--kind"),
-          agent: readOption("--agent"),
-          tags: readListOption("--tags")
-        })
-      },
-      null,
-      2
-    ) + "\n"
-  );
+  write(JSON.stringify({ memories: listMemoriesView(readMemoryFilters()) }, null, 2) + "\n");
 }
 
 function handleMemorySearch() {
   const query = requireOption("--query");
   const limit = Number(readOption("--limit") ?? "10");
-  const results = searchMemoriesView(
-    query,
-    {
-      namespace: readOption("--namespace"),
-      kind: readOption("--kind"),
-      agent: readOption("--agent"),
-      tags: readListOption("--tags")
-    },
-    limit
-  );
+  const results = searchMemoriesView(query, readMemoryFilters(), limit);
 
   write(JSON.stringify(results, null, 2) + "\n");
 }
