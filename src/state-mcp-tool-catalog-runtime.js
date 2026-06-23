@@ -260,29 +260,31 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
   },
   {
     name: "runtime_queue_pack",
-    description: "Build the queue-oriented runtime package with launch-first recommendations for local runtime work.",
+    description: "Build the compact-by-default queue-oriented runtime package with launch-first recommendations for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: WORKER_IDS_INPUT_SCHEMA
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
+        detail: { type: "string", enum: ["compact", "full"] }
       }
     }
   },
   {
     name: "runtime_workspace_pack",
-    description: "Build the orchestration workspace package for local runtime work.",
+    description: "Build the compact-by-default orchestration workspace package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: WORKER_IDS_INPUT_SCHEMA
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
+        detail: { type: "string", enum: ["compact", "full"] }
       }
     }
   },
   {
     name: "runtime_leader_pack",
-    description: "Build the leader-oriented runtime package for local runtime work.",
+    description: "Build the compact-by-default leader-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {
@@ -290,7 +292,8 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
         topology: { type: "string" },
         owner: { type: "string" },
         workerId: { type: "string" },
-        workerIds: WORKER_IDS_INPUT_SCHEMA
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
+        detail: { type: "string", enum: ["compact", "full"] }
       }
     }
   },
@@ -394,23 +397,25 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
   },
   {
     name: "runtime_dispatch_pack",
-    description: "Build the dispatch-oriented runtime package for local runtime work.",
+    description: "Build the compact-by-default dispatch-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: WORKER_IDS_INPUT_SCHEMA
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
+        detail: { type: "string", enum: ["compact", "full"] }
       }
     }
   },
   {
     name: "runtime_execution_pack",
-    description: "Build the execution-oriented runtime package for local runtime work.",
+    description: "Build the compact-by-default execution-oriented runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: WORKER_IDS_INPUT_SCHEMA
+        workerIds: WORKER_IDS_INPUT_SCHEMA,
+        detail: { type: "string", enum: ["compact", "full"] }
       }
     }
   },

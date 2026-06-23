@@ -3177,10 +3177,13 @@ const runtimeDispatchPackInitial = JSON.parse(
 ).dispatchPack;
 if (
   runtimeDispatchPackInitial.kind !== "runtime_dispatch_pack" ||
+  runtimeDispatchPackInitial.detailLevel !== "compact" ||
+  !runtimeDispatchPackInitial.availableDetails?.includes("full") ||
   !runtimeDispatchPackInitial.recommendedSurface ||
   typeof runtimeDispatchPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeDispatchPackInitial.overview ||
-  !runtimeDispatchPackInitial.surfaces
+  runtimeDispatchPackInitial.surfaces ||
+  runtimeDispatchPackInitial.expansion?.full?.command !== "node ./src/index.js runtime:dispatch-pack --detail full"
 ) {
   console.error("[smoke:runtime-dispatch-pack] expected top-level runtime dispatch pack");
   process.exit(1);
@@ -3201,10 +3204,13 @@ const runtimeQueuePackInitial = JSON.parse(
 ).queuePack;
 if (
   runtimeQueuePackInitial.kind !== "runtime_queue_pack" ||
+  runtimeQueuePackInitial.detailLevel !== "compact" ||
+  !runtimeQueuePackInitial.availableDetails?.includes("full") ||
   !runtimeQueuePackInitial.recommendedSurface ||
   typeof runtimeQueuePackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeQueuePackInitial.overview ||
-  !runtimeQueuePackInitial.surfaces
+  runtimeQueuePackInitial.surfaces ||
+  runtimeQueuePackInitial.expansion?.full?.command !== "node ./src/index.js runtime:queue-pack --detail full"
 ) {
   console.error("[smoke:runtime-queue-pack] expected top-level runtime queue pack");
   process.exit(1);
@@ -3272,10 +3278,13 @@ const runtimeLeaderPackInitial = JSON.parse(
 ).leaderPack;
 if (
   runtimeLeaderPackInitial.kind !== "runtime_leader_pack" ||
+  runtimeLeaderPackInitial.detailLevel !== "compact" ||
+  !runtimeLeaderPackInitial.availableDetails?.includes("full") ||
   !runtimeLeaderPackInitial.recommendedSurface ||
   typeof runtimeLeaderPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeLeaderPackInitial.overview ||
-  !runtimeLeaderPackInitial.surfaces
+  runtimeLeaderPackInitial.surfaces ||
+  runtimeLeaderPackInitial.expansion?.full?.command !== "node ./src/index.js runtime:leader-pack --detail full"
 ) {
   console.error("[smoke:runtime-leader-pack] expected top-level runtime leader pack");
   process.exit(1);
@@ -3373,9 +3382,12 @@ const runtimeExecutionPackInitial = JSON.parse(
 ).executionPack;
 if (
   runtimeExecutionPackInitial.kind !== "runtime_execution_pack" ||
+  runtimeExecutionPackInitial.detailLevel !== "compact" ||
+  !runtimeExecutionPackInitial.availableDetails?.includes("full") ||
   !runtimeExecutionPackInitial.recommendedSurface ||
   !runtimeExecutionPackInitial.overview ||
-  !runtimeExecutionPackInitial.surfaces
+  runtimeExecutionPackInitial.surfaces ||
+  runtimeExecutionPackInitial.expansion?.full?.command !== "node ./src/index.js runtime:execution-pack --detail full"
 ) {
   console.error("[smoke:runtime-execution-pack] expected top-level runtime execution pack");
   process.exit(1);
@@ -3433,10 +3445,13 @@ const runtimeWorkspacePackInitial = JSON.parse(
 ).workspacePack;
 if (
   runtimeWorkspacePackInitial.kind !== "runtime_workspace_pack" ||
+  runtimeWorkspacePackInitial.detailLevel !== "compact" ||
+  !runtimeWorkspacePackInitial.availableDetails?.includes("full") ||
   !runtimeWorkspacePackInitial.recommendedSurface ||
   typeof runtimeWorkspacePackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeWorkspacePackInitial.overview ||
-  !runtimeWorkspacePackInitial.surfaces
+  runtimeWorkspacePackInitial.surfaces ||
+  runtimeWorkspacePackInitial.expansion?.full?.command !== "node ./src/index.js runtime:workspace-pack --detail full"
 ) {
   console.error("[smoke:runtime-workspace-pack] expected top-level runtime workspace pack");
   process.exit(1);
@@ -5114,8 +5129,7 @@ if (
   runtimeDispatchPackMultiOwnerCli.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeDispatchPackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeDispatchPackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
-  runtimeDispatchPackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>" ||
-  runtimeDispatchPackMultiOwnerCli.surfaces?.assignmentLaunchPlan?.steps?.length !== 2
+  runtimeDispatchPackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
 ) {
   console.error("[smoke:runtime-dispatch-pack] expected CLI dispatch pack to expose launch plan when multiple owner groups are ready");
   process.exit(1);
@@ -5129,8 +5143,7 @@ if (
   runtimeLeaderPackMultiOwnerCli.overview?.assignmentDispatchPack?.ownerGroups !== 2 ||
   runtimeLeaderPackMultiOwnerCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
   runtimeLeaderPackMultiOwnerCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
-  runtimeLeaderPackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>" ||
-  runtimeLeaderPackMultiOwnerCli.surfaces?.assignmentLaunchPlan?.steps?.length !== 2
+  runtimeLeaderPackMultiOwnerCli.next?.assignmentLaunchStep?.workerId !== "<executor-worker>"
 ) {
   console.error("[smoke:runtime-leader-pack] expected CLI leader pack to prioritize launch plan when multiple owner groups are ready");
   process.exit(1);
@@ -5165,6 +5178,8 @@ const runtimeDispatchPackMappedCli = JSON.parse(
   run("runtime-dispatch-pack-mapped-cli", [
     "./src/index.js",
     "runtime:dispatch-pack",
+    "--detail",
+    "full",
     "--workers",
     JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
   ]).stdout
@@ -5180,6 +5195,8 @@ const runtimeLeaderPackMappedCli = JSON.parse(
   run("runtime-leader-pack-mapped-cli", [
     "./src/index.js",
     "runtime:leader-pack",
+    "--detail",
+    "full",
     "--workers",
     JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
   ]).stdout
@@ -5195,6 +5212,8 @@ const runtimeQueuePackMappedCli = JSON.parse(
   run("runtime-queue-pack-mapped-cli", [
     "./src/index.js",
     "runtime:queue-pack",
+    "--detail",
+    "full",
     "--workers",
     JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
   ]).stdout
@@ -5213,6 +5232,8 @@ const runtimeWorkspacePackMappedCli = JSON.parse(
   run("runtime-workspace-pack-mapped-cli", [
     "./src/index.js",
     "runtime:workspace-pack",
+    "--detail",
+    "full",
     "--workers",
     JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
   ]).stdout
@@ -5230,6 +5251,8 @@ const runtimeExecutionPackMappedCli = JSON.parse(
   run("runtime-execution-pack-mapped-cli", [
     "./src/index.js",
     "runtime:execution-pack",
+    "--detail",
+    "full",
     "--workers",
     JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
   ]).stdout
@@ -5665,9 +5688,7 @@ if (
   sameRoleRuntimeDispatchPackCli.overview?.assignmentDispatchPack?.workerTargets !== 2 ||
   sameRoleRuntimeDispatchPackCli.overview?.assignmentDispatchBundle?.launches !== 2 ||
   sameRoleRuntimeDispatchPackCli.overview?.assignmentLaunchPlan?.steps !== 2 ||
-  sameRoleRuntimeDispatchPackCli.next?.assignmentLaunchStep?.workerId !== "worker-executor-1" ||
-  sameRoleRuntimeDispatchPackCli.surfaces?.assignmentDispatchPack?.recommendedReason !== "parallel_worker_targets_ready" ||
-  sameRoleRuntimeDispatchPackCli.surfaces?.assignmentLaunchPlan?.nextWindow?.stepCount !== 2
+  sameRoleRuntimeDispatchPackCli.next?.assignmentLaunchStep?.workerId !== "worker-executor-1"
 ) {
   console.error("[smoke:same-role-runtime-dispatch-pack] expected CLI runtime dispatch pack to surface same-role launch planning");
   process.exit(1);
@@ -5739,7 +5760,6 @@ if (
   sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.recommendedSurface !== "leader:assignment-launch-plan" ||
   sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.recommendedReason !== "parallel_launch_plan_ready" ||
   sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.overview?.assignmentDispatchPack?.workerTargets !== 2 ||
-  sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.surfaces?.assignmentDispatchPack?.recommendedReason !== "parallel_worker_targets_ready" ||
   sameRoleRuntimeDispatchPackMcpPayload.dispatchPack?.next?.assignmentLaunchStep?.workerId !== "worker-executor-1"
 ) {
   console.error("[smoke:same-role-worker-pool-mcp] expected MCP launch-planning surfaces to honor same-role worker pools");
@@ -6921,7 +6941,7 @@ const runtimeDispatchPackMappedMcpInput = [
     method: "tools/call",
     params: {
       name: "runtime_dispatch_pack",
-      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" }, detail: "full" }
     }
   })
 ].join("\n") + "\n";
@@ -6951,7 +6971,7 @@ const runtimeWorkspacePackMappedMcpInput = [
     method: "tools/call",
     params: {
       name: "runtime_workspace_pack",
-      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" }, detail: "full" }
     }
   })
 ].join("\n") + "\n";
@@ -6983,7 +7003,7 @@ const runtimeExecutionPackMappedMcpInput = [
     method: "tools/call",
     params: {
       name: "runtime_execution_pack",
-      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" }, detail: "full" }
     }
   })
 ].join("\n") + "\n";
@@ -7114,7 +7134,7 @@ const runtimeLeaderPackMappedMcpInput = [
     method: "tools/call",
     params: {
       name: "runtime_leader_pack",
-      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" }, detail: "full" }
     }
   })
 ].join("\n") + "\n";
@@ -7144,7 +7164,7 @@ const runtimeQueuePackMappedMcpInput = [
     method: "tools/call",
     params: {
       name: "runtime_queue_pack",
-      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" } }
+      arguments: { workerIds: { executor: "worker-executor", explore: "worker-explore" }, detail: "full" }
     }
   })
 ].join("\n") + "\n";
@@ -7424,6 +7444,7 @@ const runtimeDispatchPackCli = JSON.parse(
   run("runtime-dispatch-pack-cli", ["./src/index.js", "runtime:dispatch-pack"]).stdout
 ).dispatchPack;
 if (
+  runtimeDispatchPackCli.detailLevel !== "compact" ||
   runtimeDispatchPackCli.recommendedSurface !== "runtime:dispatch" ||
   runtimeDispatchPackCli.recommendedReason !== "dispatch_priority" ||
   runtimeDispatchPackCli.metadata?.hasDispatch !== true ||
@@ -7433,7 +7454,8 @@ if (
   runtimeDispatchPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeDispatchPackCli.next?.handoff?.taskId !== "task-2" ||
   runtimeDispatchPackCli.overview?.dispatch?.totalAssignments !== 1 ||
-  runtimeDispatchPackCli.surfaces?.roles?.next?.role?.id !== "tester"
+  runtimeDispatchPackCli.surfaces ||
+  runtimeDispatchPackCli.expansion?.full?.command !== "node ./src/index.js runtime:dispatch-pack --detail full"
 ) {
   console.error("[smoke:runtime-dispatch-pack] expected CLI dispatch pack to recommend dispatch");
   process.exit(1);
@@ -7456,6 +7478,7 @@ const runtimeQueuePackCli = JSON.parse(
   run("runtime-queue-pack-cli", ["./src/index.js", "runtime:queue-pack"]).stdout
 ).queuePack;
 if (
+  runtimeQueuePackCli.detailLevel !== "compact" ||
   runtimeQueuePackCli.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
   runtimeQueuePackCli.recommendedReason !== "assignment_launch_ready" ||
   runtimeQueuePackCli.metadata?.hasQueue !== true ||
@@ -7466,7 +7489,8 @@ if (
   runtimeQueuePackCli.next?.focus?.taskId !== "task-1" ||
   runtimeQueuePackCli.next?.assignmentLaunch?.workerId !== "<executor-worker>" ||
   runtimeQueuePackCli.overview?.assignmentDispatchBundle?.launches !== 1 ||
-  runtimeQueuePackCli.surfaces?.dashboard?.leader?.queue?.next?.swarmId !== "swarm-1"
+  runtimeQueuePackCli.surfaces ||
+  runtimeQueuePackCli.expansion?.full?.command !== "node ./src/index.js runtime:queue-pack --detail full"
 ) {
   console.error("[smoke:runtime-queue-pack] expected CLI queue pack to surface assignment launch context before raw leader queue");
   process.exit(1);
@@ -7545,6 +7569,7 @@ const runtimeLeaderPackCli = JSON.parse(
   run("runtime-leader-pack-cli", ["./src/index.js", "runtime:leader-pack"]).stdout
 ).leaderPack;
 if (
+  runtimeLeaderPackCli.detailLevel !== "compact" ||
   runtimeLeaderPackCli.recommendedSurface !== "runtime:dispatch" ||
   runtimeLeaderPackCli.recommendedReason !== "dispatch_priority" ||
   runtimeLeaderPackCli.metadata?.hasWorkspace !== true ||
@@ -7553,7 +7578,8 @@ if (
   runtimeLeaderPackCli.counts?.surfacedNextEntries !== Object.values(runtimeLeaderPackCli.next ?? {}).filter(Boolean).length ||
   runtimeLeaderPackCli.next?.workspace?.swarmId !== "swarm-1" ||
   runtimeLeaderPackCli.overview?.dispatch?.totalAssignments !== 1 ||
-  runtimeLeaderPackCli.surfaces?.queue?.next?.swarmId !== "swarm-1"
+  runtimeLeaderPackCli.surfaces ||
+  runtimeLeaderPackCli.expansion?.full?.command !== "node ./src/index.js runtime:leader-pack --detail full"
 ) {
   console.error("[smoke:runtime-leader-pack] expected CLI leader pack to recommend dispatch");
   process.exit(1);
@@ -7791,6 +7817,7 @@ const runtimeExecutionPackCli = JSON.parse(
   run("runtime-execution-pack-cli", ["./src/index.js", "runtime:execution-pack"]).stdout
 ).executionPack;
 if (
+  runtimeExecutionPackCli.detailLevel !== "compact" ||
   runtimeExecutionPackCli.recommendedSurface !== "runtime:focus" ||
   runtimeExecutionPackCli.recommendedReason !== "blocked_focus_priority" ||
   runtimeExecutionPackCli.metadata?.hasFocus !== true ||
@@ -7803,7 +7830,9 @@ if (
   runtimeExecutionPackCli.next?.focus?.taskId !== "task-1" ||
   runtimeExecutionPackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeExecutionPackCli.next?.role?.role?.id !== "tester" ||
-  runtimeExecutionPackCli.next?.queue?.swarmId !== "swarm-1"
+  runtimeExecutionPackCli.next?.queue?.swarmId !== "swarm-1" ||
+  runtimeExecutionPackCli.surfaces ||
+  runtimeExecutionPackCli.expansion?.full?.command !== "node ./src/index.js runtime:execution-pack --detail full"
 ) {
   console.error("[smoke:runtime-execution-pack] expected CLI execution pack to recommend focus");
   process.exit(1);
@@ -7872,6 +7901,7 @@ const runtimeWorkspacePackCli = JSON.parse(
   run("runtime-workspace-pack-cli", ["./src/index.js", "runtime:workspace-pack"]).stdout
 ).workspacePack;
 if (
+  runtimeWorkspacePackCli.detailLevel !== "compact" ||
   runtimeWorkspacePackCli.recommendedSurface !== "runtime:recovery" ||
   runtimeWorkspacePackCli.recommendedReason !== "blocked_tasks_priority" ||
   runtimeWorkspacePackCli.metadata?.hasDashboard !== true ||
@@ -7883,7 +7913,9 @@ if (
   runtimeWorkspacePackCli.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeWorkspacePackCli.next?.review?.taskId !== "task-2" ||
   runtimeWorkspacePackCli.next?.recovery?.taskId !== "task-1" ||
-  runtimeWorkspacePackCli.overview?.dashboard?.blockedTasks !== 1
+  runtimeWorkspacePackCli.overview?.dashboard?.blockedTasks !== 1 ||
+  runtimeWorkspacePackCli.surfaces ||
+  runtimeWorkspacePackCli.expansion?.full?.command !== "node ./src/index.js runtime:workspace-pack --detail full"
 ) {
   console.error("[smoke:runtime-workspace-pack] expected CLI workspace pack to recommend recovery");
   process.exit(1);
@@ -8107,10 +8139,13 @@ const runtimeDispatchPackMcpLines = runtimeDispatchPackMcp.stdout
 const runtimeDispatchPackMcpPayload = JSON.parse(JSON.parse(runtimeDispatchPackMcpLines[1]).result.content[0].text);
 if (
   runtimeDispatchPackMcp.status !== 0 ||
+  runtimeDispatchPackMcpPayload.dispatchPack?.detailLevel !== "compact" ||
   runtimeDispatchPackMcpPayload.dispatchPack?.recommendedSurface !== "runtime:dispatch" ||
   runtimeDispatchPackMcpPayload.dispatchPack?.recommendedReason !== "dispatch_priority" ||
   runtimeDispatchPackMcpPayload.dispatchPack?.next?.dispatch?.lane !== "lane-dashboard" ||
-  runtimeDispatchPackMcpPayload.dispatchPack?.next?.handoff?.taskId !== "task-2"
+  runtimeDispatchPackMcpPayload.dispatchPack?.next?.handoff?.taskId !== "task-2" ||
+  runtimeDispatchPackMcpPayload.dispatchPack?.surfaces ||
+  runtimeDispatchPackMcpPayload.dispatchPack?.expansion?.full?.command !== "node ./src/index.js runtime:dispatch-pack --detail full"
 ) {
   console.error("[smoke:runtime-dispatch-pack-mcp] expected MCP runtime dispatch pack");
   console.error(runtimeDispatchPackMcp.stderr || runtimeDispatchPackMcp.stdout);
@@ -8171,11 +8206,14 @@ const runtimeQueuePackMcpLines = runtimeQueuePackMcp.stdout
 const runtimeQueuePackMcpPayload = JSON.parse(JSON.parse(runtimeQueuePackMcpLines[1]).result.content[0].text);
 if (
   runtimeQueuePackMcp.status !== 0 ||
+  runtimeQueuePackMcpPayload.queuePack?.detailLevel !== "compact" ||
   runtimeQueuePackMcpPayload.queuePack?.recommendedSurface !== "leader:assignment-dispatch-bundle" ||
   runtimeQueuePackMcpPayload.queuePack?.recommendedReason !== "assignment_launch_ready" ||
   runtimeQueuePackMcpPayload.queuePack?.next?.queue?.swarmId !== "swarm-1" ||
   runtimeQueuePackMcpPayload.queuePack?.next?.assignmentLaunch?.workerId !== "<executor-worker>" ||
-  runtimeQueuePackMcpPayload.queuePack?.overview?.assignmentDispatchBundle?.launches !== 1
+  runtimeQueuePackMcpPayload.queuePack?.overview?.assignmentDispatchBundle?.launches !== 1 ||
+  runtimeQueuePackMcpPayload.queuePack?.surfaces ||
+  runtimeQueuePackMcpPayload.queuePack?.expansion?.full?.command !== "node ./src/index.js runtime:queue-pack --detail full"
 ) {
   console.error("[smoke:runtime-queue-pack-mcp] expected MCP runtime queue pack to surface assignment launch context before raw leader queue");
   console.error(runtimeQueuePackMcp.stderr || runtimeQueuePackMcp.stdout);
@@ -8412,9 +8450,11 @@ const runtimeLeaderPackMcpLines = runtimeLeaderPackMcp.stdout
 const runtimeLeaderPackMcpPayload = JSON.parse(JSON.parse(runtimeLeaderPackMcpLines[1]).result.content[0].text);
 if (
   runtimeLeaderPackMcp.status !== 0 ||
+  runtimeLeaderPackMcpPayload.leaderPack?.detailLevel !== "compact" ||
   runtimeLeaderPackMcpPayload.leaderPack?.recommendedSurface !== "runtime:dispatch" ||
   runtimeLeaderPackMcpPayload.leaderPack?.recommendedReason !== "dispatch_priority" ||
-  runtimeLeaderPackMcpPayload.leaderPack?.surfaces?.queue?.next?.swarmId !== "swarm-1"
+  runtimeLeaderPackMcpPayload.leaderPack?.surfaces ||
+  runtimeLeaderPackMcpPayload.leaderPack?.expansion?.full?.command !== "node ./src/index.js runtime:leader-pack --detail full"
 ) {
   console.error("[smoke:runtime-leader-pack-mcp] expected MCP runtime leader pack");
   console.error(runtimeLeaderPackMcp.stderr || runtimeLeaderPackMcp.stdout);
@@ -8718,6 +8758,7 @@ const runtimeExecutionPackMcpLines = runtimeExecutionPackMcp.stdout
 const runtimeExecutionPackMcpPayload = JSON.parse(JSON.parse(runtimeExecutionPackMcpLines[1]).result.content[0].text);
 if (
   runtimeExecutionPackMcp.status !== 0 ||
+  runtimeExecutionPackMcpPayload.executionPack?.detailLevel !== "compact" ||
   runtimeExecutionPackMcpPayload.executionPack?.recommendedSurface !== "runtime:focus" ||
   runtimeExecutionPackMcpPayload.executionPack?.recommendedReason !== "blocked_focus_priority" ||
   runtimeExecutionPackMcpPayload.executionPack?.metadata?.hasFocus !== true ||
@@ -8729,7 +8770,9 @@ if (
   runtimeExecutionPackMcpPayload.executionPack?.counts?.surfacedNextEntries !==
     Object.values(runtimeExecutionPackMcpPayload.executionPack?.next ?? {}).filter(Boolean).length ||
   runtimeExecutionPackMcpPayload.executionPack?.next?.focus?.taskId !== "task-1" ||
-  runtimeExecutionPackMcpPayload.executionPack?.next?.dispatch?.lane !== "lane-dashboard"
+  runtimeExecutionPackMcpPayload.executionPack?.next?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeExecutionPackMcpPayload.executionPack?.surfaces ||
+  runtimeExecutionPackMcpPayload.executionPack?.expansion?.full?.command !== "node ./src/index.js runtime:execution-pack --detail full"
 ) {
   console.error("[smoke:runtime-execution-pack-mcp] expected MCP runtime execution pack");
   console.error(runtimeExecutionPackMcp.stderr || runtimeExecutionPackMcp.stdout);
@@ -8945,11 +8988,14 @@ const runtimeWorkspacePackMcpLines = runtimeWorkspacePackMcp.stdout
 const runtimeWorkspacePackMcpPayload = JSON.parse(JSON.parse(runtimeWorkspacePackMcpLines[1]).result.content[0].text);
 if (
   runtimeWorkspacePackMcp.status !== 0 ||
+  runtimeWorkspacePackMcpPayload.workspacePack?.detailLevel !== "compact" ||
   runtimeWorkspacePackMcpPayload.workspacePack?.recommendedSurface !== "runtime:recovery" ||
   runtimeWorkspacePackMcpPayload.workspacePack?.recommendedReason !== "blocked_tasks_priority" ||
   runtimeWorkspacePackMcpPayload.workspacePack?.next?.dispatch?.lane !== "lane-dashboard" ||
   runtimeWorkspacePackMcpPayload.workspacePack?.next?.review?.taskId !== "task-2" ||
-  runtimeWorkspacePackMcpPayload.workspacePack?.next?.recovery?.taskId !== "task-1"
+  runtimeWorkspacePackMcpPayload.workspacePack?.next?.recovery?.taskId !== "task-1" ||
+  runtimeWorkspacePackMcpPayload.workspacePack?.surfaces ||
+  runtimeWorkspacePackMcpPayload.workspacePack?.expansion?.full?.command !== "node ./src/index.js runtime:workspace-pack --detail full"
 ) {
   console.error("[smoke:runtime-workspace-pack-mcp] expected MCP runtime workspace pack");
   console.error(runtimeWorkspacePackMcp.stderr || runtimeWorkspacePackMcp.stdout);

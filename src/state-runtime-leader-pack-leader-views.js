@@ -1,3 +1,5 @@
+import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from "./state-runtime-pack-detail.js";
+
 export function deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";
@@ -73,6 +75,7 @@ export function buildRuntimeLeaderPackView(
     buildRuntimeLeaderPackSummary
   }
 ) {
+  const detailLevel = normalizeRuntimePackDetail(input.detail);
   const workspace = leaderWorkspace(input);
   const queue = leaderQueue(input);
   const dispatch = runtimeDispatch();
@@ -91,9 +94,36 @@ export function buildRuntimeLeaderPackView(
     assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
     closeout: closeout?.next ?? null
   };
+  const expansion = {
+    full: buildRuntimePackExpansionEntry("runtime:leader-pack", buildRuntimePackCommand("runtime:leader-pack", input, { detail: "full" })),
+    workspace: buildRuntimePackExpansionEntry(
+      "leader:workspace",
+      buildRuntimePackCommand("leader:workspace", input, { workerId: undefined, workerIds: undefined, detail: undefined })
+    ),
+    queue: buildRuntimePackExpansionEntry(
+      "leader:queue",
+      buildRuntimePackCommand("leader:queue", input, { workerId: undefined, workerIds: undefined, detail: undefined })
+    ),
+    dispatch: buildRuntimePackExpansionEntry("runtime:dispatch", "node ./src/index.js runtime:dispatch"),
+    assignmentDispatchPack: buildRuntimePackExpansionEntry(
+      "leader:assignment-dispatch-pack",
+      buildRuntimePackCommand("leader:assignment-dispatch-pack", input)
+    ),
+    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
+      "leader:assignment-dispatch-bundle",
+      buildRuntimePackCommand("leader:assignment-dispatch-bundle", input)
+    ),
+    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
+      "leader:assignment-launch-plan",
+      buildRuntimePackCommand("leader:assignment-launch-plan", input)
+    ),
+    closeout: buildRuntimePackExpansionEntry("runtime:closeout", "node ./src/index.js runtime:closeout")
+  };
 
-  return {
+  const pack = {
     kind: "runtime_leader_pack",
+    detailLevel,
+    availableDetails: ["compact", "full"],
     filters: workspace?.filters ?? {
       status: input.status,
       topology: input.topology,
@@ -123,7 +153,12 @@ export function buildRuntimeLeaderPackView(
       closeout: closeout?.counts ?? null
     },
     next: nextEntries,
-    surfaces: {
+    expansion: detailLevel === "compact" ? expansion : null,
+    summary: buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan)
+  };
+
+  if (detailLevel === "full") {
+    pack.surfaces = {
       workspace,
       queue,
       dispatch,
@@ -131,9 +166,10 @@ export function buildRuntimeLeaderPackView(
       assignmentDispatchBundle,
       assignmentLaunchPlan,
       closeout
-    },
-    summary: buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan)
-  };
+    };
+  }
+
+  return pack;
 }
 export function buildRuntimeLeaderPackViewFromSources(
   input,

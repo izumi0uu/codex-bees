@@ -1,3 +1,5 @@
+import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from "./state-runtime-pack-detail.js";
+
 export function deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";
@@ -75,6 +77,7 @@ export function buildRuntimeDispatchPackView(
     buildRuntimeDispatchPackSummary
   }
 ) {
+  const detailLevel = normalizeRuntimePackDetail(input.detail);
   const dispatch = runtimeDispatch();
   const assignmentDispatchPack = leaderAssignmentDispatchPack(input);
   const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
@@ -91,9 +94,29 @@ export function buildRuntimeDispatchPackView(
     role: roles?.next ?? null,
     handoff: handoffs?.next ?? null
   };
+  const expansion = {
+    full: buildRuntimePackExpansionEntry("runtime:dispatch-pack", buildRuntimePackCommand("runtime:dispatch-pack", input, { detail: "full" })),
+    dispatch: buildRuntimePackExpansionEntry("runtime:dispatch", "node ./src/index.js runtime:dispatch"),
+    assignmentDispatchPack: buildRuntimePackExpansionEntry(
+      "leader:assignment-dispatch-pack",
+      buildRuntimePackCommand("leader:assignment-dispatch-pack", input)
+    ),
+    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
+      "leader:assignment-dispatch-bundle",
+      buildRuntimePackCommand("leader:assignment-dispatch-bundle", input)
+    ),
+    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
+      "leader:assignment-launch-plan",
+      buildRuntimePackCommand("leader:assignment-launch-plan", input)
+    ),
+    roles: buildRuntimePackExpansionEntry("runtime:roles", "node ./src/index.js runtime:roles"),
+    handoffs: buildRuntimePackExpansionEntry("runtime:handoffs", "node ./src/index.js runtime:handoffs")
+  };
 
-  return {
+  const pack = {
     kind: "runtime_dispatch_pack",
+    detailLevel,
+    availableDetails: ["compact", "full"],
     recommendedSurface,
     recommendedReason,
     metadata: {
@@ -115,16 +138,22 @@ export function buildRuntimeDispatchPackView(
       handoffs: handoffs?.counts ?? null
     },
     next: nextEntries,
-    surfaces: {
+    expansion: detailLevel === "compact" ? expansion : null,
+    summary: buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, handoffs, roles)
+  };
+
+  if (detailLevel === "full") {
+    pack.surfaces = {
       dispatch,
       assignmentDispatchPack,
       assignmentDispatchBundle,
       assignmentLaunchPlan,
       roles,
       handoffs
-    },
-    summary: buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, handoffs, roles)
-  };
+    };
+  }
+
+  return pack;
 }
 export function buildRuntimeDispatchPackViewFromSources(
   input,

@@ -1,4 +1,5 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from "./state-runtime-pack-detail.js";
 
 export function deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
@@ -79,12 +80,13 @@ export function buildRuntimeExecutionPackView(
     buildRuntimeExecutionPackSummary
   }
 ) {
+  const detailLevel = normalizeRuntimePackDetail(input.detail);
   const focus = runtimeFocus();
   const dispatch = runtimeDispatch();
   const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
   const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const roles = runtimeRoles();
-  const queuePack = runtimeQueuePack(input);
+  const queuePack = runtimeQueuePack({ ...input, detail: detailLevel });
   const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
   const recommendedReason = deriveRuntimeExecutionPackReason({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
   const purposeGuidance =
@@ -102,9 +104,26 @@ export function buildRuntimeExecutionPackView(
     role: roles?.next ?? null,
     queue: queuePack?.next?.queue ?? null
   };
+  const expansion = {
+    full: buildRuntimePackExpansionEntry("runtime:execution-pack", buildRuntimePackCommand("runtime:execution-pack", input, { detail: "full" })),
+    focus: buildRuntimePackExpansionEntry("runtime:focus", "node ./src/index.js runtime:focus"),
+    dispatch: buildRuntimePackExpansionEntry("runtime:dispatch", "node ./src/index.js runtime:dispatch"),
+    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
+      "leader:assignment-dispatch-bundle",
+      buildRuntimePackCommand("leader:assignment-dispatch-bundle", input)
+    ),
+    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
+      "leader:assignment-launch-plan",
+      buildRuntimePackCommand("leader:assignment-launch-plan", input)
+    ),
+    roles: buildRuntimePackExpansionEntry("runtime:roles", "node ./src/index.js runtime:roles"),
+    queuePack: buildRuntimePackExpansionEntry("runtime:queue-pack", buildRuntimePackCommand("runtime:queue-pack", input))
+  };
 
-  return {
+  const pack = {
     kind: "runtime_execution_pack",
+    detailLevel,
+    availableDetails: ["compact", "full"],
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
@@ -128,16 +147,22 @@ export function buildRuntimeExecutionPackView(
       queue: queuePack?.overview?.queue ?? null
     },
     next: nextEntries,
-    surfaces: {
+    expansion: detailLevel === "compact" ? expansion : null,
+    summary: buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack)
+  };
+
+  if (detailLevel === "full") {
+    pack.surfaces = {
       focus,
       dispatch,
       assignmentDispatchBundle,
       assignmentLaunchPlan,
       roles,
       queuePack
-    },
-    summary: buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack)
-  };
+    };
+  }
+
+  return pack;
 }
 export function buildRuntimeExecutionPackViewFromSources(
   input,

@@ -132,18 +132,18 @@ export const COMMAND_HELP_OVERRIDES = {
     options: [LIMIT_OPTION]
   },
   "runtime:execution-pack": {
-    usage: [commandUsage("runtime:execution-pack", "[--worker <worker-id>] [--workers <json>]")],
-    options: [WORKER_OPTION, WORKERS_OPTION],
-    notes: [JSON_WORKERS_NOTE]
+    usage: [commandUsage("runtime:execution-pack", "[--worker <worker-id>] [--workers <json>] [--detail <detail>]")],
+    options: [WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
+    notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
   "runtime:pickup-pack": {
     usage: [commandUsage("runtime:pickup-pack", "--role <role> --worker <worker-id> [--mode <mode>]")],
     options: [ROLE_OPTION, WORKER_OPTION, MODE_OPTION]
   },
   "runtime:leader-pack": {
-    usage: [commandUsage("runtime:leader-pack", "[options]")],
-    options: [STATUS_OPTION, TOPOLOGY_OPTION, OWNER_OPTION, WORKER_OPTION, WORKERS_OPTION],
-    notes: [JSON_WORKERS_NOTE]
+    usage: [commandUsage("runtime:leader-pack", "[--status <status>] [--topology <topology>] [--owner <owner>] [--worker <worker-id>] [--workers <json>] [--detail <detail>]")],
+    options: [STATUS_OPTION, TOPOLOGY_OPTION, OWNER_OPTION, WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
+    notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
   "runtime:review-pack": {
     usage: [commandUsage("runtime:review-pack", "[--role <role>] [--worker <worker-id>]")],
@@ -154,14 +154,14 @@ export const COMMAND_HELP_OVERRIDES = {
     options: [ROLE_OPTION, WORKER_OPTION, MODE_OPTION]
   },
   "runtime:queue-pack": {
-    usage: [commandUsage("runtime:queue-pack", "[--worker <worker-id>] [--workers <json>]")],
-    options: [WORKER_OPTION, WORKERS_OPTION],
-    notes: [JSON_WORKERS_NOTE]
+    usage: [commandUsage("runtime:queue-pack", "[--worker <worker-id>] [--workers <json>] [--detail <detail>]")],
+    options: [WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
+    notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
   "runtime:workspace-pack": {
-    usage: [commandUsage("runtime:workspace-pack", "[--worker <worker-id>] [--workers <json>]")],
-    options: [WORKER_OPTION, WORKERS_OPTION],
-    notes: [JSON_WORKERS_NOTE]
+    usage: [commandUsage("runtime:workspace-pack", "[--worker <worker-id>] [--workers <json>] [--detail <detail>]")],
+    options: [WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
+    notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
   "runtime:owner-pack": {
     usage: [commandUsage("runtime:owner-pack", "--role <role> --worker <worker-id>")],
@@ -185,9 +185,9 @@ export const COMMAND_HELP_OVERRIDES = {
     notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
   "runtime:dispatch-pack": {
-    usage: [commandUsage("runtime:dispatch-pack", "[--worker <worker-id>] [--workers <json>]")],
-    options: [WORKER_OPTION, WORKERS_OPTION],
-    notes: [JSON_WORKERS_NOTE]
+    usage: [commandUsage("runtime:dispatch-pack", "[--worker <worker-id>] [--workers <json>] [--detail <detail>]")],
+    options: [WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
+    notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
   "runtime:roles": {
     usage: [commandUsage("runtime:roles", "[--limit <number>]")],

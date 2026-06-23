@@ -147,7 +147,8 @@ const RUNTIME_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createTextPayload({
       queuePack: runtimeQueuePack({
         workerId: params.arguments?.workerId,
-        workerIds: params.arguments?.workerIds
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
       })
     }));
   },
@@ -157,7 +158,8 @@ const RUNTIME_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createTextPayload({
       workspacePack: runtimeWorkspacePack({
         workerId: params.arguments?.workerId,
-        workerIds: params.arguments?.workerIds
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
       })
     }));
   },
@@ -172,7 +174,8 @@ const RUNTIME_MCP_TOOL_HANDLERS = {
           topology: params.arguments?.topology,
           owner: params.arguments?.owner,
           workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds
+          workerIds: params.arguments?.workerIds,
+          detail: params.arguments?.detail
         })
       })
     );
@@ -303,7 +306,8 @@ const RUNTIME_MCP_TOOL_HANDLERS = {
       createTextPayload({
         dispatchPack: runtimeDispatchPack({
           workerId: params.arguments?.workerId,
-          workerIds: params.arguments?.workerIds
+          workerIds: params.arguments?.workerIds,
+          detail: params.arguments?.detail
         })
       })
     );
@@ -314,7 +318,8 @@ const RUNTIME_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createTextPayload({
       executionPack: runtimeExecutionPack({
         workerId: params.arguments?.workerId,
-        workerIds: params.arguments?.workerIds
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
       })
     }));
   },

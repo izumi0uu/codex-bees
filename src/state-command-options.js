@@ -58,7 +58,7 @@ export const TAGS_OPTION = option("--tags <tag,tag>", "Comma-delimited tags; rep
 export const DETAILED_OPTION = option("--detailed", "Include nested lane and task detail in swarm list output");
 
 export const JSON_WORKERS_NOTE = "Pass --workers as a JSON object that maps role ids to worker ids or worker-id arrays when launch surfaces should emit concrete worker commands.";
-export const RUNTIME_PACK_DETAIL_NOTE = "Runtime summary/control packs default to compact output; pass --detail full to expand nested surfaces.";
+export const RUNTIME_PACK_DETAIL_NOTE = "Runtime summary/control/dispatch/execution/leader/queue/workspace packs default to compact output; pass --detail full to expand nested surfaces.";
 export const JSON_LANES_NOTE = "Pass --lanes as a JSON array of lane contracts.";
 export const JSON_LANE_DEPENDENCY_NOTE = "Lane JSON may include dependsOn arrays that reference prerequisite lane ids.";
 export const PIPE_LIST_NOTE = "Pipe-delimited flags such as --acceptance, --verification, and --evidence accept multiple entries in one argument.";

@@ -1,3 +1,5 @@
+import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from "./state-runtime-pack-detail.js";
+
 export function deriveRuntimeQueuePackSurface({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan }) {
   if ((assignmentLaunchPlan?.counts?.steps ?? 0) > 1) {
     return "leader:assignment-launch-plan";
@@ -62,6 +64,7 @@ export function buildRuntimeQueuePackView(
     buildRuntimeQueuePackSummary
   }
 ) {
+  const detailLevel = normalizeRuntimePackDetail(input.detail);
   const queue = leaderQueue();
   const dashboard = runtimeDashboard();
   const focus = runtimeFocus();
@@ -75,9 +78,28 @@ export function buildRuntimeQueuePackView(
     assignmentLaunch: assignmentDispatchBundle?.next ?? null,
     assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
   };
+  const expansion = {
+    full: buildRuntimePackExpansionEntry("runtime:queue-pack", buildRuntimePackCommand("runtime:queue-pack", input, { detail: "full" })),
+    queue: buildRuntimePackExpansionEntry(
+      "leader:queue",
+      buildRuntimePackCommand("leader:queue", input, { workerId: undefined, workerIds: undefined, detail: undefined })
+    ),
+    dashboard: buildRuntimePackExpansionEntry("runtime:dashboard", "node ./src/index.js runtime:dashboard"),
+    focus: buildRuntimePackExpansionEntry("runtime:focus", "node ./src/index.js runtime:focus"),
+    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
+      "leader:assignment-dispatch-bundle",
+      buildRuntimePackCommand("leader:assignment-dispatch-bundle", input)
+    ),
+    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
+      "leader:assignment-launch-plan",
+      buildRuntimePackCommand("leader:assignment-launch-plan", input)
+    )
+  };
 
-  return {
+  const pack = {
     kind: "runtime_queue_pack",
+    detailLevel,
+    availableDetails: ["compact", "full"],
     recommendedSurface,
     recommendedReason,
     metadata: {
@@ -96,15 +118,21 @@ export function buildRuntimeQueuePackView(
       assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
     },
     next: nextEntries,
-    surfaces: {
+    expansion: detailLevel === "compact" ? expansion : null,
+    summary: buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard, assignmentDispatchBundle, assignmentLaunchPlan)
+  };
+
+  if (detailLevel === "full") {
+    pack.surfaces = {
       queue,
       dashboard,
       focus,
       assignmentDispatchBundle,
       assignmentLaunchPlan
-    },
-    summary: buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard, assignmentDispatchBundle, assignmentLaunchPlan)
-  };
+    };
+  }
+
+  return pack;
 }
 
 export function buildRuntimeQueuePackViewFromSources(
@@ -218,6 +246,7 @@ export function buildRuntimeWorkspacePackView(
     buildRuntimeWorkspacePackSummary
   }
 ) {
+  const detailLevel = normalizeRuntimePackDetail(input.detail);
   const dashboard = runtimeDashboard();
   const dispatch = runtimeDispatch();
   const assignmentDispatchBundle = leaderAssignmentDispatchBundle(input);
@@ -234,9 +263,26 @@ export function buildRuntimeWorkspacePackView(
     review: review?.next ?? null,
     recovery: recovery?.next ?? null
   };
+  const expansion = {
+    full: buildRuntimePackExpansionEntry("runtime:workspace-pack", buildRuntimePackCommand("runtime:workspace-pack", input, { detail: "full" })),
+    dashboard: buildRuntimePackExpansionEntry("runtime:dashboard", "node ./src/index.js runtime:dashboard"),
+    dispatch: buildRuntimePackExpansionEntry("runtime:dispatch", "node ./src/index.js runtime:dispatch"),
+    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
+      "leader:assignment-dispatch-bundle",
+      buildRuntimePackCommand("leader:assignment-dispatch-bundle", input)
+    ),
+    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
+      "leader:assignment-launch-plan",
+      buildRuntimePackCommand("leader:assignment-launch-plan", input)
+    ),
+    review: buildRuntimePackExpansionEntry("runtime:review", "node ./src/index.js runtime:review"),
+    recovery: buildRuntimePackExpansionEntry("runtime:recovery", "node ./src/index.js runtime:recovery")
+  };
 
-  return {
+  const pack = {
     kind: "runtime_workspace_pack",
+    detailLevel,
+    availableDetails: ["compact", "full"],
     recommendedSurface,
     recommendedReason,
     metadata: {
@@ -259,16 +305,22 @@ export function buildRuntimeWorkspacePackView(
       recovery: recovery?.counts ?? null
     },
     next: nextEntries,
-    surfaces: {
+    expansion: detailLevel === "compact" ? expansion : null,
+    summary: buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery)
+  };
+
+  if (detailLevel === "full") {
+    pack.surfaces = {
       dashboard,
       dispatch,
       assignmentDispatchBundle,
       assignmentLaunchPlan,
       review,
       recovery
-    },
-    summary: buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery)
-  };
+    };
+  }
+
+  return pack;
 }
 
 export function buildRuntimeWorkspacePackViewFromSources(
@@ -305,4 +357,3 @@ export function buildRuntimeWorkspacePackViewFromSources(
     }
   );
 }
-

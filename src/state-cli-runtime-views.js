@@ -84,7 +84,8 @@ function printRuntimeExecutionPack() {
   write(JSON.stringify({
     executionPack: runtimeExecutionPack({
       workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers")
+      workerIds: readJsonOption("--workers"),
+      detail: readOption("--detail")
     })
   }, null, 2) + "\n");
 }
@@ -138,7 +139,8 @@ function printRuntimeLeaderPack() {
       topology: readOption("--topology"),
       owner: readOption("--owner"),
       workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers")
+      workerIds: readJsonOption("--workers"),
+      detail: readOption("--detail")
     })
   }, null, 2) + "\n");
 }
@@ -180,7 +182,8 @@ function printRuntimeQueuePack() {
   write(JSON.stringify({
     queuePack: runtimeQueuePack({
       workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers")
+      workerIds: readJsonOption("--workers"),
+      detail: readOption("--detail")
     })
   }, null, 2) + "\n");
 }
@@ -189,7 +192,8 @@ function printRuntimeWorkspacePack() {
   write(JSON.stringify({
     workspacePack: runtimeWorkspacePack({
       workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers")
+      workerIds: readJsonOption("--workers"),
+      detail: readOption("--detail")
     })
   }, null, 2) + "\n");
 }
@@ -267,7 +271,8 @@ function printRuntimeDispatchPack() {
   write(JSON.stringify({
     dispatchPack: runtimeDispatchPack({
       workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers")
+      workerIds: readJsonOption("--workers"),
+      detail: readOption("--detail")
     })
   }, null, 2) + "\n");
 }

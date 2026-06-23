@@ -47,7 +47,7 @@ export function buildRuntimeCloseoutPackView(
 ) {
   const closeout = runtimeCloseout();
   const summaryPack = runtimeSummaryPack(input);
-  const leaderPack = runtimeLeaderPack(input);
+  const leaderPack = runtimeLeaderPack({ ...input, detail: "full" });
   const recommendedSurface = deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack });
   const recommendedReason = deriveRuntimeCloseoutPackReason({ closeout, summaryPack, leaderPack });
   const nextEntries = {
