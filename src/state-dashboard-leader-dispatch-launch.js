@@ -1,5 +1,44 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 
+function buildLaunchWindows(launches) {
+  const windows = [];
+  const windowsByKey = new Map();
+
+  for (const launch of launches) {
+    const key = launch.startupWindowKey ?? `${launch.swarmId ?? "unknown"}:${launch.wave ?? launch.position}`;
+    if (!windowsByKey.has(key)) {
+      windowsByKey.set(key, {
+        key,
+        position: windows.length + 1,
+        swarmId: launch.swarmId ?? null,
+        objective: launch.objective ?? null,
+        wave: launch.wave ?? null,
+        executionShape: launch.swarmExecutionShape ?? null,
+        parallelizable: launch.waveParallelizable ?? false,
+        waveStatus: launch.waveStatus ?? null,
+        maxWorkers: launch.swarmMaxWorkers ?? null,
+        stepCount: 0,
+        workers: [],
+        launches: []
+      });
+      windows.push(windowsByKey.get(key));
+    }
+
+    const current = windowsByKey.get(key);
+    current.stepCount += 1;
+    current.workers.push(launch.workerId);
+    current.launches.push(launch);
+  }
+
+  return windows.map((window) => ({
+    ...window,
+    summary:
+      window.wave != null
+        ? `Wave ${window.wave} for ${window.swarmId ?? "unknown-swarm"} has ${window.stepCount} startup step${window.stepCount === 1 ? "" : "s"} ready.`
+        : `Launch window ${window.position} has ${window.stepCount} startup step${window.stepCount === 1 ? "" : "s"} ready.`
+  }));
+}
+
 export function buildLeaderAssignmentDispatchPackView(
   input,
   {
@@ -25,6 +64,13 @@ export function buildLeaderAssignmentDispatchPackView(
       count: group.count,
       next: dispatch.assignment,
       purposeGuidance: dispatch.assignment?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(dispatch.assignment),
+      wave: dispatch.assignment?.wave ?? null,
+      waveStatus: dispatch.assignment?.waveStatus ?? null,
+      waveParallelizable: dispatch.assignment?.waveParallelizable ?? null,
+      swarmId: dispatch.assignment?.swarmId ?? null,
+      swarmExecutionShape: dispatch.assignment?.swarmExecutionShape ?? null,
+      swarmWaveCount: dispatch.assignment?.swarmWaveCount ?? null,
+      swarmMaxWorkers: dispatch.assignment?.swarmMaxWorkers ?? null,
       workerId,
       previewCommand: dispatch.previewCommand,
       pickupCommand: dispatch.pickupCommand,
@@ -94,6 +140,16 @@ export function buildLeaderAssignmentDispatchBundleView(
     lane: group.next?.lane ?? null,
     purpose: group.next?.purpose ?? null,
     purposeGuidance: group.next?.purposeGuidance ?? buildPurposeGuidanceForTaskLike(group.next),
+    wave: group.next?.wave ?? null,
+    waveStatus: group.next?.waveStatus ?? null,
+    waveParallelizable: group.next?.waveParallelizable ?? null,
+    swarmExecutionShape: group.next?.swarmExecutionShape ?? null,
+    swarmWaveCount: group.next?.swarmWaveCount ?? null,
+    swarmMaxWorkers: group.next?.swarmMaxWorkers ?? null,
+    startupWindowKey:
+      group.next?.swarmId && group.next?.wave != null
+        ? `${group.next.swarmId}:wave-${group.next.wave}`
+        : `${group.owner?.id ?? group.owner?.name ?? "unknown"}:${index + 1}`,
     assignment: group.next ?? null,
     sessionCommand: `node ./src/index.js worker:session --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
     assignmentPackCommand: `node ./src/index.js runtime:assignment-pack --role ${group.owner?.id ?? group.owner?.name ?? "unknown"} --worker ${group.workerId} --mode owner`,
@@ -162,6 +218,13 @@ export function buildLeaderAssignmentLaunchPlanView(
     swarmId: launch.swarmId,
     purpose: launch.purpose ?? null,
     purposeGuidance: launch.purposeGuidance ?? buildPurposeGuidanceForTaskLike(launch.assignment ?? launch),
+    wave: launch.wave ?? null,
+    waveStatus: launch.waveStatus ?? null,
+    waveParallelizable: launch.waveParallelizable ?? null,
+    swarmExecutionShape: launch.swarmExecutionShape ?? null,
+    swarmWaveCount: launch.swarmWaveCount ?? null,
+    swarmMaxWorkers: launch.swarmMaxWorkers ?? null,
+    startupWindowKey: launch.startupWindowKey ?? null,
     launchCommand: launch.launchCommand,
     sessionCommand: launch.sessionCommand,
     previewCommand: launch.previewCommand,
@@ -172,7 +235,9 @@ export function buildLeaderAssignmentLaunchPlanView(
     },
     summary: `Start ${launch.workerId ?? "<worker-id>"} on ${launch.role?.id ?? launch.role?.name ?? "unknown"} for ${launch.taskId ?? "no-task"} as ${launch.purposeGuidance?.label ?? "implementation"} work.`
   }));
+  const windows = buildLaunchWindows(steps);
   const next = steps[0] ?? null;
+  const nextWindow = windows[0] ?? null;
   const recommendedReason = deriveLeaderAssignmentLaunchPlanReason({ bundle, steps, next });
 
   return {
@@ -180,15 +245,18 @@ export function buildLeaderAssignmentLaunchPlanView(
     recommendedReason,
     counts: {
       steps: steps.length,
+      startupWindows: windows.length,
       launches: bundle?.counts?.launches ?? 0,
       ownerGroups: bundle?.counts?.ownerGroups ?? 0,
       totalAssignments: bundle?.counts?.totalAssignments ?? 0
     },
     next,
+    nextWindow,
     steps,
+    windows,
     bundle,
     summary: next
-      ? `Leader assignment launch plan has ${steps.length} startup step${steps.length === 1 ? "" : "s"} ready; ${next.workerId ?? "<worker-id>"} is first for ${next.purposeGuidance?.label ?? "implementation"} work.`
+      ? `Leader assignment launch plan has ${steps.length} startup step${steps.length === 1 ? "" : "s"} across ${windows.length} startup window${windows.length === 1 ? "" : "s"}; ${next.workerId ?? "<worker-id>"} is first for ${next.purposeGuidance?.label ?? "implementation"} work.`
       : "Leader assignment launch plan has no startup steps right now."
   };
 }

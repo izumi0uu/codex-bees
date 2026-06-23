@@ -1,5 +1,6 @@
 import { recommendTaskAction } from "./state-task-core-views.js";
 import { compareLanePurposes, pickPriorityEntry } from "./state-queue-views.js";
+import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
 
 export function buildSwarmBriefView(
   id,
@@ -22,11 +23,13 @@ export function buildSwarmBriefView(
 
   const catalog = getRuntimeCatalog();
   const validation = validateSwarmValue(overview.swarm, runtimeRoleCatalog());
+  const orchestration = buildSwarmOrchestrationView(overview.swarm, overview.lanes);
   const lanes = overview.lanes.map((laneSummary) => {
     const task = laneSummary.taskId
       ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
       : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
     const recommended = recommendLaneAction(laneSummary, task, overview.tasks);
+    const laneOrchestration = findLaneOrchestrationContext(orchestration, laneSummary.lane);
 
     return {
       lane: laneSummary.lane,
@@ -45,6 +48,12 @@ export function buildSwarmBriefView(
       verification: task?.verification ?? [],
       ready: laneSummary.ready,
       done: laneSummary.done,
+      wave: laneOrchestration?.wave ?? null,
+      wavePosition: laneOrchestration?.wavePosition ?? null,
+      waveStatus: laneOrchestration?.waveStatus ?? null,
+      waveParallelizable: laneOrchestration?.waveParallelizable ?? null,
+      waveLaneCount: laneOrchestration?.waveLaneCount ?? null,
+      waveOwnerCount: laneOrchestration?.waveOwnerCount ?? null,
       recommendedNextActor: recommended.actor,
       recommendedNextAction: recommended.action,
       recommendedCommands: recommended.commands
@@ -62,11 +71,12 @@ export function buildSwarmBriefView(
     counts: overview.counts,
     readyToComplete: overview.readyToComplete,
     dispatchableCount: overview.dispatchableCount,
+    orchestration,
     owner: describeRole(overview.swarm.owner, catalog),
     lanes,
     nextLane: lanes.find((lane) => lane.lane === overview.nextLane?.lane) ?? null,
     validation,
-    leaderHandoff: buildSwarmHandoff(overview, recommended),
+    leaderHandoff: buildSwarmHandoff(overview, recommended, orchestration),
     recommendedNextActor: recommended.actor,
     recommendedNextAction: recommended.action,
     recommendedCommands: recommended.commands
@@ -122,10 +132,12 @@ export function buildSwarmBundleView(
   }
 
   const brief = swarmBrief(id);
+  const orchestration = brief?.orchestration ?? buildSwarmOrchestrationView(overview.swarm, overview.lanes);
   const laneBundles = overview.lanes.map((laneSummary) => {
     const task = laneSummary.taskId
       ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
       : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
+    const laneOrchestration = findLaneOrchestrationContext(orchestration, laneSummary.lane);
     return {
       lane: laneSummary.lane,
       purpose: laneSummary.purpose ?? null,
@@ -139,6 +151,10 @@ export function buildSwarmBundleView(
       dependencyReady: laneSummary.dependencyReady ?? true,
       ready: laneSummary.ready,
       done: laneSummary.done,
+      wave: laneOrchestration?.wave ?? null,
+      wavePosition: laneOrchestration?.wavePosition ?? null,
+      waveStatus: laneOrchestration?.waveStatus ?? null,
+      waveParallelizable: laneOrchestration?.waveParallelizable ?? null,
       report: task ? taskReport(task.id) : null
     };
   }).sort((left, right) => compareLanePurposes(left.purpose ?? null, right.purpose ?? null));
@@ -152,6 +168,7 @@ export function buildSwarmBundleView(
     counts: overview.counts,
     derivedStatus: overview.derivedStatus,
     readyToComplete: overview.readyToComplete,
+    orchestration,
     nextLane: overview.nextLane,
     lanes: laneBundles,
     summary: buildSwarmBundleSummary(overview, laneBundles)
@@ -471,11 +488,17 @@ export function recommendSwarmAction(overview, lanes) {
   };
 }
 
-export function buildSwarmHandoff(overview, recommended) {
+export function buildSwarmHandoff(overview, recommended, orchestration = null) {
   if (recommended.action === "complete") {
     return `Swarm ${overview.swarm.id} is complete; all ${overview.counts.totalLanes} lanes are done.`;
   }
   if (recommended.action.startsWith("dispatch_lane:")) {
+    if ((orchestration?.nextWave?.wave ?? null) && (orchestration?.nextWave?.readyCount ?? 0) > 1) {
+      return `Swarm ${overview.swarm.id} has wave ${orchestration.nextWave.wave}/${orchestration.waveCount} ready; ${orchestration.nextWave.readyCount} lanes can start in parallel.`;
+    }
+    if (orchestration?.nextWave?.wave) {
+      return `Swarm ${overview.swarm.id} has wave ${orchestration.nextWave.wave}/${orchestration.waveCount} ready; dispatch the next owner-scoped task.`;
+    }
     return `Swarm ${overview.swarm.id} has a runnable lane; dispatch the next owner-scoped task.`;
   }
   if (recommended.action.startsWith("review_lane:")) {
@@ -491,6 +514,9 @@ export function buildSwarmHandoff(overview, recommended) {
     return `Swarm ${overview.swarm.id} has queued lanes waiting on dependency completion before dispatch.`;
   }
   if (recommended.action === "queue_swarm_lanes") {
+    if (orchestration?.waveCount > 0) {
+      return `Swarm ${overview.swarm.id} has ${orchestration.waveCount} planned wave${orchestration.waveCount === 1 ? "" : "s"} but no queued tasks yet.`;
+    }
     return `Swarm ${overview.swarm.id} has planned lanes but no queued tasks yet.`;
   }
   return `Swarm ${overview.swarm.id} is active with bounded local coordination state.`;

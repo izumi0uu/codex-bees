@@ -405,6 +405,9 @@ getSwarmView(swarm.id)?.swarm.id;
 const swarmDetailReason: "swarm_detail_loaded" | undefined = getSwarmView(swarm.id)?.recommendedReason;
 const swarmDerivedStatus: SwarmStatus | undefined = getSwarmView(swarm.id)?.metadata.derivedStatus;
 const swarmReadyToComplete: boolean | undefined = getSwarmView(swarm.id)?.metadata.readyToComplete;
+const swarmExecutionShape: "solo-lane" | "serial-handoff" | "parallel-handoff" | null | undefined = getSwarmView(swarm.id)?.swarm.executionShape;
+const swarmWaveCount: number | null | undefined = getSwarmView(swarm.id)?.swarm.waveCount;
+const swarmWaveLanePurpose: "discovery" | "implementation" | "verification" | "documentation" | undefined = getSwarmView(swarm.id)?.swarm.waves?.[0]?.lanes?.[0]?.purpose;
 const swarmValidationReason:
   | "swarm_ready_to_queue"
   | "swarm_scope_overlap_detected"

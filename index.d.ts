@@ -819,6 +819,9 @@ export interface SwarmRecord {
   status: SwarmStatus;
   topology: string;
   maxWorkers: number;
+  executionShape?: PlannerExecutionShape | null;
+  waveCount?: number | null;
+  waves?: PlannerWave[] | null;
   owner: string | null;
   laneSource: string;
   lanes: SwarmLaneRecord[];
@@ -1221,6 +1224,9 @@ export interface SwarmInput {
   status?: SwarmStatus;
   topology?: string;
   maxWorkers?: number;
+  executionShape?: PlannerExecutionShape | null;
+  waveCount?: number | null;
+  waves?: PlannerWave[] | null;
   owner?: string | null;
   laneSource?: string;
   lanes?: SwarmLaneInput[];

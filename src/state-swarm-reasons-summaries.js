@@ -22,6 +22,9 @@ export function buildSwarmBundleSummary(overview, laneBundles) {
       lane.dependencyReady !== false
   );
   if (nextLane) {
+    if (nextLane.wave != null) {
+      return `Swarm ${overview.swarm.id} can dispatch lane ${nextLane.lane} next from wave ${nextLane.wave}.`;
+    }
     return `Swarm ${overview.swarm.id} can dispatch lane ${nextLane.lane} next.`;
   }
 
@@ -64,6 +67,9 @@ export function buildSwarmDispatchBundleSummary(overview, dispatchLane) {
     return `Swarm ${overview.swarm.id} has no dispatchable lane right now.`;
   }
 
+  if (dispatchLane.wave != null) {
+    return `Swarm ${overview.swarm.id} can dispatch lane ${dispatchLane.lane} next from wave ${dispatchLane.wave} for owner ${dispatchLane.owner.id ?? dispatchLane.owner.name ?? "unknown"}.`;
+  }
   return `Swarm ${overview.swarm.id} can dispatch lane ${dispatchLane.lane} next for owner ${dispatchLane.owner.id ?? dispatchLane.owner.name ?? "unknown"}.`;
 }
 

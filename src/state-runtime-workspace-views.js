@@ -47,6 +47,10 @@ export function buildLeaderWorkspaceSwarmEntry(overview, swarmBrief, buildSwarmB
     counts: overview.counts,
     readyToComplete: overview.readyToComplete,
     dispatchableCount: overview.dispatchableCount,
+    orchestration: brief?.orchestration ?? null,
+    executionShape: brief?.orchestration?.executionShape ?? overview.swarm.executionShape ?? null,
+    waveCount: brief?.orchestration?.waveCount ?? overview.swarm.waveCount ?? null,
+    nextWave: brief?.orchestration?.nextWave ?? null,
     nextLane: overview.nextLane,
     recommendedNextActor: brief?.recommendedNextActor ?? null,
     recommendedNextAction: brief?.recommendedNextAction ?? null,
@@ -69,9 +73,18 @@ export function buildLeaderWorkspaceSummary(swarmEntries, focusEntry) {
     return `Leader workspace should review ${focusEntry.id} first because a lane is waiting on verifier action.`;
   }
   if (focusEntry.recommendedNextAction?.startsWith("dispatch_lane:")) {
+    if ((focusEntry.nextWave?.wave ?? null) && (focusEntry.nextWave?.readyCount ?? 0) > 1) {
+      return `Leader workspace should dispatch wave ${focusEntry.nextWave.wave}/${focusEntry.waveCount ?? "?"} from ${focusEntry.id}; ${focusEntry.nextWave.readyCount} lanes are ready in parallel.`;
+    }
+    if (focusEntry.nextWave?.wave) {
+      return `Leader workspace should dispatch wave ${focusEntry.nextWave.wave}/${focusEntry.waveCount ?? "?"} from ${focusEntry.id}.`;
+    }
     return `Leader workspace should dispatch the next runnable lane from ${focusEntry.id}.`;
   }
   if (focusEntry.recommendedNextAction === "queue_swarm_lanes") {
+    if (focusEntry.executionShape) {
+      return `Leader workspace should queue ${focusEntry.executionShape} work for ${focusEntry.id} next.`;
+    }
     return `Leader workspace should queue planned lanes for ${focusEntry.id} next.`;
   }
   if (focusEntry.recommendedNextAction?.startsWith("continue_lane:")) {
