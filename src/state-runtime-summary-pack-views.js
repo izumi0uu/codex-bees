@@ -1,3 +1,5 @@
+import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from "./state-runtime-pack-detail.js";
+
 export function buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles) {
   return {
     dashboard: {
@@ -57,6 +59,7 @@ export function buildRuntimeFocusViewFromSources(
     }
   );
 }
+
 export function deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard }) {
   if (focus?.focus?.type === "blocked_task") {
     return "runtime:focus";
@@ -115,6 +118,7 @@ export function buildRuntimeSummaryPackView(
     buildRuntimeSummaryPackSummary
   }
 ) {
+  const detailLevel = normalizeRuntimePackDetail(input.detail);
   const dashboard = runtimeDashboard();
   const alerts = runtimeAlerts();
   const focus = runtimeFocus();
@@ -133,9 +137,27 @@ export function buildRuntimeSummaryPackView(
     assignmentLaunch: assignmentDispatchBundle?.next ?? null,
     assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
   };
+  const expansion = {
+    full: buildRuntimePackExpansionEntry("runtime:summary-pack", buildRuntimePackCommand("runtime:summary-pack", input, { detail: "full" })),
+    dashboard: buildRuntimePackExpansionEntry("runtime:dashboard", "node ./src/index.js runtime:dashboard"),
+    alerts: buildRuntimePackExpansionEntry("runtime:alerts", "node ./src/index.js runtime:alerts"),
+    handoffs: buildRuntimePackExpansionEntry("runtime:handoffs", "node ./src/index.js runtime:handoffs"),
+    recovery: buildRuntimePackExpansionEntry("runtime:recovery", "node ./src/index.js runtime:recovery"),
+    closeout: buildRuntimePackExpansionEntry("runtime:closeout", "node ./src/index.js runtime:closeout"),
+    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
+      "leader:assignment-dispatch-bundle",
+      buildRuntimePackCommand("leader:assignment-dispatch-bundle", input)
+    ),
+    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
+      "leader:assignment-launch-plan",
+      buildRuntimePackCommand("leader:assignment-launch-plan", input)
+    )
+  };
 
-  return {
+  const pack = {
     kind: "runtime_summary_pack",
+    detailLevel,
+    availableDetails: ["compact", "full"],
     recommendedSurface,
     recommendedReason,
     metadata: {
@@ -159,7 +181,12 @@ export function buildRuntimeSummaryPackView(
       assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
     },
     next: nextEntries,
-    surfaces: {
+    expansion: detailLevel === "compact" ? expansion : null,
+    summary: buildRuntimeSummaryPackSummary(recommendedSurface, focus)
+  };
+
+  if (detailLevel === "full") {
+    pack.surfaces = {
       dashboard,
       alerts,
       handoffs,
@@ -167,9 +194,10 @@ export function buildRuntimeSummaryPackView(
       closeout,
       assignmentDispatchBundle,
       assignmentLaunchPlan
-    },
-    summary: buildRuntimeSummaryPackSummary(recommendedSurface, focus)
-  };
+    };
+  }
+
+  return pack;
 }
 export function buildRuntimeSummaryPackViewFromSources(
   input,

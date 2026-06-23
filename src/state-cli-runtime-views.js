@@ -70,7 +70,8 @@ function printRuntimeControlPack() {
   write(JSON.stringify({
     controlPack: runtimeControlPack({
       workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers")
+      workerIds: readJsonOption("--workers"),
+      detail: readOption("--detail")
     })
   }, null, 2) + "\n");
 }
@@ -124,7 +125,8 @@ function printRuntimeSummaryPack() {
   write(JSON.stringify({
     summaryPack: runtimeSummaryPack({
       workerId: readOption("--worker"),
-      workerIds: readJsonOption("--workers")
+      workerIds: readJsonOption("--workers"),
+      detail: readOption("--detail")
     })
   }, null, 2) + "\n");
 }

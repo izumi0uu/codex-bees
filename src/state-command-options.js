@@ -27,6 +27,7 @@ export const MODE_OPTION = option("--mode <mode>", "Execution mode label to carr
 export const STATUS_OPTION = option("--status <status>", "Status filter or next queue status override");
 export const TOPOLOGY_OPTION = option("--topology <topology>", "Swarm topology filter or topology override");
 export const LIMIT_OPTION = option("--limit <number>", "Maximum number of entries to include");
+export const DETAIL_OPTION = option("--detail <detail>", "Output detail level for compact/full runtime pack views");
 export const TASK_ID_OPTION = option("--task <task-id>", "Task id to target or preselect");
 export const TASK_RECORD_ID_OPTION = option("--id <task-id>", "Task id from the local coordination task store");
 export const SWARM_ID_OPTION = option("--id <swarm-id>", "Swarm id from the local swarm store");
@@ -57,6 +58,7 @@ export const TAGS_OPTION = option("--tags <tag,tag>", "Comma-delimited tags; rep
 export const DETAILED_OPTION = option("--detailed", "Include nested lane and task detail in swarm list output");
 
 export const JSON_WORKERS_NOTE = "Pass --workers as a JSON array of worker ids when launch surfaces should emit concrete worker commands.";
+export const RUNTIME_PACK_DETAIL_NOTE = "Runtime summary/control packs default to compact output; pass --detail full to expand nested surfaces.";
 export const JSON_LANES_NOTE = "Pass --lanes as a JSON array of lane contracts.";
 export const JSON_LANE_DEPENDENCY_NOTE = "Lane JSON may include dependsOn arrays that reference prerequisite lane ids.";
 export const PIPE_LIST_NOTE = "Pipe-delimited flags such as --acceptance, --verification, and --evidence accept multiple entries in one argument.";

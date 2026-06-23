@@ -9,6 +9,7 @@ import {
   cloneEntries,
   COMMAND_NAME_OPTION,
   CONTENT_OPTION,
+  DETAIL_OPTION,
   DETAILED_OPTION,
   INIT_OPTION_NAME_OPTION,
   JSON_LANES_NOTE,
@@ -34,6 +35,7 @@ import {
   QUERY_OPTION,
   REVIEW_EVIDENCE_OPTION,
   ROLE_OPTION,
+  RUNTIME_PACK_DETAIL_NOTE,
   SCOPE_OPTION,
   DEPENDS_ON_OPTION,
   SKILL_ID_OPTION,
@@ -121,9 +123,9 @@ export const COMMAND_HELP_OVERRIDES = {
     notes: [JSON_WORKERS_NOTE]
   },
   "runtime:control-pack": {
-    usage: [commandUsage("runtime:control-pack", "[--worker <worker-id>] [--workers <json>]")],
-    options: [WORKER_OPTION, WORKERS_OPTION],
-    notes: [JSON_WORKERS_NOTE]
+    usage: [commandUsage("runtime:control-pack", "[--worker <worker-id>] [--workers <json>] [--detail <detail>]")],
+    options: [WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
+    notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
   "runtime:signal-pack": {
     usage: [commandUsage("runtime:signal-pack", "[--limit <number>]")],
@@ -178,9 +180,9 @@ export const COMMAND_HELP_OVERRIDES = {
     options: [ROLE_OPTION, WORKER_OPTION, MODE_OPTION]
   },
   "runtime:summary-pack": {
-    usage: [commandUsage("runtime:summary-pack", "[--worker <worker-id>] [--workers <json>]")],
-    options: [WORKER_OPTION, WORKERS_OPTION],
-    notes: [JSON_WORKERS_NOTE]
+    usage: [commandUsage("runtime:summary-pack", "[--worker <worker-id>] [--workers <json>] [--detail <detail>]")],
+    options: [WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
+    notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
   "runtime:dispatch-pack": {
     usage: [commandUsage("runtime:dispatch-pack", "[--worker <worker-id>] [--workers <json>]")],

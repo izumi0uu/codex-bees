@@ -79,7 +79,8 @@ const RUNTIME_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createTextPayload({
       controlPack: runtimeControlPack({
         workerId: params.arguments?.workerId,
-        workerIds: params.arguments?.workerIds
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
       })
     }));
   },
@@ -240,7 +241,8 @@ const RUNTIME_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createTextPayload({
       summaryPack: runtimeSummaryPack({
         workerId: params.arguments?.workerId,
-        workerIds: params.arguments?.workerIds
+        workerIds: params.arguments?.workerIds,
+        detail: params.arguments?.detail
       })
     }));
   },

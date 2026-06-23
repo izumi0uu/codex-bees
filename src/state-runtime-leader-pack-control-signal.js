@@ -1,3 +1,5 @@
+import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from "./state-runtime-pack-detail.js";
+
 export function deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack }) {
   if (summaryPack?.recommendedSurface) {
     return "runtime:summary-pack";
@@ -79,6 +81,7 @@ export function buildRuntimeControlPackView(
     buildRuntimeControlPackSummary
   }
 ) {
+  const detailLevel = normalizeRuntimePackDetail(input.detail);
   const summaryPack = runtimeSummaryPack(input);
   const workspacePack = runtimeWorkspacePack(input);
   const operatorPack = runtimeOperatorPack();
@@ -91,9 +94,18 @@ export function buildRuntimeControlPackView(
     operator: operatorPack?.next ?? null,
     leader: leaderPack?.next ?? null
   };
+  const expansion = {
+    full: buildRuntimePackExpansionEntry("runtime:control-pack", buildRuntimePackCommand("runtime:control-pack", input, { detail: "full" })),
+    summaryPack: buildRuntimePackExpansionEntry("runtime:summary-pack", buildRuntimePackCommand("runtime:summary-pack", input)),
+    workspacePack: buildRuntimePackExpansionEntry("runtime:workspace-pack", buildRuntimePackCommand("runtime:workspace-pack", input)),
+    operatorPack: buildRuntimePackExpansionEntry("runtime:operator-pack", "node ./src/index.js runtime:operator-pack"),
+    leaderPack: buildRuntimePackExpansionEntry("runtime:leader-pack", buildRuntimePackCommand("runtime:leader-pack", input))
+  };
 
-  return stripRoleContractsDeep({
+  const pack = {
     kind: "runtime_control_pack",
+    detailLevel,
+    availableDetails: ["compact", "full"],
     recommendedSurface,
     recommendedReason,
     metadata: {
@@ -112,14 +124,20 @@ export function buildRuntimeControlPackView(
       leader: leaderPack?.overview ?? null
     },
     next: nextEntries,
-    surfaces: {
+    expansion: detailLevel === "compact" ? expansion : null,
+    summary: buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack)
+  };
+
+  if (detailLevel === "full") {
+    pack.surfaces = {
       summaryPack,
       workspacePack,
       operatorPack,
       leaderPack
-    },
-    summary: buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack)
-  });
+    };
+  }
+
+  return stripRoleContractsDeep(pack);
 }
 
 export function buildRuntimeControlPackViewFromSources(

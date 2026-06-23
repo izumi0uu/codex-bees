@@ -162,12 +162,13 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
   },
   {
     name: "runtime_control_pack",
-    description: "Build the automation/control runtime package for local runtime work.",
+    description: "Build the compact-by-default automation/control runtime package for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } }
+        workerIds: { type: "object", additionalProperties: { type: "string" } },
+        detail: { type: "string", enum: ["compact", "full"] }
       }
     }
   },
@@ -327,12 +328,13 @@ export const RUNTIME_MCP_TOOL_CATALOG = [
   },
   {
     name: "runtime_summary_pack",
-    description: "Build the automation-first runtime summary package with compact launch context for local runtime work.",
+    description: "Build the compact-by-default automation-first runtime summary package with launch context for local runtime work.",
     inputSchema: {
       type: "object",
       properties: {
         workerId: { type: "string" },
-        workerIds: { type: "object", additionalProperties: { type: "string" } }
+        workerIds: { type: "object", additionalProperties: { type: "string" } },
+        detail: { type: "string", enum: ["compact", "full"] }
       }
     }
   },

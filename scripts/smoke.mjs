@@ -2787,6 +2787,28 @@ if (
   console.error("[smoke:command-help-task-add] expected detailed task:add help view");
   process.exit(1);
 }
+const cliRuntimeSummaryPackHelpView = JSON.parse(
+  run("command-help-runtime-summary-pack", ["./src/index.js", "command:help", "--name", "runtime:summary-pack"]).stdout
+).help;
+if (
+  cliRuntimeSummaryPackHelpView.matchedCommand !== "runtime:summary-pack" ||
+  !cliRuntimeSummaryPackHelpView.text?.includes("--detail <detail>") ||
+  !cliRuntimeSummaryPackHelpView.text?.includes("pass --detail full")
+) {
+  console.error("[smoke:command-help-runtime-summary-pack] expected runtime summary pack detail help");
+  process.exit(1);
+}
+const cliRuntimeControlPackHelpView = JSON.parse(
+  run("command-help-runtime-control-pack", ["./src/index.js", "command:help", "--name", "runtime:control-pack"]).stdout
+).help;
+if (
+  cliRuntimeControlPackHelpView.matchedCommand !== "runtime:control-pack" ||
+  !cliRuntimeControlPackHelpView.text?.includes("--detail <detail>") ||
+  !cliRuntimeControlPackHelpView.text?.includes("default to compact output")
+) {
+  console.error("[smoke:command-help-runtime-control-pack] expected runtime control pack detail help");
+  process.exit(1);
+}
 const cliInitOptionView = JSON.parse(
   run("init-option-verify", ["./src/index.js", "init:option", "--option", "--preview"]).stdout
 ).option;
@@ -3192,10 +3214,14 @@ const runtimeSummaryPackInitial = JSON.parse(
 ).summaryPack;
 if (
   runtimeSummaryPackInitial.kind !== "runtime_summary_pack" ||
+  runtimeSummaryPackInitial.detailLevel !== "compact" ||
+  !runtimeSummaryPackInitial.availableDetails?.includes("full") ||
   !runtimeSummaryPackInitial.recommendedSurface ||
   typeof runtimeSummaryPackInitial.counts?.surfacedNextEntries !== "number" ||
   !runtimeSummaryPackInitial.focus ||
-  !runtimeSummaryPackInitial.overview
+  !runtimeSummaryPackInitial.overview ||
+  runtimeSummaryPackInitial.surfaces ||
+  runtimeSummaryPackInitial.expansion?.full?.command !== "node ./src/index.js runtime:summary-pack --detail full"
 ) {
   console.error("[smoke:runtime-summary-pack] expected top-level runtime summary pack");
   process.exit(1);
@@ -3231,9 +3257,12 @@ const runtimeControlPackInitial = JSON.parse(
 ).controlPack;
 if (
   runtimeControlPackInitial.kind !== "runtime_control_pack" ||
+  runtimeControlPackInitial.detailLevel !== "compact" ||
+  !runtimeControlPackInitial.availableDetails?.includes("full") ||
   !runtimeControlPackInitial.recommendedSurface ||
   !runtimeControlPackInitial.overview ||
-  !runtimeControlPackInitial.surfaces
+  runtimeControlPackInitial.surfaces ||
+  runtimeControlPackInitial.expansion?.full?.command !== "node ./src/index.js runtime:control-pack --detail full"
 ) {
   console.error("[smoke:runtime-control-pack] expected top-level runtime control pack");
   process.exit(1);
@@ -6351,11 +6380,50 @@ const runtimeControlPackMappedMcpLines = runtimeControlPackMappedMcp.stdout
 const runtimeControlPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeControlPackMappedMcpLines[1]).result.content[0].text);
 if (
   runtimeControlPackMappedMcp.status !== 0 ||
-  runtimeControlPackMappedMcpPayload.controlPack?.surfaces?.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
-  runtimeControlPackMappedMcpPayload.controlPack?.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor"
+  runtimeControlPackMappedMcpPayload.controlPack?.detailLevel !== "compact" ||
+  runtimeControlPackMappedMcpPayload.controlPack?.surfaces ||
+  runtimeControlPackMappedMcpPayload.controlPack?.expansion?.full?.command !== "node ./src/index.js runtime:control-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}' --detail full" ||
+  runtimeControlPackMappedMcpPayload.controlPack?.expansion?.workspacePack?.command !== "node ./src/index.js runtime:workspace-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'" ||
+  runtimeControlPackMappedMcpPayload.controlPack?.expansion?.leaderPack?.command !== "node ./src/index.js runtime:leader-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'"
 ) {
-  console.error("[smoke:runtime-control-pack-mcp] expected MCP control pack to pass worker mappings into nested workspace and leader packs");
+  console.error("[smoke:runtime-control-pack-mcp] expected compact MCP control pack to expose mapped expansion commands");
   console.error(runtimeControlPackMappedMcp.stderr || runtimeControlPackMappedMcp.stdout);
+  process.exit(1);
+}
+const runtimeControlPackFullMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_control_pack",
+      arguments: {
+        workerIds: { executor: "worker-executor", explore: "worker-explore" },
+        detail: "full"
+      }
+    }
+  })
+].join("\n") + "\n";
+const runtimeControlPackFullMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeControlPackFullMcpInput,
+  encoding: "utf8"
+});
+const runtimeControlPackFullMcpLines = runtimeControlPackFullMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeControlPackFullMcpPayload = JSON.parse(JSON.parse(runtimeControlPackFullMcpLines[1]).result.content[0].text);
+if (
+  runtimeControlPackFullMcp.status !== 0 ||
+  runtimeControlPackFullMcpPayload.controlPack?.detailLevel !== "full" ||
+  runtimeControlPackFullMcpPayload.controlPack?.expansion ||
+  runtimeControlPackFullMcpPayload.controlPack?.surfaces?.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeControlPackFullMcpPayload.controlPack?.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeControlPackMappedMcpLines.join("\n").length >= runtimeControlPackFullMcpLines.join("\n").length
+) {
+  console.error("[smoke:runtime-control-pack-mcp] expected full MCP control pack to expand mapped nested surfaces and exceed compact size");
+  console.error(runtimeControlPackFullMcp.stderr || runtimeControlPackFullMcp.stdout);
   process.exit(1);
 }
 const runtimeLeaderPackMappedMcpInput = [
@@ -6777,12 +6845,15 @@ const runtimeSummaryPackCli = JSON.parse(
 if (
   runtimeSummaryPackCli.recommendedSurface !== "runtime:focus" ||
   runtimeSummaryPackCli.recommendedReason !== "blocked_focus_priority" ||
+  runtimeSummaryPackCli.detailLevel !== "compact" ||
   runtimeSummaryPackCli.metadata?.hasFocus !== true ||
   runtimeSummaryPackCli.metadata?.hasRecovery !== true ||
   runtimeSummaryPackCli.counts?.surfacedNextEntries !== Object.values(runtimeSummaryPackCli.next ?? {}).filter(Boolean).length ||
   runtimeSummaryPackCli.focus?.focus?.taskId !== "task-1" ||
   runtimeSummaryPackCli.next?.recovery?.taskId !== "task-1" ||
-  runtimeSummaryPackCli.overview?.dashboard?.blockedTasks !== 1
+  runtimeSummaryPackCli.overview?.dashboard?.blockedTasks !== 1 ||
+  runtimeSummaryPackCli.surfaces ||
+  runtimeSummaryPackCli.expansion?.full?.command !== "node ./src/index.js runtime:summary-pack --detail full"
 ) {
   console.error("[smoke:runtime-summary-pack] expected CLI summary pack to recommend focus");
   process.exit(1);
@@ -6828,6 +6899,7 @@ const runtimeControlPackCli = JSON.parse(
 if (
   runtimeControlPackCli.recommendedSurface !== "runtime:summary-pack" ||
   runtimeControlPackCli.recommendedReason !== "summary_priority" ||
+  runtimeControlPackCli.detailLevel !== "compact" ||
   runtimeControlPackCli.metadata?.hasSummary !== true ||
   runtimeControlPackCli.metadata?.hasWorkspace !== true ||
   runtimeControlPackCli.metadata?.hasOperator !== true ||
@@ -6836,30 +6908,53 @@ if (
   runtimeControlPackCli.next?.summary?.taskId !== "task-1" ||
   runtimeControlPackCli.next?.workspace?.recovery?.taskId !== "task-1" ||
   runtimeControlPackCli.next?.operator?.handoff?.taskId !== "task-2" ||
-  runtimeControlPackCli.next?.leader?.dispatch?.lane !== "lane-dashboard"
+  runtimeControlPackCli.next?.leader?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeControlPackCli.surfaces ||
+  runtimeControlPackCli.expansion?.full?.command !== "node ./src/index.js runtime:control-pack --detail full"
 ) {
   console.error("[smoke:runtime-control-pack] expected CLI control pack to recommend summary pack");
   process.exit(1);
 }
-const runtimeSummaryPackMappedCli = JSON.parse(
-  run("runtime-summary-pack-mapped-cli", [
-    "./src/index.js",
-    "runtime:summary-pack",
-    "--workers",
-    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
-  ]).stdout
-).summaryPack;
+const runtimeSummaryPackMappedCliRaw = run("runtime-summary-pack-mapped-cli", [
+  "./src/index.js",
+  "runtime:summary-pack",
+  "--workers",
+  JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+]).stdout;
+const runtimeSummaryPackMappedCli = JSON.parse(runtimeSummaryPackMappedCliRaw).summaryPack;
 if (
-  runtimeSummaryPackMappedCli.surfaces?.closeout?.counts?.totalReady !== 0 ||
   runtimeSummaryPackMappedCli.recommendedSurface !== "runtime:focus" ||
   runtimeSummaryPackMappedCli.recommendedReason !== "blocked_focus_priority" ||
+  runtimeSummaryPackMappedCli.detailLevel !== "compact" ||
   runtimeSummaryPackMappedCli.overview?.assignmentLaunchPlan?.steps !== 1 ||
   runtimeSummaryPackMappedCli.overview?.assignmentDispatchBundle?.launches !== 1 ||
   runtimeSummaryPackMappedCli.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
-  runtimeSummaryPackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
-  runtimeSummaryPackMappedCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner"
+  runtimeSummaryPackMappedCli.surfaces ||
+  runtimeSummaryPackMappedCli.expansion?.full?.command !== "node ./src/index.js runtime:summary-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}' --detail full" ||
+  runtimeSummaryPackMappedCli.expansion?.assignmentLaunchPlan?.command !== "node ./src/index.js leader:assignment-launch-plan --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'" ||
+  runtimeSummaryPackMappedCli.expansion?.assignmentDispatchBundle?.command !== "node ./src/index.js leader:assignment-dispatch-bundle --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'"
 ) {
-  console.error("[smoke:runtime-summary-pack] expected CLI summary pack to preserve focus while exposing compact mapped launch context");
+  console.error("[smoke:runtime-summary-pack] expected compact CLI summary pack to expose mapped expansion commands");
+  process.exit(1);
+}
+const runtimeSummaryPackFullCliRaw = run("runtime-summary-pack-full-cli", [
+  "./src/index.js",
+  "runtime:summary-pack",
+  "--detail",
+  "full",
+  "--workers",
+  JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+]).stdout;
+const runtimeSummaryPackFullCli = JSON.parse(runtimeSummaryPackFullCliRaw).summaryPack;
+if (
+  runtimeSummaryPackFullCli.detailLevel !== "full" ||
+  runtimeSummaryPackFullCli.expansion ||
+  runtimeSummaryPackFullCli.surfaces?.closeout?.counts?.totalReady !== 0 ||
+  runtimeSummaryPackFullCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeSummaryPackFullCli.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner" ||
+  runtimeSummaryPackMappedCliRaw.length >= runtimeSummaryPackFullCliRaw.length
+) {
+  console.error("[smoke:runtime-summary-pack] expected full CLI summary pack to expand mapped surfaces and exceed compact size");
   process.exit(1);
 }
 const runtimeCloseoutPackMappedCli = JSON.parse(
@@ -6877,19 +6972,41 @@ if (
   console.error("[smoke:runtime-closeout-pack] expected CLI closeout pack to pass worker mappings into nested leader pack");
   process.exit(1);
 }
-const runtimeControlPackMappedCli = JSON.parse(
-  run("runtime-control-pack-mapped-cli", [
-    "./src/index.js",
-    "runtime:control-pack",
-    "--workers",
-    JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
-  ]).stdout
-).controlPack;
+const runtimeControlPackMappedCliRaw = run("runtime-control-pack-mapped-cli", [
+  "./src/index.js",
+  "runtime:control-pack",
+  "--workers",
+  JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+]).stdout;
+const runtimeControlPackMappedCli = JSON.parse(runtimeControlPackMappedCliRaw).controlPack;
 if (
-  runtimeControlPackMappedCli.surfaces?.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
-  runtimeControlPackMappedCli.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor"
+  runtimeControlPackMappedCli.detailLevel !== "compact" ||
+  runtimeControlPackMappedCli.surfaces ||
+  runtimeControlPackMappedCli.expansion?.full?.command !== "node ./src/index.js runtime:control-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}' --detail full" ||
+  runtimeControlPackMappedCli.expansion?.summaryPack?.command !== "node ./src/index.js runtime:summary-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'" ||
+  runtimeControlPackMappedCli.expansion?.workspacePack?.command !== "node ./src/index.js runtime:workspace-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'" ||
+  runtimeControlPackMappedCli.expansion?.leaderPack?.command !== "node ./src/index.js runtime:leader-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'"
 ) {
-  console.error("[smoke:runtime-control-pack] expected CLI control pack to pass worker mappings into nested workspace and leader packs");
+  console.error("[smoke:runtime-control-pack] expected compact CLI control pack to expose mapped expansion commands");
+  process.exit(1);
+}
+const runtimeControlPackFullCliRaw = run("runtime-control-pack-full-cli", [
+  "./src/index.js",
+  "runtime:control-pack",
+  "--detail",
+  "full",
+  "--workers",
+  JSON.stringify({ executor: "worker-executor", explore: "worker-explore" })
+]).stdout;
+const runtimeControlPackFullCli = JSON.parse(runtimeControlPackFullCliRaw).controlPack;
+if (
+  runtimeControlPackFullCli.detailLevel !== "full" ||
+  runtimeControlPackFullCli.expansion ||
+  runtimeControlPackFullCli.surfaces?.workspacePack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeControlPackFullCli.surfaces?.leaderPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeControlPackMappedCliRaw.length >= runtimeControlPackFullCliRaw.length
+) {
+  console.error("[smoke:runtime-control-pack] expected full CLI control pack to expand mapped nested surfaces and exceed compact size");
   process.exit(1);
 }
 const runtimeSignalPackCli = JSON.parse(
@@ -7503,7 +7620,10 @@ if (
   runtimeSummaryPackMcp.status !== 0 ||
   runtimeSummaryPackMcpPayload.summaryPack?.recommendedSurface !== "runtime:focus" ||
   runtimeSummaryPackMcpPayload.summaryPack?.recommendedReason !== "blocked_focus_priority" ||
-  runtimeSummaryPackMcpPayload.summaryPack?.focus?.focus?.taskId !== "task-1"
+  runtimeSummaryPackMcpPayload.summaryPack?.detailLevel !== "compact" ||
+  runtimeSummaryPackMcpPayload.summaryPack?.focus?.focus?.taskId !== "task-1" ||
+  runtimeSummaryPackMcpPayload.summaryPack?.surfaces ||
+  runtimeSummaryPackMcpPayload.summaryPack?.expansion?.full?.command !== "node ./src/index.js runtime:summary-pack --detail full"
 ) {
   console.error("[smoke:runtime-summary-pack-mcp] expected MCP runtime summary pack");
   console.error(runtimeSummaryPackMcp.stderr || runtimeSummaryPackMcp.stdout);
@@ -7533,14 +7653,52 @@ const runtimeSummaryPackMappedMcpPayload = JSON.parse(JSON.parse(runtimeSummaryP
 if (
   runtimeSummaryPackMappedMcp.status !== 0 ||
   runtimeSummaryPackMappedMcpPayload.summaryPack?.recommendedReason !== "blocked_focus_priority" ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.detailLevel !== "compact" ||
   runtimeSummaryPackMappedMcpPayload.summaryPack?.overview?.assignmentLaunchPlan?.steps !== 1 ||
   runtimeSummaryPackMappedMcpPayload.summaryPack?.overview?.assignmentDispatchBundle?.launches !== 1 ||
   runtimeSummaryPackMappedMcpPayload.summaryPack?.next?.assignmentLaunchStep?.workerId !== "worker-executor" ||
-  runtimeSummaryPackMappedMcpPayload.summaryPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
-  runtimeSummaryPackMappedMcpPayload.summaryPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.launchCommand !== "node ./src/index.js runtime:assignment-pack --role executor --worker worker-executor --mode owner"
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.surfaces ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.expansion?.full?.command !== "node ./src/index.js runtime:summary-pack --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}' --detail full" ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.expansion?.assignmentLaunchPlan?.command !== "node ./src/index.js leader:assignment-launch-plan --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'" ||
+  runtimeSummaryPackMappedMcpPayload.summaryPack?.expansion?.assignmentDispatchBundle?.command !== "node ./src/index.js leader:assignment-dispatch-bundle --workers '{\"executor\":\"worker-executor\",\"explore\":\"worker-explore\"}'"
 ) {
-  console.error("[smoke:runtime-summary-pack-mcp] expected MCP summary pack to preserve compact mapped launch context");
+  console.error("[smoke:runtime-summary-pack-mcp] expected MCP summary pack to preserve mapped compact launch context");
   console.error(runtimeSummaryPackMappedMcp.stderr || runtimeSummaryPackMappedMcp.stdout);
+  process.exit(1);
+}
+const runtimeSummaryPackFullMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "runtime_summary_pack",
+      arguments: {
+        workerIds: { executor: "worker-executor", explore: "worker-explore" },
+        detail: "full"
+      }
+    }
+  })
+].join("\n") + "\n";
+const runtimeSummaryPackFullMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: runtimeSummaryPackFullMcpInput,
+  encoding: "utf8"
+});
+const runtimeSummaryPackFullMcpLines = runtimeSummaryPackFullMcp.stdout
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
+const runtimeSummaryPackFullMcpPayload = JSON.parse(JSON.parse(runtimeSummaryPackFullMcpLines[1]).result.content[0].text);
+if (
+  runtimeSummaryPackFullMcp.status !== 0 ||
+  runtimeSummaryPackFullMcpPayload.summaryPack?.detailLevel !== "full" ||
+  runtimeSummaryPackFullMcpPayload.summaryPack?.expansion ||
+  runtimeSummaryPackFullMcpPayload.summaryPack?.surfaces?.assignmentLaunchPlan?.steps?.[0]?.workerId !== "worker-executor" ||
+  runtimeSummaryPackMappedMcpLines.join("\n").length >= runtimeSummaryPackFullMcpLines.join("\n").length
+) {
+  console.error("[smoke:runtime-summary-pack-mcp] expected full MCP summary pack to expand mapped surfaces and exceed compact size");
+  console.error(runtimeSummaryPackFullMcp.stderr || runtimeSummaryPackFullMcp.stdout);
   process.exit(1);
 }
 const runtimeLeaderPackMcpInput = [
@@ -7631,6 +7789,7 @@ if (
   runtimeControlPackMcp.status !== 0 ||
   runtimeControlPackMcpPayload.controlPack?.recommendedSurface !== "runtime:summary-pack" ||
   runtimeControlPackMcpPayload.controlPack?.recommendedReason !== "summary_priority" ||
+  runtimeControlPackMcpPayload.controlPack?.detailLevel !== "compact" ||
   runtimeControlPackMcpPayload.controlPack?.metadata?.hasSummary !== true ||
   runtimeControlPackMcpPayload.controlPack?.metadata?.hasWorkspace !== true ||
   runtimeControlPackMcpPayload.controlPack?.metadata?.hasOperator !== true ||
@@ -7638,7 +7797,9 @@ if (
   runtimeControlPackMcpPayload.controlPack?.counts?.surfacedNextEntries !==
     Object.values(runtimeControlPackMcpPayload.controlPack?.next ?? {}).filter(Boolean).length ||
   runtimeControlPackMcpPayload.controlPack?.next?.summary?.taskId !== "task-1" ||
-  runtimeControlPackMcpPayload.controlPack?.next?.leader?.dispatch?.lane !== "lane-dashboard"
+  runtimeControlPackMcpPayload.controlPack?.next?.leader?.dispatch?.lane !== "lane-dashboard" ||
+  runtimeControlPackMcpPayload.controlPack?.surfaces ||
+  runtimeControlPackMcpPayload.controlPack?.expansion?.full?.command !== "node ./src/index.js runtime:control-pack --detail full"
 ) {
   console.error("[smoke:runtime-control-pack-mcp] expected MCP runtime control pack");
   console.error(runtimeControlPackMcp.stderr || runtimeControlPackMcp.stdout);
