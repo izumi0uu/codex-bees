@@ -550,8 +550,12 @@ node ./src/index.js task:approve --id task-1 --by tester --evidence "targeted ch
 node ./src/index.js task:reject --id task-1 --by tester --status claimed --notes "needs another pass"
 node ./src/index.js task:done --id task-1 --by tester --evidence "targeted check|smoke check"
 node ./src/index.js task:archive --id task-1 --by tester --notes "standalone closeout archived"
+node ./src/index.js task:restore --id task-1 --by tester --notes "restore standalone task"
+node ./src/index.js task:reopen --id task-1 --by tester --notes "reopen standalone task"
 node ./src/index.js task:release --id task-1 --by explore
 node ./src/index.js swarm:archive --id swarm-1 --by leader --notes "lane set archived together"
+node ./src/index.js swarm:restore --id swarm-1 --by leader --notes "restore swarm archive"
+node ./src/index.js swarm:reopen --id swarm-1 --by leader --notes "reopen swarm lanes"
 node ./src/index.js mcp
 ```
 
@@ -640,7 +644,9 @@ Swarm contracts can carry bounded parallel execution detail:
 
 `swarm:closeout` / `swarm_closeout` add the closure layer for swarm leadership: current swarm bundle, execution brief, and the concrete explicit closeout command when every lane is done. They also emit a machine-readable `recommendedReason` so automation can distinguish swarms that are ready to close, swarms that still require a follow-up action before closeout, and swarms with no closeout action available. Once a swarm is already completed or cancelled, closeout now recommends `swarm:archive` so the swarm contract and all linked lane tasks move into explicit archive views together.
 
-`task:archive:list` / `task_archive_list` and `task:archive:get` / `task_archive_get` expose archived standalone task history as first-class retrieval surfaces instead of forcing callers to inspect raw state. `swarm:archive:list` / `swarm_archive_list` and `swarm:archive:get` / `swarm_archive_get` do the same for archived swarm contracts and their linked archived lane tasks.
+`task:archive:list` / `task_archive_list` and `task:archive:get` / `task_archive_get` expose archived standalone task history as first-class retrieval surfaces instead of forcing callers to inspect raw state. `swarm:archive:list` / `swarm_archive_list` and `swarm:archive:get` / `swarm_archive_get` do the same for archived swarm contracts and their linked archived lane tasks. Archived detail metadata now includes the concrete restore command, so standalone tasks point to `task:restore` while swarm-linked archived lanes point back to `swarm:restore`.
+
+`task:restore` / `task_restore` and `swarm:restore` / `swarm_restore` move archived items back into the active runtime without silently reopening them: restored standalone tasks keep their archived queue/review state, and restored swarms bring back their archived linked lane tasks as completed or cancelled runtime entries ready for the next explicit decision. `task:reopen` / `task_reopen` and `swarm:reopen` / `swarm_reopen` then provide the explicit second step for reactivating done work. Standalone reopened tasks return to `queued`, clear review ownership, and refuse to rewind if downstream tasks have already advanced too far; reopened swarms switch back to `active`, reopen only their done lane tasks, and preserve grouped swarm ownership instead of letting callers rewind lane archives one task at a time.
 
 `swarm:blockers` / `swarm_blockers` add the blocker layer for swarm leadership: blocked lanes only, their task reports, and the next unblock/requeue action. They also emit a machine-readable `recommendedReason` so automation can distinguish a single unblock-ready lane, multiple blocked lanes, and empty blocker state without reparsing blocker arrays.
 

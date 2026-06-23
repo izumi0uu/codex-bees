@@ -17,6 +17,8 @@ import {
   listMemoriesView,
   listSwarmsView,
   queueSwarmTasks,
+  reopenSwarmMutation,
+  restoreSwarmMutation,
   searchMemoriesView,
   storeMemoryMutation,
   swarmBlockers,
@@ -142,6 +144,42 @@ function handleSwarmArchive() {
     exit(1);
   }
   write(JSON.stringify({ archived }, null, 2) + "\n");
+}
+
+function handleSwarmRestore() {
+  const id = requireOption("--id");
+  const restored = restoreSwarmMutation({
+    id,
+    restoredBy: readOption("--by"),
+    notes: readOption("--notes")
+  });
+  if (!restored) {
+    writeErr(`Unknown archived swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (restored.error) {
+    writeErr(`${restored.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ restored }, null, 2) + "\n");
+}
+
+function handleSwarmReopen() {
+  const id = requireOption("--id");
+  const reopened = reopenSwarmMutation({
+    id,
+    reopenedBy: readOption("--by"),
+    notes: readOption("--notes")
+  });
+  if (!reopened) {
+    writeErr(`Unknown swarm id: ${id}\n`);
+    exit(1);
+  }
+  if (reopened.error) {
+    writeErr(`${reopened.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify({ reopened }, null, 2) + "\n");
 }
 
 function handleSwarmDispatchBundle() {
@@ -336,6 +374,8 @@ export {
   handleSwarmBlockers,
   handleSwarmCloseout,
   handleSwarmArchive,
+  handleSwarmRestore,
+  handleSwarmReopen,
   handleSwarmDispatchBundle,
   handleSwarmUpdate,
   handleSwarmCheck,

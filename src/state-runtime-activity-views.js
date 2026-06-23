@@ -24,6 +24,12 @@ export function buildRuntimeActivityEventSummary(entity, event) {
     if (event.type === "created") {
       return `Swarm ${entity.id} was created for ${entity.objective}.`;
     }
+    if (event.type === "restored") {
+      return `Swarm ${entity.id} was restored from archive.`;
+    }
+    if (event.type === "reopened") {
+      return `Swarm ${entity.id} was reopened for active work.`;
+    }
     return `Swarm ${entity.id} recorded event ${event.type}.`;
   }
 
@@ -47,6 +53,12 @@ export function buildRuntimeActivityEventSummary(entity, event) {
   }
   if (event.type === "created") {
     return `Task ${entity.id} was created for ${entity.objective ?? "the current objective"}.`;
+  }
+  if (event.type === "restored") {
+    return `Task ${entity.id} was restored from archive.`;
+  }
+  if (event.type === "reopened") {
+    return `Task ${entity.id} was reopened and returned to the queue.`;
   }
   return `Task ${entity.id} recorded event ${event.type}.`;
 }

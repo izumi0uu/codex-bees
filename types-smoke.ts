@@ -62,7 +62,11 @@ import {
   runMcpCli,
   addTask,
   archiveTask,
+  reopenSwarm,
+  reopenTask,
   archiveSwarm,
+  restoreSwarm,
+  restoreTask,
   startMcpServer,
   callMcpTool,
   getMemory,
@@ -117,6 +121,8 @@ import {
 import {
   addTask as addTaskStateSubpath,
   archiveTask as archiveTaskStateSubpath,
+  reopenTask as reopenTaskStateSubpath,
+  restoreTask as restoreTaskStateSubpath,
   getArchivedTaskView as getArchivedTaskViewStateSubpath,
   listArchivedTasksView as listArchivedTasksViewStateSubpath,
   listTasksView as listTasksViewStateSubpath,
@@ -125,6 +131,10 @@ import {
 import {
   archiveSwarm as archiveSwarmApi,
   archiveTask as archiveTaskApi,
+  reopenSwarm as reopenSwarmApi,
+  reopenTask as reopenTaskApi,
+  restoreSwarm as restoreSwarmApi,
+  restoreTask as restoreTaskApi,
   getArchivedSwarmView as getArchivedSwarmViewApi,
   getArchivedTaskView as getArchivedTaskViewApi,
   getPackageMetadata as getApiPackageMetadata,
@@ -324,10 +334,16 @@ const apiPlannerProfileTopology: "bounded-local" | undefined = getApiPlannerProf
 const apiPlannerProfileViewKind: "planner_profile_view" = getApiPlannerProfileView().kind;
 const apiArchivedTaskListKind: "task_archive_view" = listArchivedTasksViewApi().kind;
 const apiArchivedTaskDetailKind: "task_archive_detail" | undefined = getArchivedTaskViewApi("task-1")?.kind;
+const apiArchivedTaskRestoreCommand: string | undefined = getArchivedTaskViewApi("task-1")?.metadata.restoreCommand;
 const apiArchivedSwarmListKind: "swarm_archive_view" = listArchivedSwarmsViewApi().kind;
 const apiArchivedSwarmDetailKind: "swarm_archive_detail" | undefined = getArchivedSwarmViewApi("swarm-1")?.kind;
+const apiArchivedSwarmRestoreCommand: string | undefined = getArchivedSwarmViewApi("swarm-1")?.metadata.restoreCommand;
 const apiArchiveTaskResult = archiveTaskApi({ id: "task-1", archivedBy: "tester" });
+const apiRestoreTaskResult = restoreTaskApi({ id: "task-1", restoredBy: "tester" });
+const apiReopenTaskResult = reopenTaskApi({ id: "task-1", reopenedBy: "tester" });
 const apiArchiveSwarmResult = archiveSwarmApi({ id: "swarm-1", archivedBy: "leader" });
+const apiRestoreSwarmResult = restoreSwarmApi({ id: "swarm-1", restoredBy: "leader" });
+const apiReopenSwarmResult = reopenSwarmApi({ id: "swarm-1", reopenedBy: "leader" });
 
 const subpathMcpResult: unknown = handleMcpRequestSubpath({ jsonrpc: "2.0", id: 1, method: "tools/list" }).result;
 const subpathMcpToolResult: unknown = callMcpToolSubpath("runtime_contract", {});
@@ -406,9 +422,15 @@ const taskValidationReady: boolean | undefined = validateTask(task.id)?.ready;
 const taskValidationIssueCode: string | undefined = validateTask(task.id)?.issues[0]?.code;
 const taskArchiveListKind: "task_archive_view" = listArchivedTasksView().kind;
 const taskArchiveDetailKind: "task_archive_detail" | undefined = getArchivedTaskView(task.id)?.kind;
+const taskArchiveRestoreCommand: string | undefined = getArchivedTaskView(task.id)?.metadata.restoreCommand;
 const archivedTaskResult = archiveTask({ id: task.id, archivedBy: "tester" });
+const restoredTaskResult = restoreTask({ id: task.id, restoredBy: "tester" });
+const reopenedTaskResult = reopenTask({ id: task.id, reopenedBy: "tester" });
 const archivedTaskId: string | undefined = getArchivedTask(task.id)?.id;
 const archivedTaskCount: number = listArchivedTasks().length;
+const archivedTaskRestoreCommandSubpath: string | undefined = getArchivedTaskViewStateSubpath(task.id)?.metadata.restoreCommand;
+const restoredTaskSubpathResult = restoreTaskStateSubpath({ id: task.id, restoredBy: "tester" });
+const reopenedTaskSubpathResult = reopenTaskStateSubpath({ id: task.id, reopenedBy: "tester" });
 
 const swarm = initSwarm({
   objective: "typed swarm",
@@ -457,7 +479,10 @@ const swarmValidationLane: string | undefined = validateSwarm(swarm.id)?.lanes[0
 const swarmValidationOverlapPath: string | undefined = validateSwarm(swarm.id)?.overlaps[0]?.path;
 const swarmArchiveListKind: "swarm_archive_view" = listArchivedSwarmsView().kind;
 const swarmArchiveDetailKind: "swarm_archive_detail" | undefined = getArchivedSwarmView(swarm.id)?.kind;
+const swarmArchiveRestoreCommand: string | undefined = getArchivedSwarmView(swarm.id)?.metadata.restoreCommand;
 const archivedSwarmResult = archiveSwarm({ id: swarm.id, archivedBy: "leader" });
+const restoredSwarmResult = restoreSwarm({ id: swarm.id, restoredBy: "leader" });
+const reopenedSwarmResult = reopenSwarm({ id: swarm.id, reopenedBy: "leader" });
 const archivedSwarmId: string | undefined = getArchivedSwarm(swarm.id)?.id;
 const archivedSwarmCount: number = listArchivedSwarms().length;
 

@@ -11,6 +11,14 @@ import {
   dispatchSwarmLaneOperation,
   initSwarmMutationOperation,
   initSwarmOperation,
+  reopenSwarmMutationOperation,
+  reopenSwarmOperation,
+  reopenTaskMutationOperation,
+  reopenTaskOperation,
+  restoreSwarmMutationOperation,
+  restoreSwarmOperation,
+  restoreTaskMutationOperation,
+  restoreTaskOperation,
   queueSwarmTasksOperation,
   storeMemoryMutationOperation,
   storeMemoryOperation,
@@ -105,6 +113,31 @@ export function createStateWriteEntryPoints(shared, api) {
       return archiveTaskMutationOperation(input, { archiveTask });
     }
 
+    function restoreTask(input) {
+      return restoreTaskOperation(input, {
+        loadState,
+        saveState,
+        normalizeTask
+      });
+    }
+
+    function restoreTaskMutation(input) {
+      return restoreTaskMutationOperation(input, { restoreTask });
+    }
+
+    function reopenTask(input) {
+      return reopenTaskOperation(input, {
+        loadState,
+        saveState,
+        findTaskIndex,
+        normalizeTask
+      });
+    }
+
+    function reopenTaskMutation(input) {
+      return reopenTaskMutationOperation(input, { reopenTask });
+    }
+
     function updateSwarm(input) {
       return updateSwarmOperation(input, {
         loadState,
@@ -130,6 +163,34 @@ export function createStateWriteEntryPoints(shared, api) {
 
     function archiveSwarmMutation(input) {
       return archiveSwarmMutationOperation(input, { archiveSwarm });
+    }
+
+    function restoreSwarm(input) {
+      return restoreSwarmOperation(input, {
+        loadState,
+        saveState,
+        findSwarmIndex,
+        normalizeSwarm,
+        normalizeTask
+      });
+    }
+
+    function restoreSwarmMutation(input) {
+      return restoreSwarmMutationOperation(input, { restoreSwarm });
+    }
+
+    function reopenSwarm(input) {
+      return reopenSwarmOperation(input, {
+        loadState,
+        saveState,
+        findSwarmIndex,
+        normalizeSwarm,
+        normalizeTask
+      });
+    }
+
+    function reopenSwarmMutation(input) {
+      return reopenSwarmMutationOperation(input, { reopenSwarm });
     }
 
     function queueSwarmTasks(input) {
@@ -169,10 +230,18 @@ export function createStateWriteEntryPoints(shared, api) {
     updateTaskMutation,
     archiveTask,
     archiveTaskMutation,
+    restoreTask,
+    restoreTaskMutation,
+    reopenTask,
+    reopenTaskMutation,
     updateSwarm,
     updateSwarmMutation,
     archiveSwarm,
     archiveSwarmMutation,
+    restoreSwarm,
+    restoreSwarmMutation,
+    reopenSwarm,
+    reopenSwarmMutation,
     queueSwarmTasks,
     dispatchSwarmLane,
   };

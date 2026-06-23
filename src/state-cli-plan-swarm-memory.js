@@ -18,6 +18,8 @@ export {
   handleSwarmBlockers,
   handleSwarmCloseout,
   handleSwarmArchive,
+  handleSwarmRestore,
+  handleSwarmReopen,
   handleSwarmDispatchBundle,
   handleSwarmUpdate,
   handleSwarmCheck,

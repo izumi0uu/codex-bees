@@ -28,9 +28,9 @@ const CAPABILITY_CATALOG = [
   {
     id: "task_coordination",
     category: "coordination",
-    description: "Persistent task queue with claim, block, release, readiness validation, and standalone archive closeout.",
-    cliCommands: ["task:list", "task:add", "task:update", "task:check", "task:claim", "task:block", "task:release", "task:archive", "task:archive:list", "task:archive:get", "task:assignment-preview", "task:assignment-pickup"],
-    mcpTools: ["task_list", "task_add", "task_update", "task_check", "task_claim", "task_block", "task_release", "task_archive", "task_archive_list", "task_archive_get", "task_assignment_preview", "task_assignment_pickup"]
+    description: "Persistent task queue with claim, block, release, readiness validation, archive history, and standalone restore/reopen recovery.",
+    cliCommands: ["task:list", "task:add", "task:update", "task:check", "task:claim", "task:block", "task:release", "task:archive", "task:restore", "task:reopen", "task:archive:list", "task:archive:get", "task:assignment-preview", "task:assignment-pickup"],
+    mcpTools: ["task_list", "task_add", "task_update", "task_check", "task_claim", "task_block", "task_release", "task_archive", "task_restore", "task_reopen", "task_archive_list", "task_archive_get", "task_assignment_preview", "task_assignment_pickup"]
   },
   {
     id: "verifier_review",
@@ -62,7 +62,7 @@ const CAPABILITY_CATALOG = [
   {
     id: "swarm_coordination",
     category: "coordination",
-    description: "Bounded swarm contracts, queueing, dispatch, sync, archive closeout, and detailed overviews.",
+    description: "Bounded swarm contracts, queueing, dispatch, sync, archive closeout, restore/reopen recovery, and detailed overviews.",
     cliCommands: [
       "swarm:init",
       "swarm:list",
@@ -76,6 +76,8 @@ const CAPABILITY_CATALOG = [
       "swarm:done",
       "swarm:cancel",
       "swarm:archive",
+      "swarm:restore",
+      "swarm:reopen",
       "swarm:queue",
       "swarm:dispatch",
       "swarm:overview",
@@ -94,6 +96,8 @@ const CAPABILITY_CATALOG = [
       "swarm_done",
       "swarm_cancel",
       "swarm_archive",
+      "swarm_restore",
+      "swarm_reopen",
       "swarm_queue_tasks",
       "swarm_dispatch",
       "swarm_overview",

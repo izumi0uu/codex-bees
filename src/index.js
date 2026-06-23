@@ -97,10 +97,12 @@ import {
   handleTaskNext,
   handleTaskPickup,
   handleTaskPickupPreview,
+  handleTaskReopen,
   handleTaskReject,
   handleTaskRelease,
   handleTaskReport,
   handleTaskReview,
+  handleTaskRestore,
   handleTaskUpdate,
   handleVerifierBundle,
   handleWorkerCloseout,
@@ -136,6 +138,8 @@ import {
   handleSwarmInit,
   handleSwarmOverview,
   handleSwarmQueue,
+  handleSwarmReopen,
+  handleSwarmRestore,
   handleSwarmStart,
   handleSwarmSync,
   handleSwarmUpdate,
@@ -448,6 +452,12 @@ async function runCommand(command) {
     case "task:archive":
       handleTaskArchive();
       return;
+    case "task:restore":
+      handleTaskRestore();
+      return;
+    case "task:reopen":
+      handleTaskReopen();
+      return;
     case "task:release":
       handleTaskRelease();
       return;
@@ -486,6 +496,12 @@ async function runCommand(command) {
       return;
     case "swarm:archive":
       handleSwarmArchive();
+      return;
+    case "swarm:restore":
+      handleSwarmRestore();
+      return;
+    case "swarm:reopen":
+      handleSwarmReopen();
       return;
     case "swarm:dispatch-bundle":
       handleSwarmDispatchBundle();

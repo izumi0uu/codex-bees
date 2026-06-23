@@ -16,6 +16,8 @@ import {
   listMemoriesView,
   listSwarmsView,
   queueSwarmTasks,
+  reopenSwarmMutation,
+  restoreSwarmMutation,
   searchMemoriesView,
   storeMemoryMutation,
   swarmBlockers,
@@ -157,6 +159,50 @@ const SWARM_MCP_TOOL_HANDLERS = {
     }
 
     return createSuccess(id, createTextPayload({ archived }));
+  },
+
+  swarm_restore({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "swarm_restore requires arguments.id");
+    }
+
+    const restored = restoreSwarmMutation({
+      id: params.arguments.id,
+      restoredBy: params.arguments.restoredBy,
+      notes: params.arguments.notes
+    });
+
+    if (!restored) {
+      return createError(id, -32602, `Unknown archived swarm id: ${params.arguments.id}`);
+    }
+    if (restored.error) {
+      return createError(id, -32602, restored.error);
+    }
+
+    return createSuccess(id, createTextPayload({ restored }));
+  },
+
+  swarm_reopen({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "swarm_reopen requires arguments.id");
+    }
+
+    const reopened = reopenSwarmMutation({
+      id: params.arguments.id,
+      reopenedBy: params.arguments.reopenedBy,
+      notes: params.arguments.notes
+    });
+
+    if (!reopened) {
+      return createError(id, -32602, `Unknown swarm id: ${params.arguments.id}`);
+    }
+    if (reopened.error) {
+      return createError(id, -32602, reopened.error);
+    }
+
+    return createSuccess(id, createTextPayload({ reopened }));
   },
 
   swarm_dispatch_bundle({ id, args, metadata }) {

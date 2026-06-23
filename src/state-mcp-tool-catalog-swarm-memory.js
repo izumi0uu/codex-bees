@@ -132,6 +132,32 @@ export const SWARM_MEMORY_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "swarm_restore",
+    description: "Restore one archived swarm together with its linked lane tasks.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        restoredBy: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "swarm_reopen",
+    description: "Reopen one completed or cancelled swarm.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        reopenedBy: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
     name: "swarm_dispatch_bundle",
     description: "Build a dispatch-oriented bundle for one swarm.",
     inputSchema: {

@@ -8,6 +8,17 @@ function buildArchivedSwarmSummary(swarm, tasks = []) {
   return `Swarm ${swarm.id} was archived at ${archivedAt} with ${tasks.length} linked archived task${tasks.length === 1 ? "" : "s"}.`;
 }
 
+function buildArchivedTaskRestoreCommand(task) {
+  if (task?.swarmId) {
+    return `node ./src/index.js swarm:restore --id ${task.swarmId}`;
+  }
+  return `node ./src/index.js task:restore --id ${task.id}`;
+}
+
+function buildArchivedSwarmRestoreCommand(swarm) {
+  return `node ./src/index.js swarm:restore --id ${swarm.id}`;
+}
+
 export function buildArchivedTaskListView(tasks = []) {
   return {
     kind: "task_archive_view",
@@ -41,7 +52,8 @@ export function buildArchivedTaskDetailView(id, { getArchivedTask }) {
     metadata: {
       archivedAt: task.archivedAt ?? null,
       archivedBy: task.archivedBy ?? null,
-      hasArchiveReason: Boolean(task.archiveReason)
+      hasArchiveReason: Boolean(task.archiveReason),
+      restoreCommand: buildArchivedTaskRestoreCommand(task)
     },
     summary: buildArchivedTaskSummary(task)
   };
@@ -107,7 +119,8 @@ export function buildArchivedSwarmDetailView(id, { getArchivedSwarm, getArchived
     metadata: {
       archivedAt: swarm.archivedAt ?? null,
       archivedBy: swarm.archivedBy ?? null,
-      hasArchiveReason: Boolean(swarm.archiveReason)
+      hasArchiveReason: Boolean(swarm.archiveReason),
+      restoreCommand: buildArchivedSwarmRestoreCommand(swarm)
     },
     summary: buildArchivedSwarmSummary(swarm, archivedTasks)
   };

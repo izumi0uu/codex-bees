@@ -18,8 +18,10 @@ import {
   markTaskReadyForReviewLifecycle,
   previewTaskAssignment,
   previewTaskPickup,
+  reopenTaskMutation,
   rejectTaskLifecycle,
   releaseTaskLifecycle,
+  restoreTaskMutation,
   taskAssignmentPickup,
   taskBrief,
   taskHistory,
@@ -117,6 +119,46 @@ function handleTaskArchive() {
   }
 
   write(JSON.stringify({ archived }, null, 2) + "\n");
+}
+
+function handleTaskRestore() {
+  const id = requireOption("--id");
+  const restored = restoreTaskMutation({
+    id,
+    restoredBy: readOption("--by"),
+    notes: readOption("--notes")
+  });
+
+  if (!restored) {
+    writeErr(`Unknown archived task id: ${id}\n`);
+    exit(1);
+  }
+  if (restored.error) {
+    writeErr(`${restored.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ restored }, null, 2) + "\n");
+}
+
+function handleTaskReopen() {
+  const id = requireOption("--id");
+  const reopened = reopenTaskMutation({
+    id,
+    reopenedBy: readOption("--by"),
+    notes: readOption("--notes")
+  });
+
+  if (!reopened) {
+    writeErr(`Unknown task id: ${id}\n`);
+    exit(1);
+  }
+  if (reopened.error) {
+    writeErr(`${reopened.error}\n`);
+    exit(1);
+  }
+
+  write(JSON.stringify({ reopened }, null, 2) + "\n");
 }
 
 function handleTaskAnnotate() {
@@ -289,6 +331,8 @@ export {
   handleTaskAdd,
   handleTaskUpdate,
   handleTaskArchive,
+  handleTaskRestore,
+  handleTaskReopen,
   handleTaskAnnotate,
   handleTaskAssignmentPickup,
   handleTaskPickup,

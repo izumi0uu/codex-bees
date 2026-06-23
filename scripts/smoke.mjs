@@ -5517,6 +5517,79 @@ if (
   console.error("[smoke:archive-cli-task] expected standalone archive lifecycle and archive views");
   process.exit(1);
 }
+const archiveCliTaskRestore = JSON.parse(
+  run("archive-cli-task-restore", [
+    "./src/index.js",
+    "task:restore",
+    "--id",
+    "task-1",
+    "--by",
+    "tester",
+    "--notes",
+    "standalone restore smoke"
+  ]).stdout
+).restored;
+const archiveCliTaskArchiveListAfterRestore = JSON.parse(
+  run("archive-cli-task-archive-list-after-restore", ["./src/index.js", "task:archive:list"]).stdout
+).archivedTasks;
+const archiveCliTaskArchiveGetAfterRestoreAttempt = run(
+  "archive-cli-task-archive-get-after-restore",
+  ["./src/index.js", "task:archive:get", "--id", "task-1"],
+  1
+);
+const archiveCliTaskGetAfterRestore = JSON.parse(
+  run("archive-cli-task-get-after-restore", ["./src/index.js", "task:get", "--id", "task-1"]).stdout
+).task;
+const archiveCliTaskReopen = JSON.parse(
+  run("archive-cli-task-reopen", [
+    "./src/index.js",
+    "task:reopen",
+    "--id",
+    "task-1",
+    "--by",
+    "tester",
+    "--notes",
+    "standalone reopen smoke"
+  ]).stdout
+).reopened;
+const archiveCliTaskGetAfterReopen = JSON.parse(
+  run("archive-cli-task-get-after-reopen", ["./src/index.js", "task:get", "--id", "task-1"]).stdout
+).task;
+const archiveCliTaskCloseoutAfterReopen = JSON.parse(
+  run("archive-cli-runtime-closeout-after-reopen", ["./src/index.js", "runtime:closeout"]).stdout
+).closeout;
+if (
+  archiveCliTaskGet?.metadata?.restoreCommand !== "node ./src/index.js task:restore --id task-1" ||
+  archiveCliTaskRestore?.kind !== "task_mutation" ||
+  archiveCliTaskRestore?.recommendedReason !== "task_restored" ||
+  archiveCliTaskRestore?.task?.queueStatus !== "done" ||
+  archiveCliTaskRestore?.task?.reviewOutcome !== "approved" ||
+  archiveCliTaskRestore?.task?.archivedBy !== null ||
+  archiveCliTaskArchiveListAfterRestore?.recommendedReason !== "task_archive_list_empty" ||
+  archiveCliTaskArchiveListAfterRestore?.counts?.totalArchivedTasks !== 0 ||
+  !String(archiveCliTaskArchiveGetAfterRestoreAttempt.stderr || archiveCliTaskArchiveGetAfterRestoreAttempt.stdout).includes(
+    "Unknown archived task id: task-1"
+  ) ||
+  archiveCliTaskGetAfterRestore?.kind !== "task_detail" ||
+  archiveCliTaskGetAfterRestore?.metadata?.reviewState !== "approved" ||
+  archiveCliTaskGetAfterRestore?.task?.queueStatus !== "done" ||
+  archiveCliTaskGetAfterRestore?.task?.reviewOutcome !== "approved" ||
+  archiveCliTaskReopen?.kind !== "task_mutation" ||
+  archiveCliTaskReopen?.recommendedReason !== "task_reopened" ||
+  archiveCliTaskReopen?.task?.queueStatus !== "queued" ||
+  archiveCliTaskReopen?.task?.claimedBy !== null ||
+  archiveCliTaskReopen?.task?.reviewOutcome !== null ||
+  archiveCliTaskGetAfterReopen?.kind !== "task_detail" ||
+  archiveCliTaskGetAfterReopen?.metadata?.reviewState !== "not_started" ||
+  archiveCliTaskGetAfterReopen?.task?.queueStatus !== "queued" ||
+  archiveCliTaskGetAfterReopen?.task?.claimedBy !== null ||
+  archiveCliTaskGetAfterReopen?.task?.reviewOutcome !== null ||
+  archiveCliTaskCloseoutAfterReopen?.recommendedReason !== "no_closeout_ready" ||
+  archiveCliTaskCloseoutAfterReopen?.counts?.totalReady !== 0
+) {
+  console.error("[smoke:recovery-cli-task] expected standalone restore and reopen lifecycle");
+  process.exit(1);
+}
 
 rmSync(".codex-bees", { recursive: true, force: true });
 run("archive-cli-swarm-init", [
@@ -5587,6 +5660,98 @@ if (
   archiveCliSwarmGet?.tasks?.[0]?.swarmId !== "swarm-1"
 ) {
   console.error("[smoke:archive-cli-swarm] expected swarm archive lifecycle and archive views");
+  process.exit(1);
+}
+const archiveCliSwarmTaskArchiveGet = JSON.parse(
+  run("archive-cli-swarm-task-archive-get", ["./src/index.js", "task:archive:get", "--id", "task-1"]).stdout
+).archivedTask;
+const archiveCliSwarmTaskRestoreAttempt = run(
+  "archive-cli-swarm-task-restore-attempt",
+  ["./src/index.js", "task:restore", "--id", "task-1"],
+  1
+);
+const archiveCliSwarmRestore = JSON.parse(
+  run("archive-cli-swarm-restore", [
+    "./src/index.js",
+    "swarm:restore",
+    "--id",
+    "swarm-1",
+    "--by",
+    "leader",
+    "--notes",
+    "swarm restore smoke"
+  ]).stdout
+).restored;
+const archiveCliSwarmListAfterRestore = JSON.parse(
+  run("archive-cli-swarm-archive-list-after-restore", ["./src/index.js", "swarm:archive:list"]).stdout
+).archivedSwarms;
+const archiveCliSwarmTaskArchiveListAfterRestore = JSON.parse(
+  run("archive-cli-swarm-task-archive-list-after-restore", ["./src/index.js", "task:archive:list"]).stdout
+).archivedTasks;
+const archiveCliSwarmGetAfterRestore = JSON.parse(
+  run("archive-cli-swarm-get-after-restore", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
+).swarm;
+const archiveCliSwarmTaskGetAfterRestore = JSON.parse(
+  run("archive-cli-swarm-task-get-after-restore", ["./src/index.js", "task:get", "--id", "task-1"]).stdout
+).task;
+const archiveCliSwarmTaskReopenAttempt = run(
+  "archive-cli-swarm-task-reopen-attempt",
+  ["./src/index.js", "task:reopen", "--id", "task-1"],
+  1
+);
+const archiveCliSwarmReopen = JSON.parse(
+  run("archive-cli-swarm-reopen", [
+    "./src/index.js",
+    "swarm:reopen",
+    "--id",
+    "swarm-1",
+    "--by",
+    "leader",
+    "--notes",
+    "swarm reopen smoke"
+  ]).stdout
+).reopened;
+const archiveCliSwarmGetAfterReopen = JSON.parse(
+  run("archive-cli-swarm-get-after-reopen", ["./src/index.js", "swarm:get", "--id", "swarm-1"]).stdout
+).swarm;
+const archiveCliSwarmTaskGetAfterReopen = JSON.parse(
+  run("archive-cli-swarm-task-get-after-reopen", ["./src/index.js", "task:get", "--id", "task-1"]).stdout
+).task;
+if (
+  archiveCliSwarmGet?.metadata?.restoreCommand !== "node ./src/index.js swarm:restore --id swarm-1" ||
+  archiveCliSwarmTaskArchiveGet?.metadata?.restoreCommand !== "node ./src/index.js swarm:restore --id swarm-1" ||
+  !String(archiveCliSwarmTaskRestoreAttempt.stderr || archiveCliSwarmTaskRestoreAttempt.stdout).includes(
+    "must be restored through swarm:restore"
+  ) ||
+  archiveCliSwarmRestore?.kind !== "swarm_mutation" ||
+  archiveCliSwarmRestore?.recommendedReason !== "swarm_restored" ||
+  archiveCliSwarmRestore?.swarm?.status !== "completed" ||
+  archiveCliSwarmListAfterRestore?.recommendedReason !== "swarm_archive_list_empty" ||
+  archiveCliSwarmListAfterRestore?.counts?.totalArchivedSwarms !== 0 ||
+  archiveCliSwarmTaskArchiveListAfterRestore?.recommendedReason !== "task_archive_list_empty" ||
+  archiveCliSwarmTaskArchiveListAfterRestore?.counts?.totalArchivedTasks !== 0 ||
+  archiveCliSwarmGetAfterRestore?.kind !== "swarm_detail" ||
+  archiveCliSwarmGetAfterRestore?.swarm?.status !== "completed" ||
+  archiveCliSwarmGetAfterRestore?.metadata?.derivedStatus !== "completed" ||
+  archiveCliSwarmTaskGetAfterRestore?.kind !== "task_detail" ||
+  archiveCliSwarmTaskGetAfterRestore?.metadata?.reviewState !== "approved" ||
+  archiveCliSwarmTaskGetAfterRestore?.task?.queueStatus !== "done" ||
+  archiveCliSwarmTaskGetAfterRestore?.task?.reviewOutcome !== "approved" ||
+  !String(archiveCliSwarmTaskReopenAttempt.stderr || archiveCliSwarmTaskReopenAttempt.stdout).includes(
+    "must be reopened through swarm:reopen"
+  ) ||
+  archiveCliSwarmReopen?.kind !== "swarm_mutation" ||
+  archiveCliSwarmReopen?.recommendedReason !== "swarm_reopened" ||
+  archiveCliSwarmReopen?.swarm?.status !== "active" ||
+  archiveCliSwarmGetAfterReopen?.kind !== "swarm_detail" ||
+  archiveCliSwarmGetAfterReopen?.swarm?.status !== "active" ||
+  archiveCliSwarmTaskGetAfterReopen?.kind !== "task_detail" ||
+  archiveCliSwarmTaskGetAfterReopen?.metadata?.reviewState !== "not_started" ||
+  archiveCliSwarmTaskGetAfterReopen?.task?.queueStatus !== "queued" ||
+  archiveCliSwarmTaskGetAfterReopen?.task?.claimedBy !== null ||
+  archiveCliSwarmTaskGetAfterReopen?.task?.reviewOutcome !== null
+) {
+  console.error("[smoke:recovery-cli-swarm] expected swarm restore and reopen lifecycle");
   process.exit(1);
 }
 
@@ -9204,6 +9369,101 @@ if (
   console.error(taskArchiveMcp.stderr || taskArchiveMcp.stdout);
   process.exit(1);
 }
+const taskRecoveryMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_restore",
+      arguments: { id: "task-1", restoredBy: "tester", notes: "mcp restore smoke" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "task_get",
+      arguments: { id: "task-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "task_reopen",
+      arguments: { id: "task-1", reopenedBy: "tester", notes: "mcp reopen smoke" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "task_get",
+      arguments: { id: "task-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
+      name: "task_archive_list",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 7,
+    method: "tools/call",
+    params: {
+      name: "runtime_closeout",
+      arguments: {}
+    }
+  })
+].join("\n") + "\n";
+const taskRecoveryMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: taskRecoveryMcpInput,
+  encoding: "utf8"
+});
+const taskRecoveryMcpMessages = parseJsonRpcLines(taskRecoveryMcp.stdout);
+const taskRecoveryMcpById = indexJsonRpcById(taskRecoveryMcpMessages);
+const taskRecoveryRestorePayload = parseJsonRpcTextResult(taskRecoveryMcpById.get(2));
+const taskRecoveryGetAfterRestorePayload = parseJsonRpcTextResult(taskRecoveryMcpById.get(3));
+const taskRecoveryReopenPayload = parseJsonRpcTextResult(taskRecoveryMcpById.get(4));
+const taskRecoveryGetAfterReopenPayload = parseJsonRpcTextResult(taskRecoveryMcpById.get(5));
+const taskRecoveryArchiveListPayload = parseJsonRpcTextResult(taskRecoveryMcpById.get(6));
+const taskRecoveryCloseoutPayload = parseJsonRpcTextResult(taskRecoveryMcpById.get(7));
+if (
+  taskRecoveryMcp.status !== 0 ||
+  taskRecoveryRestorePayload?.restored?.kind !== "task_mutation" ||
+  taskRecoveryRestorePayload?.restored?.recommendedReason !== "task_restored" ||
+  taskRecoveryRestorePayload?.restored?.task?.queueStatus !== "done" ||
+  taskRecoveryRestorePayload?.restored?.task?.reviewOutcome !== "approved" ||
+  taskRecoveryGetAfterRestorePayload?.task?.kind !== "task_detail" ||
+  taskRecoveryGetAfterRestorePayload?.task?.metadata?.reviewState !== "approved" ||
+  taskRecoveryGetAfterRestorePayload?.task?.task?.queueStatus !== "done" ||
+  taskRecoveryReopenPayload?.reopened?.kind !== "task_mutation" ||
+  taskRecoveryReopenPayload?.reopened?.recommendedReason !== "task_reopened" ||
+  taskRecoveryReopenPayload?.reopened?.task?.queueStatus !== "queued" ||
+  taskRecoveryReopenPayload?.reopened?.task?.claimedBy !== null ||
+  taskRecoveryGetAfterReopenPayload?.task?.metadata?.reviewState !== "not_started" ||
+  taskRecoveryGetAfterReopenPayload?.task?.task?.queueStatus !== "queued" ||
+  taskRecoveryGetAfterReopenPayload?.task?.task?.reviewOutcome !== null ||
+  taskRecoveryArchiveListPayload?.archivedTasks?.kind !== "task_archive_view" ||
+  taskRecoveryArchiveListPayload?.archivedTasks?.recommendedReason !== "task_archive_list_empty" ||
+  taskRecoveryArchiveListPayload?.archivedTasks?.counts?.totalArchivedTasks !== 0 ||
+  taskRecoveryCloseoutPayload?.closeout?.recommendedReason !== "no_closeout_ready" ||
+  taskRecoveryCloseoutPayload?.closeout?.counts?.tasksReady !== 0
+) {
+  console.error("[smoke:task-recovery-mcp] expected MCP task restore and reopen lifecycle");
+  console.error(taskRecoveryMcp.stderr || taskRecoveryMcp.stdout);
+  process.exit(1);
+}
 
 rmSync(".codex-bees", { recursive: true, force: true });
 const swarmArchiveMcpInput = [
@@ -9349,6 +9609,160 @@ if (
 ) {
   console.error("[smoke:swarm-archive-mcp] expected MCP swarm archive lifecycle and archive views");
   console.error(swarmArchiveMcp.stderr || swarmArchiveMcp.stdout);
+  process.exit(1);
+}
+const swarmRecoveryMcpInput = [
+  JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "task_archive_get",
+      arguments: { id: "task-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "task_restore",
+      arguments: { id: "task-1", restoredBy: "leader" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "swarm_restore",
+      arguments: { id: "swarm-1", restoredBy: "leader", notes: "mcp swarm restore smoke" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "swarm_archive_list",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
+      name: "task_archive_list",
+      arguments: {}
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 7,
+    method: "tools/call",
+    params: {
+      name: "swarm_get",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 8,
+    method: "tools/call",
+    params: {
+      name: "task_get",
+      arguments: { id: "task-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 9,
+    method: "tools/call",
+    params: {
+      name: "task_reopen",
+      arguments: { id: "task-1", reopenedBy: "leader" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 10,
+    method: "tools/call",
+    params: {
+      name: "swarm_reopen",
+      arguments: { id: "swarm-1", reopenedBy: "leader", notes: "mcp swarm reopen smoke" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 11,
+    method: "tools/call",
+    params: {
+      name: "swarm_get",
+      arguments: { id: "swarm-1" }
+    }
+  }),
+  JSON.stringify({
+    jsonrpc: "2.0",
+    id: 12,
+    method: "tools/call",
+    params: {
+      name: "task_get",
+      arguments: { id: "task-1" }
+    }
+  })
+].join("\n") + "\n";
+const swarmRecoveryMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+  input: swarmRecoveryMcpInput,
+  encoding: "utf8"
+});
+const swarmRecoveryMcpMessages = parseJsonRpcLines(swarmRecoveryMcp.stdout);
+const swarmRecoveryMcpById = indexJsonRpcById(swarmRecoveryMcpMessages);
+const swarmRecoveryTaskArchiveGetPayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(2));
+const swarmRecoveryTaskRestoreAttempt = swarmRecoveryMcpById.get(3);
+const swarmRecoveryRestorePayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(4));
+const swarmRecoveryArchiveListPayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(5));
+const swarmRecoveryTaskArchiveListPayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(6));
+const swarmRecoveryGetAfterRestorePayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(7));
+const swarmRecoveryTaskGetAfterRestorePayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(8));
+const swarmRecoveryTaskReopenAttempt = swarmRecoveryMcpById.get(9);
+const swarmRecoveryReopenPayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(10));
+const swarmRecoveryGetAfterReopenPayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(11));
+const swarmRecoveryTaskGetAfterReopenPayload = parseJsonRpcTextResult(swarmRecoveryMcpById.get(12));
+if (
+  swarmRecoveryMcp.status !== 0 ||
+  swarmRecoveryTaskArchiveGetPayload?.archivedTask?.metadata?.restoreCommand !== "node ./src/index.js swarm:restore --id swarm-1" ||
+  !swarmRecoveryTaskRestoreAttempt?.error?.message?.includes("must be restored through swarm:restore") ||
+  swarmRecoveryRestorePayload?.restored?.kind !== "swarm_mutation" ||
+  swarmRecoveryRestorePayload?.restored?.recommendedReason !== "swarm_restored" ||
+  swarmRecoveryRestorePayload?.restored?.swarm?.status !== "completed" ||
+  swarmRecoveryArchiveListPayload?.archivedSwarms?.kind !== "swarm_archive_view" ||
+  swarmRecoveryArchiveListPayload?.archivedSwarms?.recommendedReason !== "swarm_archive_list_empty" ||
+  swarmRecoveryArchiveListPayload?.archivedSwarms?.counts?.totalArchivedSwarms !== 0 ||
+  swarmRecoveryTaskArchiveListPayload?.archivedTasks?.kind !== "task_archive_view" ||
+  swarmRecoveryTaskArchiveListPayload?.archivedTasks?.recommendedReason !== "task_archive_list_empty" ||
+  swarmRecoveryTaskArchiveListPayload?.archivedTasks?.counts?.totalArchivedTasks !== 0 ||
+  swarmRecoveryGetAfterRestorePayload?.swarm?.kind !== "swarm_detail" ||
+  swarmRecoveryGetAfterRestorePayload?.swarm?.swarm?.status !== "completed" ||
+  swarmRecoveryGetAfterRestorePayload?.swarm?.metadata?.derivedStatus !== "completed" ||
+  swarmRecoveryTaskGetAfterRestorePayload?.task?.kind !== "task_detail" ||
+  swarmRecoveryTaskGetAfterRestorePayload?.task?.metadata?.reviewState !== "approved" ||
+  swarmRecoveryTaskGetAfterRestorePayload?.task?.task?.queueStatus !== "done" ||
+  !swarmRecoveryTaskReopenAttempt?.error?.message?.includes("must be reopened through swarm:reopen") ||
+  swarmRecoveryReopenPayload?.reopened?.kind !== "swarm_mutation" ||
+  swarmRecoveryReopenPayload?.reopened?.recommendedReason !== "swarm_reopened" ||
+  swarmRecoveryReopenPayload?.reopened?.swarm?.status !== "active" ||
+  swarmRecoveryGetAfterReopenPayload?.swarm?.kind !== "swarm_detail" ||
+  swarmRecoveryGetAfterReopenPayload?.swarm?.swarm?.status !== "active" ||
+  swarmRecoveryTaskGetAfterReopenPayload?.task?.kind !== "task_detail" ||
+  swarmRecoveryTaskGetAfterReopenPayload?.task?.metadata?.reviewState !== "not_started" ||
+  swarmRecoveryTaskGetAfterReopenPayload?.task?.task?.queueStatus !== "queued" ||
+  swarmRecoveryTaskGetAfterReopenPayload?.task?.task?.claimedBy !== null ||
+  swarmRecoveryTaskGetAfterReopenPayload?.task?.task?.reviewOutcome !== null
+) {
+  console.error("[smoke:swarm-recovery-mcp] expected MCP swarm restore and reopen lifecycle");
+  console.error(swarmRecoveryMcp.stderr || swarmRecoveryMcp.stdout);
   process.exit(1);
 }
 

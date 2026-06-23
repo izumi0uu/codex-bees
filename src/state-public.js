@@ -1,7 +1,11 @@
 export {
   addTask,
   archiveTask,
+  restoreTask,
+  reopenTask,
   archiveSwarm,
+  restoreSwarm,
+  reopenSwarm,
   getMemory,
   getMemoryView,
   getTask,

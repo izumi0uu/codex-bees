@@ -18,8 +18,10 @@ import {
   markTaskReadyForReviewLifecycle,
   previewTaskAssignment,
   previewTaskPickup,
+  reopenTaskMutation,
   rejectTaskLifecycle,
   releaseTaskLifecycle,
+  restoreTaskMutation,
   taskAssignmentPickup,
   taskBrief,
   taskHistory,
@@ -191,6 +193,50 @@ const TASK_LIFECYCLE_MCP_TOOL_HANDLERS = {
     }
 
     return createSuccess(id, createTextPayload({ archived }));
+  },
+
+  task_restore({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "task_restore requires arguments.id");
+    }
+
+    const restored = restoreTaskMutation({
+      id: params.arguments.id,
+      restoredBy: params.arguments.restoredBy,
+      notes: params.arguments.notes
+    });
+
+    if (!restored) {
+      return createError(id, -32602, `Unknown archived task id: ${params.arguments.id}`);
+    }
+    if (restored.error) {
+      return createError(id, -32602, restored.error);
+    }
+
+    return createSuccess(id, createTextPayload({ restored }));
+  },
+
+  task_reopen({ id, args, metadata }) {
+    const params = { arguments: args };
+    if (!params.arguments?.id) {
+      return createError(id, -32602, "task_reopen requires arguments.id");
+    }
+
+    const reopened = reopenTaskMutation({
+      id: params.arguments.id,
+      reopenedBy: params.arguments.reopenedBy,
+      notes: params.arguments.notes
+    });
+
+    if (!reopened) {
+      return createError(id, -32602, `Unknown task id: ${params.arguments.id}`);
+    }
+    if (reopened.error) {
+      return createError(id, -32602, reopened.error);
+    }
+
+    return createSuccess(id, createTextPayload({ reopened }));
   },
 
   task_claim({ id, args, metadata }) {

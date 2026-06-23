@@ -16,6 +16,8 @@ export {
   handleTaskAdd,
   handleTaskUpdate,
   handleTaskArchive,
+  handleTaskRestore,
+  handleTaskReopen,
   handleTaskAnnotate,
   handleTaskAssignmentPickup,
   handleTaskPickup,

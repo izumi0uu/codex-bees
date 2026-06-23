@@ -965,6 +965,7 @@ export interface TaskArchiveDetailView {
     archivedAt: string | null;
     archivedBy: string | null;
     hasArchiveReason: boolean;
+    restoreCommand: string;
   };
   task: TaskRecord;
   summary: string;
@@ -1025,6 +1026,7 @@ export interface SwarmArchiveDetailView {
     archivedAt: string | null;
     archivedBy: string | null;
     hasArchiveReason: boolean;
+    restoreCommand: string;
   };
   summary: string;
 }
@@ -1464,7 +1466,11 @@ export declare function getArchivedSwarm(id: string): SwarmRecord | null;
 export declare function listArchivedSwarmsView(): SwarmArchiveListView;
 export declare function getArchivedSwarmView(id: string): SwarmArchiveDetailView | null;
 export declare function archiveTask(input: { id: string; archivedBy?: string | null; notes?: string | null }): TaskRecord | { error: string };
+export declare function restoreTask(input: { id: string; restoredBy?: string | null; notes?: string | null }): TaskRecord | { error: string };
+export declare function reopenTask(input: { id: string; reopenedBy?: string | null; notes?: string | null }): TaskRecord | { error: string };
 export declare function archiveSwarm(input: { id: string; archivedBy?: string | null; notes?: string | null }): SwarmRecord | { error: string };
+export declare function restoreSwarm(input: { id: string; restoredBy?: string | null; notes?: string | null }): SwarmRecord | { error: string };
+export declare function reopenSwarm(input: { id: string; reopenedBy?: string | null; notes?: string | null }): SwarmRecord | { error: string };
 export declare function getMemory(id: string): MemoryRecord | null;
 export declare function getMemoryView(id: string): MemoryDetailView | null;
 export declare function listTasksView(): TaskListView;

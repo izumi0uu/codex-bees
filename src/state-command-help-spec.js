@@ -366,6 +366,14 @@ export const COMMAND_HELP_OVERRIDES = {
     usage: [commandUsage("task:archive", "--id <task-id> [--by <actor>] [--notes <text>]")],
     options: [TASK_RECORD_ID_OPTION, ACTOR_OPTION, NOTES_OPTION]
   },
+  "task:restore": {
+    usage: [commandUsage("task:restore", "--id <task-id> [--by <actor>] [--notes <text>]")],
+    options: [TASK_RECORD_ID_OPTION, ACTOR_OPTION, NOTES_OPTION]
+  },
+  "task:reopen": {
+    usage: [commandUsage("task:reopen", "--id <task-id> [--by <actor>] [--notes <text>]")],
+    options: [TASK_RECORD_ID_OPTION, ACTOR_OPTION, NOTES_OPTION]
+  },
   "task:release": {
     usage: [commandUsage("task:release", "--id <task-id> [--by <actor>]")],
     options: [TASK_RECORD_ID_OPTION, ACTOR_OPTION]
@@ -432,6 +440,14 @@ export const COMMAND_HELP_OVERRIDES = {
   },
   "swarm:archive": {
     usage: [commandUsage("swarm:archive", "--id <swarm-id> [--by <actor>] [--notes <text>]")],
+    options: [SWARM_ID_OPTION, ACTOR_OPTION, NOTES_OPTION]
+  },
+  "swarm:restore": {
+    usage: [commandUsage("swarm:restore", "--id <swarm-id> [--by <actor>] [--notes <text>]")],
+    options: [SWARM_ID_OPTION, ACTOR_OPTION, NOTES_OPTION]
+  },
+  "swarm:reopen": {
+    usage: [commandUsage("swarm:reopen", "--id <swarm-id> [--by <actor>] [--notes <text>]")],
     options: [SWARM_ID_OPTION, ACTOR_OPTION, NOTES_OPTION]
   },
   "swarm:dispatch-bundle": {

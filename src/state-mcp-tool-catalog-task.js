@@ -396,6 +396,32 @@ export const TASK_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "task_restore",
+    description: "Restore one archived standalone local coordination task.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        restoredBy: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
+    name: "task_reopen",
+    description: "Reopen one done standalone local coordination task.",
+    inputSchema: {
+      type: "object",
+      required: ["id"],
+      properties: {
+        id: { type: "string" },
+        reopenedBy: { type: "string" },
+        notes: { type: "string" }
+      }
+    }
+  },
+  {
     name: "task_claim",
     description: "Claim a queued local coordination task for one active owner.",
     inputSchema: {

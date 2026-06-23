@@ -8,6 +8,12 @@ import {
   archiveSwarmFromSources,
   archiveTaskFromSources
 } from "./state-archive-core.js";
+import {
+  reopenSwarmFromSources,
+  reopenTaskFromSources,
+  restoreSwarmFromSources,
+  restoreTaskFromSources
+} from "./state-restore-core.js";
 import { storeMemoryFromSources } from "./state-memory-core.js";
 import { runtimeRoleCatalog } from "./state-role-catalog.js";
 import { validateSwarmValue, validateTaskValue } from "./state-rules.js";
@@ -141,6 +147,39 @@ export function archiveTaskMutationOperation(input, { archiveTask }) {
   return buildTaskMutationResult(archiveTask(input), "task_archived");
 }
 
+export function restoreTaskOperation(input, { loadState, saveState, normalizeTask }) {
+  return restoreTaskFromSources(input, {
+    loadState,
+    saveState,
+    normalizeTask
+  });
+}
+
+export function restoreTaskMutationOperation(input, { restoreTask }) {
+  return buildTaskMutationResult(restoreTask(input), "task_restored");
+}
+
+export function reopenTaskOperation(
+  input,
+  {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask
+  }
+) {
+  return reopenTaskFromSources(input, {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask
+  });
+}
+
+export function reopenTaskMutationOperation(input, { reopenTask }) {
+  return buildTaskMutationResult(reopenTask(input), "task_reopened");
+}
+
 export function updateSwarmOperation(
   input,
   {
@@ -184,6 +223,52 @@ export function archiveSwarmOperation(
 
 export function archiveSwarmMutationOperation(input, { archiveSwarm }) {
   return buildSwarmMutationResult(archiveSwarm(input), "swarm_archived");
+}
+
+export function restoreSwarmOperation(
+  input,
+  {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  }
+) {
+  return restoreSwarmFromSources(input, {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  });
+}
+
+export function restoreSwarmMutationOperation(input, { restoreSwarm }) {
+  return buildSwarmMutationResult(restoreSwarm(input), "swarm_restored");
+}
+
+export function reopenSwarmOperation(
+  input,
+  {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  }
+) {
+  return reopenSwarmFromSources(input, {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  });
+}
+
+export function reopenSwarmMutationOperation(input, { reopenSwarm }) {
+  return buildSwarmMutationResult(reopenSwarm(input), "swarm_reopened");
 }
 
 export function queueSwarmTasksOperation(
