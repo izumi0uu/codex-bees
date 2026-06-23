@@ -1,3 +1,5 @@
+import { buildSwarmOverviewStatusFields } from "./state-swarm-overview-status-helpers.js";
+
 export function buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout) {
   const closeout = swarmCloseout(overview.swarm.id);
   return {
@@ -6,7 +8,7 @@ export function buildRuntimeCloseoutSwarmEntry(overview, swarmCloseout) {
     objective: overview.swarm.objective,
     owner: overview.swarm.owner,
     counts: overview.counts,
-    derivedStatus: overview.derivedStatus,
+    ...buildSwarmOverviewStatusFields(overview),
     closeout,
     command: closeout?.command ?? null,
     updatedAt: overview.swarm.updatedAt ?? null,

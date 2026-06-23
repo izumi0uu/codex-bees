@@ -1,5 +1,6 @@
 import { annotateTasksWithDependencyState } from "./state-task-core.js";
 import { pickPriorityEntry } from "./state-queue-views.js";
+import { buildSwarmOverviewStatusFields } from "./state-swarm-overview-status-helpers.js";
 import { buildPlanningView, buildSwarmDetailMetadata } from "./state-view-metadata.js";
 import { createCollectionView, createLoadedValueView } from "./state-view-helpers.js";
 
@@ -128,10 +129,11 @@ export function buildSwarmOverviewView(
       lanes: overview.lanes,
       tasks: overview.tasks,
       nextLane: overview.nextLane,
-      derivedStatus: overview.derivedStatus,
-      statusAligned: overview.statusAligned,
-      readyToComplete: overview.readyToComplete,
-      dispatchableCount: overview.dispatchableCount
+      ...buildSwarmOverviewStatusFields(overview, {
+        includeStatusAligned: true,
+        includeReadyToComplete: true,
+        includeDispatchableCount: true
+      })
     }
   });
 }

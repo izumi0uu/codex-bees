@@ -1,5 +1,6 @@
 import { compareLanePurposes } from "./state-queue-views.js";
 import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
+import { buildSwarmOverviewStatusFields } from "./state-swarm-overview-status-helpers.js";
 
 export function runtimeRolePriority(entry) {
   if (entry.counts.pendingReview > 0) {
@@ -41,13 +42,14 @@ export function buildLeaderWorkspaceSwarmEntry(overview, swarmBrief, buildSwarmB
     objective: overview.swarm.objective,
     topology: overview.swarm.topology,
     status: overview.swarm.status,
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
+    ...buildSwarmOverviewStatusFields(overview, {
+      includeStatusAligned: true,
+      includeReadyToComplete: true,
+      includeDispatchableCount: true
+    }),
     owner: overview.swarm.owner,
     laneSource: overview.swarm.laneSource,
     counts: overview.counts,
-    readyToComplete: overview.readyToComplete,
-    dispatchableCount: overview.dispatchableCount,
     orchestration: brief?.orchestration ?? null,
     executionShape: brief?.orchestration?.executionShape ?? overview.swarm.executionShape ?? null,
     waveCount: brief?.orchestration?.waveCount ?? overview.swarm.waveCount ?? null,

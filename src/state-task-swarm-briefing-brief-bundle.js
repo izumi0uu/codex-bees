@@ -1,5 +1,6 @@
 import { compareLanePurposes } from "./state-queue-views.js";
 import { buildRecommendedFieldsFromResult } from "./state-runtime-recommendation-helpers.js";
+import { buildSwarmOverviewStatusFields } from "./state-swarm-overview-status-helpers.js";
 import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
 import { createLoadedValueView } from "./state-view-helpers.js";
 import { buildHistoryView, buildPlanningView } from "./state-view-metadata.js";
@@ -31,7 +32,7 @@ export function buildSwarmBriefView(
     const task = laneSummary.taskId
       ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
       : overview.tasks.find((item) => item.lane === laneSummary.lane) ?? null;
-    const recommended = recommendLaneAction(laneSummary, task, overview.tasks);
+    const laneRecommended = recommendLaneAction(laneSummary, task, overview.tasks);
     const laneOrchestration = findLaneOrchestrationContext(orchestration, laneSummary.lane);
 
     return {
@@ -57,7 +58,7 @@ export function buildSwarmBriefView(
       waveParallelizable: laneOrchestration?.waveParallelizable ?? null,
       waveLaneCount: laneOrchestration?.waveLaneCount ?? null,
       waveOwnerCount: laneOrchestration?.waveOwnerCount ?? null,
-      ...buildRecommendedFieldsFromResult(recommended)
+      ...buildRecommendedFieldsFromResult(laneRecommended)
     };
   });
   const recommended = recommendSwarmAction(overview, lanes);
@@ -68,10 +69,11 @@ export function buildSwarmBriefView(
     counts: overview.counts,
     extra: {
       planning: buildPlanningView(overview.swarm.plannerProvenance),
-      derivedStatus: overview.derivedStatus,
-      statusAligned: overview.statusAligned,
-      readyToComplete: overview.readyToComplete,
-      dispatchableCount: overview.dispatchableCount,
+      ...buildSwarmOverviewStatusFields(overview, {
+        includeStatusAligned: true,
+        includeReadyToComplete: true,
+        includeDispatchableCount: true
+      }),
       history: swarmHistory,
       orchestration,
       owner: describeRole(overview.swarm.owner, catalog),
@@ -169,8 +171,9 @@ export function buildSwarmBundleView(
     counts: overview.counts,
     extra: {
       brief,
-      derivedStatus: overview.derivedStatus,
-      readyToComplete: overview.readyToComplete,
+      ...buildSwarmOverviewStatusFields(overview, {
+        includeReadyToComplete: true
+      }),
       history,
       orchestration,
       nextLane: overview.nextLane,

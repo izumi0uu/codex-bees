@@ -1,5 +1,6 @@
 import { pickPriorityEntry } from "./state-queue-views.js";
 import { buildRecommendedNextFields } from "./state-runtime-recommendation-helpers.js";
+import { buildSwarmOverviewStatusFields } from "./state-swarm-overview-status-helpers.js";
 import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildSwarmCloseoutView(
@@ -27,9 +28,10 @@ export function buildSwarmCloseoutView(
     recommendedReason,
     includeCounts: false,
     extra: {
-      derivedStatus: overview.derivedStatus,
-      statusAligned: overview.statusAligned,
-      readyToComplete: overview.readyToComplete,
+      ...buildSwarmOverviewStatusFields(overview, {
+        includeStatusAligned: true,
+        includeReadyToComplete: true
+      }),
       brief,
       bundle,
       command,
@@ -100,8 +102,9 @@ export function buildSwarmBlockersView(
     recommendedReason,
     includeCounts: false,
     extra: {
-      derivedStatus: overview.derivedStatus,
-      statusAligned: overview.statusAligned,
+      ...buildSwarmOverviewStatusFields(overview, {
+        includeStatusAligned: true
+      }),
       blockedCount: blockedLanes.length,
       blockers: blockedLanes,
       summary: buildSwarmBlockersSummary(overview, blockedLanes)
@@ -167,9 +170,10 @@ export function buildSwarmDispatchBundleView(
         hasTaskBrief: Boolean(laneTaskBrief),
         nextLaneId: dispatchLane?.lane ?? null
       },
-      derivedStatus: overview.derivedStatus,
-      statusAligned: overview.statusAligned,
-      dispatchableCount: overview.dispatchableCount,
+      ...buildSwarmOverviewStatusFields(overview, {
+        includeStatusAligned: true,
+        includeDispatchableCount: true
+      }),
       nextLane: dispatchLane,
       taskBrief: laneTaskBrief,
       command: recommendedCommands[0] ?? null,
