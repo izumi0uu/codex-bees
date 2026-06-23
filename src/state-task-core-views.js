@@ -1,5 +1,5 @@
-import { summarizePlannerProvenance } from "./planner-provenance.js";
 import { summarizeTaskDependencies } from "./state-task-core.js";
+import { buildHistoryView, buildPlanningView, buildTaskDetailMetadata } from "./state-view-metadata.js";
 
 export function deriveTaskReportReason(task) {
   if (task.queueStatus === "ready_for_review") {
@@ -86,7 +86,7 @@ export function buildTaskReportEntries(task) {
   const annotations = (task.annotations ?? []).filter((entry) =>
     ["context", "handoff", "review-note", "evidence", "note"].includes(entry.kind)
   );
-  const history = (task.history ?? []).slice(-10);
+  const history = buildHistoryView(task.history ?? [], { limit: 10 }).entries;
   return {
     annotations,
     history
@@ -133,7 +133,7 @@ export function buildTaskReportView(
       lane: task.lane,
       lanePurpose: task.lanePurpose ?? null
     },
-    planning: summarizePlannerProvenance(task.plannerProvenance),
+    planning: buildPlanningView(task.plannerProvenance),
     closure: {
       reviewState: deriveReviewState(task),
       reviewedBy: task.reviewedBy,
@@ -240,12 +240,7 @@ export function buildTaskDetailView(
   return {
     kind: "task_detail",
     recommendedReason: "task_detail_loaded",
-    metadata: {
-      hasHistory: (task.history ?? []).length > 0,
-      hasAnnotations: (task.annotations ?? []).length > 0,
-      reviewState: deriveReviewState(task),
-      plannerProvenance: summarizePlannerProvenance(task.plannerProvenance)
-    },
+    metadata: buildTaskDetailMetadata(task, deriveReviewState(task)),
     task
   };
 }
@@ -316,7 +311,7 @@ export function buildTaskBriefView(
   const acceptance = task.acceptance ?? [];
   const verification = task.verification ?? [];
   const reviewEvidence = task.reviewEvidence ?? [];
-  const historyEntries = task.history ?? [];
+  const history = buildHistoryView(task.history ?? []);
   const annotationEntries = task.annotations ?? [];
 
   return {
@@ -324,7 +319,7 @@ export function buildTaskBriefView(
     recommendedReason,
     task,
     objective: task.objective ?? task.title,
-    planning: summarizePlannerProvenance(task.plannerProvenance),
+    planning: buildPlanningView(task.plannerProvenance),
     roles: {
       owner: describeRole(task.owner, catalog),
       verifier: describeRole(task.verifier, catalog)
@@ -345,7 +340,7 @@ export function buildTaskBriefView(
       dependencyRefs: dependencySummary.refs.length,
       blockingDependencies: dependencySummary.blockingTaskIds.length,
       reviewEvidenceEntries: reviewEvidence.length,
-      historyEntries: historyEntries.length,
+      historyEntries: history.count,
       annotationEntries: annotationEntries.length
     },
     execution: {
@@ -364,8 +359,8 @@ export function buildTaskBriefView(
       evidence: reviewEvidence
     },
     history: {
-      count: historyEntries.length,
-      entries: historyEntries
+      count: history.count,
+      entries: history.entries
     },
     annotations: {
       count: annotationEntries.length,

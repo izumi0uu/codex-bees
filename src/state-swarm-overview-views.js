@@ -1,6 +1,6 @@
-import { summarizePlannerProvenance } from "./planner-provenance.js";
 import { annotateTasksWithDependencyState } from "./state-task-core.js";
 import { pickPriorityEntry } from "./state-queue-views.js";
+import { buildPlanningView, buildSwarmDetailMetadata } from "./state-view-metadata.js";
 
 export function findSwarmLaneTask(lane, swarmTasks) {
   if (lane.taskId) {
@@ -123,7 +123,7 @@ export function buildSwarmOverviewView(
     kind: "swarm_overview",
     recommendedReason: overview.recommendedReason,
     swarm: normalizedSwarm,
-    planning: summarizePlannerProvenance(normalizedSwarm.plannerProvenance),
+    planning: buildPlanningView(normalizedSwarm.plannerProvenance),
     counts: overview.counts,
     lanes: overview.lanes,
     tasks: overview.tasks,
@@ -172,15 +172,7 @@ export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
   return {
     kind: "swarm_detail",
     recommendedReason: "swarm_detail_loaded",
-    metadata: {
-      derivedStatus: overview?.derivedStatus ?? swarm.status,
-      statusAligned: overview?.statusAligned ?? true,
-      readyToComplete: overview?.readyToComplete ?? false,
-      dispatchableCount: overview?.dispatchableCount ?? 0,
-      hasHistory: history.length > 0,
-      historyEntries: history.length,
-      plannerProvenance: summarizePlannerProvenance(swarm.plannerProvenance)
-    },
+    metadata: buildSwarmDetailMetadata(swarm, overview),
     swarm
   };
 }

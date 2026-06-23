@@ -1,7 +1,7 @@
 import { recommendTaskAction } from "./state-task-core-views.js";
 import { compareLanePurposes, pickPriorityEntry } from "./state-queue-views.js";
-import { summarizePlannerProvenance } from "./planner-provenance.js";
 import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
+import { buildHistoryView, buildPlanningView } from "./state-view-metadata.js";
 
 export function buildSwarmBriefView(
   id,
@@ -25,7 +25,7 @@ export function buildSwarmBriefView(
   const catalog = getRuntimeCatalog();
   const validation = validateSwarmValue(overview.swarm, runtimeRoleCatalog());
   const orchestration = buildSwarmOrchestrationView(overview.swarm, overview.lanes);
-  const swarmHistory = Array.isArray(overview.swarm.history) ? overview.swarm.history : [];
+  const swarmHistory = buildHistoryView(overview.swarm.history ?? [], { limit: 5, newestFirst: true });
   const lanes = overview.lanes.map((laneSummary) => {
     const task = laneSummary.taskId
       ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
@@ -68,16 +68,13 @@ export function buildSwarmBriefView(
     kind: "swarm_execution_brief",
     recommendedReason,
     swarm: overview.swarm,
-    planning: summarizePlannerProvenance(overview.swarm.plannerProvenance),
+    planning: buildPlanningView(overview.swarm.plannerProvenance),
     derivedStatus: overview.derivedStatus,
     statusAligned: overview.statusAligned,
     counts: overview.counts,
     readyToComplete: overview.readyToComplete,
     dispatchableCount: overview.dispatchableCount,
-    history: {
-      count: swarmHistory.length,
-      entries: swarmHistory.slice(-5).reverse()
-    },
+    history: swarmHistory,
     orchestration,
     owner: describeRole(overview.swarm.owner, catalog),
     lanes,
@@ -140,10 +137,7 @@ export function buildSwarmBundleView(
 
   const brief = swarmBrief(id);
   const orchestration = brief?.orchestration ?? buildSwarmOrchestrationView(overview.swarm, overview.lanes);
-  const history = brief?.history ?? {
-    count: Array.isArray(overview.swarm.history) ? overview.swarm.history.length : 0,
-    entries: Array.isArray(overview.swarm.history) ? overview.swarm.history.slice(-5).reverse() : []
-  };
+  const history = brief?.history ?? buildHistoryView(overview.swarm.history ?? [], { limit: 5, newestFirst: true });
   const laneBundles = overview.lanes.map((laneSummary) => {
     const task = laneSummary.taskId
       ? overview.tasks.find((item) => item.id === laneSummary.taskId) ?? null
