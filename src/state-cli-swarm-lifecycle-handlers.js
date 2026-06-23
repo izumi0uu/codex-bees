@@ -14,223 +14,135 @@ import {
   updateSwarmMutation
 } from "./state-runtime.js";
 
-function handleSwarmInit() {
-  const objective = requireOption("--objective");
-  const swarm = initSwarmMutation({
-    objective,
+function requireSwarmId() {
+  return requireOption("--id");
+}
+
+function readSwarmDefinitionOptions() {
+  return {
     topology: readOption("--topology"),
     maxWorkers: readPositiveIntegerOption("--max-workers"),
     owner: readOption("--owner"),
     laneSource: readOption("--lane-source"),
     notes: readOption("--notes"),
     lanes: readJsonOption("--lanes")
+  };
+}
+
+function readSwarmOwnerNotesOptions() {
+  return {
+    owner: readOption("--owner"),
+    notes: readOption("--notes")
+  };
+}
+
+function writeSwarmMutation(label, result, { id, missingLabel = "swarm", wrap = true } = {}) {
+  if (!result) {
+    writeErr(`Unknown ${missingLabel} id: ${id}\n`);
+    exit(1);
+  }
+  if (result.error) {
+    writeErr(`${result.error}\n`);
+    exit(1);
+  }
+  write(JSON.stringify(wrap ? { [label]: result } : result, null, 2) + "\n");
+}
+
+function handleSwarmInit() {
+  const objective = requireOption("--objective");
+  const swarm = initSwarmMutation({
+    objective,
+    ...readSwarmDefinitionOptions()
   });
   write(JSON.stringify({ created: swarm }, null, 2) + "\n");
 }
 
 function handleSwarmArchive() {
-  const id = requireOption("--id");
-  const archived = archiveSwarmMutation({
+  const id = requireSwarmId();
+  writeSwarmMutation("archived", archiveSwarmMutation({
     id,
     archivedBy: readOption("--by"),
     notes: readOption("--notes")
-  });
-  if (!archived) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (archived.error) {
-    writeErr(`${archived.error}\n`);
-    exit(1);
-  }
-  write(JSON.stringify({ archived }, null, 2) + "\n");
+  }), { id });
 }
 
 function handleSwarmRestore() {
-  const id = requireOption("--id");
-  const restored = restoreSwarmMutation({
+  const id = requireSwarmId();
+  writeSwarmMutation("restored", restoreSwarmMutation({
     id,
     restoredBy: readOption("--by"),
     notes: readOption("--notes")
-  });
-  if (!restored) {
-    writeErr(`Unknown archived swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (restored.error) {
-    writeErr(`${restored.error}\n`);
-    exit(1);
-  }
-  write(JSON.stringify({ restored }, null, 2) + "\n");
+  }), { id, missingLabel: "archived swarm" });
 }
 
 function handleSwarmReopen() {
-  const id = requireOption("--id");
-  const reopened = reopenSwarmMutation({
+  const id = requireSwarmId();
+  writeSwarmMutation("reopened", reopenSwarmMutation({
     id,
     reopenedBy: readOption("--by"),
     notes: readOption("--notes")
-  });
-  if (!reopened) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (reopened.error) {
-    writeErr(`${reopened.error}\n`);
-    exit(1);
-  }
-  write(JSON.stringify({ reopened }, null, 2) + "\n");
+  }), { id });
 }
 
 function handleSwarmUpdate() {
-  const id = requireOption("--id");
-  const swarm = updateSwarmMutation({
+  const id = requireSwarmId();
+  writeSwarmMutation("updated", updateSwarmMutation({
     id,
     objective: readOption("--objective"),
-    topology: readOption("--topology"),
-    maxWorkers: readPositiveIntegerOption("--max-workers"),
-    owner: readOption("--owner"),
-    laneSource: readOption("--lane-source"),
-    notes: readOption("--notes"),
-    lanes: readJsonOption("--lanes")
-  });
-
-  if (!swarm) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (swarm.error) {
-    writeErr(`${swarm.error}\n`);
-    exit(1);
-  }
-
-  write(JSON.stringify({ updated: swarm }, null, 2) + "\n");
+    ...readSwarmDefinitionOptions()
+  }), { id });
 }
 
 function handleSwarmDispatch() {
-  const id = requireOption("--id");
+  const id = requireSwarmId();
   const claimedBy = requireOption("--by");
-  const result = dispatchSwarmLane({
+  writeSwarmMutation("dispatched", dispatchSwarmLane({
     id,
     claimedBy,
     owner: readOption("--owner")
-  });
-
-  if (!result) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (result.error) {
-    writeErr(`${result.error}\n`);
-    exit(1);
-  }
-
-  write(JSON.stringify({ dispatched: result }, null, 2) + "\n");
+  }), { id });
 }
 
 function handleSwarmSync() {
-  const id = requireOption("--id");
-  const result = syncSwarmStatus(id);
-  if (!result) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  write(JSON.stringify({ synced: result }, null, 2) + "\n");
+  const id = requireSwarmId();
+  writeSwarmMutation("synced", syncSwarmStatus(id), { id });
 }
 
 function handleSwarmStart() {
-  const id = requireOption("--id");
-  const swarm = activateSwarm({
+  const id = requireSwarmId();
+  writeSwarmMutation("activated", activateSwarm({
     id,
-    owner: readOption("--owner"),
-    notes: readOption("--notes")
-  });
-
-  if (!swarm) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (swarm.error) {
-    writeErr(`${swarm.error}\n`);
-    exit(1);
-  }
-
-  write(JSON.stringify({ activated: swarm }, null, 2) + "\n");
+    ...readSwarmOwnerNotesOptions()
+  }), { id });
 }
 
 function handleSwarmBlock() {
-  const id = requireOption("--id");
-  const swarm = blockSwarm({
+  const id = requireSwarmId();
+  writeSwarmMutation("blocked", blockSwarm({
     id,
-    owner: readOption("--owner"),
-    notes: readOption("--notes")
-  });
-
-  if (!swarm) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (swarm.error) {
-    writeErr(`${swarm.error}\n`);
-    exit(1);
-  }
-
-  write(JSON.stringify({ blocked: swarm }, null, 2) + "\n");
+    ...readSwarmOwnerNotesOptions()
+  }), { id });
 }
 
 function handleSwarmDone() {
-  const id = requireOption("--id");
-  const swarm = completeSwarm({
+  const id = requireSwarmId();
+  writeSwarmMutation("completed", completeSwarm({
     id,
-    owner: readOption("--owner"),
-    notes: readOption("--notes")
-  });
-
-  if (!swarm) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (swarm.error) {
-    writeErr(`${swarm.error}\n`);
-    exit(1);
-  }
-
-  write(JSON.stringify({ completed: swarm }, null, 2) + "\n");
+    ...readSwarmOwnerNotesOptions()
+  }), { id });
 }
 
 function handleSwarmCancel() {
-  const id = requireOption("--id");
-  const swarm = cancelSwarm({
+  const id = requireSwarmId();
+  writeSwarmMutation("cancelled", cancelSwarm({
     id,
-    owner: readOption("--owner"),
-    notes: readOption("--notes")
-  });
-
-  if (!swarm) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (swarm.error) {
-    writeErr(`${swarm.error}\n`);
-    exit(1);
-  }
-
-  write(JSON.stringify({ cancelled: swarm }, null, 2) + "\n");
+    ...readSwarmOwnerNotesOptions()
+  }), { id });
 }
 
 function handleSwarmQueue() {
-  const id = requireOption("--id");
-  const result = queueSwarmTasks({ id });
-  if (!result) {
-    writeErr(`Unknown swarm id: ${id}\n`);
-    exit(1);
-  }
-  if (result.error) {
-    writeErr(`${result.error}\n`);
-    exit(1);
-  }
-
-  write(JSON.stringify(result, null, 2) + "\n");
+  const id = requireSwarmId();
+  writeSwarmMutation(null, queueSwarmTasks({ id }), { id, wrap: false });
 }
 
 export {
