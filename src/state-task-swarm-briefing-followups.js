@@ -1,4 +1,5 @@
 import { pickPriorityEntry } from "./state-queue-views.js";
+import { createLoadedValueView } from "./state-view-helpers.js";
 
 export function buildSwarmCloseoutView(
   id,
@@ -153,27 +154,27 @@ export function buildSwarmDispatchBundleView(
   const laneTaskBrief = dispatchLane?.taskId ? taskBrief(dispatchLane.taskId) : null;
   const recommendedCommands = dispatchLane?.recommendedCommands ?? [];
 
-  return {
-    kind: "swarm_dispatch_bundle",
+  return createLoadedValueView("swarm_dispatch_bundle", "swarm", overview.swarm, {
     recommendedReason,
-    metadata: {
-      hasNextLane: Boolean(dispatchLane),
-      hasTaskBrief: Boolean(laneTaskBrief),
-      nextLaneId: dispatchLane?.lane ?? null
-    },
     counts: {
       dispatchableLanes: overview.dispatchableCount,
       nextLaneCommands: recommendedCommands.filter(Boolean).length
     },
-    swarm: overview.swarm,
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
-    dispatchableCount: overview.dispatchableCount,
-    nextLane: dispatchLane,
-    taskBrief: laneTaskBrief,
-    command: recommendedCommands[0] ?? null,
-    summary: buildSwarmDispatchBundleSummary(overview, dispatchLane)
-  };
+    extra: {
+      metadata: {
+        hasNextLane: Boolean(dispatchLane),
+        hasTaskBrief: Boolean(laneTaskBrief),
+        nextLaneId: dispatchLane?.lane ?? null
+      },
+      derivedStatus: overview.derivedStatus,
+      statusAligned: overview.statusAligned,
+      dispatchableCount: overview.dispatchableCount,
+      nextLane: dispatchLane,
+      taskBrief: laneTaskBrief,
+      command: recommendedCommands[0] ?? null,
+      summary: buildSwarmDispatchBundleSummary(overview, dispatchLane)
+    }
+  });
 }
 
 export function buildSwarmDispatchBundleViewFromSources(

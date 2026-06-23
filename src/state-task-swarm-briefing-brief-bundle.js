@@ -1,5 +1,6 @@
 import { compareLanePurposes } from "./state-queue-views.js";
 import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "./state-swarm-orchestration.js";
+import { createLoadedValueView } from "./state-view-helpers.js";
 import { buildHistoryView, buildPlanningView } from "./state-view-metadata.js";
 
 export function buildSwarmBriefView(
@@ -63,27 +64,27 @@ export function buildSwarmBriefView(
   const recommended = recommendSwarmAction(overview, lanes);
   const recommendedReason = deriveSwarmBriefReason(recommended);
 
-  return {
-    kind: "swarm_execution_brief",
+  return createLoadedValueView("swarm_execution_brief", "swarm", overview.swarm, {
     recommendedReason,
-    swarm: overview.swarm,
-    planning: buildPlanningView(overview.swarm.plannerProvenance),
-    derivedStatus: overview.derivedStatus,
-    statusAligned: overview.statusAligned,
     counts: overview.counts,
-    readyToComplete: overview.readyToComplete,
-    dispatchableCount: overview.dispatchableCount,
-    history: swarmHistory,
-    orchestration,
-    owner: describeRole(overview.swarm.owner, catalog),
-    lanes,
-    nextLane: lanes.find((lane) => lane.lane === overview.nextLane?.lane) ?? null,
-    validation,
-    leaderHandoff: buildSwarmHandoff(overview, recommended, orchestration),
-    recommendedNextActor: recommended.actor,
-    recommendedNextAction: recommended.action,
-    recommendedCommands: recommended.commands
-  };
+    extra: {
+      planning: buildPlanningView(overview.swarm.plannerProvenance),
+      derivedStatus: overview.derivedStatus,
+      statusAligned: overview.statusAligned,
+      readyToComplete: overview.readyToComplete,
+      dispatchableCount: overview.dispatchableCount,
+      history: swarmHistory,
+      orchestration,
+      owner: describeRole(overview.swarm.owner, catalog),
+      lanes,
+      nextLane: lanes.find((lane) => lane.lane === overview.nextLane?.lane) ?? null,
+      validation,
+      leaderHandoff: buildSwarmHandoff(overview, recommended, orchestration),
+      recommendedNextActor: recommended.actor,
+      recommendedNextAction: recommended.action,
+      recommendedCommands: recommended.commands
+    }
+  });
 }
 
 export function buildSwarmBriefViewFromSources(
@@ -166,20 +167,20 @@ export function buildSwarmBundleView(
     .sort((left, right) => compareLanePurposes(left.purpose ?? null, right.purpose ?? null));
   const recommendedReason = deriveSwarmBundleReason({ overview, laneBundles });
 
-  return {
-    kind: "swarm_bundle",
+  return createLoadedValueView("swarm_bundle", "swarm", overview.swarm, {
     recommendedReason,
-    swarm: overview.swarm,
-    brief,
     counts: overview.counts,
-    derivedStatus: overview.derivedStatus,
-    readyToComplete: overview.readyToComplete,
-    history,
-    orchestration,
-    nextLane: overview.nextLane,
-    lanes: laneBundles,
-    summary: buildSwarmBundleSummary(overview, laneBundles)
-  };
+    extra: {
+      brief,
+      derivedStatus: overview.derivedStatus,
+      readyToComplete: overview.readyToComplete,
+      history,
+      orchestration,
+      nextLane: overview.nextLane,
+      lanes: laneBundles,
+      summary: buildSwarmBundleSummary(overview, laneBundles)
+    }
+  });
 }
 
 export function buildSwarmBundleViewFromSources(
