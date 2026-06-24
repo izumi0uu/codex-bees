@@ -1,5 +1,8 @@
 import {
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackReviewEntries,
+  buildRuntimePackReviewMetadata,
+  buildRuntimePackReviewOverview,
+  buildRuntimePackReviewSurfaces,
   buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
@@ -24,11 +27,7 @@ export function buildRuntimeReviewPackView(
     : null;
   const recommendedSurface = deriveRuntimeReviewPackSurface({ review, roles, verifierPack });
   const recommendedReason = deriveRuntimeReviewPackReason({ review, roles, verifierPack });
-  const nextEntries = {
-    review: review?.next ?? null,
-    role: roles?.next ?? null,
-    verifier: verifierPack?.next ?? null
-  };
+  const nextEntries = buildRuntimePackReviewEntries(review, roles, verifierPack);
 
   return {
     kind: 'runtime_review_pack',
@@ -36,23 +35,11 @@ export function buildRuntimeReviewPackView(
     workerId: input.workerId ?? null,
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasReview: review?.next,
-      hasRole: roles?.next,
-      hasVerifier: verifierPack?.next
-    }),
+    metadata: buildRuntimePackReviewMetadata(review, roles, verifierPack),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      review: review?.counts ?? null,
-      roles: roles?.counts ?? null,
-      verifier: verifierPack?.overview ?? null
-    },
+    overview: buildRuntimePackReviewOverview(review, roles, verifierPack),
     next: nextEntries,
-    surfaces: {
-      review,
-      roles,
-      verifierPack
-    },
+    surfaces: buildRuntimePackReviewSurfaces(review, roles, verifierPack),
     summary: buildRuntimeReviewPackSummary(recommendedSurface, review, verifierPack, roles)
   };
 }

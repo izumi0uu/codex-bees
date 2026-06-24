@@ -1,5 +1,8 @@
 import {
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackRecoveryEntries,
+  buildRuntimePackRecoveryMetadata,
+  buildRuntimePackRecoveryOverview,
+  buildRuntimePackRecoverySurfaces,
   buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
@@ -20,33 +23,18 @@ export function buildRuntimeRecoveryPackView(
   const focus = runtimeFocus();
   const recommendedSurface = deriveRuntimeRecoveryPackSurface({ recovery, handoffs, focus });
   const recommendedReason = deriveRuntimeRecoveryPackReason({ recovery, handoffs, focus });
-  const nextEntries = {
-    recovery: recovery?.next ?? null,
-    handoff: handoffs?.next ?? null,
-    focus: focus?.focus ?? null
-  };
+  const nextEntries = buildRuntimePackRecoveryEntries(recovery, handoffs, focus);
 
   return {
     kind: 'runtime_recovery_pack',
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasRecovery: recovery?.next,
-      hasHandoff: handoffs?.next,
-      hasFocus: focus?.focus
-    }),
+    metadata: buildRuntimePackRecoveryMetadata(recovery, handoffs, focus),
     counts: buildRuntimePackCounts(nextEntries),
     focus,
-    overview: {
-      recovery: recovery?.counts ?? null,
-      handoffs: handoffs?.counts ?? null
-    },
+    overview: buildRuntimePackRecoveryOverview(recovery, handoffs),
     next: nextEntries,
-    surfaces: {
-      recovery,
-      handoffs,
-      focus
-    },
+    surfaces: buildRuntimePackRecoverySurfaces(recovery, handoffs, focus),
     summary: buildRuntimeRecoveryPackSummary(recommendedSurface, recovery, focus)
   };
 }

@@ -1,5 +1,8 @@
 import {
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackOperatorEntries,
+  buildRuntimePackOperatorMetadata,
+  buildRuntimePackOperatorOverview,
+  buildRuntimePackOperatorSurfaces,
   buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
@@ -24,39 +27,18 @@ export function buildRuntimeOperatorPackView(
   const closeout = runtimeCloseout();
   const recommendedSurface = deriveRuntimeOperatorPackSurface({ focus, handoffs, closeout, dashboard, alerts });
   const recommendedReason = deriveRuntimeOperatorPackReason({ focus, handoffs, closeout, dashboard, alerts });
-  const nextEntries = {
-    focus: focus?.focus ?? null,
-    handoff: handoffs?.next ?? null,
-    closeout: closeout?.next ?? null,
-    alert: alerts?.alerts?.[0] ?? null
-  };
+  const nextEntries = buildRuntimePackOperatorEntries(focus, handoffs, closeout, alerts);
 
   return {
     kind: 'runtime_operator_pack',
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasFocus: focus?.focus,
-      hasHandoff: handoffs?.next,
-      hasCloseout: closeout?.next,
-      hasAlert: alerts?.alerts?.[0]
-    }),
+    metadata: buildRuntimePackOperatorMetadata(focus, handoffs, closeout, alerts),
     counts: buildRuntimePackCounts(nextEntries),
     focus,
-    overview: {
-      dashboard: dashboard?.counts ?? null,
-      alerts: alerts?.counts ?? null,
-      handoffs: handoffs?.counts ?? null,
-      closeout: closeout?.counts ?? null
-    },
+    overview: buildRuntimePackOperatorOverview(dashboard, alerts, handoffs, closeout),
     next: nextEntries,
-    surfaces: {
-      dashboard,
-      focus,
-      alerts,
-      handoffs,
-      closeout
-    },
+    surfaces: buildRuntimePackOperatorSurfaces(dashboard, focus, alerts, handoffs, closeout),
     summary: buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts)
   };
 }

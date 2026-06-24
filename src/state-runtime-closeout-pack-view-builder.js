@@ -1,5 +1,8 @@
 import {
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackCloseoutEntries,
+  buildRuntimePackCloseoutMetadata,
+  buildRuntimePackCloseoutOverview,
+  buildRuntimePackCloseoutSurfaces,
   buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
@@ -21,33 +24,17 @@ export function buildRuntimeCloseoutPackView(
   const leaderPack = runtimeLeaderPack({ ...input, detail: 'full' });
   const recommendedSurface = deriveRuntimeCloseoutPackSurface({ closeout, summaryPack, leaderPack });
   const recommendedReason = deriveRuntimeCloseoutPackReason({ closeout, summaryPack, leaderPack });
-  const nextEntries = {
-    closeout: closeout?.next ?? null,
-    summary: summaryPack?.next?.closeout ?? null,
-    leader: leaderPack?.next?.closeout ?? null
-  };
+  const nextEntries = buildRuntimePackCloseoutEntries(closeout, summaryPack, leaderPack);
 
   return {
     kind: 'runtime_closeout_pack',
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasCloseout: closeout?.next,
-      hasSummaryCloseout: summaryPack?.next?.closeout,
-      hasLeaderCloseout: leaderPack?.next?.closeout
-    }),
+    metadata: buildRuntimePackCloseoutMetadata(closeout, summaryPack, leaderPack),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      closeout: closeout?.counts ?? null,
-      summary: summaryPack?.overview?.closeout ?? null,
-      leader: leaderPack?.overview?.closeout ?? null
-    },
+    overview: buildRuntimePackCloseoutOverview(closeout, summaryPack, leaderPack),
     next: nextEntries,
-    surfaces: {
-      closeout,
-      summaryPack,
-      leaderPack
-    },
+    surfaces: buildRuntimePackCloseoutSurfaces(closeout, summaryPack, leaderPack),
     summary: buildRuntimeCloseoutPackSummary(recommendedSurface, closeout, summaryPack)
   };
 }
