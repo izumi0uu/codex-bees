@@ -57,6 +57,7 @@ import {
   validateTaskValue
 } from "./state-rules.js";
 import { runtimeRoleCatalog } from "./state-role-catalog.js";
+import { createStateAuthoritativeFacade } from "./state-authoritative-facade.js";
 import { createStatePublicApi } from "./state-public-entrypoints.js";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
@@ -142,7 +143,7 @@ function transitionSwarm(input) {
   });
 }
 
-const statePublicApi = createStatePublicApi({
+const authoritativeShared = {
   ensureStateFile,
   loadState,
   saveState,
@@ -158,6 +159,13 @@ const statePublicApi = createStatePublicApi({
   syncSwarmInLoadedState,
   transitionTask,
   transitionSwarm
+};
+
+const stateAuthoritativeFacade = createStateAuthoritativeFacade(authoritativeShared);
+
+const statePublicApi = createStatePublicApi({
+  ...authoritativeShared,
+  stateAuthoritativeFacade
 });
 
-export { runtimeRoleCatalog, statePublicApi };
+export { runtimeRoleCatalog, stateAuthoritativeFacade, statePublicApi };

@@ -1,4 +1,4 @@
-import { statePublicApi } from "./state-runtime-core.js";
+import { stateAuthoritativeFacade } from "./state-runtime-core.js";
 
 const {
   claimTask,
@@ -19,7 +19,7 @@ const {
   blockSwarm,
   completeSwarm,
   cancelSwarm,
-} = statePublicApi;
+} = stateAuthoritativeFacade;
 
 export {
   claimTask,

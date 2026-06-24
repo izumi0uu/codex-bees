@@ -1,4 +1,4 @@
-import { statePublicApi } from "./state-runtime-core.js";
+import { stateAuthoritativeFacade } from "./state-runtime-core.js";
 
 const {
   annotateTask,
@@ -28,7 +28,7 @@ const {
   reopenSwarmMutation,
   queueSwarmTasks,
   dispatchSwarmLane,
-} = statePublicApi;
+} = stateAuthoritativeFacade;
 
 export {
   annotateTask,
