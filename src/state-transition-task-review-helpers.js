@@ -1,0 +1,46 @@
+export function isVerifierReturnTransition(currentQueueStatus, nextQueueStatus) {
+  return currentQueueStatus === "ready_for_review" && ["claimed", "blocked", "released"].includes(nextQueueStatus);
+}
+
+export function deriveTaskTransitionContext(current, input) {
+  const nextQueueStatus = input.nextQueueStatus;
+  const isVerifierApproval = nextQueueStatus === "done";
+  const isVerifierReturn = isVerifierReturnTransition(current.queueStatus, nextQueueStatus);
+  const verifierActor = input.reviewedBy ?? null;
+
+  return {
+    nextQueueStatus,
+    isVerifierApproval,
+    isVerifierReturn,
+    verifierActor
+  };
+}
+
+export function buildTaskReviewPatch(input, nextQueueStatus, isVerifierApproval, isVerifierReturn, verifierActor) {
+  const clearReview =
+    nextQueueStatus === "ready_for_review"
+      ? {
+          reviewedBy: null,
+          reviewedAt: null,
+          reviewOutcome: null,
+          reviewNotes: null,
+          reviewEvidence: null
+        }
+      : {};
+
+  const reviewerDecision =
+    isVerifierApproval || isVerifierReturn
+      ? {
+          reviewedBy: verifierActor,
+          reviewedAt: new Date().toISOString(),
+          reviewOutcome: isVerifierApproval ? "approved" : "changes_requested",
+          reviewNotes: input.notes ?? null,
+          reviewEvidence: input.reviewEvidence ?? null
+        }
+      : {};
+
+  return {
+    ...clearReview,
+    ...reviewerDecision
+  };
+}
