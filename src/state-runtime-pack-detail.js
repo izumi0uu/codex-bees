@@ -159,3 +159,12 @@ export function buildRuntimePackWorkerFlowSurfaces(session, handoff, closeout, n
     next
   };
 }
+
+export function buildRuntimePackWorkerFlowMetadata(nextEntries = {}) {
+  return buildRuntimePackPresenceMetadata({
+    hasFocus: nextEntries.focus,
+    hasCandidate: nextEntries.candidate,
+    hasHandoff: nextEntries.handoff,
+    hasCloseout: nextEntries.closeout
+  });
+}

@@ -1,7 +1,7 @@
 import {
   buildRuntimePackFallbackPurposeGuidance,
-  buildRuntimePackPresenceMetadata,
   buildRuntimePackWorkerFlowEntries,
+  buildRuntimePackWorkerFlowMetadata,
   buildRuntimePackWorkerFlowSurfaces,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
@@ -60,12 +60,7 @@ export function buildRuntimeOwnerPackView(
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasFocus: nextEntries.focus,
-      hasCandidate: nextEntries.candidate,
-      hasHandoff: nextEntries.handoff,
-      hasCloseout: nextEntries.closeout
-    }),
+    metadata: buildRuntimePackWorkerFlowMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
     overview: buildRuntimePackSessionOverview(session),
     next: nextEntries,
