@@ -1,4 +1,5 @@
 import {
+  RUNTIME_PACK_DETAILS,
   attachRuntimePackSurfaces,
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackCliExpansionEntry,
@@ -64,7 +65,7 @@ export function buildRuntimeExecutionPackView(
   const pack = {
     kind: "runtime_execution_pack",
     detailLevel,
-    availableDetails: ["compact", "full"],
+    availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
     purposeGuidance,

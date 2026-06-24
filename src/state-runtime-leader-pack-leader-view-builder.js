@@ -1,4 +1,5 @@
 import {
+  RUNTIME_PACK_DETAILS,
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
@@ -58,7 +59,7 @@ export function buildRuntimeLeaderPackView(
   const pack = {
     kind: 'runtime_leader_pack',
     detailLevel,
-    availableDetails: ['compact', 'full'],
+    availableDetails: RUNTIME_PACK_DETAILS,
     filters: workspace?.filters ?? {
       status: input.status,
       topology: input.topology,

@@ -1,4 +1,5 @@
 import {
+  RUNTIME_PACK_DETAILS,
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
@@ -47,7 +48,7 @@ export function buildRuntimeControlPackView(
   const pack = {
     kind: 'runtime_control_pack',
     detailLevel,
-    availableDetails: ['compact', 'full'],
+    availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
     metadata: buildRuntimePackPresenceMetadata({

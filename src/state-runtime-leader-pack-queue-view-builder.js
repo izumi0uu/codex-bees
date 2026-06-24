@@ -1,4 +1,5 @@
 import {
+  RUNTIME_PACK_DETAILS,
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
@@ -49,7 +50,7 @@ export function buildRuntimeQueuePackView(
   const pack = {
     kind: 'runtime_queue_pack',
     detailLevel,
-    availableDetails: ['compact', 'full'],
+    availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
     metadata: buildRuntimePackPresenceMetadata({

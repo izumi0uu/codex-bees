@@ -1,6 +1,8 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 
-const VALID_RUNTIME_PACK_DETAILS = new Set(["compact", "full"]);
+export const RUNTIME_PACK_DETAILS = Object.freeze(["compact", "full"]);
+
+const VALID_RUNTIME_PACK_DETAILS = new Set(RUNTIME_PACK_DETAILS);
 
 function appendCommandOption(parts, flag, value) {
   if (value === undefined || value === null || value === "") {
