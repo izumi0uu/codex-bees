@@ -1,6 +1,5 @@
 import {
   buildRuntimeAlertsSummary,
-  buildRuntimeAlertsView,
   buildRuntimeAlertsViewFromSources,
   deriveRuntimeAlertsReason
 } from "./state-dashboard-views.js";
@@ -14,11 +13,7 @@ export function runtimeAlertsFromSources(sources = {}) {
     },
     {
       deriveRuntimeAlertsReason,
-      buildRuntimeAlertsSummary,
-      buildRuntimeAlertsView
-    },
-    {
-      buildRuntimeAlertsView
+      buildRuntimeAlertsSummary
     }
   );
 }

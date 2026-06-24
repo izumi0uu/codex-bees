@@ -1,6 +1,5 @@
 import {
   buildRuntimeReviewSummary,
-  buildRuntimeReviewView,
   buildRuntimeReviewViewFromSources,
   deriveRuntimeReviewReason
 } from './state-dashboard-views.js';
@@ -19,11 +18,7 @@ export function runtimeReviewFromSources(sources = {}) {
     },
     {
       deriveRuntimeReviewReason,
-      buildRuntimeReviewSummary,
-      buildRuntimeReviewView
-    },
-    {
-      buildRuntimeReviewView
+      buildRuntimeReviewSummary
     }
   );
 }

@@ -42,7 +42,6 @@ import {
   listTasksFromSources
 } from "./state-task-core.js";
 import {
-  buildTaskListView,
   buildTaskListViewFromSources
 } from "./state-task-views.js";
 
@@ -51,9 +50,7 @@ export function listTasksSurface(sources = {}) {
 }
 
 export function listTasksViewSurface(sources = {}) {
-  return buildTaskListViewFromSources(sources, {
-    buildTaskListView
-  });
+  return buildTaskListViewFromSources(sources);
 }
 
 export function listMemoriesSurface(filters = {}, sources = {}) {

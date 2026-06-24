@@ -2,15 +2,11 @@ import { getRuntimeCatalog } from "./catalog.js";
 import {
   assignmentFollowupCommand,
   assignmentPickupOutcome,
-  buildPreviewTaskAssignmentView,
   buildPreviewTaskAssignmentViewFromSources,
-  buildPreviewTaskPickupView,
   buildPreviewTaskPickupViewFromSources,
   buildTaskAssignmentPickupView,
   buildTaskAssignmentPickupViewFromSources,
-  buildTaskInboxView,
   buildTaskInboxViewFromSources,
-  buildTaskNextView,
   buildTaskNextViewFromSources,
   buildTaskPickupView,
   buildTaskPickupViewFromSources,
@@ -66,8 +62,7 @@ export function taskInboxFromSources(input = {}, sources = {}) {
       describeRole
     },
     {
-      deriveTaskInboxReason,
-      buildTaskInboxView
+      deriveTaskInboxReason
     }
   );
 }
@@ -83,8 +78,7 @@ export function taskNextFromSources(input = {}, sources = {}) {
       summarizeInboxTask
     },
     {
-      deriveTaskNextReason,
-      buildTaskNextView
+      deriveTaskNextReason
     }
   );
 }
@@ -137,8 +131,7 @@ export function previewTaskAssignmentFromSources(input = {}, sources = {}) {
       assignmentFollowupCommand
     },
     {
-      deriveTaskAssignmentPreviewReason,
-      buildPreviewTaskAssignmentView
+      deriveTaskAssignmentPreviewReason
     }
   );
 }
@@ -154,8 +147,7 @@ export function previewTaskPickupFromSources(input = {}, sources = {}) {
       pickupFollowupCommand
     },
     {
-      deriveTaskPickupPreviewReason,
-      buildPreviewTaskPickupView
+      deriveTaskPickupPreviewReason
     }
   );
 }

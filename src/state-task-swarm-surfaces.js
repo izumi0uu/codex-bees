@@ -28,14 +28,10 @@ import {
   buildSwarmDispatchBundleView,
   buildSwarmDispatchBundleViewFromSources,
   buildSwarmHandoff,
-  buildTaskBriefView,
   buildTaskBriefViewFromSources,
-  buildTaskDetailView,
   buildTaskDetailViewFromSources,
-  buildTaskHistoryView,
   buildTaskHistoryViewFromSources,
   buildTaskReportEntries,
-  buildTaskReportView,
   buildTaskReportViewFromSources,
   deriveSwarmCloseoutCommand,
   deriveTaskBriefReason,
@@ -50,8 +46,6 @@ export function getTaskViewFromSources(id, sources = {}) {
   return buildTaskDetailViewFromSources(id, {
     ...sources,
     deriveReviewState
-  }, {
-    buildTaskDetailView
   });
 }
 
@@ -59,8 +53,6 @@ export function taskHistoryFromSources(id, sources = {}) {
   return buildTaskHistoryViewFromSources(id, {
     ...sources,
     deriveTaskHistoryReason
-  }, {
-    buildTaskHistoryView
   });
 }
 
@@ -71,8 +63,6 @@ export function taskReportFromSources(id, sources = {}) {
     deriveTaskReportReason,
     deriveReviewState,
     taskReportNextGate
-  }, {
-    buildTaskReportView
   });
 }
 
@@ -95,8 +85,6 @@ export function taskBriefFromSources(id, sources = {}) {
     describeRole: describeRoleWithContract,
     deriveReviewState,
     dependencyTasks: listTasks()
-  }, {
-    buildTaskBriefView
   });
 }
 

@@ -1,6 +1,5 @@
 import {
   buildRuntimeDispatchSummary,
-  buildRuntimeDispatchView,
   buildRuntimeDispatchViewFromSources,
   deriveRuntimeDispatchReason
 } from "./state-dashboard-views.js";
@@ -12,11 +11,7 @@ export function runtimeDispatchFromSources(sources = {}) {
     },
     {
       deriveRuntimeDispatchReason,
-      buildRuntimeDispatchSummary,
-      buildRuntimeDispatchView
-    },
-    {
-      buildRuntimeDispatchView
+      buildRuntimeDispatchSummary
     }
   );
 }

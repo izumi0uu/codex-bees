@@ -1,7 +1,6 @@
 import { getRuntimeCatalog } from "./catalog.js";
 import {
   buildRuntimeRolesSummary,
-  buildRuntimeRolesView,
   buildRuntimeRolesViewFromSources,
   deriveRuntimeRolesReason
 } from "./state-dashboard-views.js";
@@ -23,8 +22,7 @@ export function runtimeRolesFromSources(input = {}, sources = {}) {
     },
     {
       deriveRuntimeRolesReason,
-      buildRuntimeRolesSummary,
-      buildRuntimeRolesView
+      buildRuntimeRolesSummary
     }
   );
 }

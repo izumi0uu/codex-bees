@@ -1,6 +1,5 @@
 import {
   buildRuntimeDashboardSummary,
-  buildRuntimeDashboardView,
   buildRuntimeDashboardViewFromSources,
   deriveRuntimeDashboardReason
 } from "./state-dashboard-views.js";
@@ -16,11 +15,7 @@ export function runtimeDashboardFromSources(sources = {}) {
     },
     {
       deriveRuntimeDashboardReason,
-      buildRuntimeDashboardSummary,
-      buildRuntimeDashboardView
-    },
-    {
-      buildRuntimeDashboardView
+      buildRuntimeDashboardSummary
     }
   );
 }
