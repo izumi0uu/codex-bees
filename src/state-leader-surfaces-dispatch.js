@@ -14,14 +14,12 @@ import {
 
 export function leaderAssignmentDispatchFromSources(
   input = {},
-  {
-    leaderAssignments
-  }
+  sources = {}
 ) {
   return buildLeaderAssignmentDispatchView(
     input,
     {
-      leaderAssignments,
+      ...sources,
       describeRole
     },
     {
@@ -32,17 +30,11 @@ export function leaderAssignmentDispatchFromSources(
 
 export function leaderAssignmentDispatchPackFromSources(
   input = {},
-  {
-    leaderAssignments,
-    leaderAssignmentDispatch
-  }
+  sources = {}
 ) {
   return buildLeaderAssignmentDispatchPackView(
     input,
-    {
-      leaderAssignments,
-      leaderAssignmentDispatch
-    },
+    sources,
     {
       deriveLeaderAssignmentDispatchPackReason
     }
@@ -51,15 +43,11 @@ export function leaderAssignmentDispatchPackFromSources(
 
 export function leaderAssignmentDispatchBundleFromSources(
   input = {},
-  {
-    leaderAssignmentDispatchPack
-  }
+  sources = {}
 ) {
   return buildLeaderAssignmentDispatchBundleView(
     input,
-    {
-      leaderAssignmentDispatchPack
-    },
+    sources,
     {
       deriveLeaderAssignmentDispatchBundleReason
     }
@@ -68,15 +56,11 @@ export function leaderAssignmentDispatchBundleFromSources(
 
 export function leaderAssignmentLaunchPlanFromSources(
   input = {},
-  {
-    leaderAssignmentDispatchBundle
-  }
+  sources = {}
 ) {
   return buildLeaderAssignmentLaunchPlanView(
     input,
-    {
-      leaderAssignmentDispatchBundle
-    },
+    sources,
     {
       deriveLeaderAssignmentLaunchPlanReason
     }

@@ -4,24 +4,14 @@ import {
   leaderWorkspaceFromSources
 } from "./state-leader-surfaces.js";
 
-export function leaderQueueSurface(input = {}, { leaderWorkspace }) {
-  return leaderQueueFromSources(input, {
-    leaderWorkspace
-  });
+export function leaderQueueSurface(input = {}, sources = {}) {
+  return leaderQueueFromSources(input, sources);
 }
 
-export function leaderAssignmentsSurface(input = {}, { leaderWorkspace, swarmBrief, taskBrief }) {
-  return leaderAssignmentsFromSources(input, {
-    leaderWorkspace,
-    swarmBrief,
-    taskBrief
-  });
+export function leaderAssignmentsSurface(input = {}, sources = {}) {
+  return leaderAssignmentsFromSources(input, sources);
 }
 
-export function leaderWorkspaceSurface(input = {}, { listSwarmOverviews, swarmBrief, swarmBundle }) {
-  return leaderWorkspaceFromSources(input, {
-    listSwarmOverviews,
-    swarmBrief,
-    swarmBundle
-  });
+export function leaderWorkspaceSurface(input = {}, sources = {}) {
+  return leaderWorkspaceFromSources(input, sources);
 }

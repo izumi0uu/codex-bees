@@ -5,33 +5,18 @@ import {
   leaderAssignmentLaunchPlanFromSources
 } from "./state-leader-surfaces.js";
 
-export function leaderAssignmentDispatchSurface(input = {}, { leaderAssignments }) {
-  return leaderAssignmentDispatchFromSources(input, {
-    leaderAssignments
-  });
+export function leaderAssignmentDispatchSurface(input = {}, sources = {}) {
+  return leaderAssignmentDispatchFromSources(input, sources);
 }
 
-export function leaderAssignmentDispatchPackSurface(
-  input = {},
-  {
-    leaderAssignments,
-    leaderAssignmentDispatch
-  }
-) {
-  return leaderAssignmentDispatchPackFromSources(input, {
-    leaderAssignments,
-    leaderAssignmentDispatch
-  });
+export function leaderAssignmentDispatchPackSurface(input = {}, sources = {}) {
+  return leaderAssignmentDispatchPackFromSources(input, sources);
 }
 
-export function leaderAssignmentDispatchBundleSurface(input = {}, { leaderAssignmentDispatchPack }) {
-  return leaderAssignmentDispatchBundleFromSources(input, {
-    leaderAssignmentDispatchPack
-  });
+export function leaderAssignmentDispatchBundleSurface(input = {}, sources = {}) {
+  return leaderAssignmentDispatchBundleFromSources(input, sources);
 }
 
-export function leaderAssignmentLaunchPlanSurface(input = {}, { leaderAssignmentDispatchBundle }) {
-  return leaderAssignmentLaunchPlanFromSources(input, {
-    leaderAssignmentDispatchBundle
-  });
+export function leaderAssignmentLaunchPlanSurface(input = {}, sources = {}) {
+  return leaderAssignmentLaunchPlanFromSources(input, sources);
 }

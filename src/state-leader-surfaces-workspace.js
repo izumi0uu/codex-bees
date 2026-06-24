@@ -18,19 +18,13 @@ import {
 
 export function leaderWorkspaceFromSources(
   input = {},
-  {
-    listSwarmOverviews,
-    swarmBrief,
-    swarmBundle
-  }
+  sources = {}
 ) {
   return buildLeaderWorkspaceView(
     input,
     {
-      listSwarmOverviews,
+      ...sources,
       buildLeaderWorkspaceSwarmEntry,
-      swarmBrief,
-      swarmBundle,
       buildSwarmBundleSummary,
       compareLeaderWorkspaceEntries
     },
@@ -43,15 +37,11 @@ export function leaderWorkspaceFromSources(
 
 export function leaderQueueFromSources(
   input = {},
-  {
-    leaderWorkspace
-  }
+  sources = {}
 ) {
   return buildLeaderQueueView(
     input,
-    {
-      leaderWorkspace
-    },
+    sources,
     {
       deriveLeaderQueueReason,
       buildLeaderQueueSummary
@@ -61,19 +51,11 @@ export function leaderQueueFromSources(
 
 export function leaderAssignmentsFromSources(
   input = {},
-  {
-    leaderWorkspace,
-    swarmBrief,
-    taskBrief
-  }
+  sources = {}
 ) {
   return buildLeaderAssignmentsView(
     input,
-    {
-      leaderWorkspace,
-      swarmBrief,
-      taskBrief
-    },
+    sources,
     {
       deriveLeaderAssignmentsReason
     }
