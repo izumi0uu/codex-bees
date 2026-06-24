@@ -1,7 +1,9 @@
 import {
   buildRuntimePackCommand,
+  buildRuntimePackExpansion,
   buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
+  attachRuntimePackSurfaces,
   countRuntimePackEntries,
   normalizeRuntimePackDetail
 } from './state-runtime-pack-detail.js';
@@ -87,23 +89,19 @@ export function buildRuntimeSummaryPackView(
       assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
     },
     next: nextEntries,
-    expansion: detailLevel === 'compact' ? expansion : null,
+    expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeSummaryPackSummary(recommendedSurface, focus)
   };
 
-  if (detailLevel === 'full') {
-    pack.surfaces = {
-      dashboard,
-      alerts,
-      handoffs,
-      recovery,
-      closeout,
-      assignmentDispatchBundle,
-      assignmentLaunchPlan
-    };
-  }
-
-  return pack;
+  return attachRuntimePackSurfaces(pack, detailLevel, {
+    dashboard,
+    alerts,
+    handoffs,
+    recovery,
+    closeout,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan
+  });
 }
 
 export function buildRuntimeSummaryPackViewFromSources(

@@ -1,7 +1,9 @@
 import {
   buildRuntimePackCommand,
+  buildRuntimePackExpansion,
   buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
+  attachRuntimePackSurfaces,
   countRuntimePackEntries,
   normalizeRuntimePackDetail
 } from './state-runtime-pack-detail.js';
@@ -83,22 +85,18 @@ export function buildRuntimeDispatchPackView(
       handoffs: handoffs?.counts ?? null
     },
     next: nextEntries,
-    expansion: detailLevel === 'compact' ? expansion : null,
+    expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeDispatchPackSummary(recommendedSurface, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, handoffs, roles)
   };
 
-  if (detailLevel === 'full') {
-    pack.surfaces = {
-      dispatch,
-      assignmentDispatchPack,
-      assignmentDispatchBundle,
-      assignmentLaunchPlan,
-      roles,
-      handoffs
-    };
-  }
-
-  return pack;
+  return attachRuntimePackSurfaces(pack, detailLevel, {
+    dispatch,
+    assignmentDispatchPack,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan,
+    roles,
+    handoffs
+  });
 }
 
 export function buildRuntimeDispatchPackViewFromSources(

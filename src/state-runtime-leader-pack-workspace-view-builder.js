@@ -1,7 +1,9 @@
 import {
   buildRuntimePackCommand,
+  buildRuntimePackExpansion,
   buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
+  attachRuntimePackSurfaces,
   countRuntimePackEntries,
   normalizeRuntimePackDetail
 } from './state-runtime-pack-detail.js';
@@ -81,22 +83,18 @@ export function buildRuntimeWorkspacePackView(
       recovery: recovery?.counts ?? null
     },
     next: nextEntries,
-    expansion: detailLevel === 'compact' ? expansion : null,
+    expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery)
   };
 
-  if (detailLevel === 'full') {
-    pack.surfaces = {
-      dashboard,
-      dispatch,
-      assignmentDispatchBundle,
-      assignmentLaunchPlan,
-      review,
-      recovery
-    };
-  }
-
-  return pack;
+  return attachRuntimePackSurfaces(pack, detailLevel, {
+    dashboard,
+    dispatch,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan,
+    review,
+    recovery
+  });
 }
 
 export function buildRuntimeWorkspacePackViewFromSources(

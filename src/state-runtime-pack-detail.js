@@ -52,6 +52,18 @@ export function buildRuntimePackExpansionEntry(surface, command) {
   };
 }
 
+export function buildRuntimePackExpansion(detailLevel, expansion) {
+  return detailLevel === "compact" ? expansion : null;
+}
+
+export function attachRuntimePackSurfaces(pack, detailLevel, surfaces) {
+  if (detailLevel === "full") {
+    pack.surfaces = surfaces;
+  }
+
+  return pack;
+}
+
 export function buildRuntimePackPresenceMetadata(entries = {}) {
   return Object.fromEntries(
     Object.entries(entries).map(([key, value]) => [key, Boolean(value)])

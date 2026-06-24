@@ -1,7 +1,8 @@
-import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import {
+  attachRuntimePackSurfaces,
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackCommand,
+  buildRuntimePackExpansion,
   buildRuntimePackExpansionEntry,
   buildRuntimePackFocusOverview,
   buildRuntimePackPresenceMetadata,
@@ -93,22 +94,18 @@ export function buildRuntimeExecutionPackView(
       queue: queuePack?.overview?.queue ?? null
     },
     next: nextEntries,
-    expansion: detailLevel === "compact" ? expansion : null,
+    expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack)
   };
 
-  if (detailLevel === "full") {
-    pack.surfaces = {
-      focus,
-      dispatch,
-      assignmentDispatchBundle,
-      assignmentLaunchPlan,
-      roles,
-      queuePack
-    };
-  }
-
-  return pack;
+  return attachRuntimePackSurfaces(pack, detailLevel, {
+    focus,
+    dispatch,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan,
+    roles,
+    queuePack
+  });
 }
 
 export function buildRuntimeExecutionPackViewFromSources(

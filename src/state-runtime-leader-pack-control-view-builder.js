@@ -1,7 +1,9 @@
 import {
   buildRuntimePackCommand,
+  buildRuntimePackExpansion,
   buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
+  attachRuntimePackSurfaces,
   countRuntimePackEntries,
   normalizeRuntimePackDetail
 } from './state-runtime-pack-detail.js';
@@ -64,20 +66,18 @@ export function buildRuntimeControlPackView(
       leader: leaderPack?.overview ?? null
     },
     next: nextEntries,
-    expansion: detailLevel === 'compact' ? expansion : null,
+    expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack)
   };
 
-  if (detailLevel === 'full') {
-    pack.surfaces = {
+  return stripRoleContractsDeep(
+    attachRuntimePackSurfaces(pack, detailLevel, {
       summaryPack,
       workspacePack,
       operatorPack,
       leaderPack
-    };
-  }
-
-  return stripRoleContractsDeep(pack);
+    })
+  );
 }
 
 export function buildRuntimeControlPackViewFromSources(

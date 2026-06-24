@@ -1,7 +1,9 @@
 import {
   buildRuntimePackCommand,
+  buildRuntimePackExpansion,
   buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
+  attachRuntimePackSurfaces,
   countRuntimePackEntries,
   normalizeRuntimePackDetail
 } from './state-runtime-pack-detail.js';
@@ -75,21 +77,17 @@ export function buildRuntimeQueuePackView(
       assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
     },
     next: nextEntries,
-    expansion: detailLevel === 'compact' ? expansion : null,
+    expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard, assignmentDispatchBundle, assignmentLaunchPlan)
   };
 
-  if (detailLevel === 'full') {
-    pack.surfaces = {
-      queue,
-      dashboard,
-      focus,
-      assignmentDispatchBundle,
-      assignmentLaunchPlan
-    };
-  }
-
-  return pack;
+  return attachRuntimePackSurfaces(pack, detailLevel, {
+    queue,
+    dashboard,
+    focus,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan
+  });
 }
 
 export function buildRuntimeQueuePackViewFromSources(
