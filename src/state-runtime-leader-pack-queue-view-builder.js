@@ -1,7 +1,7 @@
 import {
-  buildRuntimePackCommand,
+  buildRuntimePackCliExpansionEntry,
+  buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   countRuntimePackEntries,
@@ -38,21 +38,12 @@ export function buildRuntimeQueuePackView(
     assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
   };
   const expansion = {
-    full: buildRuntimePackExpansionEntry('runtime:queue-pack', buildRuntimePackCommand('runtime:queue-pack', input, { detail: 'full' })),
-    queue: buildRuntimePackExpansionEntry(
-      'leader:queue',
-      buildRuntimePackCommand('leader:queue', input, { workerId: undefined, workerIds: undefined, detail: undefined })
-    ),
-    dashboard: buildRuntimePackExpansionEntry('runtime:dashboard', 'node ./src/index.js runtime:dashboard'),
-    focus: buildRuntimePackExpansionEntry('runtime:focus', 'node ./src/index.js runtime:focus'),
-    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
-      'leader:assignment-dispatch-bundle',
-      buildRuntimePackCommand('leader:assignment-dispatch-bundle', input)
-    ),
-    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
-      'leader:assignment-launch-plan',
-      buildRuntimePackCommand('leader:assignment-launch-plan', input)
-    )
+    full: buildRuntimePackCommandExpansionEntry('runtime:queue-pack', input, { detail: 'full' }),
+    queue: buildRuntimePackCommandExpansionEntry('leader:queue', input, { workerId: undefined, workerIds: undefined, detail: undefined }),
+    dashboard: buildRuntimePackCliExpansionEntry('runtime:dashboard'),
+    focus: buildRuntimePackCliExpansionEntry('runtime:focus'),
+    assignmentDispatchBundle: buildRuntimePackCommandExpansionEntry('leader:assignment-dispatch-bundle', input),
+    assignmentLaunchPlan: buildRuntimePackCommandExpansionEntry('leader:assignment-launch-plan', input)
   };
 
   const pack = {

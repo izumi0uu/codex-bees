@@ -1,7 +1,7 @@
 import {
-  buildRuntimePackCommand,
+  buildRuntimePackCliExpansionEntry,
+  buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   countRuntimePackEntries,
@@ -45,29 +45,14 @@ export function buildRuntimeLeaderPackView(
     closeout: closeout?.next ?? null
   };
   const expansion = {
-    full: buildRuntimePackExpansionEntry('runtime:leader-pack', buildRuntimePackCommand('runtime:leader-pack', input, { detail: 'full' })),
-    workspace: buildRuntimePackExpansionEntry(
-      'leader:workspace',
-      buildRuntimePackCommand('leader:workspace', input, { workerId: undefined, workerIds: undefined, detail: undefined })
-    ),
-    queue: buildRuntimePackExpansionEntry(
-      'leader:queue',
-      buildRuntimePackCommand('leader:queue', input, { workerId: undefined, workerIds: undefined, detail: undefined })
-    ),
-    dispatch: buildRuntimePackExpansionEntry('runtime:dispatch', 'node ./src/index.js runtime:dispatch'),
-    assignmentDispatchPack: buildRuntimePackExpansionEntry(
-      'leader:assignment-dispatch-pack',
-      buildRuntimePackCommand('leader:assignment-dispatch-pack', input)
-    ),
-    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
-      'leader:assignment-dispatch-bundle',
-      buildRuntimePackCommand('leader:assignment-dispatch-bundle', input)
-    ),
-    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
-      'leader:assignment-launch-plan',
-      buildRuntimePackCommand('leader:assignment-launch-plan', input)
-    ),
-    closeout: buildRuntimePackExpansionEntry('runtime:closeout', 'node ./src/index.js runtime:closeout')
+    full: buildRuntimePackCommandExpansionEntry('runtime:leader-pack', input, { detail: 'full' }),
+    workspace: buildRuntimePackCommandExpansionEntry('leader:workspace', input, { workerId: undefined, workerIds: undefined, detail: undefined }),
+    queue: buildRuntimePackCommandExpansionEntry('leader:queue', input, { workerId: undefined, workerIds: undefined, detail: undefined }),
+    dispatch: buildRuntimePackCliExpansionEntry('runtime:dispatch'),
+    assignmentDispatchPack: buildRuntimePackCommandExpansionEntry('leader:assignment-dispatch-pack', input),
+    assignmentDispatchBundle: buildRuntimePackCommandExpansionEntry('leader:assignment-dispatch-bundle', input),
+    assignmentLaunchPlan: buildRuntimePackCommandExpansionEntry('leader:assignment-launch-plan', input),
+    closeout: buildRuntimePackCliExpansionEntry('runtime:closeout')
   };
 
   const pack = {

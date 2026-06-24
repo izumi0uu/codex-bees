@@ -52,6 +52,14 @@ export function buildRuntimePackExpansionEntry(surface, command) {
   };
 }
 
+export function buildRuntimePackCliExpansionEntry(command) {
+  return buildRuntimePackExpansionEntry(command, `node ./src/index.js ${command}`);
+}
+
+export function buildRuntimePackCommandExpansionEntry(command, input = {}, overrides = {}) {
+  return buildRuntimePackExpansionEntry(command, buildRuntimePackCommand(command, input, overrides));
+}
+
 export function buildRuntimePackExpansion(detailLevel, expansion) {
   return detailLevel === "compact" ? expansion : null;
 }

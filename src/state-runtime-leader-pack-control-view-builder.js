@@ -1,7 +1,7 @@
 import {
-  buildRuntimePackCommand,
+  buildRuntimePackCliExpansionEntry,
+  buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   countRuntimePackEntries,
@@ -37,11 +37,11 @@ export function buildRuntimeControlPackView(
     leader: leaderPack?.next ?? null
   };
   const expansion = {
-    full: buildRuntimePackExpansionEntry('runtime:control-pack', buildRuntimePackCommand('runtime:control-pack', input, { detail: 'full' })),
-    summaryPack: buildRuntimePackExpansionEntry('runtime:summary-pack', buildRuntimePackCommand('runtime:summary-pack', input)),
-    workspacePack: buildRuntimePackExpansionEntry('runtime:workspace-pack', buildRuntimePackCommand('runtime:workspace-pack', input)),
-    operatorPack: buildRuntimePackExpansionEntry('runtime:operator-pack', 'node ./src/index.js runtime:operator-pack'),
-    leaderPack: buildRuntimePackExpansionEntry('runtime:leader-pack', buildRuntimePackCommand('runtime:leader-pack', input))
+    full: buildRuntimePackCommandExpansionEntry('runtime:control-pack', input, { detail: 'full' }),
+    summaryPack: buildRuntimePackCommandExpansionEntry('runtime:summary-pack', input),
+    workspacePack: buildRuntimePackCommandExpansionEntry('runtime:workspace-pack', input),
+    operatorPack: buildRuntimePackCliExpansionEntry('runtime:operator-pack'),
+    leaderPack: buildRuntimePackCommandExpansionEntry('runtime:leader-pack', input)
   };
 
   const pack = {

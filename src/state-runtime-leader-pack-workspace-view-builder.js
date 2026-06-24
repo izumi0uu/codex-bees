@@ -1,7 +1,7 @@
 import {
-  buildRuntimePackCommand,
+  buildRuntimePackCliExpansionEntry,
+  buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   countRuntimePackEntries,
@@ -42,19 +42,13 @@ export function buildRuntimeWorkspacePackView(
     recovery: recovery?.next ?? null
   };
   const expansion = {
-    full: buildRuntimePackExpansionEntry('runtime:workspace-pack', buildRuntimePackCommand('runtime:workspace-pack', input, { detail: 'full' })),
-    dashboard: buildRuntimePackExpansionEntry('runtime:dashboard', 'node ./src/index.js runtime:dashboard'),
-    dispatch: buildRuntimePackExpansionEntry('runtime:dispatch', 'node ./src/index.js runtime:dispatch'),
-    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
-      'leader:assignment-dispatch-bundle',
-      buildRuntimePackCommand('leader:assignment-dispatch-bundle', input)
-    ),
-    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
-      'leader:assignment-launch-plan',
-      buildRuntimePackCommand('leader:assignment-launch-plan', input)
-    ),
-    review: buildRuntimePackExpansionEntry('runtime:review', 'node ./src/index.js runtime:review'),
-    recovery: buildRuntimePackExpansionEntry('runtime:recovery', 'node ./src/index.js runtime:recovery')
+    full: buildRuntimePackCommandExpansionEntry('runtime:workspace-pack', input, { detail: 'full' }),
+    dashboard: buildRuntimePackCliExpansionEntry('runtime:dashboard'),
+    dispatch: buildRuntimePackCliExpansionEntry('runtime:dispatch'),
+    assignmentDispatchBundle: buildRuntimePackCommandExpansionEntry('leader:assignment-dispatch-bundle', input),
+    assignmentLaunchPlan: buildRuntimePackCommandExpansionEntry('leader:assignment-launch-plan', input),
+    review: buildRuntimePackCliExpansionEntry('runtime:review'),
+    recovery: buildRuntimePackCliExpansionEntry('runtime:recovery')
   };
 
   const pack = {

@@ -1,7 +1,7 @@
 import {
-  buildRuntimePackCommand,
+  buildRuntimePackCliExpansionEntry,
+  buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   countRuntimePackEntries,
@@ -42,22 +42,13 @@ export function buildRuntimeDispatchPackView(
     handoff: handoffs?.next ?? null
   };
   const expansion = {
-    full: buildRuntimePackExpansionEntry('runtime:dispatch-pack', buildRuntimePackCommand('runtime:dispatch-pack', input, { detail: 'full' })),
-    dispatch: buildRuntimePackExpansionEntry('runtime:dispatch', 'node ./src/index.js runtime:dispatch'),
-    assignmentDispatchPack: buildRuntimePackExpansionEntry(
-      'leader:assignment-dispatch-pack',
-      buildRuntimePackCommand('leader:assignment-dispatch-pack', input)
-    ),
-    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
-      'leader:assignment-dispatch-bundle',
-      buildRuntimePackCommand('leader:assignment-dispatch-bundle', input)
-    ),
-    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
-      'leader:assignment-launch-plan',
-      buildRuntimePackCommand('leader:assignment-launch-plan', input)
-    ),
-    roles: buildRuntimePackExpansionEntry('runtime:roles', 'node ./src/index.js runtime:roles'),
-    handoffs: buildRuntimePackExpansionEntry('runtime:handoffs', 'node ./src/index.js runtime:handoffs')
+    full: buildRuntimePackCommandExpansionEntry('runtime:dispatch-pack', input, { detail: 'full' }),
+    dispatch: buildRuntimePackCliExpansionEntry('runtime:dispatch'),
+    assignmentDispatchPack: buildRuntimePackCommandExpansionEntry('leader:assignment-dispatch-pack', input),
+    assignmentDispatchBundle: buildRuntimePackCommandExpansionEntry('leader:assignment-dispatch-bundle', input),
+    assignmentLaunchPlan: buildRuntimePackCommandExpansionEntry('leader:assignment-launch-plan', input),
+    roles: buildRuntimePackCliExpansionEntry('runtime:roles'),
+    handoffs: buildRuntimePackCliExpansionEntry('runtime:handoffs')
   };
 
   const pack = {

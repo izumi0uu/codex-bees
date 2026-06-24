@@ -1,9 +1,9 @@
 import {
   attachRuntimePackSurfaces,
   buildRuntimePackFallbackPurposeGuidance,
-  buildRuntimePackCommand,
+  buildRuntimePackCliExpansionEntry,
+  buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackExpansionEntry,
   buildRuntimePackFocusOverview,
   buildRuntimePackPresenceMetadata,
   countRuntimePackEntries,
@@ -52,19 +52,13 @@ export function buildRuntimeExecutionPackView(
     queue: queuePack?.next?.queue ?? null
   };
   const expansion = {
-    full: buildRuntimePackExpansionEntry("runtime:execution-pack", buildRuntimePackCommand("runtime:execution-pack", input, { detail: "full" })),
-    focus: buildRuntimePackExpansionEntry("runtime:focus", "node ./src/index.js runtime:focus"),
-    dispatch: buildRuntimePackExpansionEntry("runtime:dispatch", "node ./src/index.js runtime:dispatch"),
-    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
-      "leader:assignment-dispatch-bundle",
-      buildRuntimePackCommand("leader:assignment-dispatch-bundle", input)
-    ),
-    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
-      "leader:assignment-launch-plan",
-      buildRuntimePackCommand("leader:assignment-launch-plan", input)
-    ),
-    roles: buildRuntimePackExpansionEntry("runtime:roles", "node ./src/index.js runtime:roles"),
-    queuePack: buildRuntimePackExpansionEntry("runtime:queue-pack", buildRuntimePackCommand("runtime:queue-pack", input))
+    full: buildRuntimePackCommandExpansionEntry("runtime:execution-pack", input, { detail: "full" }),
+    focus: buildRuntimePackCliExpansionEntry("runtime:focus"),
+    dispatch: buildRuntimePackCliExpansionEntry("runtime:dispatch"),
+    assignmentDispatchBundle: buildRuntimePackCommandExpansionEntry("leader:assignment-dispatch-bundle", input),
+    assignmentLaunchPlan: buildRuntimePackCommandExpansionEntry("leader:assignment-launch-plan", input),
+    roles: buildRuntimePackCliExpansionEntry("runtime:roles"),
+    queuePack: buildRuntimePackCommandExpansionEntry("runtime:queue-pack", input)
   };
 
   const pack = {

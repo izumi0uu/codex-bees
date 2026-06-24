@@ -1,7 +1,7 @@
 import {
-  buildRuntimePackCommand,
+  buildRuntimePackCliExpansionEntry,
+  buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackExpansionEntry,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   countRuntimePackEntries,
@@ -46,20 +46,14 @@ export function buildRuntimeSummaryPackView(
     assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
   };
   const expansion = {
-    full: buildRuntimePackExpansionEntry('runtime:summary-pack', buildRuntimePackCommand('runtime:summary-pack', input, { detail: 'full' })),
-    dashboard: buildRuntimePackExpansionEntry('runtime:dashboard', 'node ./src/index.js runtime:dashboard'),
-    alerts: buildRuntimePackExpansionEntry('runtime:alerts', 'node ./src/index.js runtime:alerts'),
-    handoffs: buildRuntimePackExpansionEntry('runtime:handoffs', 'node ./src/index.js runtime:handoffs'),
-    recovery: buildRuntimePackExpansionEntry('runtime:recovery', 'node ./src/index.js runtime:recovery'),
-    closeout: buildRuntimePackExpansionEntry('runtime:closeout', 'node ./src/index.js runtime:closeout'),
-    assignmentDispatchBundle: buildRuntimePackExpansionEntry(
-      'leader:assignment-dispatch-bundle',
-      buildRuntimePackCommand('leader:assignment-dispatch-bundle', input)
-    ),
-    assignmentLaunchPlan: buildRuntimePackExpansionEntry(
-      'leader:assignment-launch-plan',
-      buildRuntimePackCommand('leader:assignment-launch-plan', input)
-    )
+    full: buildRuntimePackCommandExpansionEntry('runtime:summary-pack', input, { detail: 'full' }),
+    dashboard: buildRuntimePackCliExpansionEntry('runtime:dashboard'),
+    alerts: buildRuntimePackCliExpansionEntry('runtime:alerts'),
+    handoffs: buildRuntimePackCliExpansionEntry('runtime:handoffs'),
+    recovery: buildRuntimePackCliExpansionEntry('runtime:recovery'),
+    closeout: buildRuntimePackCliExpansionEntry('runtime:closeout'),
+    assignmentDispatchBundle: buildRuntimePackCommandExpansionEntry('leader:assignment-dispatch-bundle', input),
+    assignmentLaunchPlan: buildRuntimePackCommandExpansionEntry('leader:assignment-launch-plan', input)
   };
 
   const pack = {
