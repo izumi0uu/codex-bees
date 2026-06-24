@@ -1,5 +1,1 @@
-import { runtimeOperatorPackFromSources } from './state-runtime-packs.js';
-
-export function runtimeOperatorPackSurface(sources = {}) {
-  return runtimeOperatorPackFromSources(sources);
-}
+export { runtimeOperatorPackFromSources as runtimeOperatorPackSurface } from './state-runtime-packs.js';

@@ -1,5 +1,1 @@
-import { runtimeSignalPackFromSources } from './state-runtime-packs.js';
-
-export function runtimeSignalPackSurface(input = {}, sources = {}) {
-  return runtimeSignalPackFromSources(input, sources);
-}
+export { runtimeSignalPackFromSources as runtimeSignalPackSurface } from './state-runtime-packs.js';

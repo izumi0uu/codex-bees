@@ -1,5 +1,1 @@
-import { runtimeLeaderPackFromSources } from './state-runtime-packs.js';
-
-export function runtimeLeaderPackSurface(input = {}, sources = {}) {
-  return runtimeLeaderPackFromSources(input, sources);
-}
+export { runtimeLeaderPackFromSources as runtimeLeaderPackSurface } from './state-runtime-packs.js';

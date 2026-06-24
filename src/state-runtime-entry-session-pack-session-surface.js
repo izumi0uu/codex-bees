@@ -1,5 +1,1 @@
-import { runtimeSessionPackFromSources } from "./state-runtime-packs.js";
-
-export function runtimeSessionPackSurface(input = {}, sources = {}) {
-  return runtimeSessionPackFromSources(input, sources);
-}
+export { runtimeSessionPackFromSources as runtimeSessionPackSurface } from "./state-runtime-packs.js";

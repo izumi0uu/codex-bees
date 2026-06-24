@@ -1,5 +1,1 @@
-import { runtimeRecoveryPackFromSources } from './state-runtime-packs.js';
-
-export function runtimeRecoveryPackSurface(sources = {}) {
-  return runtimeRecoveryPackFromSources(sources);
-}
+export { runtimeRecoveryPackFromSources as runtimeRecoveryPackSurface } from './state-runtime-packs.js';

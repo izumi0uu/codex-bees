@@ -1,5 +1,1 @@
-import { runtimeWorkerPackFromSources } from "./state-runtime-packs.js";
-
-export function runtimeWorkerPackSurface(input = {}, sources = {}) {
-  return runtimeWorkerPackFromSources(input, sources);
-}
+export { runtimeWorkerPackFromSources as runtimeWorkerPackSurface } from "./state-runtime-packs.js";

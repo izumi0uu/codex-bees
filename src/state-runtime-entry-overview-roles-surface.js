@@ -1,5 +1,1 @@
-import { runtimeRolesFromSources } from './state-runtime-overviews.js';
-
-export function runtimeRolesSurface(input = {}, sources = {}) {
-  return runtimeRolesFromSources(input, sources);
-}
+export { runtimeRolesFromSources as runtimeRolesSurface } from './state-runtime-overviews.js';

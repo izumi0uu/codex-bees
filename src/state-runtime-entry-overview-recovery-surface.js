@@ -1,5 +1,1 @@
-import { runtimeRecoveryFromSources } from './state-runtime-overviews.js';
-
-export function runtimeRecoverySurface(sources = {}) {
-  return runtimeRecoveryFromSources(sources);
-}
+export { runtimeRecoveryFromSources as runtimeRecoverySurface } from './state-runtime-overviews.js';

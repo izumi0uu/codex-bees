@@ -1,5 +1,1 @@
-import { runtimeHandoffsFromSources } from './state-runtime-overviews.js';
-
-export function runtimeHandoffsSurface(sources = {}) {
-  return runtimeHandoffsFromSources(sources);
-}
+export { runtimeHandoffsFromSources as runtimeHandoffsSurface } from './state-runtime-overviews.js';

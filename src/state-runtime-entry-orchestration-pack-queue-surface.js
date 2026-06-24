@@ -1,5 +1,1 @@
-import { runtimeQueuePackFromSources } from './state-runtime-packs.js';
-
-export function runtimeQueuePackSurface(input = {}, sources = {}) {
-  return runtimeQueuePackFromSources(input, sources);
-}
+export { runtimeQueuePackFromSources as runtimeQueuePackSurface } from './state-runtime-packs.js';

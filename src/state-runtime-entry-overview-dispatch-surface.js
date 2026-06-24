@@ -1,5 +1,1 @@
-import { runtimeDispatchFromSources } from './state-runtime-overviews.js';
-
-export function runtimeDispatchSurface(sources = {}) {
-  return runtimeDispatchFromSources(sources);
-}
+export { runtimeDispatchFromSources as runtimeDispatchSurface } from './state-runtime-overviews.js';
