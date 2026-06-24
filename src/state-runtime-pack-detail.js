@@ -122,3 +122,14 @@ export function buildRuntimePackSessionOverview(session) {
     inbox: session?.inbox?.counts ?? null
   };
 }
+
+export function requireRuntimePackRoleWorkerSelection(input) {
+  if (!input?.role || !input?.workerId) {
+    return null;
+  }
+
+  return {
+    role: input.role,
+    workerId: input.workerId
+  };
+}

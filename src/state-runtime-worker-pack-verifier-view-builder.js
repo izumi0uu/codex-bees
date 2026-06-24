@@ -1,5 +1,6 @@
 import {
   buildRuntimePackPresenceMetadata,
+  requireRuntimePackRoleWorkerSelection,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
 
@@ -18,23 +19,27 @@ export function buildRuntimeVerifierPackView(
     buildRuntimeVerifierPackSummary
   }
 ) {
-  if (!input.role || !input.workerId) {
+  const selection = requireRuntimePackRoleWorkerSelection(input);
+  if (!selection) {
     return null;
   }
+  const { role, workerId } = selection;
 
   const normalized = {
     ...input,
+    role,
+    workerId,
     mode: "verifier"
   };
   const review = runtimeReview();
   const bundle = verifierBundle(normalized);
   const closeout = workerCloseout(normalized);
   const next = taskNext({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode: "verifier"
   });
-  const recommendedSurface = deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role: input.role });
+  const recommendedSurface = deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role });
   const recommendedReason = deriveRuntimeVerifierPackReason({ review, bundle, closeout, next });
   const nextEntries = {
     review: review?.next ?? null,
@@ -45,8 +50,8 @@ export function buildRuntimeVerifierPackView(
 
   return {
     kind: "runtime_verifier_pack",
-    role: describeRole(input.role),
-    workerId: input.workerId,
+    role: describeRole(role),
+    workerId,
     mode: "verifier",
     recommendedSurface,
     recommendedReason,

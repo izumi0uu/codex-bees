@@ -2,6 +2,7 @@ import {
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPickupOverview,
   buildRuntimePackPresenceMetadata,
+  requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
@@ -22,30 +23,32 @@ export function buildRuntimePickupPackView(
     buildRuntimePickupPackSummary
   }
 ) {
-  if (!input.role || !input.workerId) {
+  const selection = requireRuntimePackRoleWorkerSelection(input);
+  if (!selection) {
     return null;
   }
+  const { role, workerId } = selection;
 
   const mode = normalizeNextMode(input.mode);
   const session = workerSession({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode,
     limit: input.limit
   });
   const next = taskNext({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode
   });
   const pickup = previewTaskPickup({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode
   });
   const rolePack = runtimeRolePack({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode
   });
   const recommendedSurface = deriveRuntimePickupPackSurface({
@@ -53,8 +56,8 @@ export function buildRuntimePickupPackView(
     pickup,
     next,
     rolePack,
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode
   });
   const recommendedReason = deriveRuntimePickupPackReason({ session, pickup, next, rolePack });
@@ -73,8 +76,8 @@ export function buildRuntimePickupPackView(
 
   return {
     kind: "runtime_pickup_pack",
-    role: describeRole(input.role),
-    workerId: input.workerId,
+    role: describeRole(role),
+    workerId,
     mode,
     recommendedSurface,
     recommendedReason,

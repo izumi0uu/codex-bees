@@ -2,6 +2,7 @@ import {
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPickupOverview,
   buildRuntimePackPresenceMetadata,
+  requireRuntimePackRoleWorkerSelection,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
 
@@ -22,39 +23,41 @@ export function buildRuntimeAssignmentPackView(
     buildRuntimeAssignmentPackSummary
   }
 ) {
-  if (!input.role || !input.workerId) {
+  const selection = requireRuntimePackRoleWorkerSelection(input);
+  if (!selection) {
     return null;
   }
+  const { role, workerId } = selection;
 
   const mode = normalizeNextMode(input.mode);
   const assignments = leaderAssignments();
-  const roleAssignments = (assignments?.groups ?? []).find((group) => group.owner?.id === input.role) ?? null;
+  const roleAssignments = (assignments?.groups ?? []).find((group) => group.owner?.id === role) ?? null;
   const assignment = roleAssignments?.assignments?.[0] ?? null;
   const session = workerSession({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode,
     limit: input.limit
   });
   const next = taskNext({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode
   });
   const pickup = previewTaskAssignment({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode
   });
-  const roleEntry = runtimeRoles()?.roles?.find((entry) => entry.role?.id === input.role) ?? null;
+  const roleEntry = runtimeRoles()?.roles?.find((entry) => entry.role?.id === role) ?? null;
   const recommendedSurface = deriveRuntimeAssignmentPackSurface({
     assignment,
     session,
     next,
     pickup,
     roleEntry,
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode
   });
   const recommendedReason = deriveRuntimeAssignmentPackReason({ assignment, session, next, pickup, roleEntry });
@@ -73,8 +76,8 @@ export function buildRuntimeAssignmentPackView(
 
   return {
     kind: "runtime_assignment_pack",
-    role: describeRole(input.role),
-    workerId: input.workerId,
+    role: describeRole(role),
+    workerId,
     mode,
     recommendedSurface,
     recommendedReason,

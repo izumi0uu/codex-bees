@@ -1,6 +1,7 @@
 import {
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPresenceMetadata,
+  requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
@@ -20,23 +21,27 @@ export function buildRuntimeOwnerPackView(
     buildRuntimeOwnerPackSummary
   }
 ) {
-  if (!input.role || !input.workerId) {
+  const selection = requireRuntimePackRoleWorkerSelection(input);
+  if (!selection) {
     return null;
   }
+  const { role, workerId } = selection;
 
   const normalized = {
     ...input,
+    role,
+    workerId,
     mode: "owner"
   };
   const session = workerSession(normalized);
   const handoff = workerHandoff(normalized);
   const closeout = workerCloseout(normalized);
   const next = taskNext({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode: "owner"
   });
-  const recommendedSurface = deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role: input.role, workerId: input.workerId });
+  const recommendedSurface = deriveRuntimeOwnerPackSurface({ session, handoff, closeout, next, role, workerId });
   const recommendedReason = deriveRuntimeOwnerPackReason({ session, handoff, closeout, next });
   const purposeGuidance = buildRuntimePackFallbackPurposeGuidance(
     next?.candidate ?? null,
@@ -52,8 +57,8 @@ export function buildRuntimeOwnerPackView(
 
   return {
     kind: "runtime_owner_pack",
-    role: session?.role ?? describeRole(input.role),
-    workerId: input.workerId,
+    role: session?.role ?? describeRole(role),
+    workerId,
     mode: "owner",
     recommendedSurface,
     recommendedReason,

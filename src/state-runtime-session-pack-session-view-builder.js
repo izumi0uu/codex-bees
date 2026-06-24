@@ -1,5 +1,6 @@
 import {
   buildRuntimePackPresenceMetadata,
+  requireRuntimePackRoleWorkerSelection,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
 
@@ -18,40 +19,42 @@ export function buildRuntimeSessionPackView(
     buildRuntimeSessionPackSummary
   }
 ) {
-  if (!input.role || !input.workerId) {
+  const selection = requireRuntimePackRoleWorkerSelection(input);
+  if (!selection) {
     return null;
   }
+  const { role, workerId } = selection;
 
   const workerPack = runtimeWorkerPack({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode: input.mode ?? "any"
   });
   const ownerPack = runtimeOwnerPack({
-    role: input.role,
-    workerId: input.workerId
+    role,
+    workerId
   });
   const verifierPack = runtimeVerifierPack({
-    role: input.role,
-    workerId: input.workerId
+    role,
+    workerId
   });
   const roles = runtimeRoles();
-  const roleEntry = roles?.roles?.find((entry) => entry.role?.id === input.role) ?? null;
+  const roleEntry = roles?.roles?.find((entry) => entry.role?.id === role) ?? null;
   const recommendedSurface = deriveRuntimeSessionPackSurface({
     workerPack,
     ownerPack,
     verifierPack,
     roleEntry,
-    role: input.role,
-    workerId: input.workerId
+    role,
+    workerId
   });
   const recommendedReason = deriveRuntimeSessionPackReason({
     workerPack,
     ownerPack,
     verifierPack,
     roleEntry,
-    role: input.role,
-    workerId: input.workerId
+    role,
+    workerId
   });
   const nextEntries = {
     worker: workerPack?.next ?? null,
@@ -62,8 +65,8 @@ export function buildRuntimeSessionPackView(
 
   return {
     kind: "runtime_session_pack",
-    role: describeRole(input.role),
-    workerId: input.workerId,
+    role: describeRole(role),
+    workerId,
     mode: input.mode ?? "any",
     recommendedSurface,
     recommendedReason,

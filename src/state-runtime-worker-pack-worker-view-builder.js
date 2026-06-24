@@ -1,6 +1,7 @@
 import {
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPresenceMetadata,
+  requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
@@ -21,16 +22,18 @@ export function buildRuntimeWorkerPackView(
     buildRuntimeWorkerPackSummary
   }
 ) {
-  if (!input.role || !input.workerId) {
+  const selection = requireRuntimePackRoleWorkerSelection(input);
+  if (!selection) {
     return null;
   }
+  const { role, workerId } = selection;
 
-  const session = workerSession(input);
-  const handoff = workerHandoff(input);
-  const closeout = workerCloseout(input);
+  const session = workerSession({ ...input, role, workerId });
+  const handoff = workerHandoff({ ...input, role, workerId });
+  const closeout = workerCloseout({ ...input, role, workerId });
   const next = taskNext({
-    role: input.role,
-    workerId: input.workerId,
+    role,
+    workerId,
     mode: input.mode ?? "any"
   });
   const recommendedSurface = deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next });
@@ -49,8 +52,8 @@ export function buildRuntimeWorkerPackView(
 
   return {
     kind: "runtime_worker_pack",
-    role: session?.role ?? describeRole(input.role),
-    workerId: input.workerId,
+    role: session?.role ?? describeRole(role),
+    workerId,
     mode: session?.mode ?? normalizeNextMode(input.mode),
     recommendedSurface,
     recommendedReason,
