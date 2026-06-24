@@ -22,15 +22,17 @@ export function createStateRuntimeOverviewEntryPoints(shared, api, runtimeLeader
   } = runtimeOverviewLifecycle;
 
   function runtimeFocus() {
-    return runtimeFocusSurface({
-      runtimeDashboard,
-      runtimeAlerts,
-      runtimeReview,
-      runtimeDispatch,
-      runtimeRoles,
-      taskBrief: api.taskBrief
-    });
+    return runtimeFocusSurface(runtimeFocusSources);
   }
+
+  const runtimeFocusSources = {
+    runtimeDashboard,
+    runtimeAlerts,
+    runtimeReview,
+    runtimeDispatch,
+    runtimeRoles,
+    taskBrief: api.taskBrief
+  };
 
   return {
     runtimeDashboard,

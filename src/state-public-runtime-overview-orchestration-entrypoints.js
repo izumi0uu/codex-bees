@@ -10,37 +10,42 @@ export function createStateRuntimeOverviewOrchestrationEntryPoints(shared, api, 
   const { leaderQueue, leaderAssignments } = runtimeLeader;
 
   function runtimeDashboard() {
-    return runtimeDashboardSurface({
-      loadState,
-      normalizeTask,
-      listSwarmOverviews: api.listSwarmOverviews,
-      leaderQueue,
-      leaderAssignments
-    });
+    return runtimeDashboardSurface(runtimeDashboardSources);
   }
 
   function runtimeAlerts() {
-    return runtimeAlertsSurface({
-      runtimeDashboard,
-      listSwarmOverviews: api.listSwarmOverviews
-    });
+    return runtimeAlertsSurface(runtimeAlertsSources);
   }
 
   function runtimeRoles(input = {}) {
-    return runtimeRolesSurface(input, {
-      leaderAssignments,
-      loadState,
-      normalizeTask,
-      taskInbox: api.taskInbox,
-      taskNext: api.taskNext
-    });
+    return runtimeRolesSurface(input, runtimeRolesSources);
   }
 
   function runtimeDispatch() {
-    return runtimeDispatchSurface({
-      leaderAssignments
-    });
+    return runtimeDispatchSurface(runtimeDispatchSources);
   }
+
+  const runtimeDashboardSources = {
+    loadState,
+    normalizeTask,
+    listSwarmOverviews: api.listSwarmOverviews,
+    leaderQueue,
+    leaderAssignments
+  };
+  const runtimeAlertsSources = {
+    runtimeDashboard,
+    listSwarmOverviews: api.listSwarmOverviews
+  };
+  const runtimeRolesSources = {
+    leaderAssignments,
+    loadState,
+    normalizeTask,
+    taskInbox: api.taskInbox,
+    taskNext: api.taskNext
+  };
+  const runtimeDispatchSources = {
+    leaderAssignments
+  };
 
   return {
     runtimeDashboard,

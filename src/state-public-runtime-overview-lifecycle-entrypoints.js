@@ -10,48 +10,54 @@ export function createStateRuntimeOverviewLifecycleEntryPoints(shared, api) {
   const { loadState, normalizeTask, normalizeSwarm } = shared;
 
   function runtimeReview() {
-    return runtimeReviewSurface({
-      loadState,
-      normalizeTask,
-      taskBrief: api.taskBrief
-    });
+    return runtimeReviewSurface(runtimeReviewSources);
   }
 
   function runtimeActivity(input = {}) {
-    return runtimeActivitySurface(input, {
-      loadState,
-      normalizeTask,
-      normalizeSwarm,
-      taskBrief: api.taskBrief,
-      swarmBrief: api.swarmBrief
-    });
+    return runtimeActivitySurface(input, runtimeActivitySources);
   }
 
   function runtimeHandoffs() {
-    return runtimeHandoffsSurface({
-      loadState,
-      normalizeTask,
-      taskBrief: api.taskBrief
-    });
+    return runtimeHandoffsSurface(runtimeHandoffsSources);
   }
 
   function runtimeCloseout() {
-    return runtimeCloseoutSurface({
-      loadState,
-      normalizeTask,
-      taskReport: api.taskReport,
-      listSwarmOverviews: api.listSwarmOverviews,
-      swarmCloseout: api.swarmCloseout
-    });
+    return runtimeCloseoutSurface(runtimeCloseoutSources);
   }
 
   function runtimeRecovery() {
-    return runtimeRecoverySurface({
-      loadState,
-      normalizeTask,
-      taskBrief: api.taskBrief
-    });
+    return runtimeRecoverySurface(runtimeRecoverySources);
   }
+
+  const runtimeReviewSources = {
+    loadState,
+    normalizeTask,
+    taskBrief: api.taskBrief
+  };
+  const runtimeActivitySources = {
+    loadState,
+    normalizeTask,
+    normalizeSwarm,
+    taskBrief: api.taskBrief,
+    swarmBrief: api.swarmBrief
+  };
+  const runtimeHandoffsSources = {
+    loadState,
+    normalizeTask,
+    taskBrief: api.taskBrief
+  };
+  const runtimeCloseoutSources = {
+    loadState,
+    normalizeTask,
+    taskReport: api.taskReport,
+    listSwarmOverviews: api.listSwarmOverviews,
+    swarmCloseout: api.swarmCloseout
+  };
+  const runtimeRecoverySources = {
+    loadState,
+    normalizeTask,
+    taskBrief: api.taskBrief
+  };
 
   return {
     runtimeReview,
