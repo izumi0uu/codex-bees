@@ -19,64 +19,39 @@ import {
   deriveSwarmStatus
 } from "./state-rules.js";
 
-export function validateTaskSurface(id, { loadState, normalizeTask }) {
+export function validateTaskSurface(id, sources = {}) {
   return validateTaskFromSources(id, {
-    loadState,
-    normalizeTask,
+    ...sources,
     buildTaskValidationViewFromSources,
     runtimeRoleCatalog,
     buildTaskValidationView
   });
 }
 
-export function validateSwarmSurface(id, { loadState, normalizeSwarm }) {
+export function validateSwarmSurface(id, sources = {}) {
   return validateSwarmFromSources(id, {
-    loadState,
-    normalizeSwarm,
+    ...sources,
     buildSwarmValidationViewFromSources,
     runtimeRoleCatalog,
     buildSwarmValidationView
   });
 }
 
-export function syncSwarmStatusSurface(
-  id,
-  {
-    loadState,
-    saveState,
-    syncLoadedSwarmLifecycle,
-    findSwarmIndex,
-    normalizeSwarm,
-    normalizeTask,
-    buildSyncedSwarmState
-  }
-) {
+export function syncSwarmStatusSurface(id, sources = {}) {
   return syncSwarmStatusFromSources(id, {
-    loadState,
-    saveState,
-    syncLoadedSwarmLifecycle,
-    findSwarmIndex,
-    normalizeSwarm,
-    normalizeTask,
+    ...sources,
     deriveSwarmStatus,
-    buildSyncedSwarmState,
     deriveSwarmSyncReason
   });
 }
 
-export function swarmOverviewSurface(id, { loadState, normalizeSwarm, normalizeTask }) {
-  return buildSwarmOverviewViewFromSources(
-    id,
-    {
-      loadState,
-      normalizeSwarm,
-      normalizeTask,
-      buildSwarmOverviewData,
-      deriveSwarmStatus,
-      deriveSwarmOverviewReason
-    },
-    {
-      buildSwarmOverviewView
-    }
-  );
+export function swarmOverviewSurface(id, sources = {}) {
+  return buildSwarmOverviewViewFromSources(id, {
+    ...sources,
+    buildSwarmOverviewData,
+    deriveSwarmStatus,
+    deriveSwarmOverviewReason
+  }, {
+    buildSwarmOverviewView
+  });
 }

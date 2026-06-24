@@ -46,163 +46,113 @@ import {
   taskReportNextGate
 } from "./state-task-views.js";
 
-export function getTaskViewFromSources(id, { getTask }) {
-  return buildTaskDetailViewFromSources(
-    id,
-    {
-      getTask,
-      deriveReviewState
-    },
-    {
-      buildTaskDetailView
-    }
-  );
+export function getTaskViewFromSources(id, sources = {}) {
+  return buildTaskDetailViewFromSources(id, {
+    ...sources,
+    deriveReviewState
+  }, {
+    buildTaskDetailView
+  });
 }
 
-export function taskHistoryFromSources(id, { getTask }) {
-  return buildTaskHistoryViewFromSources(
-    id,
-    {
-      getTask,
-      deriveTaskHistoryReason
-    },
-    {
-      buildTaskHistoryView
-    }
-  );
+export function taskHistoryFromSources(id, sources = {}) {
+  return buildTaskHistoryViewFromSources(id, {
+    ...sources,
+    deriveTaskHistoryReason
+  }, {
+    buildTaskHistoryView
+  });
 }
 
-export function taskReportFromSources(id, { getTask, taskBrief }) {
-  return buildTaskReportViewFromSources(
-    id,
-    {
-      getTask,
-      taskBrief,
-      buildTaskReportEntries,
-      deriveTaskReportReason,
-      deriveReviewState,
-      taskReportNextGate
-    },
-    {
-      buildTaskReportView
-    }
-  );
+export function taskReportFromSources(id, sources = {}) {
+  return buildTaskReportViewFromSources(id, {
+    ...sources,
+    buildTaskReportEntries,
+    deriveTaskReportReason,
+    deriveReviewState,
+    taskReportNextGate
+  }, {
+    buildTaskReportView
+  });
 }
 
-export function getSwarmViewFromSources(id, { getSwarm, swarmOverview }) {
-  return buildSwarmDetailViewFromSources(
-    id,
-    {
-      getSwarm,
-      swarmOverview
-    },
-    {
-      buildSwarmDetailView
-    }
-  );
+export function getSwarmViewFromSources(id, sources = {}) {
+  return buildSwarmDetailViewFromSources(id, sources, {
+    buildSwarmDetailView
+  });
 }
 
-export function taskBriefFromSources(id, { getTask, listTasks }) {
-  return buildTaskBriefViewFromSources(
-    id,
-    {
-      getTask,
-      runtimeRoleCatalog,
-      validateTaskValue,
-      getRuntimeCatalog,
-      recommendTaskAction,
-      deriveTaskBriefReason,
-      describeRole: describeRoleWithContract,
-      deriveReviewState,
-      dependencyTasks: listTasks()
-    },
-    {
-      buildTaskBriefView
-    }
-  );
+export function taskBriefFromSources(id, sources = {}) {
+  const { listTasks, ...restSources } = sources;
+
+  return buildTaskBriefViewFromSources(id, {
+    ...restSources,
+    runtimeRoleCatalog,
+    validateTaskValue,
+    getRuntimeCatalog,
+    recommendTaskAction,
+    deriveTaskBriefReason,
+    describeRole: describeRoleWithContract,
+    deriveReviewState,
+    dependencyTasks: listTasks()
+  }, {
+    buildTaskBriefView
+  });
 }
 
-export function swarmBriefFromSources(id, { swarmOverview }) {
-  return buildSwarmBriefViewFromSources(
-    id,
-    {
-      swarmOverview,
-      getRuntimeCatalog,
-      validateSwarmValue,
-      runtimeRoleCatalog,
-      recommendLaneAction,
-      recommendSwarmAction,
-      describeRole,
-      buildSwarmHandoff,
-      deriveSwarmBriefReason
-    },
-    {
-      buildSwarmBriefView
-    }
-  );
+export function swarmBriefFromSources(id, sources = {}) {
+  return buildSwarmBriefViewFromSources(id, {
+    ...sources,
+    getRuntimeCatalog,
+    validateSwarmValue,
+    runtimeRoleCatalog,
+    recommendLaneAction,
+    recommendSwarmAction,
+    describeRole,
+    buildSwarmHandoff,
+    deriveSwarmBriefReason
+  }, {
+    buildSwarmBriefView
+  });
 }
 
-export function swarmBundleFromSources(id, { swarmOverview, swarmBrief, taskReport }) {
-  return buildSwarmBundleViewFromSources(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskReport,
-      deriveSwarmBundleReason,
-      buildSwarmBundleSummary
-    },
-    {
-      buildSwarmBundleView
-    }
-  );
+export function swarmBundleFromSources(id, sources = {}) {
+  return buildSwarmBundleViewFromSources(id, {
+    ...sources,
+    deriveSwarmBundleReason,
+    buildSwarmBundleSummary
+  }, {
+    buildSwarmBundleView
+  });
 }
 
-export function swarmCloseoutFromSources(id, { swarmOverview, swarmBrief, swarmBundle }) {
-  return buildSwarmCloseoutViewFromSources(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      swarmBundle,
-      deriveSwarmCloseoutCommand,
-      deriveSwarmCloseoutReason,
-      buildSwarmCloseoutSummary
-    },
-    {
-      buildSwarmCloseoutView
-    }
-  );
+export function swarmCloseoutFromSources(id, sources = {}) {
+  return buildSwarmCloseoutViewFromSources(id, {
+    ...sources,
+    deriveSwarmCloseoutCommand,
+    deriveSwarmCloseoutReason,
+    buildSwarmCloseoutSummary
+  }, {
+    buildSwarmCloseoutView
+  });
 }
 
-export function swarmBlockersFromSources(id, { swarmOverview, swarmBrief, taskReport }) {
-  return buildSwarmBlockersViewFromSources(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskReport,
-      deriveSwarmBlockersReason,
-      buildSwarmBlockersSummary
-    },
-    {
-      buildSwarmBlockersView
-    }
-  );
+export function swarmBlockersFromSources(id, sources = {}) {
+  return buildSwarmBlockersViewFromSources(id, {
+    ...sources,
+    deriveSwarmBlockersReason,
+    buildSwarmBlockersSummary
+  }, {
+    buildSwarmBlockersView
+  });
 }
 
-export function swarmDispatchBundleFromSources(id, { swarmOverview, swarmBrief, taskBrief }) {
-  return buildSwarmDispatchBundleViewFromSources(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskBrief,
-      deriveSwarmDispatchBundleReason,
-      buildSwarmDispatchBundleSummary
-    },
-    {
-      buildSwarmDispatchBundleView
-    }
-  );
+export function swarmDispatchBundleFromSources(id, sources = {}) {
+  return buildSwarmDispatchBundleViewFromSources(id, {
+    ...sources,
+    deriveSwarmDispatchBundleReason,
+    buildSwarmDispatchBundleSummary
+  }, {
+    buildSwarmDispatchBundleView
+  });
 }
