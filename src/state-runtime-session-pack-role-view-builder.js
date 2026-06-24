@@ -1,5 +1,8 @@
 import {
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackRoleEntries,
+  buildRuntimePackRoleMetadata,
+  buildRuntimePackRoleOverview,
+  buildRuntimePackRoleSurfaces,
   buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
 
@@ -45,12 +48,7 @@ export function buildRuntimeRolePackView(
     : null;
   const recommendedSurface = deriveRuntimeRolePackSurface({ roleEntry, sessionPack, ownerPack, verifierPack });
   const recommendedReason = deriveRuntimeRolePackReason({ roleEntry, sessionPack, ownerPack, verifierPack });
-  const nextEntries = {
-    role: roleEntry?.nextAction ?? null,
-    session: sessionPack?.next ?? null,
-    owner: ownerPack?.next ?? null,
-    verifier: verifierPack?.next ?? null
-  };
+  const nextEntries = buildRuntimePackRoleEntries(roleEntry, sessionPack, ownerPack, verifierPack);
 
   return {
     kind: "runtime_role_pack",
@@ -59,26 +57,11 @@ export function buildRuntimeRolePackView(
     mode: input.mode ?? "any",
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasRole: nextEntries.role,
-      hasSession: nextEntries.session,
-      hasOwner: nextEntries.owner,
-      hasVerifier: nextEntries.verifier
-    }),
+    metadata: buildRuntimePackRoleMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      role: roleEntry?.counts ?? null,
-      session: sessionPack?.overview ?? null,
-      owner: ownerPack?.overview ?? null,
-      verifier: verifierPack?.overview ?? null
-    },
+    overview: buildRuntimePackRoleOverview(roleEntry, sessionPack, ownerPack, verifierPack),
     next: nextEntries,
-    surfaces: {
-      role: roleEntry,
-      sessionPack,
-      ownerPack,
-      verifierPack
-    },
+    surfaces: buildRuntimePackRoleSurfaces(roleEntry, sessionPack, ownerPack, verifierPack),
     summary: buildRuntimeRolePackSummary(recommendedSurface, roleEntry, sessionPack, verifierPack, ownerPack)
   };
 }
