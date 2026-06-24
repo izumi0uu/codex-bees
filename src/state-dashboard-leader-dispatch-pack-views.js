@@ -5,7 +5,6 @@ export function buildLeaderAssignmentDispatchPackView(
   input,
   {
     leaderAssignments,
-    leaderAssignmentDispatch
   },
   {
     deriveLeaderAssignmentDispatchPackReason
@@ -73,27 +72,8 @@ export function buildLeaderAssignmentDispatchPackView(
   };
 }
 
-export function buildLeaderAssignmentDispatchPackViewFromSources(
-  input,
-  {
-    leaderAssignments,
-    leaderAssignmentDispatch
-  },
-  {
-    deriveLeaderAssignmentDispatchPackReason,
-    buildLeaderAssignmentDispatchPackView
-  }
-) {
-  return buildLeaderAssignmentDispatchPackView(
-    input,
-    {
-      leaderAssignments,
-      leaderAssignmentDispatch
-    },
-    {
-      deriveLeaderAssignmentDispatchPackReason
-    }
-  );
+export function buildLeaderAssignmentDispatchPackViewFromSources(input, sources, helpers) {
+  return buildLeaderAssignmentDispatchPackView(input, sources, helpers);
 }
 
 export function deriveLeaderAssignmentDispatchPackReason({ assignments, groups, next, workerTargets }) {

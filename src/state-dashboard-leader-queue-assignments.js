@@ -57,27 +57,8 @@ export function buildLeaderQueueView(
   };
 }
 
-export function buildLeaderQueueViewFromSources(
-  input,
-  {
-    leaderWorkspace
-  },
-  {
-    deriveLeaderQueueReason,
-    buildLeaderQueueSummary,
-    buildLeaderQueueView
-  }
-) {
-  return buildLeaderQueueView(
-    input,
-    {
-      leaderWorkspace
-    },
-    {
-      deriveLeaderQueueReason,
-      buildLeaderQueueSummary
-    }
-  );
+export function buildLeaderQueueViewFromSources(input, sources, helpers) {
+  return buildLeaderQueueView(input, sources, helpers);
 }
 
 export function buildLeaderAssignmentsSummary(assignments, groups) {
@@ -229,29 +210,8 @@ export function buildLeaderAssignmentsView(
   };
 }
 
-export function buildLeaderAssignmentsViewFromSources(
-  input,
-  {
-    leaderWorkspace,
-    swarmBrief,
-    taskBrief
-  },
-  {
-    deriveLeaderAssignmentsReason,
-    buildLeaderAssignmentsView
-  }
-) {
-  return buildLeaderAssignmentsView(
-    input,
-    {
-      leaderWorkspace,
-      swarmBrief,
-      taskBrief
-    },
-    {
-      deriveLeaderAssignmentsReason
-    }
-  );
+export function buildLeaderAssignmentsViewFromSources(input, sources, helpers) {
+  return buildLeaderAssignmentsView(input, sources, helpers);
 }
 
 export function deriveLeaderAssignmentsReason({ assignments, groups, next }) {
@@ -356,25 +316,6 @@ export function buildLeaderAssignmentDispatchView(
   };
 }
 
-export function buildLeaderAssignmentDispatchViewFromSources(
-  input,
-  {
-    leaderAssignments,
-    describeRole
-  },
-  {
-    deriveLeaderAssignmentDispatchReason,
-    buildLeaderAssignmentDispatchView
-  }
-) {
-  return buildLeaderAssignmentDispatchView(
-    input,
-    {
-      leaderAssignments,
-      describeRole
-    },
-    {
-      deriveLeaderAssignmentDispatchReason
-    }
-  );
+export function buildLeaderAssignmentDispatchViewFromSources(input, sources, helpers) {
+  return buildLeaderAssignmentDispatchView(input, sources, helpers);
 }

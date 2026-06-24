@@ -63,25 +63,8 @@ export function buildLeaderAssignmentLaunchPlanView(
   };
 }
 
-export function buildLeaderAssignmentLaunchPlanViewFromSources(
-  input,
-  {
-    leaderAssignmentDispatchBundle
-  },
-  {
-    deriveLeaderAssignmentLaunchPlanReason,
-    buildLeaderAssignmentLaunchPlanView
-  }
-) {
-  return buildLeaderAssignmentLaunchPlanView(
-    input,
-    {
-      leaderAssignmentDispatchBundle
-    },
-    {
-      deriveLeaderAssignmentLaunchPlanReason
-    }
-  );
+export function buildLeaderAssignmentLaunchPlanViewFromSources(input, sources, helpers) {
+  return buildLeaderAssignmentLaunchPlanView(input, sources, helpers);
 }
 
 export function deriveLeaderAssignmentLaunchPlanReason({ bundle, steps, next }) {
