@@ -16,47 +16,40 @@ export function createStateWorkerSessionEntryPoints(shared, api, workerQueue) {
   } = workerQueue;
 
   function workerSession(input = {}) {
-    return workerSessionFromSources(
-      input,
-      {
-        loadState,
-        normalizeTask,
-        taskInbox,
-        taskNext,
-        taskBrief: api.taskBrief
-      }
-    );
+    return workerSessionFromSources(input, workerSessionSources);
   }
 
   function workerHandoff(input = {}) {
-    return workerHandoffFromSources(
-      input,
-      {
-        workerSession
-      }
-    );
+    return workerHandoffFromSources(input, workerHandoffSources);
   }
 
   function workerCloseout(input = {}) {
-    return workerCloseoutFromSources(
-      input,
-      {
-        workerHandoff,
-        taskReport: api.taskReport
-      }
-    );
+    return workerCloseoutFromSources(input, workerCloseoutSources);
   }
 
   function verifierBundle(input = {}) {
-    return verifierBundleFromSources(
-      input,
-      {
-        workerSession,
-        workerHandoff,
-        taskReport: api.taskReport
-      }
-    );
+    return verifierBundleFromSources(input, verifierBundleSources);
   }
+
+  const workerSessionSources = {
+    loadState,
+    normalizeTask,
+    taskInbox,
+    taskNext,
+    taskBrief: api.taskBrief
+  };
+  const workerHandoffSources = {
+    workerSession
+  };
+  const workerCloseoutSources = {
+    workerHandoff,
+    taskReport: api.taskReport
+  };
+  const verifierBundleSources = {
+    workerSession,
+    workerHandoff,
+    taskReport: api.taskReport
+  };
 
   return {
     workerSession,

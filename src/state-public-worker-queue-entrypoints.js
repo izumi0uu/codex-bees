@@ -14,71 +14,66 @@ export function createStateWorkerQueueEntryPoints(shared, api) {
   } = shared;
 
   function taskInbox(input = {}) {
-    return taskInboxFromSources(
-      input,
-      {
-        loadState,
-        normalizeTask,
-        taskNext
-      }
-    );
+    return taskInboxFromSources(input, taskInboxSources);
   }
 
   function taskNext(input = {}) {
-    return taskNextFromSources(
-      input,
-      {
-        loadState,
-        normalizeTask,
-        taskBrief: api.taskBrief
-      }
-    );
+    return taskNextFromSources(input, taskNextSources);
   }
 
   function taskPickup(input = {}) {
-    return taskPickupFromSources(
-      input,
-      {
-        taskNext,
-        claimTask: api.claimTask,
-        taskBrief: api.taskBrief,
-        getTask: api.getTask
-      }
-    );
+    return taskPickupFromSources(input, taskPickupSources);
   }
 
   function taskAssignmentPickup(input = {}) {
-    return taskAssignmentPickupFromSources(
-      input,
-      {
-        leaderAssignments: api.leaderAssignments,
-        getTask: api.getTask,
-        taskBrief: api.taskBrief,
-        claimTask: api.claimTask
-      }
-    );
+    return taskAssignmentPickupFromSources(input, {
+      ...taskAssignmentPickupSharedSources,
+      leaderAssignments: api.leaderAssignments
+    });
   }
 
   function previewTaskAssignment(input = {}) {
-    return previewTaskAssignmentFromSources(
-      input,
-      {
-        leaderAssignments: api.leaderAssignments,
-        getTask: api.getTask,
-        taskBrief: api.taskBrief
-      }
-    );
+    return previewTaskAssignmentFromSources(input, {
+      ...previewTaskAssignmentSharedSources,
+      leaderAssignments: api.leaderAssignments
+    });
   }
 
   function previewTaskPickup(input = {}) {
-    return previewTaskPickupFromSources(
-      input,
-      {
-        taskNext,
-        getTask: api.getTask
-      }
-    );
+    return previewTaskPickupFromSources(input, previewTaskPickupSources);
   }
+
+  const sharedTaskSources = {
+    loadState,
+    normalizeTask
+  };
+  const taskInboxSources = {
+    ...sharedTaskSources,
+    taskNext
+  };
+  const taskNextSources = {
+    ...sharedTaskSources,
+    taskBrief: api.taskBrief
+  };
+  const taskPickupSources = {
+    taskNext,
+    claimTask: api.claimTask,
+    taskBrief: api.taskBrief,
+    getTask: api.getTask
+  };
+  const taskAssignmentPickupSharedSources = {
+    getTask: api.getTask,
+    taskBrief: api.taskBrief,
+    claimTask: api.claimTask
+  };
+  const previewTaskAssignmentSharedSources = {
+    getTask: api.getTask,
+    taskBrief: api.taskBrief
+  };
+  const previewTaskPickupSources = {
+    taskNext,
+    getTask: api.getTask
+  };
 
   return {
     taskInbox,
