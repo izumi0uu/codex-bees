@@ -1,9 +1,12 @@
 import {
   RUNTIME_PACK_DETAILS,
+  buildRuntimePackControlEntries,
+  buildRuntimePackControlMetadata,
+  buildRuntimePackControlOverview,
+  buildRuntimePackControlSurfaces,
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
@@ -31,12 +34,7 @@ export function buildRuntimeControlPackView(
   const leaderPack = runtimeLeaderPack(input);
   const recommendedSurface = deriveRuntimeControlPackSurface({ summaryPack, workspacePack, operatorPack, leaderPack });
   const recommendedReason = deriveRuntimeControlPackReason({ summaryPack, workspacePack, operatorPack, leaderPack });
-  const nextEntries = {
-    summary: summaryPack?.focus?.focus ?? null,
-    workspace: workspacePack?.next ?? null,
-    operator: operatorPack?.next ?? null,
-    leader: leaderPack?.next ?? null
-  };
+  const nextEntries = buildRuntimePackControlEntries(summaryPack, workspacePack, operatorPack, leaderPack);
   const expansion = {
     full: buildRuntimePackCommandExpansionEntry('runtime:control-pack', input, { detail: 'full' }),
     summaryPack: buildRuntimePackCommandExpansionEntry('runtime:summary-pack', input),
@@ -51,31 +49,20 @@ export function buildRuntimeControlPackView(
     availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasSummary: nextEntries.summary,
-      hasWorkspace: nextEntries.workspace,
-      hasOperator: nextEntries.operator,
-      hasLeader: nextEntries.leader
-    }),
+    metadata: buildRuntimePackControlMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      summary: summaryPack?.overview ?? null,
-      workspace: workspacePack?.overview ?? null,
-      operator: operatorPack?.overview ?? null,
-      leader: leaderPack?.overview ?? null
-    },
+    overview: buildRuntimePackControlOverview(summaryPack, workspacePack, operatorPack, leaderPack),
     next: nextEntries,
     expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeControlPackSummary(recommendedSurface, summaryPack, workspacePack, operatorPack, leaderPack)
   };
 
   return stripRoleContractsDeep(
-    attachRuntimePackSurfaces(pack, detailLevel, {
-      summaryPack,
-      workspacePack,
-      operatorPack,
-      leaderPack
-    })
+    attachRuntimePackSurfaces(
+      pack,
+      detailLevel,
+      buildRuntimePackControlSurfaces(summaryPack, workspacePack, operatorPack, leaderPack)
+    )
   );
 }
 

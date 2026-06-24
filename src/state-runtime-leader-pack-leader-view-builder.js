@@ -1,9 +1,12 @@
 import {
   RUNTIME_PACK_DETAILS,
+  buildRuntimePackLeaderEntries,
+  buildRuntimePackLeaderMetadata,
+  buildRuntimePackLeaderOverview,
+  buildRuntimePackLeaderSurfaces,
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
@@ -36,15 +39,15 @@ export function buildRuntimeLeaderPackView(
   const closeout = runtimeCloseout();
   const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
   const recommendedReason = deriveRuntimeLeaderPackReason({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
-  const nextEntries = {
-    workspace: workspace?.focus ?? null,
-    queue: queue?.next ?? null,
-    dispatch: dispatch?.next ?? null,
-    assignmentDispatch: assignmentDispatchPack?.next ?? null,
-    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
-    closeout: closeout?.next ?? null
-  };
+  const nextEntries = buildRuntimePackLeaderEntries(
+    workspace,
+    queue,
+    dispatch,
+    assignmentDispatchPack,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan,
+    closeout
+  );
   const expansion = {
     full: buildRuntimePackCommandExpansionEntry('runtime:leader-pack', input, { detail: 'full' }),
     workspace: buildRuntimePackCommandExpansionEntry('leader:workspace', input, { workerId: undefined, workerIds: undefined, detail: undefined }),
@@ -67,39 +70,43 @@ export function buildRuntimeLeaderPackView(
     },
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasWorkspace: workspace?.focus,
-      hasQueue: queue?.next,
-      hasDispatch: dispatch?.next,
-      hasAssignmentDispatch: assignmentDispatchPack?.next,
-      hasAssignmentLaunch: assignmentDispatchBundle?.next,
-      hasAssignmentLaunchPlan: assignmentLaunchPlan?.next,
-      hasCloseout: closeout?.next
-    }),
+    metadata: buildRuntimePackLeaderMetadata(
+      workspace,
+      queue,
+      dispatch,
+      assignmentDispatchPack,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      closeout
+    ),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      workspace: workspace?.counts ?? null,
-      queue: queue?.counts ?? null,
-      dispatch: dispatch?.counts ?? null,
-      assignmentDispatchPack: assignmentDispatchPack?.counts ?? null,
-      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
-      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null,
-      closeout: closeout?.counts ?? null
-    },
+    overview: buildRuntimePackLeaderOverview(
+      workspace,
+      queue,
+      dispatch,
+      assignmentDispatchPack,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      closeout
+    ),
     next: nextEntries,
     expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeLeaderPackSummary(recommendedSurface, workspace, queue, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan)
   };
 
-  return attachRuntimePackSurfaces(pack, detailLevel, {
-    workspace,
-    queue,
-    dispatch,
-    assignmentDispatchPack,
-    assignmentDispatchBundle,
-    assignmentLaunchPlan,
-    closeout
-  });
+  return attachRuntimePackSurfaces(
+    pack,
+    detailLevel,
+    buildRuntimePackLeaderSurfaces(
+      workspace,
+      queue,
+      dispatch,
+      assignmentDispatchPack,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      closeout
+    )
+  );
 }
 
 export function buildRuntimeLeaderPackViewFromSources(

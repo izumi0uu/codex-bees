@@ -1,9 +1,12 @@
 import {
   RUNTIME_PACK_DETAILS,
+  buildRuntimePackWorkspaceEntries,
+  buildRuntimePackWorkspaceMetadata,
+  buildRuntimePackWorkspaceOverview,
+  buildRuntimePackWorkspaceSurfaces,
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
@@ -34,14 +37,14 @@ export function buildRuntimeWorkspacePackView(
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeWorkspacePackSurface({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
   const recommendedReason = deriveRuntimeWorkspacePackReason({ dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery });
-  const nextEntries = {
-    dashboard: dashboard?.leader?.queue?.next ?? null,
-    dispatch: dispatch?.next ?? null,
-    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
-    review: review?.next ?? null,
-    recovery: recovery?.next ?? null
-  };
+  const nextEntries = buildRuntimePackWorkspaceEntries(
+    dashboard,
+    dispatch,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan,
+    review,
+    recovery
+  );
   const expansion = {
     full: buildRuntimePackCommandExpansionEntry('runtime:workspace-pack', input, { detail: 'full' }),
     dashboard: buildRuntimePackCliExpansionEntry('runtime:dashboard'),
@@ -58,36 +61,40 @@ export function buildRuntimeWorkspacePackView(
     availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasDashboard: dashboard?.leader?.queue?.next,
-      hasDispatch: dispatch?.next,
-      hasAssignmentLaunch: assignmentDispatchBundle?.next,
-      hasAssignmentLaunchPlan: assignmentLaunchPlan?.next,
-      hasReview: review?.next,
-      hasRecovery: recovery?.next
-    }),
+    metadata: buildRuntimePackWorkspaceMetadata(
+      dashboard,
+      dispatch,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      review,
+      recovery
+    ),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      dashboard: dashboard?.counts ?? null,
-      dispatch: dispatch?.counts ?? null,
-      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
-      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null,
-      review: review?.counts ?? null,
-      recovery: recovery?.counts ?? null
-    },
+    overview: buildRuntimePackWorkspaceOverview(
+      dashboard,
+      dispatch,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      review,
+      recovery
+    ),
     next: nextEntries,
     expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeWorkspacePackSummary(recommendedSurface, dashboard, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, review, recovery)
   };
 
-  return attachRuntimePackSurfaces(pack, detailLevel, {
-    dashboard,
-    dispatch,
-    assignmentDispatchBundle,
-    assignmentLaunchPlan,
-    review,
-    recovery
-  });
+  return attachRuntimePackSurfaces(
+    pack,
+    detailLevel,
+    buildRuntimePackWorkspaceSurfaces(
+      dashboard,
+      dispatch,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      review,
+      recovery
+    )
+  );
 }
 
 export function buildRuntimeWorkspacePackViewFromSources(

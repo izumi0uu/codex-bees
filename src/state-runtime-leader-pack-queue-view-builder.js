@@ -1,9 +1,12 @@
 import {
   RUNTIME_PACK_DETAILS,
+  buildRuntimePackQueueEntries,
+  buildRuntimePackQueueMetadata,
+  buildRuntimePackQueueOverview,
+  buildRuntimePackQueueSurfaces,
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
@@ -32,12 +35,7 @@ export function buildRuntimeQueuePackView(
   const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const recommendedSurface = deriveRuntimeQueuePackSurface({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan });
   const recommendedReason = deriveRuntimeQueuePackReason({ queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan });
-  const nextEntries = {
-    queue: queue?.next ?? null,
-    focus: focus?.focus ?? null,
-    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
-  };
+  const nextEntries = buildRuntimePackQueueEntries(queue, focus, assignmentDispatchBundle, assignmentLaunchPlan);
   const expansion = {
     full: buildRuntimePackCommandExpansionEntry('runtime:queue-pack', input, { detail: 'full' }),
     queue: buildRuntimePackCommandExpansionEntry('leader:queue', input, { workerId: undefined, workerIds: undefined, detail: undefined }),
@@ -53,31 +51,19 @@ export function buildRuntimeQueuePackView(
     availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasQueue: queue?.next,
-      hasFocus: focus?.focus,
-      hasAssignmentLaunch: assignmentDispatchBundle?.next,
-      hasAssignmentLaunchPlan: assignmentLaunchPlan?.next
-    }),
+    metadata: buildRuntimePackQueueMetadata(queue, focus, assignmentDispatchBundle, assignmentLaunchPlan),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      queue: queue?.counts ?? null,
-      dashboard: dashboard?.counts ?? null,
-      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
-      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
-    },
+    overview: buildRuntimePackQueueOverview(queue, dashboard, assignmentDispatchBundle, assignmentLaunchPlan),
     next: nextEntries,
     expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeQueuePackSummary(recommendedSurface, queue, focus, dashboard, assignmentDispatchBundle, assignmentLaunchPlan)
   };
 
-  return attachRuntimePackSurfaces(pack, detailLevel, {
-    queue,
-    dashboard,
-    focus,
-    assignmentDispatchBundle,
-    assignmentLaunchPlan
-  });
+  return attachRuntimePackSurfaces(
+    pack,
+    detailLevel,
+    buildRuntimePackQueueSurfaces(queue, dashboard, focus, assignmentDispatchBundle, assignmentLaunchPlan)
+  );
 }
 
 export function buildRuntimeQueuePackViewFromSources(
