@@ -46,198 +46,114 @@ import {
   buildTaskListViewFromSources
 } from "./state-task-views.js";
 
-export function listTasksSurface({ loadState, normalizeTask }) {
-  return listTasksFromSources({
-    loadState,
-    normalizeTask
+export function listTasksSurface(sources = {}) {
+  return listTasksFromSources(sources);
+}
+
+export function listTasksViewSurface(sources = {}) {
+  return buildTaskListViewFromSources(sources, {
+    buildTaskListView
   });
 }
 
-export function listTasksViewSurface({ listTasks }) {
-  return buildTaskListViewFromSources(
-    {
-      listTasks
-    },
-    {
-      buildTaskListView
-    }
-  );
-}
-
-export function listMemoriesSurface(filters = {}, { loadState }) {
+export function listMemoriesSurface(filters = {}, sources = {}) {
   return listMemoriesFromSources(filters, {
-    loadState,
+    ...sources,
     filterMemories
   });
 }
 
-export function getMemorySurface(id, { loadState, normalizeMemory }) {
-  return getMemoryFromSources(id, {
-    loadState,
-    normalizeMemory
+export function getMemorySurface(id, sources = {}) {
+  return getMemoryFromSources(id, sources);
+}
+
+export function listMemoriesViewSurface(filters = {}, sources = {}) {
+  return buildMemoryListViewFromSources(filters, sources, {
+    buildMemoryListView
   });
 }
 
-export function listMemoriesViewSurface(filters = {}, { listMemories }) {
-  return buildMemoryListViewFromSources(
-    filters,
-    {
-      listMemories
-    },
-    {
-      buildMemoryListView
-    }
-  );
+export function getMemoryViewSurface(id, sources = {}) {
+  return buildMemoryDetailViewFromSources(id, sources, {
+    buildMemoryDetailView
+  });
 }
 
-export function getMemoryViewSurface(id, { getMemory }) {
-  return buildMemoryDetailViewFromSources(
-    id,
-    {
-      getMemory
-    },
-    {
-      buildMemoryDetailView
-    }
-  );
-}
-
-export function listSwarmsSurface(filters = {}, { loadState }) {
+export function listSwarmsSurface(filters = {}, sources = {}) {
   return listSwarmsFromSources(filters, {
-    loadState,
+    ...sources,
     filterSwarms
   });
 }
 
-export function listSwarmOverviewsSurface(filters = {}, { listSwarms, swarmOverview }) {
-  return listSwarmOverviewsFromSources(filters, {
-    listSwarms,
-    swarmOverview
+export function listSwarmOverviewsSurface(filters = {}, sources = {}) {
+  return listSwarmOverviewsFromSources(filters, sources);
+}
+
+export function listSwarmsViewSurface(filters = {}, options = {}, sources = {}) {
+  return buildSwarmListViewFromSources(filters, options, sources, {
+    buildSwarmListView
   });
 }
 
-export function listSwarmsViewSurface(filters = {}, options = {}, { listSwarms, listSwarmOverviews }) {
-  return buildSwarmListViewFromSources(
-    filters,
-    options,
-    {
-      listSwarms,
-      listSwarmOverviews
-    },
-    {
-      buildSwarmListView
-    }
-  );
+export function getTaskSurface(id, sources = {}) {
+  return getTaskFromSources(id, sources);
 }
 
-export function getTaskSurface(id, { loadState, normalizeTask }) {
-  return getTaskFromSources(id, {
-    loadState,
-    normalizeTask
+export function listArchivedTasksSurface(sources = {}) {
+  return listArchivedTasksFromSources(sources);
+}
+
+export function getArchivedTaskSurface(id, sources = {}) {
+  return getArchivedTaskFromSources(id, sources);
+}
+
+export function listArchivedTasksViewSurface(sources = {}) {
+  return buildArchivedTaskListViewFromSources(sources, {
+    buildArchivedTaskListView
   });
 }
 
-export function listArchivedTasksSurface({ loadState, normalizeTask }) {
-  return listArchivedTasksFromSources({
-    loadState,
-    normalizeTask
+export function getArchivedTaskViewSurface(id, sources = {}) {
+  return buildArchivedTaskDetailViewFromSources(id, sources, {
+    buildArchivedTaskDetailView
   });
 }
 
-export function getArchivedTaskSurface(id, { loadState, normalizeTask }) {
-  return getArchivedTaskFromSources(id, {
-    loadState,
-    normalizeTask
+export function listArchivedSwarmsSurface(sources = {}) {
+  return listArchivedSwarmsFromSources(sources);
+}
+
+export function getArchivedSwarmSurface(id, sources = {}) {
+  return getArchivedSwarmFromSources(id, sources);
+}
+
+export function listArchivedSwarmsViewSurface(sources = {}) {
+  return buildArchivedSwarmListViewFromSources(sources, {
+    buildArchivedSwarmListView
   });
 }
 
-export function listArchivedTasksViewSurface({ listArchivedTasks }) {
-  return buildArchivedTaskListViewFromSources(
-    {
-      listArchivedTasks
-    },
-    {
-      buildArchivedTaskListView
-    }
-  );
-}
-
-export function getArchivedTaskViewSurface(id, { getArchivedTask }) {
-  return buildArchivedTaskDetailViewFromSources(
-    id,
-    {
-      getArchivedTask
-    },
-    {
-      buildArchivedTaskDetailView
-    }
-  );
-}
-
-export function listArchivedSwarmsSurface({ loadState, normalizeSwarm }) {
-  return listArchivedSwarmsFromSources({
-    loadState,
-    normalizeSwarm
+export function getArchivedSwarmViewSurface(id, sources = {}) {
+  return buildArchivedSwarmDetailViewFromSources(id, sources, {
+    buildArchivedSwarmDetailView
   });
 }
 
-export function getArchivedSwarmSurface(id, { loadState, normalizeSwarm }) {
-  return getArchivedSwarmFromSources(id, {
-    loadState,
-    normalizeSwarm
-  });
+export function getSwarmSurface(id, sources = {}) {
+  return getSwarmFromSources(id, sources);
 }
 
-export function listArchivedSwarmsViewSurface({ listArchivedSwarms }) {
-  return buildArchivedSwarmListViewFromSources(
-    {
-      listArchivedSwarms
-    },
-    {
-      buildArchivedSwarmListView
-    }
-  );
-}
-
-export function getArchivedSwarmViewSurface(id, { getArchivedSwarm, getArchivedTask, listArchivedTasks }) {
-  return buildArchivedSwarmDetailViewFromSources(
-    id,
-    {
-      getArchivedSwarm,
-      getArchivedTask,
-      listArchivedTasks
-    },
-    {
-      buildArchivedSwarmDetailView
-    }
-  );
-}
-
-export function getSwarmSurface(id, { loadState, normalizeSwarm }) {
-  return getSwarmFromSources(id, {
-    loadState,
-    normalizeSwarm
-  });
-}
-
-export function searchMemoriesSurface(query, filters = {}, { listMemories }) {
+export function searchMemoriesSurface(query, filters = {}, sources = {}) {
   return searchMemoriesFromSources(query, filters, {
-    listMemories,
+    ...sources,
     tokenize,
     scoreMemory
   });
 }
 
-export function searchMemoriesViewSurface(query, filters = {}, limit = 10, { searchMemories }) {
-  return buildMemorySearchViewFromSources(
-    query,
-    filters,
-    limit,
-    {
-      searchMemories
-    },
-    {
-      buildMemorySearchView
-    }
-  );
+export function searchMemoriesViewSurface(query, filters = {}, limit = 10, sources = {}) {
+  return buildMemorySearchViewFromSources(query, filters, limit, sources, {
+    buildMemorySearchView
+  });
 }
