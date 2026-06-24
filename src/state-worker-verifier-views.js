@@ -76,31 +76,6 @@ export function buildVerifierBundleView(
   };
 }
 
-export function buildVerifierBundleViewFromSources(
-  input,
-  {
-    workerSession,
-    workerHandoff,
-    taskReport,
-    describeRole,
-    deriveVerifierBundleReason,
-    buildVerifierDecisionCommands,
-    buildVerifierBundleSummary
-  },
-  {
-    buildVerifierBundleView
-  }
-) {
-  return buildVerifierBundleView(
-    input,
-    {
-      workerSession,
-      workerHandoff,
-      taskReport,
-      describeRole,
-      deriveVerifierBundleReason,
-      buildVerifierDecisionCommands,
-      buildVerifierBundleSummary
-    }
-  );
+export function buildVerifierBundleViewFromSources(input, sources) {
+  return buildVerifierBundleView(input, sources);
 }

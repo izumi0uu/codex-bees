@@ -183,43 +183,8 @@ export function buildWorkerSessionView(
   };
 }
 
-export function buildWorkerSessionViewFromSources(
-  input,
-  {
-    loadState,
-    normalizeTask,
-    normalizeNextMode,
-    compareTasksByUpdatedAt,
-    taskInbox,
-    taskNext,
-    recommendWorkerSessionFocus,
-    deriveWorkerSessionReason,
-    describeRole,
-    buildSessionTaskSnapshot,
-    summarizeInboxTask,
-    taskBrief
-  },
-  {
-    buildWorkerSessionView
-  }
-) {
-  return buildWorkerSessionView(
-    input,
-    {
-      loadState,
-      normalizeTask,
-      normalizeNextMode,
-      compareTasksByUpdatedAt,
-      taskInbox,
-      taskNext,
-      recommendWorkerSessionFocus,
-      deriveWorkerSessionReason,
-      describeRole,
-      buildSessionTaskSnapshot,
-      summarizeInboxTask,
-      taskBrief
-    }
-  );
+export function buildWorkerSessionViewFromSources(input, sources) {
+  return buildWorkerSessionView(input, sources);
 }
 
 export function buildWorkerHandoffSummary(session, focusTaskSnapshot) {
@@ -293,23 +258,6 @@ export function buildWorkerHandoffView(
   });
 }
 
-export function buildWorkerHandoffViewFromSources(
-  input,
-  {
-    workerSession,
-    deriveWorkerHandoffReason,
-    buildWorkerHandoffSummary
-  },
-  {
-    buildWorkerHandoffView
-  }
-) {
-  return buildWorkerHandoffView(
-    input,
-    {
-      workerSession,
-      deriveWorkerHandoffReason,
-      buildWorkerHandoffSummary
-    }
-  );
+export function buildWorkerHandoffViewFromSources(input, sources) {
+  return buildWorkerHandoffView(input, sources);
 }

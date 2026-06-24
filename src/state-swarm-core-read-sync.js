@@ -50,8 +50,7 @@ export function validateSwarmFromSources(
     loadState,
     normalizeSwarm,
     buildSwarmValidationViewFromSources,
-    runtimeRoleCatalog,
-    buildSwarmValidationView
+    runtimeRoleCatalog
   }
 ) {
   const swarm = loadState().swarms.map(normalizeSwarm).find((item) => item.id === id);
@@ -62,9 +61,6 @@ export function validateSwarmFromSources(
     swarm,
     {
       runtimeRoleCatalog
-    },
-    {
-      buildSwarmValidationView
     }
   );
 }

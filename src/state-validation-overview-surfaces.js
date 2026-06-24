@@ -11,9 +11,7 @@ import {
 import { validateTaskFromSources } from "./state-task-core.js";
 import { runtimeRoleCatalog } from "./state-role-catalog.js";
 import {
-  buildSwarmValidationView,
   buildSwarmValidationViewFromSources,
-  buildTaskValidationView,
   buildTaskValidationViewFromSources,
   deriveSwarmStatus
 } from "./state-rules.js";
@@ -22,8 +20,7 @@ export function validateTaskSurface(id, sources = {}) {
   return validateTaskFromSources(id, {
     ...sources,
     buildTaskValidationViewFromSources,
-    runtimeRoleCatalog,
-    buildTaskValidationView
+    runtimeRoleCatalog
   });
 }
 
@@ -31,8 +28,7 @@ export function validateSwarmSurface(id, sources = {}) {
   return validateSwarmFromSources(id, {
     ...sources,
     buildSwarmValidationViewFromSources,
-    runtimeRoleCatalog,
-    buildSwarmValidationView
+    runtimeRoleCatalog
   });
 }
 

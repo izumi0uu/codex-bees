@@ -4,11 +4,9 @@ import {
   assignmentPickupOutcome,
   buildPreviewTaskAssignmentViewFromSources,
   buildPreviewTaskPickupViewFromSources,
-  buildTaskAssignmentPickupView,
   buildTaskAssignmentPickupViewFromSources,
   buildTaskInboxViewFromSources,
   buildTaskNextViewFromSources,
-  buildTaskPickupView,
   buildTaskPickupViewFromSources,
   compareTasksByUpdatedAt,
   isClaimableTask,
@@ -35,16 +33,12 @@ import { describeRole, describeRoleWithContract } from "./state-task-core.js";
 import {
   buildSessionTaskSnapshot,
   buildVerifierBundleSummary,
-  buildVerifierBundleView,
   buildVerifierBundleViewFromSources,
   buildVerifierDecisionCommands,
   buildWorkerCloseoutSummary,
-  buildWorkerCloseoutView,
   buildWorkerCloseoutViewFromSources,
   buildWorkerHandoffSummary,
-  buildWorkerHandoffView,
   buildWorkerHandoffViewFromSources,
-  buildWorkerSessionView,
   buildWorkerSessionViewFromSources,
   deriveWorkerCloseoutCommand,
   recommendWorkerSessionFocus
@@ -95,8 +89,7 @@ export function taskPickupFromSources(input = {}, sources = {}) {
       normalizeNextMode
     },
     {
-      deriveTaskPickupReason,
-      buildTaskPickupView
+      deriveTaskPickupReason
     }
   );
 }
@@ -113,8 +106,7 @@ export function taskAssignmentPickupFromSources(input = {}, sources = {}) {
       assignmentFollowupCommand
     },
     {
-      deriveTaskAssignmentPickupReason,
-      buildTaskAssignmentPickupView
+      deriveTaskAssignmentPickupReason
     }
   );
 }
@@ -153,65 +145,41 @@ export function previewTaskPickupFromSources(input = {}, sources = {}) {
 }
 
 export function workerSessionFromSources(input = {}, sources = {}) {
-  return buildWorkerSessionViewFromSources(
-    input,
-    {
-      ...sources,
-      normalizeNextMode,
-      compareTasksByUpdatedAt,
-      recommendWorkerSessionFocus,
-      deriveWorkerSessionReason,
-      describeRole: describeRoleWithContract,
-      buildSessionTaskSnapshot,
-      summarizeInboxTask
-    },
-    {
-      buildWorkerSessionView
-    }
-  );
+  return buildWorkerSessionViewFromSources(input, {
+    ...sources,
+    normalizeNextMode,
+    compareTasksByUpdatedAt,
+    recommendWorkerSessionFocus,
+    deriveWorkerSessionReason,
+    describeRole: describeRoleWithContract,
+    buildSessionTaskSnapshot,
+    summarizeInboxTask
+  });
 }
 
 export function workerHandoffFromSources(input = {}, sources = {}) {
-  return buildWorkerHandoffViewFromSources(
-    input,
-    {
-      ...sources,
-      deriveWorkerHandoffReason,
-      buildWorkerHandoffSummary
-    },
-    {
-      buildWorkerHandoffView
-    }
-  );
+  return buildWorkerHandoffViewFromSources(input, {
+    ...sources,
+    deriveWorkerHandoffReason,
+    buildWorkerHandoffSummary
+  });
 }
 
 export function workerCloseoutFromSources(input = {}, sources = {}) {
-  return buildWorkerCloseoutViewFromSources(
-    input,
-    {
-      ...sources,
-      deriveWorkerCloseoutReason,
-      deriveWorkerCloseoutCommand,
-      buildWorkerCloseoutSummary
-    },
-    {
-      buildWorkerCloseoutView
-    }
-  );
+  return buildWorkerCloseoutViewFromSources(input, {
+    ...sources,
+    deriveWorkerCloseoutReason,
+    deriveWorkerCloseoutCommand,
+    buildWorkerCloseoutSummary
+  });
 }
 
 export function verifierBundleFromSources(input = {}, sources = {}) {
-  return buildVerifierBundleViewFromSources(
-    input,
-    {
-      ...sources,
-      describeRole,
-      deriveVerifierBundleReason,
-      buildVerifierDecisionCommands,
-      buildVerifierBundleSummary
-    },
-    {
-      buildVerifierBundleView
-    }
-  );
+  return buildVerifierBundleViewFromSources(input, {
+    ...sources,
+    describeRole,
+    deriveVerifierBundleReason,
+    buildVerifierDecisionCommands,
+    buildVerifierBundleSummary
+  });
 }

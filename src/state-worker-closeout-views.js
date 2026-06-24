@@ -75,27 +75,6 @@ export function buildWorkerCloseoutView(
   });
 }
 
-export function buildWorkerCloseoutViewFromSources(
-  input,
-  {
-    workerHandoff,
-    taskReport,
-    deriveWorkerCloseoutReason,
-    deriveWorkerCloseoutCommand,
-    buildWorkerCloseoutSummary
-  },
-  {
-    buildWorkerCloseoutView
-  }
-) {
-  return buildWorkerCloseoutView(
-    input,
-    {
-      workerHandoff,
-      taskReport,
-      deriveWorkerCloseoutReason,
-      deriveWorkerCloseoutCommand,
-      buildWorkerCloseoutSummary
-    }
-  );
+export function buildWorkerCloseoutViewFromSources(input, sources) {
+  return buildWorkerCloseoutView(input, sources);
 }

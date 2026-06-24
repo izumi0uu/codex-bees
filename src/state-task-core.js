@@ -116,8 +116,7 @@ export function validateTaskFromSources(
     loadState,
     normalizeTask,
     buildTaskValidationViewFromSources,
-    runtimeRoleCatalog,
-    buildTaskValidationView
+    runtimeRoleCatalog
   }
 ) {
   const tasks = annotateTasksWithDependencyState(loadState().tasks.map(normalizeTask));
@@ -130,9 +129,6 @@ export function validateTaskFromSources(
     {
       runtimeRoleCatalog,
       tasks
-    },
-    {
-      buildTaskValidationView
     }
   );
 }

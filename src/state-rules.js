@@ -310,9 +310,6 @@ export function buildTaskValidationViewFromSources(
   {
     runtimeRoleCatalog,
     tasks
-  },
-  {
-    buildTaskValidationView
   }
 ) {
   return buildTaskValidationView(task, runtimeRoleCatalog(), tasks);
@@ -331,9 +328,6 @@ export function buildSwarmValidationViewFromSources(
   swarm,
   {
     runtimeRoleCatalog
-  },
-  {
-    buildSwarmValidationView
   }
 ) {
   return buildSwarmValidationView(swarm, runtimeRoleCatalog());
