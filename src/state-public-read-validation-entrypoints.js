@@ -17,38 +17,43 @@ export function createStateReadValidationEntryPoints(shared) {
   } = shared;
 
   function validateTask(id) {
-    return validateTaskSurface(id, {
-      loadState,
-      normalizeTask
-    });
+    return validateTaskSurface(id, validateTaskSources);
   }
 
   function validateSwarm(id) {
-    return validateSwarmSurface(id, {
-      loadState,
-      normalizeSwarm
-    });
+    return validateSwarmSurface(id, validateSwarmSources);
   }
 
   function syncSwarmStatus(id) {
-    return syncSwarmStatusSurface(id, {
-      loadState,
-      saveState,
-      syncLoadedSwarmLifecycle,
-      findSwarmIndex,
-      normalizeSwarm,
-      normalizeTask,
-      buildSyncedSwarmState
-    });
+    return syncSwarmStatusSurface(id, syncSwarmStatusSources);
   }
 
   function swarmOverview(id) {
-    return swarmOverviewSurface(id, {
-      loadState,
-      normalizeSwarm,
-      normalizeTask
-    });
+    return swarmOverviewSurface(id, swarmOverviewSources);
   }
+
+  const validateTaskSources = {
+    loadState,
+    normalizeTask
+  };
+  const validateSwarmSources = {
+    loadState,
+    normalizeSwarm
+  };
+  const syncSwarmStatusSources = {
+    loadState,
+    saveState,
+    syncLoadedSwarmLifecycle,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask,
+    buildSyncedSwarmState
+  };
+  const swarmOverviewSources = {
+    loadState,
+    normalizeSwarm,
+    normalizeTask
+  };
 
   return {
     validateTask,

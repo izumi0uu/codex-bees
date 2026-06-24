@@ -21,77 +21,88 @@ export function createStateReadAccessEntryPoints(shared) {
   } = shared;
 
   function listTasks() {
-    return listTasksSurface({
-      loadState,
-      normalizeTask
-    });
+    return listTasksSurface(listTasksSources);
   }
 
   function listMemories(filters = {}) {
-    return listMemoriesSurface(filters, {
-      loadState,
-      normalizeMemory
-    });
+    return listMemoriesSurface(filters, listMemoriesSources);
   }
 
   function getMemory(id) {
-    return getMemorySurface(id, {
-      loadState,
-      normalizeMemory
-    });
+    return getMemorySurface(id, getMemorySources);
   }
 
   function listSwarms(filters = {}) {
-    return listSwarmsSurface(filters, {
-      loadState
-    });
+    return listSwarmsSurface(filters, listSwarmsSources);
   }
 
   function getTask(id) {
-    return getTaskSurface(id, {
-      loadState,
-      normalizeTask
-    });
+    return getTaskSurface(id, getTaskSources);
   }
 
   function listArchivedTasks() {
-    return listArchivedTasksSurface({
-      loadState,
-      normalizeTask
-    });
+    return listArchivedTasksSurface(listArchivedTasksSources);
   }
 
   function getArchivedTask(id) {
-    return getArchivedTaskSurface(id, {
-      loadState,
-      normalizeTask
-    });
+    return getArchivedTaskSurface(id, getArchivedTaskSources);
   }
 
   function getSwarm(id) {
-    return getSwarmSurface(id, {
-      loadState,
-      normalizeSwarm
-    });
+    return getSwarmSurface(id, getSwarmSources);
   }
 
   function listArchivedSwarms() {
-    return listArchivedSwarmsSurface({
-      loadState,
-      normalizeSwarm
-    });
+    return listArchivedSwarmsSurface(listArchivedSwarmsSources);
   }
 
   function getArchivedSwarm(id) {
-    return getArchivedSwarmSurface(id, {
-      loadState,
-      normalizeSwarm
-    });
+    return getArchivedSwarmSurface(id, getArchivedSwarmSources);
   }
 
   function stateFilePath() {
     return ensureStateFile();
   }
+
+  const listTasksSources = {
+    loadState,
+    normalizeTask
+  };
+  const listMemoriesSources = {
+    loadState,
+    normalizeMemory
+  };
+  const getMemorySources = {
+    loadState,
+    normalizeMemory
+  };
+  const listSwarmsSources = {
+    loadState
+  };
+  const getTaskSources = {
+    loadState,
+    normalizeTask
+  };
+  const listArchivedTasksSources = {
+    loadState,
+    normalizeTask
+  };
+  const getArchivedTaskSources = {
+    loadState,
+    normalizeTask
+  };
+  const getSwarmSources = {
+    loadState,
+    normalizeSwarm
+  };
+  const listArchivedSwarmsSources = {
+    loadState,
+    normalizeSwarm
+  };
+  const getArchivedSwarmSources = {
+    loadState,
+    normalizeSwarm
+  };
 
   return {
     listTasks,
