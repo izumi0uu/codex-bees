@@ -3,7 +3,10 @@ import {
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackSummaryEntries,
+  buildRuntimePackSummaryMetadata,
+  buildRuntimePackSummaryOverview,
+  buildRuntimePackSummarySurfaces,
   attachRuntimePackSurfaces,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
@@ -38,14 +41,14 @@ export function buildRuntimeSummaryPackView(
   const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const recommendedSurface = deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard });
   const recommendedReason = deriveRuntimeSummaryPackReason({ focus, recovery, closeout, handoffs, dashboard });
-  const nextEntries = {
-    focus: focus.focus ?? null,
-    handoff: handoffs.next ?? null,
-    recovery: recovery.next ?? null,
-    closeout: closeout.next ?? null,
-    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null
-  };
+  const nextEntries = buildRuntimePackSummaryEntries(
+    focus,
+    handoffs,
+    recovery,
+    closeout,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan
+  );
   const expansion = {
     full: buildRuntimePackCommandExpansionEntry('runtime:summary-pack', input, { detail: 'full' }),
     dashboard: buildRuntimePackCliExpansionEntry('runtime:dashboard'),
@@ -63,38 +66,42 @@ export function buildRuntimeSummaryPackView(
     availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasFocus: focus.focus,
-      hasRecovery: recovery.next,
-      hasCloseout: closeout.next,
-      hasAssignmentLaunch: assignmentDispatchBundle?.next,
-      hasAssignmentLaunchPlan: assignmentLaunchPlan?.next
-    }),
+    metadata: buildRuntimePackSummaryMetadata(
+      focus,
+      recovery,
+      closeout,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan
+    ),
     counts: buildRuntimePackCounts(nextEntries),
     focus,
-    overview: {
-      dashboard: dashboard.counts,
-      alerts: alerts.counts,
-      handoffs: handoffs.counts,
-      recovery: recovery.counts,
-      closeout: closeout.counts,
-      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
-      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null
-    },
+    overview: buildRuntimePackSummaryOverview(
+      dashboard,
+      alerts,
+      handoffs,
+      recovery,
+      closeout,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan
+    ),
     next: nextEntries,
     expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeSummaryPackSummary(recommendedSurface, focus)
   };
 
-  return attachRuntimePackSurfaces(pack, detailLevel, {
-    dashboard,
-    alerts,
-    handoffs,
-    recovery,
-    closeout,
-    assignmentDispatchBundle,
-    assignmentLaunchPlan
-  });
+  return attachRuntimePackSurfaces(
+    pack,
+    detailLevel,
+    buildRuntimePackSummarySurfaces(
+      dashboard,
+      alerts,
+      handoffs,
+      recovery,
+      closeout,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan
+    )
+  );
 }
 
 export function buildRuntimeSummaryPackViewFromSources(

@@ -1,12 +1,14 @@
 import {
   RUNTIME_PACK_DETAILS,
   attachRuntimePackSurfaces,
+  buildRuntimePackExecutionEntries,
+  buildRuntimePackExecutionMetadata,
+  buildRuntimePackExecutionOverview,
+  buildRuntimePackExecutionSurfaces,
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackCliExpansionEntry,
   buildRuntimePackCommandExpansionEntry,
   buildRuntimePackExpansion,
-  buildRuntimePackFocusOverview,
-  buildRuntimePackPresenceMetadata,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
 } from "./state-runtime-pack-detail.js";
@@ -44,14 +46,14 @@ export function buildRuntimeExecutionPackView(
     focus?.focus,
     roles?.next?.nextAction
   );
-  const nextEntries = {
-    focus: focus?.focus ?? null,
-    dispatch: dispatch?.next ?? null,
-    assignmentLaunch: assignmentDispatchBundle?.next ?? null,
-    assignmentLaunchStep: assignmentLaunchPlan?.next ?? null,
-    role: roles?.next ?? null,
-    queue: queuePack?.next?.queue ?? null
-  };
+  const nextEntries = buildRuntimePackExecutionEntries(
+    focus,
+    dispatch,
+    assignmentDispatchBundle,
+    assignmentLaunchPlan,
+    roles,
+    queuePack
+  );
   const expansion = {
     full: buildRuntimePackCommandExpansionEntry("runtime:execution-pack", input, { detail: "full" }),
     focus: buildRuntimePackCliExpansionEntry("runtime:focus"),
@@ -69,36 +71,33 @@ export function buildRuntimeExecutionPackView(
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasFocus: nextEntries.focus,
-      hasDispatch: nextEntries.dispatch,
-      hasAssignmentLaunch: nextEntries.assignmentLaunch,
-      hasAssignmentLaunchStep: nextEntries.assignmentLaunchStep,
-      hasRole: nextEntries.role,
-      hasQueue: nextEntries.queue
-    }),
+    metadata: buildRuntimePackExecutionMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      focus: buildRuntimePackFocusOverview(focus),
-      dispatch: dispatch?.counts ?? null,
-      assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
-      assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null,
-      roles: roles?.counts ?? null,
-      queue: queuePack?.overview?.queue ?? null
-    },
+    overview: buildRuntimePackExecutionOverview(
+      focus,
+      dispatch,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      roles,
+      queuePack
+    ),
     next: nextEntries,
     expansion: buildRuntimePackExpansion(detailLevel, expansion),
     summary: buildRuntimeExecutionPackSummary(recommendedSurface, focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack)
   };
 
-  return attachRuntimePackSurfaces(pack, detailLevel, {
-    focus,
-    dispatch,
-    assignmentDispatchBundle,
-    assignmentLaunchPlan,
-    roles,
-    queuePack
-  });
+  return attachRuntimePackSurfaces(
+    pack,
+    detailLevel,
+    buildRuntimePackExecutionSurfaces(
+      focus,
+      dispatch,
+      assignmentDispatchBundle,
+      assignmentLaunchPlan,
+      roles,
+      queuePack
+    )
+  );
 }
 
 export function buildRuntimeExecutionPackViewFromSources(
