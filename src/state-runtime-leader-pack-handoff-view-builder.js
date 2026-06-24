@@ -40,30 +40,3 @@ export function buildRuntimeHandoffPackView(
   };
 }
 
-export function buildRuntimeHandoffPackViewFromSources(
-  {
-    runtimeHandoffs,
-    runtimeDispatch,
-    runtimeReview,
-    runtimeRecovery
-  },
-  {
-    deriveRuntimeHandoffPackSurface,
-    deriveRuntimeHandoffPackReason,
-    buildRuntimeHandoffPackSummary
-  }
-) {
-  return buildRuntimeHandoffPackView(
-    {
-      runtimeHandoffs,
-      runtimeDispatch,
-      runtimeReview,
-      runtimeRecovery
-    },
-    {
-      deriveRuntimeHandoffPackSurface,
-      deriveRuntimeHandoffPackReason,
-      buildRuntimeHandoffPackSummary
-    }
-  );
-}

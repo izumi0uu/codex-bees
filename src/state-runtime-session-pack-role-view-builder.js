@@ -66,34 +66,3 @@ export function buildRuntimeRolePackView(
   };
 }
 
-export function buildRuntimeRolePackViewFromSources(
-  input,
-  {
-    runtimeRoles,
-    runtimeSessionPack,
-    runtimeOwnerPack,
-    runtimeVerifierPack,
-    describeRole
-  },
-  {
-    deriveRuntimeRolePackSurface,
-    deriveRuntimeRolePackReason,
-    buildRuntimeRolePackSummary
-  }
-) {
-  return buildRuntimeRolePackView(
-    input,
-    {
-      runtimeRoles,
-      runtimeSessionPack,
-      runtimeOwnerPack,
-      runtimeVerifierPack,
-      describeRole
-    },
-    {
-      deriveRuntimeRolePackSurface,
-      deriveRuntimeRolePackReason,
-      buildRuntimeRolePackSummary
-    }
-  );
-}

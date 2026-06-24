@@ -88,38 +88,3 @@ export function buildRuntimeAssignmentPackView(
   };
 }
 
-export function buildRuntimeAssignmentPackViewFromSources(
-  input,
-  {
-    normalizeNextMode,
-    leaderAssignments,
-    workerSession,
-    taskNext,
-    previewTaskAssignment,
-    runtimeRoles,
-    describeRole
-  },
-  {
-    deriveRuntimeAssignmentPackSurface,
-    deriveRuntimeAssignmentPackReason,
-    buildRuntimeAssignmentPackSummary
-  }
-) {
-  return buildRuntimeAssignmentPackView(
-    input,
-    {
-      normalizeNextMode,
-      leaderAssignments,
-      workerSession,
-      taskNext,
-      previewTaskAssignment,
-      runtimeRoles,
-      describeRole
-    },
-    {
-      deriveRuntimeAssignmentPackSurface,
-      deriveRuntimeAssignmentPackReason,
-      buildRuntimeAssignmentPackSummary
-    }
-  );
-}

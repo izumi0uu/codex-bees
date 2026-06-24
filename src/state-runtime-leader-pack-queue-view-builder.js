@@ -66,34 +66,3 @@ export function buildRuntimeQueuePackView(
   );
 }
 
-export function buildRuntimeQueuePackViewFromSources(
-  input,
-  {
-    leaderQueue,
-    runtimeDashboard,
-    runtimeFocus,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan
-  },
-  {
-    deriveRuntimeQueuePackSurface,
-    deriveRuntimeQueuePackReason,
-    buildRuntimeQueuePackSummary
-  }
-) {
-  return buildRuntimeQueuePackView(
-    input,
-    {
-      leaderQueue,
-      runtimeDashboard,
-      runtimeFocus,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan
-    },
-    {
-      deriveRuntimeQueuePackSurface,
-      deriveRuntimeQueuePackReason,
-      buildRuntimeQueuePackSummary
-    }
-  );
-}

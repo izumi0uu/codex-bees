@@ -109,38 +109,3 @@ export function buildRuntimeLeaderPackView(
   );
 }
 
-export function buildRuntimeLeaderPackViewFromSources(
-  input,
-  {
-    leaderWorkspace,
-    leaderQueue,
-    runtimeDispatch,
-    leaderAssignmentDispatchPack,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan,
-    runtimeCloseout
-  },
-  {
-    deriveRuntimeLeaderPackSurface,
-    deriveRuntimeLeaderPackReason,
-    buildRuntimeLeaderPackSummary
-  }
-) {
-  return buildRuntimeLeaderPackView(
-    input,
-    {
-      leaderWorkspace,
-      leaderQueue,
-      runtimeDispatch,
-      leaderAssignmentDispatchPack,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeCloseout
-    },
-    {
-      deriveRuntimeLeaderPackSurface,
-      deriveRuntimeLeaderPackReason,
-      buildRuntimeLeaderPackSummary
-    }
-  );
-}

@@ -43,32 +43,3 @@ export function buildRuntimeOperatorPackView(
   };
 }
 
-export function buildRuntimeOperatorPackViewFromSources(
-  {
-    runtimeDashboard,
-    runtimeFocus,
-    runtimeAlerts,
-    runtimeHandoffs,
-    runtimeCloseout
-  },
-  {
-    deriveRuntimeOperatorPackSurface,
-    deriveRuntimeOperatorPackReason,
-    buildRuntimeOperatorPackSummary
-  }
-) {
-  return buildRuntimeOperatorPackView(
-    {
-      runtimeDashboard,
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeHandoffs,
-      runtimeCloseout
-    },
-    {
-      deriveRuntimeOperatorPackSurface,
-      deriveRuntimeOperatorPackReason,
-      buildRuntimeOperatorPackSummary
-    }
-  );
-}

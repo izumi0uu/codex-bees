@@ -64,36 +64,3 @@ export function buildRuntimeWorkerPackView(
   };
 }
 
-export function buildRuntimeWorkerPackViewFromSources(
-  input,
-  {
-    workerSession,
-    workerHandoff,
-    workerCloseout,
-    taskNext,
-    describeRole,
-    normalizeNextMode
-  },
-  {
-    deriveRuntimeWorkerPackSurface,
-    deriveRuntimeWorkerPackReason,
-    buildRuntimeWorkerPackSummary
-  }
-) {
-  return buildRuntimeWorkerPackView(
-    input,
-    {
-      workerSession,
-      workerHandoff,
-      workerCloseout,
-      taskNext,
-      describeRole,
-      normalizeNextMode
-    },
-    {
-      deriveRuntimeWorkerPackSurface,
-      deriveRuntimeWorkerPackReason,
-      buildRuntimeWorkerPackSummary
-    }
-  );
-}

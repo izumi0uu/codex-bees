@@ -62,34 +62,3 @@ export function buildRuntimeVerifierPackView(
   };
 }
 
-export function buildRuntimeVerifierPackViewFromSources(
-  input,
-  {
-    runtimeReview,
-    verifierBundle,
-    workerCloseout,
-    taskNext,
-    describeRole
-  },
-  {
-    deriveRuntimeVerifierPackSurface,
-    deriveRuntimeVerifierPackReason,
-    buildRuntimeVerifierPackSummary
-  }
-) {
-  return buildRuntimeVerifierPackView(
-    input,
-    {
-      runtimeReview,
-      verifierBundle,
-      workerCloseout,
-      taskNext,
-      describeRole
-    },
-    {
-      deriveRuntimeVerifierPackSurface,
-      deriveRuntimeVerifierPackReason,
-      buildRuntimeVerifierPackSummary
-    }
-  );
-}

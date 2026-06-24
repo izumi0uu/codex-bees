@@ -77,34 +77,3 @@ export function buildRuntimeSessionPackView(
   };
 }
 
-export function buildRuntimeSessionPackViewFromSources(
-  input,
-  {
-    runtimeWorkerPack,
-    runtimeOwnerPack,
-    runtimeVerifierPack,
-    runtimeRoles,
-    describeRole
-  },
-  {
-    deriveRuntimeSessionPackSurface,
-    deriveRuntimeSessionPackReason,
-    buildRuntimeSessionPackSummary
-  }
-) {
-  return buildRuntimeSessionPackView(
-    input,
-    {
-      runtimeWorkerPack,
-      runtimeOwnerPack,
-      runtimeVerifierPack,
-      runtimeRoles,
-      describeRole
-    },
-    {
-      deriveRuntimeSessionPackSurface,
-      deriveRuntimeSessionPackReason,
-      buildRuntimeSessionPackSummary
-    }
-  );
-}

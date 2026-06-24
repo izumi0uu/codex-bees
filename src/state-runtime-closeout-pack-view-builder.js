@@ -39,30 +39,3 @@ export function buildRuntimeCloseoutPackView(
   };
 }
 
-export function buildRuntimeCloseoutPackViewFromSources(
-  input,
-  {
-    runtimeCloseout,
-    runtimeSummaryPack,
-    runtimeLeaderPack
-  },
-  {
-    deriveRuntimeCloseoutPackSurface,
-    deriveRuntimeCloseoutPackReason,
-    buildRuntimeCloseoutPackSummary
-  }
-) {
-  return buildRuntimeCloseoutPackView(
-    input,
-    {
-      runtimeCloseout,
-      runtimeSummaryPack,
-      runtimeLeaderPack
-    },
-    {
-      deriveRuntimeCloseoutPackSurface,
-      deriveRuntimeCloseoutPackReason,
-      buildRuntimeCloseoutPackSummary
-    }
-  );
-}

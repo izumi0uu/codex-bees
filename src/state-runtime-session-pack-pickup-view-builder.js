@@ -87,36 +87,3 @@ export function buildRuntimePickupPackView(
   };
 }
 
-export function buildRuntimePickupPackViewFromSources(
-  input,
-  {
-    normalizeNextMode,
-    workerSession,
-    taskNext,
-    previewTaskPickup,
-    runtimeRolePack,
-    describeRole
-  },
-  {
-    deriveRuntimePickupPackSurface,
-    deriveRuntimePickupPackReason,
-    buildRuntimePickupPackSummary
-  }
-) {
-  return buildRuntimePickupPackView(
-    input,
-    {
-      normalizeNextMode,
-      workerSession,
-      taskNext,
-      previewTaskPickup,
-      runtimeRolePack,
-      describeRole
-    },
-    {
-      deriveRuntimePickupPackSurface,
-      deriveRuntimePickupPackReason,
-      buildRuntimePickupPackSummary
-    }
-  );
-}

@@ -96,36 +96,3 @@ export function buildRuntimeDispatchPackView(
   );
 }
 
-export function buildRuntimeDispatchPackViewFromSources(
-  input,
-  {
-    runtimeDispatch,
-    leaderAssignmentDispatchPack,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan,
-    runtimeRoles,
-    runtimeHandoffs
-  },
-  {
-    deriveRuntimeDispatchPackSurface,
-    deriveRuntimeDispatchPackReason,
-    buildRuntimeDispatchPackSummary
-  }
-) {
-  return buildRuntimeDispatchPackView(
-    input,
-    {
-      runtimeDispatch,
-      leaderAssignmentDispatchPack,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeRoles,
-      runtimeHandoffs
-    },
-    {
-      deriveRuntimeDispatchPackSurface,
-      deriveRuntimeDispatchPackReason,
-      buildRuntimeDispatchPackSummary
-    }
-  );
-}

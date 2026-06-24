@@ -39,28 +39,3 @@ export function buildRuntimeRecoveryPackView(
   };
 }
 
-export function buildRuntimeRecoveryPackViewFromSources(
-  {
-    runtimeRecovery,
-    runtimeHandoffs,
-    runtimeFocus
-  },
-  {
-    deriveRuntimeRecoveryPackSurface,
-    deriveRuntimeRecoveryPackReason,
-    buildRuntimeRecoveryPackSummary
-  }
-) {
-  return buildRuntimeRecoveryPackView(
-    {
-      runtimeRecovery,
-      runtimeHandoffs,
-      runtimeFocus
-    },
-    {
-      deriveRuntimeRecoveryPackSurface,
-      deriveRuntimeRecoveryPackReason,
-      buildRuntimeRecoveryPackSummary
-    }
-  );
-}

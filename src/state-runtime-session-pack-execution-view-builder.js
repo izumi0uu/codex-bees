@@ -100,36 +100,3 @@ export function buildRuntimeExecutionPackView(
   );
 }
 
-export function buildRuntimeExecutionPackViewFromSources(
-  input,
-  {
-    runtimeFocus,
-    runtimeDispatch,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan,
-    runtimeRoles,
-    runtimeQueuePack
-  },
-  {
-    deriveRuntimeExecutionPackSurface,
-    deriveRuntimeExecutionPackReason,
-    buildRuntimeExecutionPackSummary
-  }
-) {
-  return buildRuntimeExecutionPackView(
-    input,
-    {
-      runtimeFocus,
-      runtimeDispatch,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeRoles,
-      runtimeQueuePack
-    },
-    {
-      deriveRuntimeExecutionPackSurface,
-      deriveRuntimeExecutionPackReason,
-      buildRuntimeExecutionPackSummary
-    }
-  );
-}

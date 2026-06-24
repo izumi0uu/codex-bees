@@ -66,32 +66,3 @@ export function buildRuntimeControlPackView(
   );
 }
 
-export function buildRuntimeControlPackViewFromSources(
-  input,
-  {
-    runtimeSummaryPack,
-    runtimeWorkspacePack,
-    runtimeOperatorPack,
-    runtimeLeaderPack
-  },
-  {
-    deriveRuntimeControlPackSurface,
-    deriveRuntimeControlPackReason,
-    buildRuntimeControlPackSummary
-  }
-) {
-  return buildRuntimeControlPackView(
-    input,
-    {
-      runtimeSummaryPack,
-      runtimeWorkspacePack,
-      runtimeOperatorPack,
-      runtimeLeaderPack
-    },
-    {
-      deriveRuntimeControlPackSurface,
-      deriveRuntimeControlPackReason,
-      buildRuntimeControlPackSummary
-    }
-  );
-}

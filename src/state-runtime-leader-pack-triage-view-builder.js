@@ -40,30 +40,3 @@ export function buildRuntimeTriagePackView(
   };
 }
 
-export function buildRuntimeTriagePackViewFromSources(
-  {
-    runtimeFocus,
-    runtimeAlerts,
-    runtimeReview,
-    runtimeRecovery
-  },
-  {
-    deriveRuntimeTriagePackSurface,
-    deriveRuntimeTriagePackReason,
-    buildRuntimeTriagePackSummary
-  }
-) {
-  return buildRuntimeTriagePackView(
-    {
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeReview,
-      runtimeRecovery
-    },
-    {
-      deriveRuntimeTriagePackSurface,
-      deriveRuntimeTriagePackReason,
-      buildRuntimeTriagePackSummary
-    }
-  );
-}

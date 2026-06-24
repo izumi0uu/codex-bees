@@ -41,32 +41,3 @@ export function buildRuntimeSignalPackView(
   };
 }
 
-export function buildRuntimeSignalPackViewFromSources(
-  input,
-  {
-    runtimeFocus,
-    runtimeAlerts,
-    runtimeActivity,
-    runtimeRoles
-  },
-  {
-    deriveRuntimeSignalPackSurface,
-    deriveRuntimeSignalPackReason,
-    buildRuntimeSignalPackSummary
-  }
-) {
-  return buildRuntimeSignalPackView(
-    input,
-    {
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeActivity,
-      runtimeRoles
-    },
-    {
-      deriveRuntimeSignalPackSurface,
-      deriveRuntimeSignalPackReason,
-      buildRuntimeSignalPackSummary
-    }
-  );
-}

@@ -97,36 +97,3 @@ export function buildRuntimeWorkspacePackView(
   );
 }
 
-export function buildRuntimeWorkspacePackViewFromSources(
-  input,
-  {
-    runtimeDashboard,
-    runtimeDispatch,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan,
-    runtimeReview,
-    runtimeRecovery
-  },
-  {
-    deriveRuntimeWorkspacePackSurface,
-    deriveRuntimeWorkspacePackReason,
-    buildRuntimeWorkspacePackSummary
-  }
-) {
-  return buildRuntimeWorkspacePackView(
-    input,
-    {
-      runtimeDashboard,
-      runtimeDispatch,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeReview,
-      runtimeRecovery
-    },
-    {
-      deriveRuntimeWorkspacePackSurface,
-      deriveRuntimeWorkspacePackReason,
-      buildRuntimeWorkspacePackSummary
-    }
-  );
-}

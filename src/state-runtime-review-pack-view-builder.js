@@ -44,32 +44,3 @@ export function buildRuntimeReviewPackView(
   };
 }
 
-export function buildRuntimeReviewPackViewFromSources(
-  input,
-  {
-    runtimeReview,
-    runtimeRoles,
-    runtimeVerifierPack,
-    describeRole
-  },
-  {
-    deriveRuntimeReviewPackSurface,
-    deriveRuntimeReviewPackReason,
-    buildRuntimeReviewPackSummary
-  }
-) {
-  return buildRuntimeReviewPackView(
-    input,
-    {
-      runtimeReview,
-      runtimeRoles,
-      runtimeVerifierPack,
-      describeRole
-    },
-    {
-      deriveRuntimeReviewPackSurface,
-      deriveRuntimeReviewPackReason,
-      buildRuntimeReviewPackSummary
-    }
-  );
-}

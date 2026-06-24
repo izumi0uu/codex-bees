@@ -69,34 +69,3 @@ export function buildRuntimeOwnerPackView(
   };
 }
 
-export function buildRuntimeOwnerPackViewFromSources(
-  input,
-  {
-    workerSession,
-    workerHandoff,
-    workerCloseout,
-    taskNext,
-    describeRole
-  },
-  {
-    deriveRuntimeOwnerPackSurface,
-    deriveRuntimeOwnerPackReason,
-    buildRuntimeOwnerPackSummary
-  }
-) {
-  return buildRuntimeOwnerPackView(
-    input,
-    {
-      workerSession,
-      workerHandoff,
-      workerCloseout,
-      taskNext,
-      describeRole
-    },
-    {
-      deriveRuntimeOwnerPackSurface,
-      deriveRuntimeOwnerPackReason,
-      buildRuntimeOwnerPackSummary
-    }
-  );
-}
