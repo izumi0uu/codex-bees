@@ -35,65 +35,72 @@ export function createStateRuntimeOrchestrationPackCoordinationEntryPoints(
   } = runtimeOrchestrationPackOverview;
 
   function runtimeDispatchPack(input = {}) {
-    return runtimeDispatchPackSurface(input, {
-      runtimeDispatch,
-      leaderAssignmentDispatchPack,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeRoles,
-      runtimeHandoffs
-    });
+    return runtimeDispatchPackSurface(input, runtimeDispatchPackSources);
   }
 
   function runtimeLeaderPack(input = {}) {
-    return runtimeLeaderPackSurface(input, {
-      leaderWorkspace,
-      leaderQueue,
-      runtimeDispatch,
-      leaderAssignmentDispatchPack,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeCloseout
-    });
+    return runtimeLeaderPackSurface(input, runtimeLeaderPackSources);
   }
 
   function runtimeCloseoutPack(input = {}) {
-    return runtimeCloseoutPackSurface(input, {
-      runtimeCloseout,
-      runtimeSummaryPack,
-      runtimeLeaderPack
-    });
+    return runtimeCloseoutPackSurface(input, runtimeCloseoutPackSources);
   }
 
   function runtimeQueuePack(input = {}) {
-    return runtimeQueuePackSurface(input, {
-      leaderQueue,
-      runtimeDashboard,
-      runtimeFocus,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan
-    });
+    return runtimeQueuePackSurface(input, runtimeQueuePackSources);
   }
 
   function runtimeWorkspacePack(input = {}) {
-    return runtimeWorkspacePackSurface(input, {
-      runtimeDashboard,
-      runtimeDispatch,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeReview,
-      runtimeRecovery
-    });
+    return runtimeWorkspacePackSurface(input, runtimeWorkspacePackSources);
   }
 
   function runtimeControlPack(input = {}) {
-    return runtimeControlPackSurface(input, {
-      runtimeSummaryPack,
-      runtimeWorkspacePack,
-      runtimeOperatorPack,
-      runtimeLeaderPack
-    });
+    return runtimeControlPackSurface(input, runtimeControlPackSources);
   }
+
+  const runtimeDispatchPackSources = {
+    runtimeDispatch,
+    leaderAssignmentDispatchPack,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeRoles,
+    runtimeHandoffs
+  };
+  const runtimeLeaderPackSources = {
+    leaderWorkspace,
+    leaderQueue,
+    runtimeDispatch,
+    leaderAssignmentDispatchPack,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeCloseout
+  };
+  const runtimeCloseoutPackSources = {
+    runtimeCloseout,
+    runtimeSummaryPack,
+    runtimeLeaderPack
+  };
+  const runtimeQueuePackSources = {
+    leaderQueue,
+    runtimeDashboard,
+    runtimeFocus,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  };
+  const runtimeWorkspacePackSources = {
+    runtimeDashboard,
+    runtimeDispatch,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeReview,
+    runtimeRecovery
+  };
+  const runtimeControlPackSources = {
+    runtimeSummaryPack,
+    runtimeWorkspacePack,
+    runtimeOperatorPack,
+    runtimeLeaderPack
+  };
 
   return {
     runtimeDispatchPack,

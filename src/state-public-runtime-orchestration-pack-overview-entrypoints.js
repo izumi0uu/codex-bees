@@ -26,62 +26,69 @@ export function createStateRuntimeOrchestrationPackOverviewEntryPoints(runtimeLe
   } = runtimeOverview;
 
   function runtimeSummaryPack(input = {}) {
-    return runtimeSummaryPackSurface(input, {
-      runtimeDashboard,
-      runtimeAlerts,
-      runtimeFocus,
-      runtimeHandoffs,
-      runtimeRecovery,
-      runtimeCloseout,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan
-    });
+    return runtimeSummaryPackSurface(input, runtimeSummaryPackSources);
   }
 
   function runtimeOperatorPack() {
-    return runtimeOperatorPackSurface({
-      runtimeDashboard,
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeHandoffs,
-      runtimeCloseout
-    });
+    return runtimeOperatorPackSurface(runtimeOperatorPackSources);
   }
 
   function runtimeRecoveryPack() {
-    return runtimeRecoveryPackSurface({
-      runtimeRecovery,
-      runtimeHandoffs,
-      runtimeFocus
-    });
+    return runtimeRecoveryPackSurface(runtimeRecoveryPackSources);
   }
 
   function runtimeSignalPack(input = {}) {
-    return runtimeSignalPackSurface(input, {
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeActivity,
-      runtimeRoles
-    });
+    return runtimeSignalPackSurface(input, runtimeSignalPackSources);
   }
 
   function runtimeHandoffPack() {
-    return runtimeHandoffPackSurface({
-      runtimeHandoffs,
-      runtimeDispatch,
-      runtimeReview,
-      runtimeRecovery
-    });
+    return runtimeHandoffPackSurface(runtimeHandoffPackSources);
   }
 
   function runtimeTriagePack() {
-    return runtimeTriagePackSurface({
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeReview,
-      runtimeRecovery
-    });
+    return runtimeTriagePackSurface(runtimeTriagePackSources);
   }
+
+  const runtimeSummaryPackSources = {
+    runtimeDashboard,
+    runtimeAlerts,
+    runtimeFocus,
+    runtimeHandoffs,
+    runtimeRecovery,
+    runtimeCloseout,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan
+  };
+  const runtimeOperatorPackSources = {
+    runtimeDashboard,
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeHandoffs,
+    runtimeCloseout
+  };
+  const runtimeRecoveryPackSources = {
+    runtimeRecovery,
+    runtimeHandoffs,
+    runtimeFocus
+  };
+  const runtimeSignalPackSources = {
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeActivity,
+    runtimeRoles
+  };
+  const runtimeHandoffPackSources = {
+    runtimeHandoffs,
+    runtimeDispatch,
+    runtimeReview,
+    runtimeRecovery
+  };
+  const runtimeTriagePackSources = {
+    runtimeFocus,
+    runtimeAlerts,
+    runtimeReview,
+    runtimeRecovery
+  };
 
   return {
     runtimeSummaryPack,

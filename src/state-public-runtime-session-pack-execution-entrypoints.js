@@ -17,34 +17,38 @@ export function createStateRuntimeSessionPackExecutionEntryPoints(api, runtimeLe
   } = runtimeSessionPackSessionRole;
 
   function runtimeExecutionPack(input = {}) {
-    return runtimeExecutionPackSurface(input, {
-      runtimeFocus,
-      runtimeDispatch,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeRoles,
-      runtimeQueuePack
-    });
+    return runtimeExecutionPackSurface(input, runtimeExecutionPackSources);
   }
 
   function runtimePickupPack(input = {}) {
-    return runtimePickupPackSurface(input, {
-      workerSession: api.workerSession,
-      taskNext: api.taskNext,
-      previewTaskPickup: api.previewTaskPickup,
-      runtimeRolePack
-    });
+    return runtimePickupPackSurface(input, runtimePickupPackSources);
   }
 
   function runtimeAssignmentPack(input = {}) {
-    return runtimeAssignmentPackSurface(input, {
-      leaderAssignments,
-      workerSession: api.workerSession,
-      taskNext: api.taskNext,
-      previewTaskAssignment: api.previewTaskAssignment,
-      runtimeRoles
-    });
+    return runtimeAssignmentPackSurface(input, runtimeAssignmentPackSources);
   }
+
+  const runtimeExecutionPackSources = {
+    runtimeFocus,
+    runtimeDispatch,
+    leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan,
+    runtimeRoles,
+    runtimeQueuePack
+  };
+  const runtimePickupPackSources = {
+    workerSession: api.workerSession,
+    taskNext: api.taskNext,
+    previewTaskPickup: api.previewTaskPickup,
+    runtimeRolePack
+  };
+  const runtimeAssignmentPackSources = {
+    leaderAssignments,
+    workerSession: api.workerSession,
+    taskNext: api.taskNext,
+    previewTaskAssignment: api.previewTaskAssignment,
+    runtimeRoles
+  };
 
   return {
     runtimeExecutionPack,
