@@ -6,26 +6,30 @@ import {
 
 export function createStateRuntimeLeaderWorkspaceEntryPoints(api) {
   function leaderWorkspace(input = {}) {
-    return leaderWorkspaceSurface(input, {
-      listSwarmOverviews: api.listSwarmOverviews,
-      swarmBrief: api.swarmBrief,
-      swarmBundle: api.swarmBundle
-    });
+    return leaderWorkspaceSurface(input, leaderWorkspaceSources);
   }
 
   function leaderQueue(input = {}) {
-    return leaderQueueSurface(input, {
-      leaderWorkspace
-    });
+    return leaderQueueSurface(input, leaderQueueSources);
   }
 
   function leaderAssignments(input = {}) {
-    return leaderAssignmentsSurface(input, {
-      leaderWorkspace,
-      swarmBrief: api.swarmBrief,
-      taskBrief: api.taskBrief
-    });
+    return leaderAssignmentsSurface(input, leaderAssignmentsSources);
   }
+
+  const leaderWorkspaceSources = {
+    listSwarmOverviews: api.listSwarmOverviews,
+    swarmBrief: api.swarmBrief,
+    swarmBundle: api.swarmBundle
+  };
+  const leaderQueueSources = {
+    leaderWorkspace
+  };
+  const leaderAssignmentsSources = {
+    leaderWorkspace,
+    swarmBrief: api.swarmBrief,
+    taskBrief: api.taskBrief
+  };
 
   return {
     leaderWorkspace,

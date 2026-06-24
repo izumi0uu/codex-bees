@@ -11,29 +11,34 @@ export function createStateRuntimeLeaderDispatchEntryPoints(runtimeLeaderWorkspa
   } = runtimeLeaderWorkspace;
 
   function leaderAssignmentDispatch(input = {}) {
-    return leaderAssignmentDispatchSurface(input, {
-      leaderAssignments
-    });
+    return leaderAssignmentDispatchSurface(input, leaderAssignmentDispatchSources);
   }
 
   function leaderAssignmentDispatchPack(input = {}) {
-    return leaderAssignmentDispatchPackSurface(input, {
-      leaderAssignments,
-      leaderAssignmentDispatch
-    });
+    return leaderAssignmentDispatchPackSurface(input, leaderAssignmentDispatchPackSources);
   }
 
   function leaderAssignmentDispatchBundle(input = {}) {
-    return leaderAssignmentDispatchBundleSurface(input, {
-      leaderAssignmentDispatchPack
-    });
+    return leaderAssignmentDispatchBundleSurface(input, leaderAssignmentDispatchBundleSources);
   }
 
   function leaderAssignmentLaunchPlan(input = {}) {
-    return leaderAssignmentLaunchPlanSurface(input, {
-      leaderAssignmentDispatchBundle
-    });
+    return leaderAssignmentLaunchPlanSurface(input, leaderAssignmentLaunchPlanSources);
   }
+
+  const leaderAssignmentDispatchSources = {
+    leaderAssignments
+  };
+  const leaderAssignmentDispatchPackSources = {
+    leaderAssignments,
+    leaderAssignmentDispatch
+  };
+  const leaderAssignmentDispatchBundleSources = {
+    leaderAssignmentDispatchPack
+  };
+  const leaderAssignmentLaunchPlanSources = {
+    leaderAssignmentDispatchBundle
+  };
 
   return {
     leaderAssignmentDispatch,
