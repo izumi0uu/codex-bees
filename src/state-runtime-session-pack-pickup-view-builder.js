@@ -1,9 +1,10 @@
 import {
   buildRuntimePackFallbackPurposeGuidance,
-  buildRuntimePackPickupOverview,
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackPickupFlowEntries,
+  buildRuntimePackPickupFlowMetadata,
+  buildRuntimePackPickupPackOverview,
+  buildRuntimePackPickupSurfaces,
   requireRuntimePackRoleWorkerSelection,
-  buildRuntimePackSessionOverview,
   buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
 
@@ -67,12 +68,7 @@ export function buildRuntimePickupPackView(
     session,
     rolePack
   );
-  const nextEntries = {
-    focus: session?.focus ?? null,
-    candidate: next?.candidate ?? null,
-    brief: pickup?.brief ?? next?.brief ?? null,
-    pickup
-  };
+  const nextEntries = buildRuntimePackPickupFlowEntries(session, next, pickup);
 
   return {
     kind: "runtime_pickup_pack",
@@ -82,25 +78,11 @@ export function buildRuntimePickupPackView(
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasFocus: nextEntries.focus,
-      hasCandidate: nextEntries.candidate,
-      hasBrief: nextEntries.brief,
-      hasPickup: nextEntries.pickup
-    }),
+    metadata: buildRuntimePackPickupFlowMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      ...buildRuntimePackSessionOverview(session),
-      pickup: buildRuntimePackPickupOverview(pickup),
-      role: rolePack?.overview?.role ?? null
-    },
+    overview: buildRuntimePackPickupPackOverview(session, pickup, rolePack),
     next: nextEntries,
-    surfaces: {
-      session,
-      next,
-      pickup,
-      rolePack
-    },
+    surfaces: buildRuntimePackPickupSurfaces(session, next, pickup, rolePack),
     summary: buildRuntimePickupPackSummary(recommendedSurface, session, pickup, next)
   };
 }

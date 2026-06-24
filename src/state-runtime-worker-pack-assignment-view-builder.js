@@ -1,7 +1,9 @@
 import {
+  buildRuntimePackAssignmentFlowEntries,
+  buildRuntimePackAssignmentFlowMetadata,
+  buildRuntimePackAssignmentOverview,
+  buildRuntimePackAssignmentSurfaces,
   buildRuntimePackFallbackPurposeGuidance,
-  buildRuntimePackPickupOverview,
-  buildRuntimePackPresenceMetadata,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
@@ -67,12 +69,7 @@ export function buildRuntimeAssignmentPackView(
     pickup,
     assignment
   );
-  const nextEntries = {
-    assignment,
-    pickup,
-    candidate: next?.candidate ?? null,
-    focus: session?.focus ?? null
-  };
+  const nextEntries = buildRuntimePackAssignmentFlowEntries(assignment, pickup, next, session);
 
   return {
     kind: "runtime_assignment_pack",
@@ -82,34 +79,11 @@ export function buildRuntimeAssignmentPackView(
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasAssignment: nextEntries.assignment,
-      hasPickup: nextEntries.pickup,
-      hasCandidate: nextEntries.candidate,
-      hasFocus: nextEntries.focus
-    }),
+    metadata: buildRuntimePackAssignmentFlowMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      assignments: {
-        count: roleAssignments?.count ?? 0,
-        ownerGroups: assignments?.counts?.ownerGroups ?? 0
-      },
-      pickup: buildRuntimePackPickupOverview(pickup),
-      role: roleEntry?.counts ?? null,
-      session: session?.counts ?? null
-    },
+    overview: buildRuntimePackAssignmentOverview(roleAssignments, assignments, pickup, roleEntry, session),
     next: nextEntries,
-    surfaces: {
-      roleAssignments,
-      session,
-      next,
-      pickup,
-      role: roleEntry,
-      assignments: {
-        counts: assignments?.counts ?? null,
-        next: assignments?.next ?? null
-      }
-    },
+    surfaces: buildRuntimePackAssignmentSurfaces(roleAssignments, session, next, pickup, roleEntry, assignments),
     summary: buildRuntimeAssignmentPackSummary(recommendedSurface, assignment, session, pickup, next, roleAssignments)
   };
 }
