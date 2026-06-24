@@ -86,37 +86,8 @@ export function buildSwarmBriefView(
   });
 }
 
-export function buildSwarmBriefViewFromSources(
-  id,
-  {
-    swarmOverview,
-    getRuntimeCatalog,
-    validateSwarmValue,
-    runtimeRoleCatalog,
-    recommendLaneAction,
-    recommendSwarmAction,
-    describeRole,
-    buildSwarmHandoff,
-    deriveSwarmBriefReason
-  },
-  {
-    buildSwarmBriefView
-  }
-) {
-  return buildSwarmBriefView(
-    id,
-    {
-      swarmOverview,
-      getRuntimeCatalog,
-      validateSwarmValue,
-      runtimeRoleCatalog,
-      recommendLaneAction,
-      recommendSwarmAction,
-      describeRole,
-      buildSwarmHandoff,
-      deriveSwarmBriefReason
-    }
-  );
+export function buildSwarmBriefViewFromSources(id, sources) {
+  return buildSwarmBriefView(id, sources);
 }
 
 export function buildSwarmBundleView(
@@ -183,27 +154,6 @@ export function buildSwarmBundleView(
   });
 }
 
-export function buildSwarmBundleViewFromSources(
-  id,
-  {
-    swarmOverview,
-    swarmBrief,
-    taskReport,
-    deriveSwarmBundleReason,
-    buildSwarmBundleSummary
-  },
-  {
-    buildSwarmBundleView
-  }
-) {
-  return buildSwarmBundleView(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskReport,
-      deriveSwarmBundleReason,
-      buildSwarmBundleSummary
-    }
-  );
+export function buildSwarmBundleViewFromSources(id, sources) {
+  return buildSwarmBundleView(id, sources);
 }

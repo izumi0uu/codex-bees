@@ -1,3 +1,5 @@
+import { buildRuntimeFocusView } from "./state-runtime-entities.js";
+
 export function buildRuntimeFocusSources(dashboard, alerts, review, dispatch, roles) {
   return {
     dashboard: {
@@ -29,8 +31,7 @@ export function buildRuntimeFocusViewFromSources(
     runtimeReview,
     runtimeDispatch,
     runtimeRoles,
-    taskBrief,
-    buildRuntimeFocusView
+    taskBrief
   },
   {
     buildRuntimeFocusSources,

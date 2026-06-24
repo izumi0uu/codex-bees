@@ -16,15 +16,10 @@ import {
 } from "./state-swarm-views.js";
 import { deriveReviewState, describeRole, describeRoleWithContract } from "./state-task-core.js";
 import {
-  buildSwarmBlockersView,
   buildSwarmBlockersViewFromSources,
-  buildSwarmBriefView,
   buildSwarmBriefViewFromSources,
-  buildSwarmBundleView,
   buildSwarmBundleViewFromSources,
-  buildSwarmCloseoutView,
   buildSwarmCloseoutViewFromSources,
-  buildSwarmDispatchBundleView,
   buildSwarmDispatchBundleViewFromSources,
   buildSwarmHandoff,
   buildTaskBriefViewFromSources,
@@ -96,8 +91,6 @@ export function swarmBriefFromSources(id, sources = {}) {
     describeRole,
     buildSwarmHandoff,
     deriveSwarmBriefReason
-  }, {
-    buildSwarmBriefView
   });
 }
 
@@ -106,8 +99,6 @@ export function swarmBundleFromSources(id, sources = {}) {
     ...sources,
     deriveSwarmBundleReason,
     buildSwarmBundleSummary
-  }, {
-    buildSwarmBundleView
   });
 }
 
@@ -117,8 +108,6 @@ export function swarmCloseoutFromSources(id, sources = {}) {
     deriveSwarmCloseoutCommand,
     deriveSwarmCloseoutReason,
     buildSwarmCloseoutSummary
-  }, {
-    buildSwarmCloseoutView
   });
 }
 
@@ -127,8 +116,6 @@ export function swarmBlockersFromSources(id, sources = {}) {
     ...sources,
     deriveSwarmBlockersReason,
     buildSwarmBlockersSummary
-  }, {
-    buildSwarmBlockersView
   });
 }
 
@@ -137,7 +124,5 @@ export function swarmDispatchBundleFromSources(id, sources = {}) {
     ...sources,
     deriveSwarmDispatchBundleReason,
     buildSwarmDispatchBundleSummary
-  }, {
-    buildSwarmDispatchBundleView
   });
 }

@@ -40,31 +40,8 @@ export function buildSwarmCloseoutView(
   });
 }
 
-export function buildSwarmCloseoutViewFromSources(
-  id,
-  {
-    swarmOverview,
-    swarmBrief,
-    swarmBundle,
-    deriveSwarmCloseoutCommand,
-    deriveSwarmCloseoutReason,
-    buildSwarmCloseoutSummary
-  },
-  {
-    buildSwarmCloseoutView
-  }
-) {
-  return buildSwarmCloseoutView(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      swarmBundle,
-      deriveSwarmCloseoutCommand,
-      deriveSwarmCloseoutReason,
-      buildSwarmCloseoutSummary
-    }
-  );
+export function buildSwarmCloseoutViewFromSources(id, sources) {
+  return buildSwarmCloseoutView(id, sources);
 }
 
 export function buildSwarmBlockersView(
@@ -112,29 +89,8 @@ export function buildSwarmBlockersView(
   });
 }
 
-export function buildSwarmBlockersViewFromSources(
-  id,
-  {
-    swarmOverview,
-    swarmBrief,
-    taskReport,
-    deriveSwarmBlockersReason,
-    buildSwarmBlockersSummary
-  },
-  {
-    buildSwarmBlockersView
-  }
-) {
-  return buildSwarmBlockersView(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskReport,
-      deriveSwarmBlockersReason,
-      buildSwarmBlockersSummary
-    }
-  );
+export function buildSwarmBlockersViewFromSources(id, sources) {
+  return buildSwarmBlockersView(id, sources);
 }
 
 export function buildSwarmDispatchBundleView(
@@ -182,27 +138,6 @@ export function buildSwarmDispatchBundleView(
   });
 }
 
-export function buildSwarmDispatchBundleViewFromSources(
-  id,
-  {
-    swarmOverview,
-    swarmBrief,
-    taskBrief,
-    deriveSwarmDispatchBundleReason,
-    buildSwarmDispatchBundleSummary
-  },
-  {
-    buildSwarmDispatchBundleView
-  }
-) {
-  return buildSwarmDispatchBundleView(
-    id,
-    {
-      swarmOverview,
-      swarmBrief,
-      taskBrief,
-      deriveSwarmDispatchBundleReason,
-      buildSwarmDispatchBundleSummary
-    }
-  );
+export function buildSwarmDispatchBundleViewFromSources(id, sources) {
+  return buildSwarmDispatchBundleView(id, sources);
 }
