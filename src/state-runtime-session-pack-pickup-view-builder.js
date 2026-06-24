@@ -100,8 +100,7 @@ export function buildRuntimePickupPackViewFromSources(
   {
     deriveRuntimePickupPackSurface,
     deriveRuntimePickupPackReason,
-    buildRuntimePickupPackSummary,
-    buildRuntimePickupPackView
+    buildRuntimePickupPackSummary
   }
 ) {
   return buildRuntimePickupPackView(

@@ -109,8 +109,7 @@ export function buildRuntimeDispatchPackViewFromSources(
   {
     deriveRuntimeDispatchPackSurface,
     deriveRuntimeDispatchPackReason,
-    buildRuntimeDispatchPackSummary,
-    buildRuntimeDispatchPackView
+    buildRuntimeDispatchPackSummary
   }
 ) {
   return buildRuntimeDispatchPackView(

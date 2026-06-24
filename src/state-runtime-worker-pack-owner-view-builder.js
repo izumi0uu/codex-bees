@@ -81,8 +81,7 @@ export function buildRuntimeOwnerPackViewFromSources(
   {
     deriveRuntimeOwnerPackSurface,
     deriveRuntimeOwnerPackReason,
-    buildRuntimeOwnerPackSummary,
-    buildRuntimeOwnerPackView
+    buildRuntimeOwnerPackSummary
   }
 ) {
   return buildRuntimeOwnerPackView(

@@ -74,8 +74,7 @@ export function buildRuntimeVerifierPackViewFromSources(
   {
     deriveRuntimeVerifierPackSurface,
     deriveRuntimeVerifierPackReason,
-    buildRuntimeVerifierPackSummary,
-    buildRuntimeVerifierPackView
+    buildRuntimeVerifierPackSummary
   }
 ) {
   return buildRuntimeVerifierPackView(

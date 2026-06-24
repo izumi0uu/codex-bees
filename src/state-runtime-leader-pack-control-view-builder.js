@@ -77,8 +77,7 @@ export function buildRuntimeControlPackViewFromSources(
   {
     deriveRuntimeControlPackSurface,
     deriveRuntimeControlPackReason,
-    buildRuntimeControlPackSummary,
-    buildRuntimeControlPackView
+    buildRuntimeControlPackSummary
   }
 ) {
   return buildRuntimeControlPackView(

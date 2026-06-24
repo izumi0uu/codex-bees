@@ -50,8 +50,7 @@ export function buildRuntimeTriagePackViewFromSources(
   {
     deriveRuntimeTriagePackSurface,
     deriveRuntimeTriagePackReason,
-    buildRuntimeTriagePackSummary,
-    buildRuntimeTriagePackView
+    buildRuntimeTriagePackSummary
   }
 ) {
   return buildRuntimeTriagePackView(

@@ -102,8 +102,7 @@ export function buildRuntimeAssignmentPackViewFromSources(
   {
     deriveRuntimeAssignmentPackSurface,
     deriveRuntimeAssignmentPackReason,
-    buildRuntimeAssignmentPackSummary,
-    buildRuntimeAssignmentPackView
+    buildRuntimeAssignmentPackSummary
   }
 ) {
   return buildRuntimeAssignmentPackView(

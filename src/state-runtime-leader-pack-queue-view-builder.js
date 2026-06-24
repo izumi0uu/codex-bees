@@ -78,8 +78,7 @@ export function buildRuntimeQueuePackViewFromSources(
   {
     deriveRuntimeQueuePackSurface,
     deriveRuntimeQueuePackReason,
-    buildRuntimeQueuePackSummary,
-    buildRuntimeQueuePackView
+    buildRuntimeQueuePackSummary
   }
 ) {
   return buildRuntimeQueuePackView(

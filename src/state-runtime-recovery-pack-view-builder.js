@@ -48,8 +48,7 @@ export function buildRuntimeRecoveryPackViewFromSources(
   {
     deriveRuntimeRecoveryPackSurface,
     deriveRuntimeRecoveryPackReason,
-    buildRuntimeRecoveryPackSummary,
-    buildRuntimeRecoveryPackView
+    buildRuntimeRecoveryPackSummary
   }
 ) {
   return buildRuntimeRecoveryPackView(

@@ -110,8 +110,7 @@ export function buildRuntimeWorkspacePackViewFromSources(
   {
     deriveRuntimeWorkspacePackSurface,
     deriveRuntimeWorkspacePackReason,
-    buildRuntimeWorkspacePackSummary,
-    buildRuntimeWorkspacePackView
+    buildRuntimeWorkspacePackSummary
   }
 ) {
   return buildRuntimeWorkspacePackView(

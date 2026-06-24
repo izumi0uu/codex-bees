@@ -55,8 +55,7 @@ export function buildRuntimeReviewPackViewFromSources(
   {
     deriveRuntimeReviewPackSurface,
     deriveRuntimeReviewPackReason,
-    buildRuntimeReviewPackSummary,
-    buildRuntimeReviewPackView
+    buildRuntimeReviewPackSummary
   }
 ) {
   return buildRuntimeReviewPackView(

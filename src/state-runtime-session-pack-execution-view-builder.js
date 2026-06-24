@@ -113,8 +113,7 @@ export function buildRuntimeExecutionPackViewFromSources(
   {
     deriveRuntimeExecutionPackSurface,
     deriveRuntimeExecutionPackReason,
-    buildRuntimeExecutionPackSummary,
-    buildRuntimeExecutionPackView
+    buildRuntimeExecutionPackSummary
   }
 ) {
   return buildRuntimeExecutionPackView(

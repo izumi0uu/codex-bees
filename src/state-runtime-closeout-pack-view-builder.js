@@ -49,8 +49,7 @@ export function buildRuntimeCloseoutPackViewFromSources(
   {
     deriveRuntimeCloseoutPackSurface,
     deriveRuntimeCloseoutPackReason,
-    buildRuntimeCloseoutPackSummary,
-    buildRuntimeCloseoutPackView
+    buildRuntimeCloseoutPackSummary
   }
 ) {
   return buildRuntimeCloseoutPackView(

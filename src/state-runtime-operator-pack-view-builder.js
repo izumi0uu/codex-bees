@@ -54,8 +54,7 @@ export function buildRuntimeOperatorPackViewFromSources(
   {
     deriveRuntimeOperatorPackSurface,
     deriveRuntimeOperatorPackReason,
-    buildRuntimeOperatorPackSummary,
-    buildRuntimeOperatorPackView
+    buildRuntimeOperatorPackSummary
   }
 ) {
   return buildRuntimeOperatorPackView(

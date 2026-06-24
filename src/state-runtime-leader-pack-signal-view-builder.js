@@ -52,8 +52,7 @@ export function buildRuntimeSignalPackViewFromSources(
   {
     deriveRuntimeSignalPackSurface,
     deriveRuntimeSignalPackReason,
-    buildRuntimeSignalPackSummary,
-    buildRuntimeSignalPackView
+    buildRuntimeSignalPackSummary
   }
 ) {
   return buildRuntimeSignalPackView(

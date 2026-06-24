@@ -123,8 +123,7 @@ export function buildRuntimeLeaderPackViewFromSources(
   {
     deriveRuntimeLeaderPackSurface,
     deriveRuntimeLeaderPackReason,
-    buildRuntimeLeaderPackSummary,
-    buildRuntimeLeaderPackView
+    buildRuntimeLeaderPackSummary
   }
 ) {
   return buildRuntimeLeaderPackView(

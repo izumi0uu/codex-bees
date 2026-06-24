@@ -50,8 +50,7 @@ export function buildRuntimeHandoffPackViewFromSources(
   {
     deriveRuntimeHandoffPackSurface,
     deriveRuntimeHandoffPackReason,
-    buildRuntimeHandoffPackSummary,
-    buildRuntimeHandoffPackView
+    buildRuntimeHandoffPackSummary
   }
 ) {
   return buildRuntimeHandoffPackView(

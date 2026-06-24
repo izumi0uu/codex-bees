@@ -89,8 +89,7 @@ export function buildRuntimeSessionPackViewFromSources(
   {
     deriveRuntimeSessionPackSurface,
     deriveRuntimeSessionPackReason,
-    buildRuntimeSessionPackSummary,
-    buildRuntimeSessionPackView
+    buildRuntimeSessionPackSummary
   }
 ) {
   return buildRuntimeSessionPackView(

@@ -119,8 +119,7 @@ export function buildRuntimeSummaryPackViewFromSources(
   {
     deriveRuntimeSummaryPackSurface,
     deriveRuntimeSummaryPackReason,
-    buildRuntimeSummaryPackSummary,
-    buildRuntimeSummaryPackView
+    buildRuntimeSummaryPackSummary
   }
 ) {
   return buildRuntimeSummaryPackView(

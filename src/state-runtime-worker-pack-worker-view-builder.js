@@ -77,8 +77,7 @@ export function buildRuntimeWorkerPackViewFromSources(
   {
     deriveRuntimeWorkerPackSurface,
     deriveRuntimeWorkerPackReason,
-    buildRuntimeWorkerPackSummary,
-    buildRuntimeWorkerPackView
+    buildRuntimeWorkerPackSummary
   }
 ) {
   return buildRuntimeWorkerPackView(

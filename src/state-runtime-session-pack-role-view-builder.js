@@ -78,8 +78,7 @@ export function buildRuntimeRolePackViewFromSources(
   {
     deriveRuntimeRolePackSurface,
     deriveRuntimeRolePackReason,
-    buildRuntimeRolePackSummary,
-    buildRuntimeRolePackView
+    buildRuntimeRolePackSummary
   }
 ) {
   return buildRuntimeRolePackView(
