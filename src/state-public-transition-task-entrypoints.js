@@ -19,60 +19,75 @@ export function createStateTransitionTaskEntryPoints(shared) {
   const { transitionTask } = shared;
 
   function claimTask(input) {
-    return claimTaskTransition(input, { transitionTask });
+    return claimTaskTransition(input, claimTaskSources);
   }
 
   function claimTaskLifecycle(input) {
-    return claimTaskLifecycleView(input, { claimTask });
+    return claimTaskLifecycleView(input, claimTaskLifecycleSources);
   }
 
   function blockTask(input) {
-    return blockTaskTransition(input, { transitionTask });
+    return blockTaskTransition(input, blockTaskSources);
   }
 
   function blockTaskLifecycle(input) {
-    return blockTaskLifecycleView(input, { blockTask });
+    return blockTaskLifecycleView(input, blockTaskLifecycleSources);
   }
 
   function markTaskReadyForReview(input) {
-    return markTaskReadyForReviewTransition(input, { transitionTask });
+    return markTaskReadyForReviewTransition(input, markTaskReadyForReviewSources);
   }
 
   function markTaskReadyForReviewLifecycle(input) {
-    return markTaskReadyForReviewLifecycleView(input, { markTaskReadyForReview });
+    return markTaskReadyForReviewLifecycleView(input, markTaskReadyForReviewLifecycleSources);
   }
 
   function completeTask(input) {
-    return completeTaskTransition(input, { transitionTask });
+    return completeTaskTransition(input, completeTaskSources);
   }
 
   function completeTaskLifecycle(input) {
-    return completeTaskLifecycleView(input, { completeTask });
+    return completeTaskLifecycleView(input, completeTaskLifecycleSources);
   }
 
   function approveTask(input) {
-    return approveTaskTransition(input, { transitionTask });
+    return approveTaskTransition(input, approveTaskSources);
   }
 
   function approveTaskLifecycle(input) {
-    return approveTaskLifecycleView(input, { approveTask });
+    return approveTaskLifecycleView(input, approveTaskLifecycleSources);
   }
 
   function rejectTask(input) {
-    return rejectTaskTransition(input, { transitionTask });
+    return rejectTaskTransition(input, rejectTaskSources);
   }
 
   function rejectTaskLifecycle(input) {
-    return rejectTaskLifecycleView(input, { rejectTask });
+    return rejectTaskLifecycleView(input, rejectTaskLifecycleSources);
   }
 
   function releaseTask(input) {
-    return releaseTaskTransition(input, { transitionTask });
+    return releaseTaskTransition(input, releaseTaskSources);
   }
 
   function releaseTaskLifecycle(input) {
-    return releaseTaskLifecycleView(input, { releaseTask });
+    return releaseTaskLifecycleView(input, releaseTaskLifecycleSources);
   }
+
+  const claimTaskSources = { transitionTask };
+  const claimTaskLifecycleSources = { claimTask };
+  const blockTaskSources = { transitionTask };
+  const blockTaskLifecycleSources = { blockTask };
+  const markTaskReadyForReviewSources = { transitionTask };
+  const markTaskReadyForReviewLifecycleSources = { markTaskReadyForReview };
+  const completeTaskSources = { transitionTask };
+  const completeTaskLifecycleSources = { completeTask };
+  const approveTaskSources = { transitionTask };
+  const approveTaskLifecycleSources = { approveTask };
+  const rejectTaskSources = { transitionTask };
+  const rejectTaskLifecycleSources = { rejectTask };
+  const releaseTaskSources = { transitionTask };
+  const releaseTaskLifecycleSources = { releaseTask };
 
   return {
     claimTask,

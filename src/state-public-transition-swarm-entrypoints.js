@@ -9,20 +9,25 @@ export function createStateTransitionSwarmEntryPoints(shared) {
   const { transitionSwarm } = shared;
 
   function activateSwarm(input) {
-    return activateSwarmLifecycleView(input, { transitionSwarm });
+    return activateSwarmLifecycleView(input, activateSwarmSources);
   }
 
   function blockSwarm(input) {
-    return blockSwarmLifecycleView(input, { transitionSwarm });
+    return blockSwarmLifecycleView(input, blockSwarmSources);
   }
 
   function completeSwarm(input) {
-    return completeSwarmLifecycleView(input, { transitionSwarm });
+    return completeSwarmLifecycleView(input, completeSwarmSources);
   }
 
   function cancelSwarm(input) {
-    return cancelSwarmLifecycleView(input, { transitionSwarm });
+    return cancelSwarmLifecycleView(input, cancelSwarmSources);
   }
+
+  const activateSwarmSources = { transitionSwarm };
+  const blockSwarmSources = { transitionSwarm };
+  const completeSwarmSources = { transitionSwarm };
+  const cancelSwarmSources = { transitionSwarm };
 
   return {
     activateSwarm,
