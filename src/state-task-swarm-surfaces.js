@@ -6,7 +6,6 @@ import {
   buildSwarmBlockersSummary,
   buildSwarmBundleSummary,
   buildSwarmCloseoutSummary,
-  buildSwarmDetailView,
   buildSwarmDetailViewFromSources,
   buildSwarmDispatchBundleSummary,
   deriveSwarmBlockersReason,
@@ -67,9 +66,7 @@ export function taskReportFromSources(id, sources = {}) {
 }
 
 export function getSwarmViewFromSources(id, sources = {}) {
-  return buildSwarmDetailViewFromSources(id, sources, {
-    buildSwarmDetailView
-  });
+  return buildSwarmDetailViewFromSources(id, sources);
 }
 
 export function taskBriefFromSources(id, sources = {}) {

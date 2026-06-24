@@ -4,7 +4,6 @@ import {
 } from "./state-swarm-core.js";
 import {
   buildSwarmOverviewData,
-  buildSwarmOverviewView,
   buildSwarmOverviewViewFromSources,
   deriveSwarmOverviewReason,
   deriveSwarmSyncReason
@@ -51,7 +50,5 @@ export function swarmOverviewSurface(id, sources = {}) {
     buildSwarmOverviewData,
     deriveSwarmStatus,
     deriveSwarmOverviewReason
-  }, {
-    buildSwarmOverviewView
   });
 }

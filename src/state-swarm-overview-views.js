@@ -138,31 +138,8 @@ export function buildSwarmOverviewView(
   });
 }
 
-export function buildSwarmOverviewViewFromSources(
-  id,
-  {
-    loadState,
-    normalizeSwarm,
-    normalizeTask,
-    buildSwarmOverviewData,
-    deriveSwarmStatus,
-    deriveSwarmOverviewReason
-  },
-  {
-    buildSwarmOverviewView
-  }
-) {
-  return buildSwarmOverviewView(
-    id,
-    {
-      loadState,
-      normalizeSwarm,
-      normalizeTask,
-      buildSwarmOverviewData,
-      deriveSwarmStatus,
-      deriveSwarmOverviewReason
-    }
-  );
+export function buildSwarmOverviewViewFromSources(id, sources) {
+  return buildSwarmOverviewView(id, sources);
 }
 
 export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
@@ -179,20 +156,8 @@ export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
   });
 }
 
-export function buildSwarmDetailViewFromSources(
-  id,
-  {
-    getSwarm,
-    swarmOverview
-  },
-  {
-    buildSwarmDetailView
-  }
-) {
-  return buildSwarmDetailView(id, {
-    getSwarm,
-    swarmOverview
-  });
+export function buildSwarmDetailViewFromSources(id, sources) {
+  return buildSwarmDetailView(id, sources);
 }
 
 export function buildSwarmListView(filters = {}, options = {}, { listSwarms, listSwarmOverviews }) {
@@ -210,19 +175,6 @@ export function buildSwarmListView(filters = {}, options = {}, { listSwarms, lis
   });
 }
 
-export function buildSwarmListViewFromSources(
-  filters = {},
-  options = {},
-  {
-    listSwarms,
-    listSwarmOverviews
-  },
-  {
-    buildSwarmListView
-  }
-) {
-  return buildSwarmListView(filters, options, {
-    listSwarms,
-    listSwarmOverviews
-  });
+export function buildSwarmListViewFromSources(filters = {}, options = {}, sources) {
+  return buildSwarmListView(filters, options, sources);
 }

@@ -23,18 +23,8 @@ export function buildMemoryDetailView(
   });
 }
 
-export function buildMemoryDetailViewFromSources(
-  id,
-  {
-    getMemory
-  },
-  {
-    buildMemoryDetailView
-  }
-) {
-  return buildMemoryDetailView(id, {
-    getMemory
-  });
+export function buildMemoryDetailViewFromSources(id, sources) {
+  return buildMemoryDetailView(id, sources);
 }
 
 export function buildMemoryListView(
@@ -53,18 +43,8 @@ export function buildMemoryListView(
   });
 }
 
-export function buildMemoryListViewFromSources(
-  filters = {},
-  {
-    listMemories
-  },
-  {
-    buildMemoryListView
-  }
-) {
-  return buildMemoryListView(filters, {
-    listMemories
-  });
+export function buildMemoryListViewFromSources(filters = {}, sources) {
+  return buildMemoryListView(filters, sources);
 }
 
 export function buildMemorySearchView(
@@ -89,18 +69,6 @@ export function buildMemorySearchView(
   });
 }
 
-export function buildMemorySearchViewFromSources(
-  query,
-  filters = {},
-  limit = 10,
-  {
-    searchMemories
-  },
-  {
-    buildMemorySearchView
-  }
-) {
-  return buildMemorySearchView(query, filters, limit, {
-    searchMemories
-  });
+export function buildMemorySearchViewFromSources(query, filters = {}, limit = 10, sources) {
+  return buildMemorySearchView(query, filters, limit, sources);
 }

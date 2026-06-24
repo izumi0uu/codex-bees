@@ -5,11 +5,8 @@ import {
   searchMemoriesFromSources
 } from "./state-memory-core.js";
 import {
-  buildMemoryDetailView,
   buildMemoryDetailViewFromSources,
-  buildMemoryListView,
   buildMemoryListViewFromSources,
-  buildMemorySearchView,
   buildMemorySearchViewFromSources
 } from "./state-memory-views.js";
 import {
@@ -18,14 +15,9 @@ import {
   listSwarmsFromSources
 } from "./state-swarm-core.js";
 import {
-  buildSwarmListView,
   buildSwarmListViewFromSources
 } from "./state-swarm-views.js";
 import {
-  buildArchivedSwarmDetailView,
-  buildArchivedSwarmListView,
-  buildArchivedTaskDetailView,
-  buildArchivedTaskListView,
   buildArchivedSwarmDetailViewFromSources,
   buildArchivedSwarmListViewFromSources,
   buildArchivedTaskDetailViewFromSources,
@@ -65,15 +57,11 @@ export function getMemorySurface(id, sources = {}) {
 }
 
 export function listMemoriesViewSurface(filters = {}, sources = {}) {
-  return buildMemoryListViewFromSources(filters, sources, {
-    buildMemoryListView
-  });
+  return buildMemoryListViewFromSources(filters, sources);
 }
 
 export function getMemoryViewSurface(id, sources = {}) {
-  return buildMemoryDetailViewFromSources(id, sources, {
-    buildMemoryDetailView
-  });
+  return buildMemoryDetailViewFromSources(id, sources);
 }
 
 export function listSwarmsSurface(filters = {}, sources = {}) {
@@ -88,9 +76,7 @@ export function listSwarmOverviewsSurface(filters = {}, sources = {}) {
 }
 
 export function listSwarmsViewSurface(filters = {}, options = {}, sources = {}) {
-  return buildSwarmListViewFromSources(filters, options, sources, {
-    buildSwarmListView
-  });
+  return buildSwarmListViewFromSources(filters, options, sources);
 }
 
 export function getTaskSurface(id, sources = {}) {
@@ -106,15 +92,11 @@ export function getArchivedTaskSurface(id, sources = {}) {
 }
 
 export function listArchivedTasksViewSurface(sources = {}) {
-  return buildArchivedTaskListViewFromSources(sources, {
-    buildArchivedTaskListView
-  });
+  return buildArchivedTaskListViewFromSources(sources);
 }
 
 export function getArchivedTaskViewSurface(id, sources = {}) {
-  return buildArchivedTaskDetailViewFromSources(id, sources, {
-    buildArchivedTaskDetailView
-  });
+  return buildArchivedTaskDetailViewFromSources(id, sources);
 }
 
 export function listArchivedSwarmsSurface(sources = {}) {
@@ -126,15 +108,11 @@ export function getArchivedSwarmSurface(id, sources = {}) {
 }
 
 export function listArchivedSwarmsViewSurface(sources = {}) {
-  return buildArchivedSwarmListViewFromSources(sources, {
-    buildArchivedSwarmListView
-  });
+  return buildArchivedSwarmListViewFromSources(sources);
 }
 
 export function getArchivedSwarmViewSurface(id, sources = {}) {
-  return buildArchivedSwarmDetailViewFromSources(id, sources, {
-    buildArchivedSwarmDetailView
-  });
+  return buildArchivedSwarmDetailViewFromSources(id, sources);
 }
 
 export function getSwarmSurface(id, sources = {}) {
@@ -150,7 +128,5 @@ export function searchMemoriesSurface(query, filters = {}, sources = {}) {
 }
 
 export function searchMemoriesViewSurface(query, filters = {}, limit = 10, sources = {}) {
-  return buildMemorySearchViewFromSources(query, filters, limit, sources, {
-    buildMemorySearchView
-  });
+  return buildMemorySearchViewFromSources(query, filters, limit, sources);
 }

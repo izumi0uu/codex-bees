@@ -40,12 +40,7 @@ export function buildArchivedTaskListView(tasks = []) {
   });
 }
 
-export function buildArchivedTaskListViewFromSources(
-  { listArchivedTasks },
-  {
-    buildArchivedTaskListView
-  }
-) {
+export function buildArchivedTaskListViewFromSources({ listArchivedTasks }) {
   return buildArchivedTaskListView(listArchivedTasks());
 }
 
@@ -64,16 +59,8 @@ export function buildArchivedTaskDetailView(id, { getArchivedTask }) {
   });
 }
 
-export function buildArchivedTaskDetailViewFromSources(
-  id,
-  { getArchivedTask },
-  {
-    buildArchivedTaskDetailView
-  }
-) {
-  return buildArchivedTaskDetailView(id, {
-    getArchivedTask
-  });
+export function buildArchivedTaskDetailViewFromSources(id, sources) {
+  return buildArchivedTaskDetailView(id, sources);
 }
 
 export function buildArchivedSwarmListView(swarms = []) {
@@ -92,12 +79,7 @@ export function buildArchivedSwarmListView(swarms = []) {
   });
 }
 
-export function buildArchivedSwarmListViewFromSources(
-  { listArchivedSwarms },
-  {
-    buildArchivedSwarmListView
-  }
-) {
+export function buildArchivedSwarmListViewFromSources({ listArchivedSwarms }) {
   return buildArchivedSwarmListView(listArchivedSwarms());
 }
 
@@ -125,16 +107,6 @@ export function buildArchivedSwarmDetailView(id, { getArchivedSwarm, getArchived
   });
 }
 
-export function buildArchivedSwarmDetailViewFromSources(
-  id,
-  { getArchivedSwarm, getArchivedTask, listArchivedTasks },
-  {
-    buildArchivedSwarmDetailView
-  }
-) {
-  return buildArchivedSwarmDetailView(id, {
-    getArchivedSwarm,
-    getArchivedTask,
-    listArchivedTasks
-  });
+export function buildArchivedSwarmDetailViewFromSources(id, sources) {
+  return buildArchivedSwarmDetailView(id, sources);
 }
