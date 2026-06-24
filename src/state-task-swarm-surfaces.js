@@ -6,7 +6,6 @@ import {
   buildSwarmBlockersSummary,
   buildSwarmBundleSummary,
   buildSwarmCloseoutSummary,
-  buildSwarmDetailViewFromSources,
   buildSwarmDispatchBundleSummary,
   deriveSwarmBlockersReason,
   deriveSwarmBriefReason,
@@ -36,6 +35,8 @@ import {
   taskReportNextGate
 } from "./state-task-views.js";
 
+export { buildSwarmDetailViewFromSources as getSwarmViewFromSources } from "./state-swarm-views.js";
+
 export function getTaskViewFromSources(id, sources = {}) {
   return buildTaskDetailViewFromSources(id, {
     ...sources,
@@ -58,10 +59,6 @@ export function taskReportFromSources(id, sources = {}) {
     deriveReviewState,
     taskReportNextGate
   });
-}
-
-export function getSwarmViewFromSources(id, sources = {}) {
-  return buildSwarmDetailViewFromSources(id, sources);
 }
 
 export function taskBriefFromSources(id, sources = {}) {
