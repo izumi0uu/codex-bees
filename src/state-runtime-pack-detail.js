@@ -133,3 +133,21 @@ export function requireRuntimePackRoleWorkerSelection(input) {
     workerId: input.workerId
   };
 }
+
+export function buildRuntimePackWorkerFlowEntries(session, handoff, closeout, next) {
+  return {
+    focus: session?.focus ?? null,
+    candidate: next?.candidate ?? null,
+    handoff: handoff?.currentTask ?? null,
+    closeout: closeout?.report?.task ?? null
+  };
+}
+
+export function buildRuntimePackWorkerFlowSurfaces(session, handoff, closeout, next) {
+  return {
+    session,
+    handoff,
+    closeout,
+    next
+  };
+}

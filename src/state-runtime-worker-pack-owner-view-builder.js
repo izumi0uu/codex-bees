@@ -1,6 +1,8 @@
 import {
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPresenceMetadata,
+  buildRuntimePackWorkerFlowEntries,
+  buildRuntimePackWorkerFlowSurfaces,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
   countRuntimePackEntries
@@ -48,12 +50,7 @@ export function buildRuntimeOwnerPackView(
     session,
     handoff
   );
-  const nextEntries = {
-    focus: session?.focus ?? null,
-    candidate: next?.candidate ?? null,
-    handoff: handoff?.currentTask ?? null,
-    closeout: closeout?.report?.task ?? null
-  };
+  const nextEntries = buildRuntimePackWorkerFlowEntries(session, handoff, closeout, next);
 
   return {
     kind: "runtime_owner_pack",
@@ -74,12 +71,7 @@ export function buildRuntimeOwnerPackView(
     },
     overview: buildRuntimePackSessionOverview(session),
     next: nextEntries,
-    surfaces: {
-      session,
-      handoff,
-      closeout,
-      next
-    },
+    surfaces: buildRuntimePackWorkerFlowSurfaces(session, handoff, closeout, next),
     summary: buildRuntimeOwnerPackSummary(recommendedSurface, session)
   };
 }

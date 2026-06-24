@@ -1,6 +1,8 @@
 import {
   buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPresenceMetadata,
+  buildRuntimePackWorkerFlowEntries,
+  buildRuntimePackWorkerFlowSurfaces,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
   countRuntimePackEntries
@@ -43,12 +45,7 @@ export function buildRuntimeWorkerPackView(
     session,
     handoff
   );
-  const nextEntries = {
-    focus: session?.focus ?? null,
-    candidate: next?.candidate ?? null,
-    handoff: handoff?.currentTask ?? null,
-    closeout: closeout?.report?.task ?? null
-  };
+  const nextEntries = buildRuntimePackWorkerFlowEntries(session, handoff, closeout, next);
 
   return {
     kind: "runtime_worker_pack",
@@ -69,12 +66,7 @@ export function buildRuntimeWorkerPackView(
     },
     overview: buildRuntimePackSessionOverview(session),
     next: nextEntries,
-    surfaces: {
-      session,
-      handoff,
-      closeout,
-      next
-    },
+    surfaces: buildRuntimePackWorkerFlowSurfaces(session, handoff, closeout, next),
     summary: buildRuntimeWorkerPackSummary(recommendedSurface, session)
   };
 }
