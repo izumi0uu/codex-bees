@@ -1,74 +1,21 @@
-import {
-  runtimeOwnerPackSurface,
-  runtimeReviewPackSurface,
-  runtimeRolePackSurface,
-  runtimeSessionPackSurface,
-  runtimeVerifierPackSurface,
-  runtimeWorkerPackSurface
-} from "./state-runtime-entry-surfaces.js";
+import { createStateRuntimeSessionPackSessionRoleOwnerWorkerEntryPoints } from "./state-public-runtime-session-pack-session-role-owner-worker-entrypoints.js";
+import { createStateRuntimeSessionPackSessionRoleReviewRoleEntryPoints } from "./state-public-runtime-session-pack-session-role-review-role-entrypoints.js";
 
 export function createStateRuntimeSessionPackSessionRoleEntryPoints(api, runtimeOverview) {
-  const { runtimeRoles, runtimeReview } = runtimeOverview;
-
-  const runtimeVerifierPackSources = {
-    runtimeReview,
-    verifierBundle: api.verifierBundle,
-    workerCloseout: api.workerCloseout,
-    taskNext: api.taskNext
-  };
-  const runtimeVerifierPack = (input = {}) =>
-    runtimeVerifierPackSurface(input, runtimeVerifierPackSources);
-
-  const runtimeReviewPackSources = {
-    runtimeReview,
-    runtimeRoles,
-    runtimeVerifierPack
-  };
-  const runtimeReviewPack = (input = {}) =>
-    runtimeReviewPackSurface(input, runtimeReviewPackSources);
-
-  const runtimeOwnerPackSources = {
-    workerSession: api.workerSession,
-    workerHandoff: api.workerHandoff,
-    workerCloseout: api.workerCloseout,
-    taskNext: api.taskNext
-  };
-  const runtimeOwnerPack = (input = {}) =>
-    runtimeOwnerPackSurface(input, runtimeOwnerPackSources);
-
-  const runtimeWorkerPackSources = {
-    workerSession: api.workerSession,
-    workerHandoff: api.workerHandoff,
-    workerCloseout: api.workerCloseout,
-    taskNext: api.taskNext
-  };
-  const runtimeWorkerPack = (input = {}) =>
-    runtimeWorkerPackSurface(input, runtimeWorkerPackSources);
-
-  const runtimeSessionPackSources = {
-    runtimeWorkerPack,
-    runtimeOwnerPack,
-    runtimeVerifierPack,
-    runtimeRoles
-  };
-  const runtimeSessionPack = (input = {}) =>
-    runtimeSessionPackSurface(input, runtimeSessionPackSources);
-
-  const runtimeRolePackSources = {
-    runtimeRoles,
-    runtimeSessionPack,
-    runtimeOwnerPack,
-    runtimeVerifierPack
-  };
-  const runtimeRolePack = (input = {}) =>
-    runtimeRolePackSurface(input, runtimeRolePackSources);
+  const ownerWorker = createStateRuntimeSessionPackSessionRoleOwnerWorkerEntryPoints(api);
+  const reviewRole = createStateRuntimeSessionPackSessionRoleReviewRoleEntryPoints(
+    api,
+    runtimeOverview,
+    ownerWorker.runtimeOwnerPack,
+    ownerWorker.runtimeWorkerPack
+  );
 
   return {
-    runtimeReviewPack,
-    runtimeVerifierPack,
-    runtimeOwnerPack,
-    runtimeWorkerPack,
-    runtimeSessionPack,
-    runtimeRolePack
+    runtimeReviewPack: reviewRole.runtimeReviewPack,
+    runtimeVerifierPack: reviewRole.runtimeVerifierPack,
+    runtimeOwnerPack: ownerWorker.runtimeOwnerPack,
+    runtimeWorkerPack: ownerWorker.runtimeWorkerPack,
+    runtimeSessionPack: reviewRole.runtimeSessionPack,
+    runtimeRolePack: reviewRole.runtimeRolePack
   };
 }
