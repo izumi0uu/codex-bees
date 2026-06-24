@@ -4,47 +4,25 @@ import { createStateTransitionTaskEntryPoints } from "./state-public-transition-
 export function createStateTransitionEntryPoints(shared, api) {
   const taskTransitions = createStateTransitionTaskEntryPoints(shared);
   const swarmTransitions = createStateTransitionSwarmEntryPoints(shared);
-  const {
-    claimTask,
-    claimTaskLifecycle,
-    blockTask,
-    blockTaskLifecycle,
-    markTaskReadyForReview,
-    markTaskReadyForReviewLifecycle,
-    completeTask,
-    completeTaskLifecycle,
-    approveTask,
-    approveTaskLifecycle,
-    rejectTask,
-    rejectTaskLifecycle,
-    releaseTask,
-    releaseTaskLifecycle
-  } = taskTransitions;
-  const {
-    activateSwarm,
-    blockSwarm,
-    completeSwarm,
-    cancelSwarm
-  } = swarmTransitions;
 
   return {
-    claimTask,
-    claimTaskLifecycle,
-    blockTask,
-    blockTaskLifecycle,
-    markTaskReadyForReview,
-    markTaskReadyForReviewLifecycle,
-    completeTask,
-    completeTaskLifecycle,
-    approveTask,
-    approveTaskLifecycle,
-    rejectTask,
-    rejectTaskLifecycle,
-    releaseTask,
-    releaseTaskLifecycle,
-    activateSwarm,
-    blockSwarm,
-    completeSwarm,
-    cancelSwarm
+    claimTask: taskTransitions.claimTask,
+    claimTaskLifecycle: taskTransitions.claimTaskLifecycle,
+    blockTask: taskTransitions.blockTask,
+    blockTaskLifecycle: taskTransitions.blockTaskLifecycle,
+    markTaskReadyForReview: taskTransitions.markTaskReadyForReview,
+    markTaskReadyForReviewLifecycle: taskTransitions.markTaskReadyForReviewLifecycle,
+    completeTask: taskTransitions.completeTask,
+    completeTaskLifecycle: taskTransitions.completeTaskLifecycle,
+    approveTask: taskTransitions.approveTask,
+    approveTaskLifecycle: taskTransitions.approveTaskLifecycle,
+    rejectTask: taskTransitions.rejectTask,
+    rejectTaskLifecycle: taskTransitions.rejectTaskLifecycle,
+    releaseTask: taskTransitions.releaseTask,
+    releaseTaskLifecycle: taskTransitions.releaseTaskLifecycle,
+    activateSwarm: swarmTransitions.activateSwarm,
+    blockSwarm: swarmTransitions.blockSwarm,
+    completeSwarm: swarmTransitions.completeSwarm,
+    cancelSwarm: swarmTransitions.cancelSwarm
   };
 }
