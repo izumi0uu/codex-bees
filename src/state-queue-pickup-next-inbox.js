@@ -35,37 +35,8 @@ export function buildTaskNextView(
     brief: selected ? taskBrief(selected.id) : null
   };
 }
-export function buildTaskNextViewFromSources(
-  input,
-  {
-    normalizeNextMode,
-    loadState,
-    normalizeTask,
-    sortNextCandidates,
-    describeRole,
-    summarizeInboxTask,
-    taskBrief
-  },
-  {
-    deriveTaskNextReason,
-    buildTaskNextView
-  }
-) {
-  return buildTaskNextView(
-    input,
-    {
-      normalizeNextMode,
-      loadState,
-      normalizeTask,
-      sortNextCandidates,
-      describeRole,
-      summarizeInboxTask,
-      taskBrief
-    },
-    {
-      deriveTaskNextReason
-    }
-  );
+export function buildTaskNextViewFromSources(input, sources, helpers) {
+  return buildTaskNextView(input, sources, helpers);
 }
 export function buildTaskInboxView(
   input,
@@ -135,37 +106,6 @@ export function buildTaskInboxView(
     next
   };
 }
-export function buildTaskInboxViewFromSources(
-  input,
-  {
-    getRuntimeCatalog,
-    loadState,
-    normalizeTask,
-    sortInboxTasks,
-    summarizeInboxTask,
-    taskNext,
-    isClaimableTask,
-    describeRole
-  },
-  {
-    deriveTaskInboxReason,
-    buildTaskInboxView
-  }
-) {
-  return buildTaskInboxView(
-    input,
-    {
-      getRuntimeCatalog,
-      loadState,
-      normalizeTask,
-      sortInboxTasks,
-      summarizeInboxTask,
-      taskNext,
-      isClaimableTask,
-      describeRole
-    },
-    {
-      deriveTaskInboxReason
-    }
-  );
+export function buildTaskInboxViewFromSources(input, sources, helpers) {
+  return buildTaskInboxView(input, sources, helpers);
 }

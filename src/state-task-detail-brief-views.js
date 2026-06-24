@@ -31,20 +31,8 @@ export function buildTaskHistoryView(
   });
 }
 
-export function buildTaskHistoryViewFromSources(
-  id,
-  {
-    getTask,
-    deriveTaskHistoryReason
-  },
-  {
-    buildTaskHistoryView
-  }
-) {
-  return buildTaskHistoryView(id, {
-    getTask,
-    deriveTaskHistoryReason
-  });
+export function buildTaskHistoryViewFromSources(id, sources) {
+  return buildTaskHistoryView(id, sources);
 }
 
 export function buildTaskDetailView(
@@ -67,20 +55,8 @@ export function buildTaskDetailView(
   });
 }
 
-export function buildTaskDetailViewFromSources(
-  id,
-  {
-    getTask,
-    deriveReviewState
-  },
-  {
-    buildTaskDetailView
-  }
-) {
-  return buildTaskDetailView(id, {
-    getTask,
-    deriveReviewState
-  });
+export function buildTaskDetailViewFromSources(id, sources) {
+  return buildTaskDetailView(id, sources);
 }
 
 export function deriveTaskBriefReason(task, recommended) {
@@ -196,35 +172,6 @@ export function buildTaskBriefView(
   });
 }
 
-export function buildTaskBriefViewFromSources(
-  id,
-  {
-    getTask,
-    runtimeRoleCatalog,
-    validateTaskValue,
-    getRuntimeCatalog,
-    recommendTaskAction,
-    deriveTaskBriefReason,
-    describeRole,
-    deriveReviewState,
-    dependencyTasks
-  },
-  {
-    buildTaskBriefView
-  }
-) {
-  return buildTaskBriefView(
-    id,
-    {
-      getTask,
-      runtimeRoleCatalog,
-      validateTaskValue,
-      getRuntimeCatalog,
-      recommendTaskAction,
-      deriveTaskBriefReason,
-      describeRole,
-      deriveReviewState,
-      dependencyTasks
-    }
-  );
+export function buildTaskBriefViewFromSources(id, sources) {
+  return buildTaskBriefView(id, sources);
 }

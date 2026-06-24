@@ -75,37 +75,8 @@ export function buildRuntimeDashboardView(
   };
 }
 
-export function buildRuntimeDashboardViewFromSources(
-  {
-    loadState,
-    normalizeTask,
-    listSwarmOverviews,
-    leaderQueue,
-    leaderAssignments,
-    compareTasksByUpdatedAt,
-    summarizeDashboardTask
-  },
-  {
-    deriveRuntimeDashboardReason,
-    buildRuntimeDashboardSummary,
-    buildRuntimeDashboardView
-  }
-) {
-  return buildRuntimeDashboardView(
-    {
-      loadState,
-      normalizeTask,
-      listSwarmOverviews,
-      leaderQueue,
-      leaderAssignments,
-      compareTasksByUpdatedAt,
-      summarizeDashboardTask
-    },
-    {
-      deriveRuntimeDashboardReason,
-      buildRuntimeDashboardSummary
-    }
-  );
+export function buildRuntimeDashboardViewFromSources(sources, helpers) {
+  return buildRuntimeDashboardView(sources, helpers);
 }
 
 export function buildRuntimeAlertsSummary(alerts) {
@@ -184,29 +155,8 @@ export function buildRuntimeAlertsView(
   };
 }
 
-export function buildRuntimeAlertsViewFromSources(
-  {
-    runtimeDashboard,
-    listSwarmOverviews,
-    compareRuntimeAlerts
-  },
-  {
-    deriveRuntimeAlertsReason,
-    buildRuntimeAlertsSummary,
-    buildRuntimeAlertsView
-  }
-) {
-  return buildRuntimeAlertsView(
-    {
-      runtimeDashboard,
-      listSwarmOverviews,
-      compareRuntimeAlerts
-    },
-    {
-      deriveRuntimeAlertsReason,
-      buildRuntimeAlertsSummary
-    }
-  );
+export function buildRuntimeAlertsViewFromSources(sources, helpers) {
+  return buildRuntimeAlertsView(sources, helpers);
 }
 
 export function deriveRuntimeAlertsReason({ alerts }) {

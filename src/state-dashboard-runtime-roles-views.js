@@ -100,43 +100,6 @@ export function buildRuntimeRolesView(
   };
 }
 
-export function buildRuntimeRolesViewFromSources(
-  input,
-  {
-    getRuntimeCatalog,
-    leaderAssignments,
-    buildRuntimeRoleEntry,
-    describeRole,
-    loadState,
-    normalizeTask,
-    taskInbox,
-    taskNext,
-    isClaimableTask,
-    compareRuntimeRoleEntries
-  },
-  {
-    deriveRuntimeRolesReason,
-    buildRuntimeRolesSummary,
-    buildRuntimeRolesView
-  }
-) {
-  return buildRuntimeRolesView(
-    input,
-    {
-      getRuntimeCatalog,
-      leaderAssignments,
-      buildRuntimeRoleEntry,
-      describeRole,
-      loadState,
-      normalizeTask,
-      taskInbox,
-      taskNext,
-      isClaimableTask,
-      compareRuntimeRoleEntries
-    },
-    {
-      deriveRuntimeRolesReason,
-      buildRuntimeRolesSummary
-    }
-  );
+export function buildRuntimeRolesViewFromSources(input, sources, helpers) {
+  return buildRuntimeRolesView(input, sources, helpers);
 }

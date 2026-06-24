@@ -74,23 +74,6 @@ export function buildRuntimeDispatchView(
   };
 }
 
-export function buildRuntimeDispatchViewFromSources(
-  {
-    leaderAssignments
-  },
-  {
-    deriveRuntimeDispatchReason,
-    buildRuntimeDispatchSummary,
-    buildRuntimeDispatchView
-  }
-) {
-  return buildRuntimeDispatchView(
-    {
-      leaderAssignments
-    },
-    {
-      deriveRuntimeDispatchReason,
-      buildRuntimeDispatchSummary
-    }
-  );
+export function buildRuntimeDispatchViewFromSources(sources, helpers) {
+  return buildRuntimeDispatchView(sources, helpers);
 }

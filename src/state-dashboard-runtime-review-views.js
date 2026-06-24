@@ -60,37 +60,8 @@ export function buildRuntimeReviewView(
   };
 }
 
-export function buildRuntimeReviewViewFromSources(
-  {
-    loadState,
-    normalizeTask,
-    compareTasksByUpdatedAt,
-    describeRole,
-    taskBrief,
-    buildRuntimeReviewTaskEntry,
-    compareRuntimeReviewGroups
-  },
-  {
-    deriveRuntimeReviewReason,
-    buildRuntimeReviewSummary,
-    buildRuntimeReviewView
-  }
-) {
-  return buildRuntimeReviewView(
-    {
-      loadState,
-      normalizeTask,
-      compareTasksByUpdatedAt,
-      describeRole,
-      taskBrief,
-      buildRuntimeReviewTaskEntry,
-      compareRuntimeReviewGroups
-    },
-    {
-      deriveRuntimeReviewReason,
-      buildRuntimeReviewSummary
-    }
-  );
+export function buildRuntimeReviewViewFromSources(sources, helpers) {
+  return buildRuntimeReviewView(sources, helpers);
 }
 
 export function deriveRuntimeReviewReason({ groups, next, totalPendingReview }) {

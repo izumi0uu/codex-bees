@@ -35,17 +35,8 @@ export function buildTaskListView({ listTasks }) {
   });
 }
 
-export function buildTaskListViewFromSources(
-  {
-    listTasks
-  },
-  {
-    buildTaskListView
-  }
-) {
-  return buildTaskListView({
-    listTasks
-  });
+export function buildTaskListViewFromSources(sources) {
+  return buildTaskListView(sources);
 }
 
 export function taskReportNextGate(task) {
@@ -164,26 +155,6 @@ export function buildTaskReportView(
   );
 }
 
-export function buildTaskReportViewFromSources(
-  id,
-  {
-    getTask,
-    taskBrief,
-    buildTaskReportEntries,
-    deriveTaskReportReason,
-    deriveReviewState,
-    taskReportNextGate
-  },
-  {
-    buildTaskReportView
-  }
-) {
-  return buildTaskReportView(id, {
-    getTask,
-    taskBrief,
-    buildTaskReportEntries,
-    deriveTaskReportReason,
-    deriveReviewState,
-    taskReportNextGate
-  });
+export function buildTaskReportViewFromSources(id, sources) {
+  return buildTaskReportView(id, sources);
 }
