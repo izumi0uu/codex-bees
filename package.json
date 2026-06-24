@@ -79,10 +79,11 @@
   "scripts": {
     "dev": "node ./src/index.js run",
     "build": "node ./scripts/build.mjs",
-    "check": "node --check ./src/index.js && node --check ./src/mcp.js && node --check ./scripts/build.mjs && node --check ./scripts/smoke.mjs && node --check ./scripts/runtime-pack-probes.mjs && npm run typecheck:types",
+    "check": "node --check ./src/index.js && node --check ./src/mcp.js && node --check ./scripts/build.mjs && node --check ./scripts/smoke.mjs && node --check ./scripts/runtime-pack-probes.mjs && node --check ./scripts/authoritative-facade-probes.mjs && npm run probe:authoritative-facade && npm run typecheck:types",
     "smoke": "node ./scripts/smoke.mjs",
     "typecheck:types": "node ./scripts/typecheck-types.mjs --noEmit -p ./tsconfig.types.json",
-    "probe:runtime-packs": "node ./scripts/runtime-pack-probes.mjs"
+    "probe:runtime-packs": "node ./scripts/runtime-pack-probes.mjs",
+    "probe:authoritative-facade": "node ./scripts/authoritative-facade-probes.mjs"
   },
   "homepage": "https://github.com/izumi0uu/codex-bees#readme",
   "bugs": {
