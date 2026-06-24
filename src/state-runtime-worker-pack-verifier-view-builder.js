@@ -1,5 +1,8 @@
 import {
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackVerifierFlowEntries,
+  buildRuntimePackVerifierFlowMetadata,
+  buildRuntimePackVerifierOverview,
+  buildRuntimePackVerifierSurfaces,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
@@ -41,12 +44,7 @@ export function buildRuntimeVerifierPackView(
   });
   const recommendedSurface = deriveRuntimeVerifierPackSurface({ review, bundle, closeout, next, role });
   const recommendedReason = deriveRuntimeVerifierPackReason({ review, bundle, closeout, next });
-  const nextEntries = {
-    review: review?.next ?? null,
-    candidate: next?.candidate ?? null,
-    decision: bundle?.currentTask ?? null,
-    closeout: closeout?.report?.task ?? null
-  };
+  const nextEntries = buildRuntimePackVerifierFlowEntries(review, bundle, closeout, next);
 
   return {
     kind: "runtime_verifier_pack",
@@ -55,24 +53,11 @@ export function buildRuntimeVerifierPackView(
     mode: "verifier",
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasReview: nextEntries.review,
-      hasCandidate: nextEntries.candidate,
-      hasDecision: nextEntries.decision,
-      hasCloseout: nextEntries.closeout
-    }),
+    metadata: buildRuntimePackVerifierFlowMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      review: review?.counts ?? null,
-      bundle: bundle?.currentTask ? { currentTask: bundle.currentTask.id } : { currentTask: null }
-    },
+    overview: buildRuntimePackVerifierOverview(review, bundle),
     next: nextEntries,
-    surfaces: {
-      review,
-      bundle,
-      closeout,
-      next
-    },
+    surfaces: buildRuntimePackVerifierSurfaces(review, bundle, closeout, next),
     summary: buildRuntimeVerifierPackSummary(recommendedSurface, bundle, review)
   };
 }

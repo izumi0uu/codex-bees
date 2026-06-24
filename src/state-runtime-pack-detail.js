@@ -168,3 +168,37 @@ export function buildRuntimePackWorkerFlowMetadata(nextEntries = {}) {
     hasCloseout: nextEntries.closeout
   });
 }
+
+export function buildRuntimePackVerifierFlowEntries(review, bundle, closeout, next) {
+  return {
+    review: review?.next ?? null,
+    candidate: next?.candidate ?? null,
+    decision: bundle?.currentTask ?? null,
+    closeout: closeout?.report?.task ?? null
+  };
+}
+
+export function buildRuntimePackVerifierFlowMetadata(nextEntries = {}) {
+  return buildRuntimePackPresenceMetadata({
+    hasReview: nextEntries.review,
+    hasCandidate: nextEntries.candidate,
+    hasDecision: nextEntries.decision,
+    hasCloseout: nextEntries.closeout
+  });
+}
+
+export function buildRuntimePackVerifierOverview(review, bundle) {
+  return {
+    review: review?.counts ?? null,
+    bundle: bundle?.currentTask ? { currentTask: bundle.currentTask.id } : { currentTask: null }
+  };
+}
+
+export function buildRuntimePackVerifierSurfaces(review, bundle, closeout, next) {
+  return {
+    review,
+    bundle,
+    closeout,
+    next
+  };
+}
