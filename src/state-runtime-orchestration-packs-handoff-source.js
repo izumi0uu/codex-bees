@@ -1,18 +1,8 @@
 import { buildRuntimeHandoffPackSummary, buildRuntimeHandoffPackView, deriveRuntimeHandoffPackReason, deriveRuntimeHandoffPackSurface } from './state-runtime-views.js';
 
-export function runtimeHandoffPackFromSources({
-  runtimeHandoffs,
-  runtimeDispatch,
-  runtimeReview,
-  runtimeRecovery
-}) {
+export function runtimeHandoffPackFromSources(sources = {}) {
   return buildRuntimeHandoffPackView(
-    {
-      runtimeHandoffs,
-      runtimeDispatch,
-      runtimeReview,
-      runtimeRecovery
-    },
+    sources,
     {
       deriveRuntimeHandoffPackSurface,
       deriveRuntimeHandoffPackReason,

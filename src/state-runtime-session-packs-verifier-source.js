@@ -1,22 +1,11 @@
 import { describeRole } from './state-task-core.js';
 import { buildRuntimeVerifierPackSummary, buildRuntimeVerifierPackView, deriveRuntimeVerifierPackReason, deriveRuntimeVerifierPackSurface } from './state-runtime-views.js';
 
-export function runtimeVerifierPackFromSources(
-  input = {},
-  {
-    runtimeReview,
-    verifierBundle,
-    workerCloseout,
-    taskNext
-  }
-) {
+export function runtimeVerifierPackFromSources(input = {}, sources = {}) {
   return buildRuntimeVerifierPackView(
     input,
     {
-      runtimeReview,
-      verifierBundle,
-      workerCloseout,
-      taskNext,
+      ...sources,
       describeRole
     },
     {

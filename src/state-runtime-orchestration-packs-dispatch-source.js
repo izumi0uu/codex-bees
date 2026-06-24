@@ -1,26 +1,9 @@
 import { buildRuntimeDispatchPackSummary, buildRuntimeDispatchPackView, deriveRuntimeDispatchPackReason, deriveRuntimeDispatchPackSurface } from './state-runtime-views.js';
 
-export function runtimeDispatchPackFromSources(
-  input = {},
-  {
-    runtimeDispatch,
-    leaderAssignmentDispatchPack,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan,
-    runtimeRoles,
-    runtimeHandoffs
-  }
-) {
+export function runtimeDispatchPackFromSources(input = {}, sources = {}) {
   return buildRuntimeDispatchPackView(
     input,
-    {
-      runtimeDispatch,
-      leaderAssignmentDispatchPack,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeRoles,
-      runtimeHandoffs
-    },
+    sources,
     {
       deriveRuntimeDispatchPackSurface,
       deriveRuntimeDispatchPackReason,

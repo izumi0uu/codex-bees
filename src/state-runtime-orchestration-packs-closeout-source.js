@@ -1,20 +1,9 @@
 import { buildRuntimeCloseoutPackSummary, buildRuntimeCloseoutPackView, deriveRuntimeCloseoutPackReason, deriveRuntimeCloseoutPackSurface } from './state-runtime-views.js';
 
-export function runtimeCloseoutPackFromSources(
-  input = {},
-  {
-    runtimeCloseout,
-    runtimeSummaryPack,
-    runtimeLeaderPack
-  }
-) {
+export function runtimeCloseoutPackFromSources(input = {}, sources = {}) {
   return buildRuntimeCloseoutPackView(
     input,
-    {
-      runtimeCloseout,
-      runtimeSummaryPack,
-      runtimeLeaderPack
-    },
+    sources,
     {
       deriveRuntimeCloseoutPackSurface,
       deriveRuntimeCloseoutPackReason,

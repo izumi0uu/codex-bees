@@ -1,24 +1,9 @@
 import { buildRuntimeQueuePackSummary, buildRuntimeQueuePackView, deriveRuntimeQueuePackReason, deriveRuntimeQueuePackSurface } from './state-runtime-views.js';
 
-export function runtimeQueuePackFromSources(
-  input = {},
-  {
-    leaderQueue,
-    runtimeDashboard,
-    runtimeFocus,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan
-  }
-) {
+export function runtimeQueuePackFromSources(input = {}, sources = {}) {
   return buildRuntimeQueuePackView(
     input,
-    {
-      leaderQueue,
-      runtimeDashboard,
-      runtimeFocus,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan
-    },
+    sources,
     {
       deriveRuntimeQueuePackSurface,
       deriveRuntimeQueuePackReason,

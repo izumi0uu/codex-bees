@@ -1,18 +1,8 @@
 import { buildRuntimeTriagePackSummary, buildRuntimeTriagePackView, deriveRuntimeTriagePackReason, deriveRuntimeTriagePackSurface } from './state-runtime-views.js';
 
-export function runtimeTriagePackFromSources({
-  runtimeFocus,
-  runtimeAlerts,
-  runtimeReview,
-  runtimeRecovery
-}) {
+export function runtimeTriagePackFromSources(sources = {}) {
   return buildRuntimeTriagePackView(
-    {
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeReview,
-      runtimeRecovery
-    },
+    sources,
     {
       deriveRuntimeTriagePackSurface,
       deriveRuntimeTriagePackReason,

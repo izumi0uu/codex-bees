@@ -1,28 +1,9 @@
 import { buildRuntimeLeaderPackSummary, buildRuntimeLeaderPackView, deriveRuntimeLeaderPackReason, deriveRuntimeLeaderPackSurface } from './state-runtime-views.js';
 
-export function runtimeLeaderPackFromSources(
-  input = {},
-  {
-    leaderWorkspace,
-    leaderQueue,
-    runtimeDispatch,
-    leaderAssignmentDispatchPack,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan,
-    runtimeCloseout
-  }
-) {
+export function runtimeLeaderPackFromSources(input = {}, sources = {}) {
   return buildRuntimeLeaderPackView(
     input,
-    {
-      leaderWorkspace,
-      leaderQueue,
-      runtimeDispatch,
-      leaderAssignmentDispatchPack,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan,
-      runtimeCloseout
-    },
+    sources,
     {
       deriveRuntimeLeaderPackSurface,
       deriveRuntimeLeaderPackReason,

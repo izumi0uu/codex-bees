@@ -1,20 +1,8 @@
 import { buildRuntimeOperatorPackSummary, buildRuntimeOperatorPackView, deriveRuntimeOperatorPackReason, deriveRuntimeOperatorPackSurface } from './state-runtime-views.js';
 
-export function runtimeOperatorPackFromSources({
-  runtimeDashboard,
-  runtimeFocus,
-  runtimeAlerts,
-  runtimeHandoffs,
-  runtimeCloseout
-}) {
+export function runtimeOperatorPackFromSources(sources = {}) {
   return buildRuntimeOperatorPackView(
-    {
-      runtimeDashboard,
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeHandoffs,
-      runtimeCloseout
-    },
+    sources,
     {
       deriveRuntimeOperatorPackSurface,
       deriveRuntimeOperatorPackReason,

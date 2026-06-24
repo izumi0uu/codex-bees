@@ -1,30 +1,9 @@
 import { buildRuntimeSummaryPackSummary, buildRuntimeSummaryPackView, deriveRuntimeSummaryPackReason, deriveRuntimeSummaryPackSurface } from './state-runtime-views.js';
 
-export function runtimeSummaryPackFromSources(
-  input = {},
-  {
-    runtimeDashboard,
-    runtimeAlerts,
-    runtimeFocus,
-    runtimeHandoffs,
-    runtimeRecovery,
-    runtimeCloseout,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan
-  }
-) {
+export function runtimeSummaryPackFromSources(input = {}, sources = {}) {
   return buildRuntimeSummaryPackView(
     input,
-    {
-      runtimeDashboard,
-      runtimeAlerts,
-      runtimeFocus,
-      runtimeHandoffs,
-      runtimeRecovery,
-      runtimeCloseout,
-      leaderAssignmentDispatchBundle,
-      leaderAssignmentLaunchPlan
-    },
+    sources,
     {
       deriveRuntimeSummaryPackSurface,
       deriveRuntimeSummaryPackReason,

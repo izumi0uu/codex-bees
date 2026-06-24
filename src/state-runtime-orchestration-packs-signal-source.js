@@ -1,22 +1,9 @@
 import { buildRuntimeSignalPackSummary, buildRuntimeSignalPackView, deriveRuntimeSignalPackReason, deriveRuntimeSignalPackSurface } from './state-runtime-views.js';
 
-export function runtimeSignalPackFromSources(
-  input = {},
-  {
-    runtimeFocus,
-    runtimeAlerts,
-    runtimeActivity,
-    runtimeRoles
-  }
-) {
+export function runtimeSignalPackFromSources(input = {}, sources = {}) {
   return buildRuntimeSignalPackView(
     input,
-    {
-      runtimeFocus,
-      runtimeAlerts,
-      runtimeActivity,
-      runtimeRoles
-    },
+    sources,
     {
       deriveRuntimeSignalPackSurface,
       deriveRuntimeSignalPackReason,

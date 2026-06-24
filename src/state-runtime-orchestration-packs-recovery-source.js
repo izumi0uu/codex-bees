@@ -1,16 +1,8 @@
 import { buildRuntimeRecoveryPackSummary, buildRuntimeRecoveryPackView, deriveRuntimeRecoveryPackReason, deriveRuntimeRecoveryPackSurface } from './state-runtime-views.js';
 
-export function runtimeRecoveryPackFromSources({
-  runtimeRecovery,
-  runtimeHandoffs,
-  runtimeFocus
-}) {
+export function runtimeRecoveryPackFromSources(sources = {}) {
   return buildRuntimeRecoveryPackView(
-    {
-      runtimeRecovery,
-      runtimeHandoffs,
-      runtimeFocus
-    },
+    sources,
     {
       deriveRuntimeRecoveryPackSurface,
       deriveRuntimeRecoveryPackReason,

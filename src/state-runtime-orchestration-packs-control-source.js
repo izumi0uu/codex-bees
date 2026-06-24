@@ -1,22 +1,9 @@
 import { buildRuntimeControlPackSummary, buildRuntimeControlPackView, deriveRuntimeControlPackReason, deriveRuntimeControlPackSurface } from './state-runtime-views.js';
 
-export function runtimeControlPackFromSources(
-  input = {},
-  {
-    runtimeSummaryPack,
-    runtimeWorkspacePack,
-    runtimeOperatorPack,
-    runtimeLeaderPack
-  }
-) {
+export function runtimeControlPackFromSources(input = {}, sources = {}) {
   return buildRuntimeControlPackView(
     input,
-    {
-      runtimeSummaryPack,
-      runtimeWorkspacePack,
-      runtimeOperatorPack,
-      runtimeLeaderPack
-    },
+    sources,
     {
       deriveRuntimeControlPackSurface,
       deriveRuntimeControlPackReason,

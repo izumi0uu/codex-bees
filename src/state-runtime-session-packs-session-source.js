@@ -1,22 +1,11 @@
 import { describeRole } from './state-task-core.js';
 import { buildRuntimeSessionPackSummary, buildRuntimeSessionPackView, deriveRuntimeSessionPackReason, deriveRuntimeSessionPackSurface } from './state-runtime-views.js';
 
-export function runtimeSessionPackFromSources(
-  input = {},
-  {
-    runtimeWorkerPack,
-    runtimeOwnerPack,
-    runtimeVerifierPack,
-    runtimeRoles
-  }
-) {
+export function runtimeSessionPackFromSources(input = {}, sources = {}) {
   return buildRuntimeSessionPackView(
     input,
     {
-      runtimeWorkerPack,
-      runtimeOwnerPack,
-      runtimeVerifierPack,
-      runtimeRoles,
+      ...sources,
       describeRole
     },
     {
