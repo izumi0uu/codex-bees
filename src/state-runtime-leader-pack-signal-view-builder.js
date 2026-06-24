@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from './state-runtime-pack-detail.js';
+
 export function buildRuntimeSignalPackView(
   input,
   {
@@ -29,14 +34,14 @@ export function buildRuntimeSignalPackView(
     kind: "runtime_signal_pack",
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasFocus: Boolean(nextEntries.focus),
-      hasAlert: Boolean(nextEntries.alert),
-      hasActivity: Boolean(nextEntries.activity),
-      hasRole: Boolean(nextEntries.role)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasFocus: nextEntries.focus,
+      hasAlert: nextEntries.alert,
+      hasActivity: nextEntries.activity,
+      hasRole: nextEntries.role
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,

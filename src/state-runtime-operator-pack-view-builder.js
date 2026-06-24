@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from './state-runtime-pack-detail.js';
+
 export function buildRuntimeOperatorPackView(
   {
     runtimeDashboard,
@@ -30,14 +35,14 @@ export function buildRuntimeOperatorPackView(
     kind: 'runtime_operator_pack',
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasFocus: Boolean(focus?.focus),
-      hasHandoff: Boolean(handoffs?.next),
-      hasCloseout: Boolean(closeout?.next),
-      hasAlert: Boolean(alerts?.alerts?.[0])
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasFocus: focus?.focus,
+      hasHandoff: handoffs?.next,
+      hasCloseout: closeout?.next,
+      hasAlert: alerts?.alerts?.[0]
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     focus,
     overview: {

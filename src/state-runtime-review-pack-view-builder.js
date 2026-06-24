@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from './state-runtime-pack-detail.js';
+
 export function buildRuntimeReviewPackView(
   input,
   {
@@ -31,13 +36,13 @@ export function buildRuntimeReviewPackView(
     workerId: input.workerId ?? null,
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasReview: Boolean(review?.next),
-      hasRole: Boolean(roles?.next),
-      hasVerifier: Boolean(verifierPack?.next)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasReview: review?.next,
+      hasRole: roles?.next,
+      hasVerifier: verifierPack?.next
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       review: review?.counts ?? null,

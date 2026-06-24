@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from './state-runtime-pack-detail.js';
+
 export function buildRuntimeHandoffPackView(
   {
     runtimeHandoffs,
@@ -28,14 +33,14 @@ export function buildRuntimeHandoffPackView(
     kind: "runtime_handoff_pack",
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasHandoff: Boolean(nextEntries.handoff),
-      hasDispatch: Boolean(nextEntries.dispatch),
-      hasReview: Boolean(nextEntries.review),
-      hasRecovery: Boolean(nextEntries.recovery)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasHandoff: nextEntries.handoff,
+      hasDispatch: nextEntries.dispatch,
+      hasReview: nextEntries.review,
+      hasRecovery: nextEntries.recovery
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       handoffs: handoffs?.counts ?? null,

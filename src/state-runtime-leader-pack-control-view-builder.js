@@ -1,4 +1,10 @@
-import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from './state-runtime-pack-detail.js';
+import {
+  buildRuntimePackCommand,
+  buildRuntimePackExpansionEntry,
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries,
+  normalizeRuntimePackDetail
+} from './state-runtime-pack-detail.js';
 import { stripRoleContractsDeep } from './state-runtime-leader-pack-control-sanitizer.js';
 
 export function buildRuntimeControlPackView(
@@ -42,14 +48,14 @@ export function buildRuntimeControlPackView(
     availableDetails: ['compact', 'full'],
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasSummary: Boolean(nextEntries.summary),
-      hasWorkspace: Boolean(nextEntries.workspace),
-      hasOperator: Boolean(nextEntries.operator),
-      hasLeader: Boolean(nextEntries.leader)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasSummary: nextEntries.summary,
+      hasWorkspace: nextEntries.workspace,
+      hasOperator: nextEntries.operator,
+      hasLeader: nextEntries.leader
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       summary: summaryPack?.overview ?? null,

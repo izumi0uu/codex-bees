@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from './state-runtime-pack-detail.js';
+
 export function buildRuntimeTriagePackView(
   {
     runtimeFocus,
@@ -28,14 +33,14 @@ export function buildRuntimeTriagePackView(
     kind: "runtime_triage_pack",
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasFocus: Boolean(nextEntries.focus),
-      hasAlert: Boolean(nextEntries.alert),
-      hasReview: Boolean(nextEntries.review),
-      hasRecovery: Boolean(nextEntries.recovery)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasFocus: nextEntries.focus,
+      hasAlert: nextEntries.alert,
+      hasReview: nextEntries.review,
+      hasRecovery: nextEntries.recovery
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,

@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from './state-runtime-pack-detail.js';
+
 export function buildRuntimeCloseoutPackView(
   input,
   {
@@ -26,13 +31,13 @@ export function buildRuntimeCloseoutPackView(
     kind: 'runtime_closeout_pack',
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasCloseout: Boolean(closeout?.next),
-      hasSummaryCloseout: Boolean(summaryPack?.next?.closeout),
-      hasLeaderCloseout: Boolean(leaderPack?.next?.closeout)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasCloseout: closeout?.next,
+      hasSummaryCloseout: summaryPack?.next?.closeout,
+      hasLeaderCloseout: leaderPack?.next?.closeout
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       closeout: closeout?.counts ?? null,

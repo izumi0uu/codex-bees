@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from './state-runtime-pack-detail.js';
+
 export function buildRuntimeRecoveryPackView(
   {
     runtimeRecovery,
@@ -25,13 +30,13 @@ export function buildRuntimeRecoveryPackView(
     kind: 'runtime_recovery_pack',
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasRecovery: Boolean(recovery?.next),
-      hasHandoff: Boolean(handoffs?.next),
-      hasFocus: Boolean(focus?.focus)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasRecovery: recovery?.next,
+      hasHandoff: handoffs?.next,
+      hasFocus: focus?.focus
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     focus,
     overview: {

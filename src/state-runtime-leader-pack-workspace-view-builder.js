@@ -1,4 +1,10 @@
-import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from './state-runtime-pack-detail.js';
+import {
+  buildRuntimePackCommand,
+  buildRuntimePackExpansionEntry,
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries,
+  normalizeRuntimePackDetail
+} from './state-runtime-pack-detail.js';
 
 export function buildRuntimeWorkspacePackView(
   input,
@@ -55,16 +61,16 @@ export function buildRuntimeWorkspacePackView(
     availableDetails: ['compact', 'full'],
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasDashboard: Boolean(dashboard?.leader?.queue?.next),
-      hasDispatch: Boolean(dispatch?.next),
-      hasAssignmentLaunch: Boolean(assignmentDispatchBundle?.next),
-      hasAssignmentLaunchPlan: Boolean(assignmentLaunchPlan?.next),
-      hasReview: Boolean(review?.next),
-      hasRecovery: Boolean(recovery?.next)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasDashboard: dashboard?.leader?.queue?.next,
+      hasDispatch: dispatch?.next,
+      hasAssignmentLaunch: assignmentDispatchBundle?.next,
+      hasAssignmentLaunchPlan: assignmentLaunchPlan?.next,
+      hasReview: review?.next,
+      hasRecovery: recovery?.next
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       dashboard: dashboard?.counts ?? null,
