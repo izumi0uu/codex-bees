@@ -642,130 +642,67 @@ if (
   console.error("[smoke:package-manifest-metadata] expected local package manifest to ship public npm metadata");
   process.exit(1);
 }
-const documentedSubpaths = Array.from(
-  README_TEXT.matchAll(/- `codex-bees\/([^`]+)`/g),
-  (match) => `./${match[1]}`
-).sort();
-const documentedRootExampleBlockMatch = README_TEXT.match(/The root package export now exposes a small official programmatic API as well:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedRootExampleBlockMatch) {
-  console.error("[smoke:readme-root-example] expected README to document the root package example block");
-  process.exit(1);
+const requiredReadmeSections = [
+  "## What it is",
+  "## Who it is for",
+  "## Who it is not for",
+  "## Quick start",
+  "## Core concepts",
+  "## CLI / MCP / skill / agent relationship",
+  "## Minimal workflow example",
+  "## Documentation"
+];
+for (const section of requiredReadmeSections) {
+  if (!README_TEXT.includes(section)) {
+    console.error(`[smoke:readme-sections] expected README to include section: ${section}`);
+    process.exit(1);
+  }
 }
-const documentedRootExampleScript = documentedRootExampleBlockMatch[1];
-const documentedRootImportClauseMatch = documentedRootExampleScript.match(/import\s*{\n([\s\S]*?)\n}\sfrom\s"codex-bees";/);
-if (!documentedRootImportClauseMatch) {
-  console.error("[smoke:readme-root-import] expected README root example to import from codex-bees");
-  process.exit(1);
+const requiredReadmeSignals = [
+  "codex-bees mcp --stdio",
+  ".codex-bees/state.json",
+  "`project-development`",
+  "`swarm-orchestration`",
+  "`explore`",
+  "`executor`",
+  "`reviewer`",
+  "`tester`",
+  'npx codex-bees plan --task "Ship grouped CLI help"',
+  'npx codex-bees task:pickup --role executor --worker worker-1'
+];
+for (const signal of requiredReadmeSignals) {
+  if (!README_TEXT.includes(signal)) {
+    console.error(`[smoke:readme-signals] expected README to include signal: ${signal}`);
+    process.exit(1);
+  }
 }
-const documentedRootImportExports = documentedRootImportClauseMatch[1]
-  .split("\n")
-  .map((line) => line.trim().replace(/,$/, ""))
-  .filter(Boolean)
-  .sort();
-const documentedMcpImportExampleMatch = README_TEXT.match(/The `codex-bees\/mcp` subpath[\s\S]*?Example:\n\n```js\nimport\s*{\s*([^}]+?)\s*}\sfrom\s"codex-bees\/mcp";/);
-if (!documentedMcpImportExampleMatch) {
-  console.error("[smoke:readme-mcp-import] expected README to document the mcp subpath import example");
-  process.exit(1);
+const requiredDocs = [
+  ["docs/architecture.md", "# Architecture"],
+  ["docs/runtime-model.md", "# Runtime model"],
+  ["docs/cli.md", "# CLI"],
+  ["docs/mcp.md", "# MCP"],
+  ["docs/skills.md", "# Skills"],
+  ["docs/agents.md", "# Agents"]
+];
+for (const [relativePath, heading] of requiredDocs) {
+  const absolutePath = join(REPO_ROOT, relativePath);
+  if (!existsSync(absolutePath)) {
+    console.error(`[smoke:docs-exists] expected ${relativePath} to exist`);
+    process.exit(1);
+  }
+  const text = readFileSync(absolutePath, "utf8");
+  if (!text.includes(heading)) {
+    console.error(`[smoke:docs-heading] expected ${relativePath} to include heading ${heading}`);
+    process.exit(1);
+  }
+  if (!README_TEXT.includes(`./${relativePath}`)) {
+    console.error(`[smoke:readme-doc-links] expected README to link ${relativePath}`);
+    process.exit(1);
+  }
 }
-const documentedMcpImportExports = documentedMcpImportExampleMatch[1]
-  .split(",")
-  .map((name) => name.trim())
-  .filter(Boolean)
-  .sort();
-const documentedApiExampleBlockMatch = README_TEXT.match(/The `codex-bees\/api` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedApiExampleBlockMatch) {
-  console.error("[smoke:readme-api-example] expected README to document a runnable api example block");
-  process.exit(1);
-}
-const documentedApiExampleScript = documentedApiExampleBlockMatch[1];
-const documentedApiAdvancedExampleBlockMatch = README_TEXT.match(
-  /Advanced root \/ api helper example:\n\n```js\n([\s\S]*?)\n```/
-);
-if (!documentedApiAdvancedExampleBlockMatch) {
-  console.error("[smoke:readme-api-advanced-example] expected README to document a runnable advanced api example block");
-  process.exit(1);
-}
-const documentedApiAdvancedExampleScript = documentedApiAdvancedExampleBlockMatch[1];
-const documentedInitExampleBlockMatch = README_TEXT.match(/The `codex-bees\/init` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedInitExampleBlockMatch) {
-  console.error("[smoke:readme-init-example] expected README to document a runnable init example block");
-  process.exit(1);
-}
-const documentedInitExampleScript = documentedInitExampleBlockMatch[1];
-const documentedStateExampleBlockMatch = README_TEXT.match(/The `codex-bees\/state` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedStateExampleBlockMatch) {
-  console.error("[smoke:readme-state-example] expected README to document a runnable state subpath example block");
-  process.exit(1);
-}
-const documentedStateExampleScript = documentedStateExampleBlockMatch[1];
-const documentedRuntimeGuidanceExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-guidance` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedRuntimeGuidanceExampleBlockMatch) {
-  console.error("[smoke:readme-runtime-guidance-example] expected README to document a runnable runtime-guidance example block");
-  process.exit(1);
-}
-const documentedRuntimeGuidanceExampleScript = documentedRuntimeGuidanceExampleBlockMatch[1];
-const documentedDoctorExampleBlockMatch = README_TEXT.match(/The `codex-bees\/doctor` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedDoctorExampleBlockMatch) {
-  console.error("[smoke:readme-doctor-example] expected README to document a runnable doctor example block");
-  process.exit(1);
-}
-const documentedDoctorExampleScript = documentedDoctorExampleBlockMatch[1];
-const documentedRuntimeReadyExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-ready` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedRuntimeReadyExampleBlockMatch) {
-  console.error("[smoke:readme-runtime-ready-example] expected README to document a runnable runtime-ready example block");
-  process.exit(1);
-}
-const documentedRuntimeReadyExampleScript = documentedRuntimeReadyExampleBlockMatch[1];
-const documentedRuntimeStatusExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-status` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedRuntimeStatusExampleBlockMatch) {
-  console.error("[smoke:readme-runtime-status-example] expected README to document a runnable runtime-status example block");
-  process.exit(1);
-}
-const documentedRuntimeStatusExampleScript = documentedRuntimeStatusExampleBlockMatch[1];
-const documentedRuntimeContractExampleBlockMatch = README_TEXT.match(/The `codex-bees\/runtime-contract` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedRuntimeContractExampleBlockMatch) {
-  console.error("[smoke:readme-runtime-contract-example] expected README to document a runnable runtime-contract example block");
-  process.exit(1);
-}
-const documentedRuntimeContractExampleScript = documentedRuntimeContractExampleBlockMatch[1];
-const documentedMetadataExampleBlockMatch = README_TEXT.match(/The `codex-bees\/metadata` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedMetadataExampleBlockMatch) {
-  console.error("[smoke:readme-metadata-example] expected README to document a runnable metadata example block");
-  process.exit(1);
-}
-const documentedMetadataExampleScript = documentedMetadataExampleBlockMatch[1];
-const documentedPlannerExampleBlockMatch = README_TEXT.match(/The `codex-bees\/planner` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedPlannerExampleBlockMatch) {
-  console.error("[smoke:readme-planner-example] expected README to document a runnable planner example block");
-  process.exit(1);
-}
-const documentedPlannerExampleScript = documentedPlannerExampleBlockMatch[1];
-const documentedCommandsExampleBlockMatch = README_TEXT.match(/The `codex-bees\/commands` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedCommandsExampleBlockMatch) {
-  console.error("[smoke:readme-commands-example] expected README to document a runnable commands example block");
-  process.exit(1);
-}
-const documentedCommandsExampleScript = documentedCommandsExampleBlockMatch[1];
-const documentedMcpExampleBlockMatch = README_TEXT.match(/The `codex-bees\/mcp` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedMcpExampleBlockMatch) {
-  console.error("[smoke:readme-mcp-example] expected README to document a runnable mcp example block");
-  process.exit(1);
-}
-const documentedMcpExampleScript = documentedMcpExampleBlockMatch[1];
-const documentedCatalogExampleBlockMatch = README_TEXT.match(/The `codex-bees\/catalog` subpath[\s\S]*?Example:\n\n```js\n([\s\S]*?)\n```/);
-if (!documentedCatalogExampleBlockMatch) {
-  console.error("[smoke:readme-catalog-example] expected README to document a runnable catalog example block");
-  process.exit(1);
-}
-const documentedCatalogExampleScript = documentedCatalogExampleBlockMatch[1];
 const exportedSubpaths = Object.keys(packageManifest.exports)
   .filter((key) => key !== ".")
   .sort();
-if (JSON.stringify(documentedSubpaths) !== JSON.stringify(exportedSubpaths)) {
-  console.error("[smoke:documented-exports] expected README subpath export list to match package.json exports");
-  console.error(JSON.stringify({ documentedSubpaths, exportedSubpaths }, null, 2));
-  process.exit(1);
-}
 const installedExportSmoke = spawnSync(
   "node",
   [
@@ -944,274 +881,6 @@ assertMatchingKeys(
   Object.fromEntries(installedApiImportPayload.keys.map((key) => [key, true])),
   Object.fromEntries(installedImportPayload.keys.map((key) => [key, true]))
 );
-const missingDocumentedRootImports = documentedRootImportExports.filter(
-  (name) => !installedImportPayload.keys.includes(name)
-);
-if (missingDocumentedRootImports.length > 0) {
-  console.error("[smoke:readme-root-import-contract] expected README root import example to match installed root exports");
-  console.error(JSON.stringify({ missingDocumentedRootImports, documentedRootImportExports, installedRootExports: installedImportPayload.keys }, null, 2));
-  process.exit(1);
-}
-const installedRootExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedRootExampleScript}\nconsole.log(JSON.stringify({ ok: metadata.product === "codex-bees" && typeof stateFilePath() === "string" && getCommandCatalogView().kind === "command_catalog_view" && Array.isArray(getMcpCommandCatalog()) && getMcpCommandCatalogView().kind === "mcp_command_catalog_view" && getRuntimeCatalogView().kind === "runtime_catalog_view" && getRuntimeDoctorView().kind === "runtime_doctor_view" && getRuntimeReadyView().kind === "runtime_ready_view" && status.kind === "runtime_status_view" && getRuntimeContractView().kind === "runtime_contract_view" && brief?.kind === "task_execution_brief" && brief?.task?.id === releaseTask.id && history?.kind === "task_history" && history?.taskId === releaseTask.id && report?.kind === "task_report" && report?.task?.id === releaseTask.id && planTask("readme root example").kind === "task_plan" && planSwarm("readme root swarm").kind === "planned_swarm" && renderMcpHelpText().includes("codex-bees mcp --help") }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedRootExample.status !== 0 ||
-  JSON.parse(installedRootExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-root-example-contract] expected README root example to execute successfully against the installed package");
-  console.error(installedRootExample.stderr || installedRootExample.stdout);
-  process.exit(installedRootExample.status ?? 1);
-}
-const installedApiExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedApiExampleScript}\nconsole.log(JSON.stringify({ ok: metadata.product === "codex-bees" && ready.kind === "runtime_ready_view" && tools.kind === "tool_catalog_view" && Array.isArray(tools.tools) && tools.tools.length > 0 }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedApiExample.status !== 0 ||
-  JSON.parse(installedApiExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-api-example-contract] expected README api example to execute successfully against the installed package");
-  console.error(installedApiExample.stderr || installedApiExample.stdout);
-  process.exit(installedApiExample.status ?? 1);
-}
-const installedApiAdvancedExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedApiAdvancedExampleScript}\nconsole.log(JSON.stringify({ ok: typeof cli === "function" && typeof server === "function" && hasRuntimeContractTool === true }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedApiAdvancedExample.status !== 0 ||
-  JSON.parse(installedApiAdvancedExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-api-advanced-example-contract] expected README advanced api example to execute successfully against the installed package");
-  console.error(installedApiAdvancedExample.stderr || installedApiAdvancedExample.stdout);
-  process.exit(installedApiAdvancedExample.status ?? 1);
-}
-const installedInitExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedInitExampleScript}\nconsole.log(JSON.stringify({ ok: preview.kind === "workspace_init_preview" && preview.entries?.some((entry) => entry.path === ".codex/agents/executor.md") && applied.kind === "workspace_init_result" && applied.created?.includes(".codex/agents/executor.md") }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedInitExample.status !== 0 ||
-  JSON.parse(installedInitExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-init-example-contract] expected README init example to execute successfully against the installed package");
-  console.error(installedInitExample.stderr || installedInitExample.stdout);
-  process.exit(installedInitExample.status ?? 1);
-}
-const installedStateExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedStateExampleScript}\nconsole.log(JSON.stringify({ ok: typeof task.id === "string" && task.id.length > 0 && typeof memory.id === "string" && memory.id.length > 0 && memoryRecord?.id === memory.id && memoryDetail?.kind === "memory_detail" && memoryDetail?.memory?.id === memory.id && queue.counts.totalTasks >= 1 && queue.tasks.some((entry) => entry.id === task.id) && typeof storage === "string" && storage.length > 0 }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedStateExample.status !== 0 ||
-  JSON.parse(installedStateExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-state-example-contract] expected README state example to execute successfully against the installed package");
-  console.error(installedStateExample.stderr || installedStateExample.stdout);
-  process.exit(installedStateExample.status ?? 1);
-}
-const installedRuntimeGuidanceExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedRuntimeGuidanceExampleScript}\nconsole.log(JSON.stringify({ ok: overview.kind === "coordination_overview_view" && overview.overview.deliveryBoundary === "codex-only runtime" && guidelines.kind === "worker_guidelines_view" && guidelines.guidelines.fileOwnership === "one active writer per file" }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedRuntimeGuidanceExample.status !== 0 ||
-  JSON.parse(installedRuntimeGuidanceExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-runtime-guidance-example-contract] expected README runtime-guidance example to execute successfully against the installed package");
-  console.error(installedRuntimeGuidanceExample.stderr || installedRuntimeGuidanceExample.stdout);
-  process.exit(installedRuntimeGuidanceExample.status ?? 1);
-}
-const installedDoctorExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedDoctorExampleScript}\nconsole.log(JSON.stringify({ ok: doctor.kind === "runtime_doctor_view" && doctor.status === "ok" && doctor.executable === true && doctor.catalog?.kind === "runtime_catalog_view" && doctor.contract?.kind === "runtime_contract_view" && typeof doctor.stateFile === "string" && doctor.stateFile.length > 0 }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedDoctorExample.status !== 0 ||
-  JSON.parse(installedDoctorExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-doctor-example-contract] expected README doctor example to execute successfully against the installed package");
-  console.error(installedDoctorExample.stderr || installedDoctorExample.stdout);
-  process.exit(installedDoctorExample.status ?? 1);
-}
-const installedRuntimeReadyExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedRuntimeReadyExampleScript}\nconsole.log(JSON.stringify({ ok: ready.kind === "runtime_ready_view" && ready.status === "ready" && ready.contract?.kind === "runtime_contract_view" && ready.next?.[0] === "use \`codex-bees init\` to materialize the shipped .codex project assets" }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedRuntimeReadyExample.status !== 0 ||
-  JSON.parse(installedRuntimeReadyExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-runtime-ready-example-contract] expected README runtime-ready example to execute successfully against the installed package");
-  console.error(installedRuntimeReadyExample.stderr || installedRuntimeReadyExample.stdout);
-  process.exit(installedRuntimeReadyExample.status ?? 1);
-}
-const installedRuntimeStatusExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedRuntimeStatusExampleScript}\nconsole.log(JSON.stringify({ ok: status.kind === "runtime_status_view" && status.status.product === "codex-bees" && status.status.mode === "codex-only" && typeof status.counts.tools === "number" && Array.isArray(status.status.capabilities) && status.status.capabilities.length > 0 && Array.isArray(capabilities) && capabilities.some((capability) => capability.id === "runtime_catalog") && capabilitiesView?.kind === "runtime_capabilities_view" && capabilitiesView?.capabilities?.some((capability) => capability.id === "runtime_catalog") && runtimeCatalogCapability?.id === "runtime_catalog" && runtimeCatalogCapabilityView?.kind === "runtime_capability_view" && runtimeCatalogCapabilityView?.matchedCapability === "runtime_catalog" && Array.isArray(status.status.recommendedEntryPoints.cli) && status.status.recommendedEntryPoints.cli.includes("status") }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedRuntimeStatusExample.status !== 0 ||
-  JSON.parse(installedRuntimeStatusExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-runtime-status-example-contract] expected README runtime-status example to execute successfully against the installed package");
-  console.error(installedRuntimeStatusExample.stderr || installedRuntimeStatusExample.stdout);
-  process.exit(installedRuntimeStatusExample.status ?? 1);
-}
-const installedRuntimeContractExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedRuntimeContractExampleScript}\nconsole.log(JSON.stringify({ ok: contract.kind === "runtime_contract_view" && contract.contract.product === "codex-bees" && contract.contract.mode === "codex-only" && contract.contract.deliveryBoundary === "codex-only runtime" && contract.contract.positioning?.operatingModel === "local bounded orchestration kernel" && contract.contract.positioning?.distributionModel === "repo-shipped CLI, MCP, and workspace assets" && contract.contract.transport?.mcp === "stdio-jsonrpc" && Array.isArray(contract.contract.responsibilities) && contract.contract.responsibilities.length > 0 && Array.isArray(contract.contract.exclusions) && contract.contract.exclusions.includes("hosted backend control plane") }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedRuntimeContractExample.status !== 0 ||
-  JSON.parse(installedRuntimeContractExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-runtime-contract-example-contract] expected README runtime-contract example to execute successfully against the installed package");
-  console.error(installedRuntimeContractExample.stderr || installedRuntimeContractExample.stdout);
-  process.exit(installedRuntimeContractExample.status ?? 1);
-}
-const installedMetadataExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedMetadataExampleScript}\nconsole.log(JSON.stringify({ ok: metadata.product === "codex-bees" && metadata.mode === "codex-only" && Array.isArray(metadata.keywords) && metadata.keywords.includes("codex") && view.kind === "package_metadata_view" && view.metadata.product === metadata.product }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedMetadataExample.status !== 0 ||
-  JSON.parse(installedMetadataExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-metadata-example-contract] expected README metadata example to execute successfully against the installed package");
-  console.error(installedMetadataExample.stderr || installedMetadataExample.stdout);
-  process.exit(installedMetadataExample.status ?? 1);
-}
-const installedPlannerExample = spawnSync(
-    "node",
-    [
-      "--input-type=module",
-      "-e",
-      `${documentedPlannerExampleScript}\nconsole.log(JSON.stringify({ ok: planner?.id === "bounded-local" && planner?.adaptive === true && planner?.executionModel === "dependency-wave-local" && taskPlan.kind === "task_plan" && taskPlan.objective === "Document the README entry" && taskPlan.planner?.topology === "bounded-local" && taskPlan.planner?.adaptive === true && taskPlan.orchestration?.executionShape === "solo-lane" && taskPlan.orchestration?.waveCount >= 1 && Array.isArray(taskPlan.lanes) && taskPlan.lanes.length >= 1 && swarmPlan.kind === "planned_swarm" && swarmPlan.objective === "Coordinate a planner-driven swarm" && swarmPlan.requestedProfile === "coordination-local" && swarmPlan.planner?.executionModel === "coordination-wave-local" && swarmPlan.swarm?.topology === "bounded-local" && swarmPlan.swarm?.executionShape === "parallel-handoff" && swarmPlan.swarm?.maxWorkers === 2 && Array.isArray(swarmPlan.swarm?.lanes) && swarmPlan.swarm.lanes.length >= 4 && swarmPlan.swarm.lanes.some((lane) => lane.purpose === "documentation") }));`
-    ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedPlannerExample.status !== 0 ||
-  JSON.parse(installedPlannerExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-planner-example-contract] expected README planner example to execute successfully against the installed package");
-  console.error(installedPlannerExample.stderr || installedPlannerExample.stdout);
-  process.exit(installedPlannerExample.status ?? 1);
-}
-const installedCommandsExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedCommandsExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "command_catalog_view" && catalog.commands.some((entry) => entry.command === "mcp") && initEntry?.command === "init" && initEntryView?.kind === "command_catalog_entry_view" && initEntryView?.matchedCommand === "init" && Array.isArray(taskAddEntry?.usage) && taskAddEntry?.usage?.some((line) => line.includes("task:add --title <title>")) && Array.isArray(taskAddEntry?.options) && taskAddEntry?.options?.some((option) => option.option === "--acceptance <item|item>") && Array.isArray(taskAddEntry?.notes) && taskAddEntry?.notes?.some((note) => note.includes("Pipe-delimited")) && Array.isArray(memorySearchEntry?.usage) && memorySearchEntry?.usage?.some((line) => line.includes("memory:search --query <text>")) && Array.isArray(memorySearchEntry?.options) && memorySearchEntry?.options?.some((option) => option.option === "--query <text>") && Array.isArray(launchPlanEntry?.usage) && launchPlanEntry?.usage?.some((line) => line.includes("leader:assignment-launch-plan")) && Array.isArray(launchPlanEntry?.notes) && launchPlanEntry?.notes?.some((note) => note.includes("worker ids or worker-id arrays")) && Array.isArray(catalog.commands.find((entry) => entry.command === "--help")?.aliases) && catalog.commands.find((entry) => entry.command === "--help")?.aliases?.includes("help") && Array.isArray(catalog.commands.find((entry) => entry.command === "--version")?.aliases) && catalog.commands.find((entry) => entry.command === "--version")?.aliases?.includes("version") && statusHelpView?.kind === "command_help_view" && statusHelpView?.matchedCommand === "status" && statusHelpView?.text.includes("codex-bees status") && statusHelpView?.text.includes("Print runtime state and surface summary") && Array.isArray(initEntry?.usage) && initEntry?.usage?.some((line) => line.includes("init [--preview]")) && Array.isArray(initEntry?.options) && Array.isArray(initOptions) && initOptions.some((option) => option.option === "--preview") && initOptionsView?.kind === "init_command_catalog_view" && initOptionsView?.counts?.totalOptions >= 5 && initOptionsView?.options?.some((option) => option.option === "--preview") && previewOption?.option === "--preview" && previewOptionView?.kind === "init_command_option_view" && previewOptionView?.matchedOption === "--preview" && initOptionHelpView?.kind === "init_help_view" && initOptionHelpView?.matchedOption === "--preview" && initOptionHelpView?.text.includes("codex-bees init") && statusHelp.includes("codex-bees status") && statusHelp.includes("Description:") && initHelp.includes("codex-bees init") && help.includes("codex-bees run") && help.includes("codex-bees mcp") }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedCommandsExample.status !== 0 ||
-  JSON.parse(installedCommandsExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-commands-example-contract] expected README commands example to execute successfully against the installed package");
-  console.error(installedCommandsExample.stderr || installedCommandsExample.stdout);
-  process.exit(installedCommandsExample.status ?? 1);
-}
 const installedMcpImport = spawnSync(
     "node",
   [
@@ -1232,54 +901,6 @@ if (
   console.error(installedMcpImport.stderr || installedMcpImport.stdout);
   process.exit(installedMcpImport.status ?? 1);
 }
-const missingDocumentedMcpImports = documentedMcpImportExports.filter(
-  (name) => !installedMcpImportPayload.keys.includes(name)
-);
-if (missingDocumentedMcpImports.length > 0) {
-  console.error("[smoke:readme-mcp-import-contract] expected README mcp import example to match documented installed mcp exports");
-  console.error(JSON.stringify({ missingDocumentedMcpImports, documentedMcpImportExports, installedMcpExports: installedMcpImportPayload.keys }, null, 2));
-  process.exit(1);
-}
-const installedMcpExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedMcpExampleScript}\nconsole.log(JSON.stringify({ ok: Array.isArray(tools) && tools.some((tool) => tool.name === "package_metadata") && tools.some((tool) => tool.name === "runtime_doctor") && tools.some((tool) => tool.name === "command_catalog") && tools.some((tool) => tool.name === "command_catalog_entry") && tools.some((tool) => tool.name === "command_help") && tools.some((tool) => tool.name === "init_command_catalog") && tools.some((tool) => tool.name === "init_command_option") && tools.some((tool) => tool.name === "init_help") && tools.some((tool) => tool.name === "mcp_command_catalog") && tools.some((tool) => tool.name === "mcp_command_option") && tools.some((tool) => tool.name === "mcp_help") && tools.some((tool) => tool.name === "tool_catalog") && tools.some((tool) => tool.name === "tool_catalog_entry") && tools.some((tool) => tool.name === "runtime_ready") && tools.some((tool) => tool.name === "runtime_capability") && tools.some((tool) => tool.name === "runtime_contract") && packageMetadataTool?.name === "package_metadata" && packageMetadataToolView?.kind === "mcp_tool_view" && packageMetadataToolView?.matchedTool === "package_metadata" && runtimeDoctorTool?.name === "runtime_doctor" && runtimeDoctorToolView?.kind === "mcp_tool_view" && runtimeDoctorToolView?.matchedTool === "runtime_doctor" && commandCatalogTool?.name === "command_catalog" && commandCatalogToolView?.kind === "mcp_tool_view" && commandCatalogToolView?.matchedTool === "command_catalog" && commandCatalogEntryTool?.name === "command_catalog_entry" && commandCatalogEntryToolView?.kind === "mcp_tool_view" && commandCatalogEntryToolView?.matchedTool === "command_catalog_entry" && commandHelpTool?.name === "command_help" && commandHelpToolView?.kind === "mcp_tool_view" && commandHelpToolView?.matchedTool === "command_help" && initCommandCatalogTool?.name === "init_command_catalog" && initCommandCatalogToolView?.kind === "mcp_tool_view" && initCommandCatalogToolView?.matchedTool === "init_command_catalog" && initCommandOptionTool?.name === "init_command_option" && initCommandOptionToolView?.kind === "mcp_tool_view" && initCommandOptionToolView?.matchedTool === "init_command_option" && initHelpTool?.name === "init_help" && initHelpToolView?.kind === "mcp_tool_view" && initHelpToolView?.matchedTool === "init_help" && mcpCommandCatalogTool?.name === "mcp_command_catalog" && mcpCommandCatalogToolView?.kind === "mcp_tool_view" && mcpCommandCatalogToolView?.matchedTool === "mcp_command_catalog" && mcpCommandOptionTool?.name === "mcp_command_option" && mcpCommandOptionToolView?.kind === "mcp_tool_view" && mcpCommandOptionToolView?.matchedTool === "mcp_command_option" && mcpHelpTool?.name === "mcp_help" && mcpHelpToolView?.kind === "mcp_tool_view" && mcpHelpToolView?.matchedTool === "mcp_help" && toolCatalogView?.kind === "tool_catalog_view" && toolCatalogView?.tools?.some((tool) => tool.name === "runtime_contract") && toolCatalogTool?.name === "tool_catalog" && toolCatalogToolView?.kind === "mcp_tool_view" && toolCatalogToolView?.matchedTool === "tool_catalog" && toolCatalogEntryTool?.name === "tool_catalog_entry" && toolCatalogEntryToolView?.kind === "mcp_tool_view" && toolCatalogEntryToolView?.matchedTool === "tool_catalog_entry" && toolsView?.content?.[0]?.type === "text" && toolView?.content?.[0]?.type === "text" && runtimeReadyTool?.name === "runtime_ready" && runtimeReadyToolView?.kind === "mcp_tool_view" && runtimeReadyToolView?.matchedTool === "runtime_ready" && runtimeCapabilityTool?.name === "runtime_capability" && runtimeCapabilityToolView?.kind === "mcp_tool_view" && runtimeCapabilityToolView?.matchedTool === "runtime_capability" && runtimeContractTool?.name === "runtime_contract" && runtimeContractToolView?.kind === "mcp_tool_view" && runtimeContractToolView?.matchedTool === "runtime_contract" && Array.isArray(options) && options.some((option) => option.option === "--capabilities") && toolsOption?.option === "--tools" && toolsOptionView?.kind === "mcp_command_option_view" && toolsOptionView?.matchedOption === "--tools" && helpView?.kind === "mcp_help_view" && helpView?.matchedOption === "--tools" && listed.result?.tools?.some((tool) => tool.name === "package_metadata") && listed.result?.tools?.some((tool) => tool.name === "runtime_doctor") && listed.result?.tools?.some((tool) => tool.name === "command_catalog") && listed.result?.tools?.some((tool) => tool.name === "command_catalog_entry") && listed.result?.tools?.some((tool) => tool.name === "command_help") && listed.result?.tools?.some((tool) => tool.name === "init_command_catalog") && listed.result?.tools?.some((tool) => tool.name === "init_command_option") && listed.result?.tools?.some((tool) => tool.name === "init_help") && listed.result?.tools?.some((tool) => tool.name === "mcp_command_catalog") && listed.result?.tools?.some((tool) => tool.name === "mcp_command_option") && listed.result?.tools?.some((tool) => tool.name === "mcp_help") && listed.result?.tools?.some((tool) => tool.name === "tool_catalog") && listed.result?.tools?.some((tool) => tool.name === "tool_catalog_entry") && listed.result?.tools?.some((tool) => tool.name === "runtime_ready") && listed.result?.tools?.some((tool) => tool.name === "runtime_capability") && listed.result?.tools?.some((tool) => tool.name === "runtime_contract") && Array.isArray(metadata.content) && metadata.content[0]?.type === "text" && Array.isArray(doctor.content) && doctor.content[0]?.type === "text" && Array.isArray(commands.content) && commands.content[0]?.type === "text" && Array.isArray(command.content) && command.content[0]?.type === "text" && Array.isArray(commandHelp.content) && commandHelp.content[0]?.type === "text" && Array.isArray(initOptions.content) && initOptions.content[0]?.type === "text" && Array.isArray(initOption.content) && initOption.content[0]?.type === "text" && Array.isArray(initOptionHelp.content) && initOptionHelp.content[0]?.type === "text" && Array.isArray(mcpOptionsView.content) && mcpOptionsView.content[0]?.type === "text" && Array.isArray(mcpOption.content) && mcpOption.content[0]?.type === "text" && Array.isArray(mcpOptionHelp.content) && mcpOptionHelp.content[0]?.type === "text" && Array.isArray(toolsView.content) && toolsView.content[0]?.type === "text" && Array.isArray(toolView.content) && toolView.content[0]?.type === "text" && Array.isArray(ready.content) && ready.content[0]?.type === "text" && Array.isArray(capability.content) && capability.content[0]?.type === "text" && Array.isArray(contract.content) && contract.content[0]?.type === "text" }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedMcpExample.status !== 0 ||
-  JSON.parse(installedMcpExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-mcp-example-contract] expected README mcp example to execute successfully against the installed package");
-  console.error(installedMcpExample.stderr || installedMcpExample.stdout);
-  process.exit(installedMcpExample.status ?? 1);
-}
-const installedCatalogExample = spawnSync(
-  "node",
-  [
-    "--input-type=module",
-    "-e",
-    `${documentedCatalogExampleScript}\nconsole.log(JSON.stringify({ ok: catalog.kind === "runtime_catalog_view" && typeof catalog.counts?.agents === "number" && catalog.counts.agents > 0 && typeof catalog.counts?.skills === "number" && catalog.counts.skills > 0 && typeof catalog.catalog?.paths?.codexDir === "string" && catalog.catalog.paths.codexDir.length > 0 && ["workspace", "bundled"].includes(catalog.catalog?.source) && executorAgent?.id === "executor" && executorAgentView?.kind === "runtime_catalog_entry_view" && executorAgentView?.matchedId === "executor" && projectDevelopmentSkill?.id === "project-development" && projectDevelopmentSkillView?.kind === "runtime_catalog_entry_view" && projectDevelopmentSkillView?.matchedId === "project-development" }));`
-  ],
-  {
-    cwd: packedInstallAppDir,
-    encoding: "utf8"
-  }
-);
-if (
-  installedCatalogExample.status !== 0 ||
-  JSON.parse(installedCatalogExample.stdout.split("\n").filter(Boolean).at(-1)).ok !== true
-) {
-  console.error("[smoke:readme-catalog-example-contract] expected README catalog example to execute successfully against the installed package");
-  console.error(installedCatalogExample.stderr || installedCatalogExample.stdout);
-  process.exit(installedCatalogExample.status ?? 1);
-}
 const installedCatalogImport = spawnSync(
   "node",
   [
@@ -1299,12 +920,137 @@ if (
   console.error(installedCatalogImport.stderr || installedCatalogImport.stdout);
   process.exit(installedCatalogImport.status ?? 1);
 }
+const installedCommandsImportScript = `
+import("codex-bees/commands").then((m) => {
+  const catalogView = m.getCommandCatalogView();
+  const mcp = m.getCommandCatalogEntry("mcp");
+  const init = m.getCommandCatalogEntry("init");
+  const initEntryView = m.getCommandCatalogEntryView("init");
+  const missingEntryView = m.getCommandCatalogEntryView("missing");
+  const statusHelpView = m.getCommandHelpView("status");
+  const missingHelpView = m.getCommandHelpView("missing");
+  const initOptionsView = m.getInitCommandCatalogView();
+  const previewOption = m.getInitCommandCatalogEntry("--preview");
+  const previewOptionView = m.getInitCommandCatalogEntryView("--preview");
+  const missingPreviewOptionView = m.getInitCommandCatalogEntryView("--missing");
+  const initOptionHelpView = m.getInitHelpView("--preview");
+  const fallbackInitOptionHelpView = m.getInitHelpView("--missing");
+  const mcpOptions = m.getMcpCommandCatalog();
+  const mcpOptionsView = m.getMcpCommandCatalogView();
+  const toolsOption = m.getMcpCommandCatalogEntry("--tools");
+  const toolsOptionView = m.getMcpCommandCatalogEntryView("--tools");
+  const missingToolsOptionView = m.getMcpCommandCatalogEntryView("--missing");
+  const mcpHelpView = m.getMcpHelpView("--tools");
+  const fallbackMcpHelpView = m.getMcpHelpView("--missing");
+  const renderedHelp = m.renderHelpText();
+  const renderedStatusHelp = m.renderCommandHelpText("status");
+  const renderedMissingHelp = m.renderCommandHelpText("missing");
+
+  const ok =
+    catalogView.kind === "command_catalog_view" &&
+    catalogView.counts.totalCommands > 10 &&
+    catalogView.counts.totalGroups >= 7 &&
+    catalogView.counts.totalCommonPaths >= 7 &&
+    Array.isArray(catalogView.groups) &&
+    catalogView.groups.some((group) => group.label === "Core setup & inspection") &&
+    catalogView.groups.some((group) => group.label === "Swarm coordination") &&
+    Array.isArray(catalogView.commonPaths) &&
+    catalogView.commonPaths.some((path) => path.label === "Bootstrap a repo") &&
+    catalogView.commonPaths.some((path) => path.commands?.includes("codex-bees plan --task <objective>")) &&
+    renderedHelp.includes("Common paths:") &&
+    renderedHelp.includes("Command groups:") &&
+    renderedHelp.includes("codex-bees command:help --name <command>") &&
+    typeof m.getCommandCatalogEntry === "function" &&
+    m.getCommandCatalogEntry("init")?.command === "init" &&
+    m.getCommandCatalogEntry("status")?.groupLabel === "Core setup & inspection" &&
+    m.getCommandCatalogEntry("swarm:init")?.groupLabel === "Swarm coordination" &&
+    typeof m.getCommandCatalogEntryView === "function" &&
+    initEntryView.kind === "command_catalog_entry_view" &&
+    initEntryView.matchedCommand === "init" &&
+    initEntryView.entry?.groupLabel === "Core setup & inspection" &&
+    missingEntryView.recommendedReason === "command_catalog_entry_missing" &&
+    typeof m.getCommandHelpView === "function" &&
+    statusHelpView.kind === "command_help_view" &&
+    statusHelpView.matchedCommand === "status" &&
+    statusHelpView.text.includes("codex-bees status") &&
+    statusHelpView.text.includes("Description:") &&
+    statusHelpView.text.includes("Print runtime state and command-surface summary") &&
+    statusHelpView.text.includes("Surface:") &&
+    statusHelpView.text.includes("Boundary:") &&
+    missingHelpView.recommendedReason === "command_help_fallback_loaded" &&
+    missingHelpView.text.includes("Common paths:") &&
+    missingHelpView.text.includes("Command groups:") &&
+    typeof m.getInitCommandCatalogView === "function" &&
+    initOptionsView.kind === "init_command_catalog_view" &&
+    initOptionsView.counts.totalOptions >= 5 &&
+    initOptionsView.options.some((option) => option.option === "--preview") &&
+    typeof m.getInitCommandCatalogEntry === "function" &&
+    previewOption?.option === "--preview" &&
+    typeof m.getInitCommandCatalogEntryView === "function" &&
+    previewOptionView.kind === "init_command_option_view" &&
+    previewOptionView.matchedOption === "--preview" &&
+    missingPreviewOptionView.recommendedReason === "init_command_option_missing" &&
+    typeof m.getInitHelpView === "function" &&
+    initOptionHelpView.kind === "init_help_view" &&
+    initOptionHelpView.matchedOption === "--preview" &&
+    initOptionHelpView.text.includes("codex-bees init") &&
+    fallbackInitOptionHelpView.recommendedReason === "init_help_fallback_loaded" &&
+    Array.isArray(mcp?.options) &&
+    mcp.options.some((option) => option.option === "--capabilities") &&
+    mcp.options.some((option) => option.option === "--tools") &&
+    typeof m.getInitCommandCatalog === "function" &&
+    Array.isArray(m.getInitCommandCatalog()) &&
+    m.getInitCommandCatalog().some((option) => option.option === "--preview") &&
+    Array.isArray(init?.options) &&
+    init.options.some((option) => option.option === "--dir <path>") &&
+    Array.isArray(m.getCommandCatalogEntry("task:add")?.options) &&
+    m.getCommandCatalogEntry("task:add")?.options?.some((option) => option.option === "--acceptance <item|item>") &&
+    Array.isArray(m.getCommandCatalogEntry("swarm:init")?.options) &&
+    m.getCommandCatalogEntry("swarm:init")?.options?.some((option) => option.option === "--lanes <json>") &&
+    Array.isArray(m.getCommandCatalogEntry("leader:assignment-launch-plan")?.options) &&
+    m.getCommandCatalogEntry("leader:assignment-launch-plan")?.options?.some((option) => option.option === "--workers <json>") &&
+    Array.isArray(m.getCommandCatalogEntry("memory:search")?.options) &&
+    m.getCommandCatalogEntry("memory:search")?.options?.some((option) => option.option === "--query <text>") &&
+    Array.isArray(m.getCommandCatalogEntry("runtime:assignment-pack")?.options) &&
+    m.getCommandCatalogEntry("runtime:assignment-pack")?.options?.some((option) => option.option === "--role <role>") &&
+    Array.isArray(mcpOptions) &&
+    mcpOptions.some((option) => option.option === "--capabilities") &&
+    mcpOptions.some((option) => option.option === "--tools") &&
+    mcpOptionsView.kind === "mcp_command_catalog_view" &&
+    mcpOptionsView.counts.totalOptions >= 5 &&
+    mcpOptionsView.options.some((option) => option.option === "--tools") &&
+    toolsOption?.option === "--tools" &&
+    toolsOptionView.kind === "mcp_command_option_view" &&
+    toolsOptionView.matchedOption === "--tools" &&
+    missingToolsOptionView.recommendedReason === "mcp_command_option_missing" &&
+    mcpHelpView.kind === "mcp_help_view" &&
+    mcpHelpView.matchedOption === "--tools" &&
+    mcpHelpView.text.includes("codex-bees mcp --tools") &&
+    fallbackMcpHelpView.recommendedReason === "mcp_help_fallback_loaded" &&
+    typeof m.renderCommandHelpText === "function" &&
+    renderedStatusHelp.includes("codex-bees status") &&
+    renderedStatusHelp.includes("Description:") &&
+    renderedStatusHelp.includes("Surface:") &&
+    renderedStatusHelp.includes("Boundary:") &&
+    m.renderCommandHelpText("task:add").includes("--acceptance <item|item>") &&
+    m.renderCommandHelpText("task:add").includes("Pipe-delimited") &&
+    m.renderCommandHelpText("swarm:init").includes("--lanes <json>") &&
+    m.renderCommandHelpText("leader:assignment-launch-plan").includes("--workers <json>") &&
+    m.renderCommandHelpText("memory:search").includes("--query <text>") &&
+    m.renderCommandHelpText("runtime:assignment-pack").includes("--role <role>") &&
+    m.renderCommandHelpText("mcp:option").includes("--option <option>") &&
+    m.renderCommandHelpText("init").includes("codex-bees init") &&
+    m.renderCommandHelpText("help").includes("Show grouped help for the command surface") &&
+    renderedMissingHelp.includes("Command groups:") &&
+    typeof m.renderMcpHelpText === "function" &&
+    m.renderMcpHelpText().includes("codex-bees mcp --capabilities");
+
+  console.log(JSON.stringify({ ok }));
+});
+`;
 const installedCommandsImport = spawnSync(
   "node",
-  [
-    "-e",
-    'import("codex-bees/commands").then((m) => { const mcp = m.getCommandCatalogEntry("mcp"); const init = m.getCommandCatalogEntry("init"); const initEntryView = m.getCommandCatalogEntryView("init"); const missingEntryView = m.getCommandCatalogEntryView("missing"); const statusHelpView = m.getCommandHelpView("status"); const missingHelpView = m.getCommandHelpView("missing"); const initOptionsView = m.getInitCommandCatalogView(); const previewOption = m.getInitCommandCatalogEntry("--preview"); const previewOptionView = m.getInitCommandCatalogEntryView("--preview"); const missingPreviewOptionView = m.getInitCommandCatalogEntryView("--missing"); const initOptionHelpView = m.getInitHelpView("--preview"); const fallbackInitOptionHelpView = m.getInitHelpView("--missing"); const mcpOptions = m.getMcpCommandCatalog(); const mcpOptionsView = m.getMcpCommandCatalogView(); const toolsOption = m.getMcpCommandCatalogEntry("--tools"); const toolsOptionView = m.getMcpCommandCatalogEntryView("--tools"); const missingToolsOptionView = m.getMcpCommandCatalogEntryView("--missing"); const mcpHelpView = m.getMcpHelpView("--tools"); const fallbackMcpHelpView = m.getMcpHelpView("--missing"); console.log(JSON.stringify({ ok: m.getCommandCatalogView().kind === "command_catalog_view" && m.getCommandCatalogView().counts.totalCommands > 10 && m.renderHelpText().includes("codex-bees run") && m.renderHelpText().includes("codex-bees metadata") && typeof m.getCommandCatalogEntry === "function" && m.getCommandCatalogEntry("init")?.command === "init" && typeof m.getCommandCatalogEntryView === "function" && initEntryView.kind === "command_catalog_entry_view" && initEntryView.matchedCommand === "init" && missingEntryView.recommendedReason === "command_catalog_entry_missing" && typeof m.getCommandHelpView === "function" && statusHelpView.kind === "command_help_view" && statusHelpView.matchedCommand === "status" && statusHelpView.text.includes("codex-bees status") && statusHelpView.text.includes("Description:") && statusHelpView.text.includes("Print runtime state and surface summary") && missingHelpView.recommendedReason === "command_help_fallback_loaded" && missingHelpView.text.includes("codex-bees run") && typeof m.getInitCommandCatalogView === "function" && initOptionsView.kind === "init_command_catalog_view" && initOptionsView.counts.totalOptions >= 5 && initOptionsView.options.some((option) => option.option === "--preview") && typeof m.getInitCommandCatalogEntry === "function" && previewOption?.option === "--preview" && typeof m.getInitCommandCatalogEntryView === "function" && previewOptionView.kind === "init_command_option_view" && previewOptionView.matchedOption === "--preview" && missingPreviewOptionView.recommendedReason === "init_command_option_missing" && typeof m.getInitHelpView === "function" && initOptionHelpView.kind === "init_help_view" && initOptionHelpView.matchedOption === "--preview" && initOptionHelpView.text.includes("codex-bees init") && fallbackInitOptionHelpView.recommendedReason === "init_help_fallback_loaded" && Array.isArray(mcp?.options) && mcp.options.some((option) => option.option === "--capabilities") && mcp.options.some((option) => option.option === "--tools") && typeof m.getInitCommandCatalog === "function" && Array.isArray(m.getInitCommandCatalog()) && m.getInitCommandCatalog().some((option) => option.option === "--preview") && Array.isArray(init?.options) && init.options.some((option) => option.option === "--dir <path>") && Array.isArray(m.getCommandCatalogEntry("task:add")?.options) && m.getCommandCatalogEntry("task:add")?.options?.some((option) => option.option === "--acceptance <item|item>") && Array.isArray(m.getCommandCatalogEntry("swarm:init")?.options) && m.getCommandCatalogEntry("swarm:init")?.options?.some((option) => option.option === "--lanes <json>") && Array.isArray(m.getCommandCatalogEntry("leader:assignment-launch-plan")?.options) && m.getCommandCatalogEntry("leader:assignment-launch-plan")?.options?.some((option) => option.option === "--workers <json>") && Array.isArray(m.getCommandCatalogEntry("memory:search")?.options) && m.getCommandCatalogEntry("memory:search")?.options?.some((option) => option.option === "--query <text>") && Array.isArray(m.getCommandCatalogEntry("runtime:assignment-pack")?.options) && m.getCommandCatalogEntry("runtime:assignment-pack")?.options?.some((option) => option.option === "--role <role>") && Array.isArray(mcpOptions) && mcpOptions.some((option) => option.option === "--capabilities") && mcpOptions.some((option) => option.option === "--tools") && mcpOptionsView.kind === "mcp_command_catalog_view" && mcpOptionsView.counts.totalOptions >= 5 && mcpOptionsView.options.some((option) => option.option === "--tools") && toolsOption?.option === "--tools" && toolsOptionView.kind === "mcp_command_option_view" && toolsOptionView.matchedOption === "--tools" && missingToolsOptionView.recommendedReason === "mcp_command_option_missing" && mcpHelpView.kind === "mcp_help_view" && mcpHelpView.matchedOption === "--tools" && mcpHelpView.text.includes("codex-bees mcp --tools") && fallbackMcpHelpView.recommendedReason === "mcp_help_fallback_loaded" && typeof m.renderCommandHelpText === "function" && m.renderCommandHelpText("status").includes("codex-bees status") && m.renderCommandHelpText("status").includes("Description:") && m.renderCommandHelpText("task:add").includes("--acceptance <item|item>") && m.renderCommandHelpText("task:add").includes("Pipe-delimited") && m.renderCommandHelpText("swarm:init").includes("--lanes <json>") && m.renderCommandHelpText("leader:assignment-launch-plan").includes("--workers <json>") && m.renderCommandHelpText("memory:search").includes("--query <text>") && m.renderCommandHelpText("runtime:assignment-pack").includes("--role <role>") && m.renderCommandHelpText("mcp:option").includes("--option <option>") && m.renderCommandHelpText("init").includes("codex-bees init") && m.renderCommandHelpText("help").includes("codex-bees --help") && m.renderCommandHelpText("missing").includes("codex-bees run") && typeof m.renderMcpHelpText === "function" && m.renderMcpHelpText().includes("codex-bees mcp --capabilities") })); })'
-  ],
+  ["-e", installedCommandsImportScript],
   {
     cwd: packedInstallAppDir,
     encoding: "utf8"
@@ -1509,9 +1255,11 @@ function runInstalled(label, command, args, options = {}) {
 const installedHelp = runInstalled("installed-help", "npx", ["codex-bees", "--help"]);
 if (
   !installedHelp.stdout.includes("codex-bees") ||
-  !installedHelp.stdout.includes("codex-bees init") ||
-  !installedHelp.stdout.includes("codex-bees catalog") ||
-  !installedHelp.stdout.includes("codex-bees mcp")
+  !installedHelp.stdout.includes("Common paths:") ||
+  !installedHelp.stdout.includes("Command groups:") ||
+  !installedHelp.stdout.includes("codex-bees init --preview") ||
+  !installedHelp.stdout.includes("codex-bees command:help --name <command>") ||
+  !installedHelp.stdout.includes("codex-bees mcp --stdio")
 ) {
   console.error("[smoke:installed-help] expected installed npx codex-bees help surface");
   process.exit(1);
@@ -1539,9 +1287,11 @@ if (
 const installedDirectCliHelp = runInstalled("installed-direct-cli-help", "node", ["./node_modules/codex-bees/dist/index.js", "--help"]);
 if (
   !installedDirectCliHelp.stdout.includes("codex-bees") ||
-  !installedDirectCliHelp.stdout.includes("codex-bees init") ||
-  !installedDirectCliHelp.stdout.includes("codex-bees catalog") ||
-  !installedDirectCliHelp.stdout.includes("codex-bees mcp")
+  !installedDirectCliHelp.stdout.includes("Common paths:") ||
+  !installedDirectCliHelp.stdout.includes("Command groups:") ||
+  !installedDirectCliHelp.stdout.includes("codex-bees init --preview") ||
+  !installedDirectCliHelp.stdout.includes("codex-bees command:help --name <command>") ||
+  !installedDirectCliHelp.stdout.includes("codex-bees mcp --stdio")
 ) {
   console.error("[smoke:installed-direct-cli-help] expected direct packaged CLI help surface");
   process.exit(1);

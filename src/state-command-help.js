@@ -15,8 +15,40 @@ import {
   normalizeCommand,
   pushCommandHelpSection
 } from "./state-command-core.js";
+import {
+  formatCommonCommandPath,
+  getCommonCommandPaths,
+  groupCommandCatalog
+} from "./state-command-surface.js";
 import { createResolvedOptionView } from "./state-command-options.js";
 import { createResolvedItemView } from "./state-view-helpers.js";
+
+function appendCommonPaths(lines) {
+  const commonPaths = getCommonCommandPaths().map((path) => formatCommonCommandPath(path, PRODUCT_NAME));
+  lines.push("Common paths:");
+
+  for (const path of commonPaths) {
+    lines.push(`  ${path.label}`);
+    lines.push(`    ${path.description}`);
+    for (const command of path.commands) {
+      lines.push(`    ${command}`);
+    }
+    lines.push("");
+  }
+
+  lines.pop();
+}
+
+function appendCommandGroups(lines) {
+  const groups = groupCommandCatalog(getCommandCatalog());
+  lines.push("Command groups:");
+
+  for (const group of groups) {
+    lines.push(`  ${group.label} (${group.count})`);
+    lines.push(`    ${group.description}`);
+    lines.push(`    Boundary: ${group.boundary}`);
+  }
+}
 
 export function getCommandHelpView(command) {
   const matchedEntry = getCommandCatalogEntry(command);
@@ -35,10 +67,28 @@ export function getCommandHelpView(command) {
 }
 
 export function renderHelpText() {
-  const lines = [`${PRODUCT_NAME}`, "", "Usage:"];
-  for (const entry of getCommandCatalog()) {
-    lines.push(`  ${PRODUCT_NAME} ${entry.command.padEnd(15)} ${entry.description}`);
-  }
+  const lines = [
+    PRODUCT_NAME,
+    "",
+    "Codex-only local bounded orchestration for explicit multi-agent work.",
+    "",
+    "Usage:",
+    `  ${PRODUCT_NAME} <command> [options]`,
+    ""
+  ];
+
+  appendCommonPaths(lines);
+  lines.push("", "");
+  appendCommandGroups(lines);
+  lines.push(
+    "",
+    "More:",
+    `  ${PRODUCT_NAME} commands`,
+    `  ${PRODUCT_NAME} command:help --name <command>`,
+    `  ${PRODUCT_NAME} init --help`,
+    `  ${PRODUCT_NAME} mcp --help`
+  );
+
   return lines.join("\n") + "\n";
 }
 
@@ -97,6 +147,10 @@ export function renderCommandHelpText(command) {
   ];
 
   pushCommandHelpSection(lines, "Description", [matchedEntry.description]);
+  pushCommandHelpSection(lines, "Surface", [
+    `${matchedEntry.groupLabel}: ${matchedEntry.groupDescription}`,
+    `Boundary: ${matchedEntry.groupBoundary}`
+  ]);
   pushCommandHelpSection(lines, "Aliases", aliases);
   pushCommandHelpSection(
     lines,

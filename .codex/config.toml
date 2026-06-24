@@ -12,3 +12,9 @@ description = "Fast repository lookup and mapping."
 
 [agents.executor]
 description = "Implementation and refactoring."
+
+[agents.reviewer]
+description = "Boundary review and handoff validation."
+
+[agents.tester]
+description = "Targeted verification and regression evidence."

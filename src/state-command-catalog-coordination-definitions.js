@@ -1,10 +1,10 @@
 export function getCoordinationCommandCatalogDefinitions() {
   return [
-    { command: "plan:profiles", description: "Show the available planner profile catalog view" },
-    { command: "plan:profile", description: "Show one available planner profile view" },
-    { command: "plan", description: "Generate a bounded read-only execution plan" },
+    { command: "plan:profiles", description: "Show the available planner profile catalog surface" },
+    { command: "plan:profile", description: "Show one available planner profile surface entry" },
+    { command: "plan", description: "Generate a bounded execution plan from one objective" },
     { command: "plan:queue", description: "Generate a plan and queue its lanes as local tasks" },
-    { command: "plan:swarm", description: "Generate a bounded swarm contract from a task brief" },
+    { command: "plan:swarm", description: "Generate a bounded swarm contract from one objective" },
     { command: "plan:swarm:queue", description: "Generate a bounded swarm contract and queue its lanes as local tasks" },
     { command: "task:list", description: "List local coordination tasks" },
     { command: "task:add", description: "Add a local coordination task" },
@@ -71,7 +71,7 @@ export function getCoordinationCommandCatalogDefinitions() {
     { command: "memory:get", description: "Show one persistent local memory" },
     { command: "memory:list", description: "List persistent local memories" },
     { command: "memory:search", description: "Search persistent local memories" },
-    { command: "--help", description: "Show help" },
-    { command: "--version", description: "Show version" }
+    { command: "--help", description: "Show grouped help for the command surface" },
+    { command: "--version", description: "Show the shipped package version" }
   ];
 }

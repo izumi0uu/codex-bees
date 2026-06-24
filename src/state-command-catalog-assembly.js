@@ -10,6 +10,7 @@ import {
 import {
   getMcpCommandCatalog
 } from "./state-mcp-cli.js";
+import { getCommandGroup } from "./state-command-surface.js";
 
 function getStructuredCommandOptions(command, entry) {
   if (command === "init") {
@@ -51,12 +52,17 @@ export function getCommandCatalog() {
   const commands = getBaseCommandCatalogDefinitions({ getInitCommandCatalog, getMcpCommandCatalog });
 
   return commands.map((entry) => {
+    const group = getCommandGroup(entry.command);
     const options = getStructuredCommandOptions(entry.command, entry);
     const usage = getStructuredCommandUsage(entry.command, entry);
     const notes = getStructuredCommandNotes(entry.command, entry);
     const aliases = getStructuredCommandAliases(entry.command);
     return {
       ...entry,
+      groupId: group.id,
+      groupLabel: group.label,
+      groupDescription: group.description,
+      groupBoundary: group.boundary,
       ...(usage.length > 0 ? { usage } : {}),
       ...(aliases ? { aliases } : {}),
       ...(options ? { options } : {}),
