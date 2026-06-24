@@ -1,5 +1,6 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import {
+  buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackCommand,
   buildRuntimePackExpansionEntry,
   buildRuntimePackFocusOverview,
@@ -33,13 +34,14 @@ export function buildRuntimeExecutionPackView(
   const queuePack = runtimeQueuePack({ ...input, detail: detailLevel });
   const recommendedSurface = deriveRuntimeExecutionPackSurface({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
   const recommendedReason = deriveRuntimeExecutionPackReason({ focus, dispatch, assignmentDispatchBundle, assignmentLaunchPlan, roles, queuePack });
-  const purposeGuidance =
-    assignmentLaunchPlan?.next?.purposeGuidance ??
-    assignmentDispatchBundle?.next?.purposeGuidance ??
-    dispatch?.next?.purposeGuidance ??
-    focus?.focus?.purposeGuidance ??
-    roles?.next?.nextAction?.purposeGuidance ??
-    buildPurposeGuidanceForTaskLike(queuePack?.next?.queue?.task ?? null);
+  const purposeGuidance = buildRuntimePackFallbackPurposeGuidance(
+    queuePack?.next?.queue?.task ?? null,
+    assignmentLaunchPlan?.next,
+    assignmentDispatchBundle?.next,
+    dispatch?.next,
+    focus?.focus,
+    roles?.next?.nextAction
+  );
   const nextEntries = {
     focus: focus?.focus ?? null,
     dispatch: dispatch?.next ?? null,

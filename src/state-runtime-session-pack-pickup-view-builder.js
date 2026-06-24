@@ -1,7 +1,8 @@
-import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import {
+  buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPickupOverview,
   buildRuntimePackPresenceMetadata,
+  buildRuntimePackSessionOverview,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
 
@@ -57,11 +58,12 @@ export function buildRuntimePickupPackView(
     mode
   });
   const recommendedReason = deriveRuntimePickupPackReason({ session, pickup, next, rolePack });
-  const purposeGuidance =
-    pickup?.purposeGuidance ??
-    session?.purposeGuidance ??
-    rolePack?.purposeGuidance ??
-    buildPurposeGuidanceForTaskLike(next?.candidate ?? null);
+  const purposeGuidance = buildRuntimePackFallbackPurposeGuidance(
+    next?.candidate ?? null,
+    pickup,
+    session,
+    rolePack
+  );
   const nextEntries = {
     focus: session?.focus ?? null,
     candidate: next?.candidate ?? null,
@@ -87,8 +89,7 @@ export function buildRuntimePickupPackView(
       surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
-      session: session?.counts ?? null,
-      inbox: session?.inbox?.counts ?? null,
+      ...buildRuntimePackSessionOverview(session),
       pickup: buildRuntimePackPickupOverview(pickup),
       role: rolePack?.overview?.role ?? null
     },

@@ -1,5 +1,5 @@
-import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import {
+  buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPickupOverview,
   buildRuntimePackPresenceMetadata,
   countRuntimePackEntries
@@ -58,11 +58,12 @@ export function buildRuntimeAssignmentPackView(
     mode
   });
   const recommendedReason = deriveRuntimeAssignmentPackReason({ assignment, session, next, pickup, roleEntry });
-  const purposeGuidance =
-    session?.purposeGuidance ??
-    pickup?.purposeGuidance ??
-    assignment?.purposeGuidance ??
-    buildPurposeGuidanceForTaskLike(next?.candidate ?? assignment ?? null);
+  const purposeGuidance = buildRuntimePackFallbackPurposeGuidance(
+    next?.candidate ?? assignment ?? null,
+    session,
+    pickup,
+    assignment
+  );
   const nextEntries = {
     assignment,
     pickup,

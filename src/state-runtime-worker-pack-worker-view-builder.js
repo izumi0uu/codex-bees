@@ -1,6 +1,7 @@
-import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import {
+  buildRuntimePackFallbackPurposeGuidance,
   buildRuntimePackPresenceMetadata,
+  buildRuntimePackSessionOverview,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
 
@@ -34,10 +35,11 @@ export function buildRuntimeWorkerPackView(
   });
   const recommendedSurface = deriveRuntimeWorkerPackSurface({ session, handoff, closeout, next });
   const recommendedReason = deriveRuntimeWorkerPackReason({ session, handoff, closeout, next });
-  const purposeGuidance =
-    session?.purposeGuidance ??
-    handoff?.purposeGuidance ??
-    buildPurposeGuidanceForTaskLike(next?.candidate ?? null);
+  const purposeGuidance = buildRuntimePackFallbackPurposeGuidance(
+    next?.candidate ?? null,
+    session,
+    handoff
+  );
   const nextEntries = {
     focus: session?.focus ?? null,
     candidate: next?.candidate ?? null,
@@ -62,10 +64,7 @@ export function buildRuntimeWorkerPackView(
     counts: {
       surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
-    overview: {
-      session: session?.counts ?? null,
-      inbox: session?.inbox?.counts ?? null
-    },
+    overview: buildRuntimePackSessionOverview(session),
     next: nextEntries,
     surfaces: {
       session,

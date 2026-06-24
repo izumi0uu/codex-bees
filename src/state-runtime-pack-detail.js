@@ -1,3 +1,5 @@
+import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+
 const VALID_RUNTIME_PACK_DETAILS = new Set(["compact", "full"]);
 
 function appendCommandOption(parts, flag, value) {
@@ -78,4 +80,25 @@ export function buildRuntimePackPickupOverview(pickup) {
         purpose: pickup.purposeGuidance?.purpose ?? null
       }
     : null;
+}
+
+export function resolveRuntimePackPurposeGuidance(...sources) {
+  for (const source of sources) {
+    if (source?.purposeGuidance) {
+      return source.purposeGuidance;
+    }
+  }
+
+  return null;
+}
+
+export function buildRuntimePackFallbackPurposeGuidance(taskLike, ...sources) {
+  return resolveRuntimePackPurposeGuidance(...sources) ?? buildPurposeGuidanceForTaskLike(taskLike ?? null);
+}
+
+export function buildRuntimePackSessionOverview(session) {
+  return {
+    session: session?.counts ?? null,
+    inbox: session?.inbox?.counts ?? null
+  };
 }
