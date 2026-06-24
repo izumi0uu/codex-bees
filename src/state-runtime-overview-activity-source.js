@@ -9,24 +9,11 @@ import {
   compareRuntimeActivityEntries
 } from './state-runtime-entities.js';
 
-export function runtimeActivityFromSources(
-  input = {},
-  {
-    loadState,
-    normalizeTask,
-    normalizeSwarm,
-    taskBrief,
-    swarmBrief
-  }
-) {
+export function runtimeActivityFromSources(input = {}, sources = {}) {
   return buildRuntimeActivityViewFromState(
     input,
     {
-      loadState,
-      normalizeTask,
-      normalizeSwarm,
-      taskBrief,
-      swarmBrief,
+      ...sources,
       buildRuntimeActivityEntry,
       compareRuntimeActivityEntries
     },

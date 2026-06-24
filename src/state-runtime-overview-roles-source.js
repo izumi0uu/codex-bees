@@ -10,27 +10,14 @@ import { isClaimableTask } from "./state-queue-views.js";
 import { describeRole } from "./state-task-core.js";
 import { compareRuntimeRoleEntries } from "./state-runtime-views.js";
 
-export function runtimeRolesFromSources(
-  input = {},
-  {
-    leaderAssignments,
-    loadState,
-    normalizeTask,
-    taskInbox,
-    taskNext
-  }
-) {
+export function runtimeRolesFromSources(input = {}, sources = {}) {
   return buildRuntimeRolesViewFromSources(
     input,
     {
+      ...sources,
       getRuntimeCatalog,
-      leaderAssignments,
       buildRuntimeRoleEntry,
       describeRole,
-      loadState,
-      normalizeTask,
-      taskInbox,
-      taskNext,
       isClaimableTask,
       compareRuntimeRoleEntries
     },

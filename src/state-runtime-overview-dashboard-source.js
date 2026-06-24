@@ -7,20 +7,10 @@ import {
 import { summarizeDashboardTask } from "./state-role-views.js";
 import { compareTasksByUpdatedAt } from "./state-queue-views.js";
 
-export function runtimeDashboardFromSources({
-  loadState,
-  normalizeTask,
-  listSwarmOverviews,
-  leaderQueue,
-  leaderAssignments
-}) {
+export function runtimeDashboardFromSources(sources = {}) {
   return buildRuntimeDashboardViewFromSources(
     {
-      loadState,
-      normalizeTask,
-      listSwarmOverviews,
-      leaderQueue,
-      leaderAssignments,
+      ...sources,
       compareTasksByUpdatedAt,
       summarizeDashboardTask
     },

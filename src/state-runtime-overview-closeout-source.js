@@ -12,20 +12,10 @@ import {
   compareRuntimeCloseoutTasks
 } from './state-runtime-entities.js';
 
-export function runtimeCloseoutFromSources({
-  loadState,
-  normalizeTask,
-  taskReport,
-  listSwarmOverviews,
-  swarmCloseout
-}) {
+export function runtimeCloseoutFromSources(sources = {}) {
   return buildRuntimeCloseoutViewFromState(
     {
-      loadState,
-      normalizeTask,
-      taskReport,
-      listSwarmOverviews,
-      swarmCloseout
+      ...sources
     },
     {
       buildRuntimeCloseoutTaskEntry,

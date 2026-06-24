@@ -11,16 +11,10 @@ import {
   isRuntimeRecoveryTask
 } from './state-runtime-entities.js';
 
-export function runtimeRecoveryFromSources({
-  loadState,
-  normalizeTask,
-  taskBrief
-}) {
+export function runtimeRecoveryFromSources(sources = {}) {
   return buildRuntimeRecoveryViewFromState(
     {
-      loadState,
-      normalizeTask,
-      taskBrief
+      ...sources
     },
     {
       isRuntimeRecoveryTask,

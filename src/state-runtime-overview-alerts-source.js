@@ -6,14 +6,10 @@ import {
 } from "./state-dashboard-views.js";
 import { compareRuntimeAlerts } from "./state-role-views.js";
 
-export function runtimeAlertsFromSources({
-  runtimeDashboard,
-  listSwarmOverviews
-}) {
+export function runtimeAlertsFromSources(sources = {}) {
   return buildRuntimeAlertsViewFromSources(
     {
-      runtimeDashboard,
-      listSwarmOverviews,
+      ...sources,
       compareRuntimeAlerts
     },
     {

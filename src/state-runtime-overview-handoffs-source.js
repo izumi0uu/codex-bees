@@ -11,16 +11,10 @@ import {
   runtimeHandoffActorKey
 } from './state-runtime-entities.js';
 
-export function runtimeHandoffsFromSources({
-  loadState,
-  normalizeTask,
-  taskBrief
-}) {
+export function runtimeHandoffsFromSources(sources = {}) {
   return buildRuntimeHandoffsViewFromState(
     {
-      loadState,
-      normalizeTask,
-      taskBrief
+      ...sources
     },
     {
       buildRuntimeHandoffEntry,

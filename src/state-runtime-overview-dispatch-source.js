@@ -5,12 +5,10 @@ import {
   deriveRuntimeDispatchReason
 } from "./state-dashboard-views.js";
 
-export function runtimeDispatchFromSources({
-  leaderAssignments
-}) {
+export function runtimeDispatchFromSources(sources = {}) {
   return buildRuntimeDispatchViewFromSources(
     {
-      leaderAssignments
+      ...sources
     },
     {
       deriveRuntimeDispatchReason,

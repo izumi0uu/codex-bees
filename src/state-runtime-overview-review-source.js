@@ -8,18 +8,12 @@ import { compareTasksByUpdatedAt } from './state-queue-views.js';
 import { buildRuntimeReviewTaskEntry, compareRuntimeReviewGroups } from './state-task-views.js';
 import { describeRole } from './state-task-core.js';
 
-export function runtimeReviewFromSources({
-  loadState,
-  normalizeTask,
-  taskBrief
-}) {
+export function runtimeReviewFromSources(sources = {}) {
   return buildRuntimeReviewViewFromSources(
     {
-      loadState,
-      normalizeTask,
+      ...sources,
       compareTasksByUpdatedAt,
       describeRole,
-      taskBrief,
       buildRuntimeReviewTaskEntry,
       compareRuntimeReviewGroups
     },
