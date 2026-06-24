@@ -160,6 +160,8 @@ Recommended first kernel boundary:
 - swarm lifecycle legality
 - claim/review/release validation
 
+See [First kernel boundary](./first-kernel-boundary.md) for the concrete JS extraction target and current module mapping.
+
 Exit criteria:
 
 - authoritative writes can run through the kernel
