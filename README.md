@@ -134,6 +134,9 @@ When implementation is done, move the task into review with the shipped lifecycl
 - [MCP](./docs/mcp.md)
 - [Skills](./docs/skills.md)
 - [Agents](./docs/agents.md)
+- [Hybrid runtime strategy](./docs/hybrid-runtime-strategy.md)
+- [Migration matrix](./docs/migration-matrix.md)
+- [Boundary review checklist](./docs/boundary-review-checklist.md)
 
 ## Public import surface
 
