@@ -1,4 +1,5 @@
 import {
+  buildRuntimePackFocusOverview,
   buildRuntimePackPresenceMetadata,
   countRuntimePackEntries
 } from './state-runtime-pack-detail.js';
@@ -43,7 +44,7 @@ export function buildRuntimeTriagePackView(
       surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
-      focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
+      focus: buildRuntimePackFocusOverview(focus),
       alerts: alerts?.counts ?? null,
       review: review?.counts ?? null,
       recovery: recovery?.counts ?? null

@@ -2,6 +2,7 @@ import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import {
   buildRuntimePackCommand,
   buildRuntimePackExpansionEntry,
+  buildRuntimePackFocusOverview,
   buildRuntimePackPresenceMetadata,
   countRuntimePackEntries,
   normalizeRuntimePackDetail
@@ -82,7 +83,7 @@ export function buildRuntimeExecutionPackView(
       surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
-      focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
+      focus: buildRuntimePackFocusOverview(focus),
       dispatch: dispatch?.counts ?? null,
       assignmentDispatchBundle: assignmentDispatchBundle?.counts ?? null,
       assignmentLaunchPlan: assignmentLaunchPlan?.counts ?? null,

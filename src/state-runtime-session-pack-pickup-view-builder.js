@@ -1,5 +1,6 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
 import {
+  buildRuntimePackPickupOverview,
   buildRuntimePackPresenceMetadata,
   countRuntimePackEntries
 } from "./state-runtime-pack-detail.js";
@@ -88,14 +89,7 @@ export function buildRuntimePickupPackView(
     overview: {
       session: session?.counts ?? null,
       inbox: session?.inbox?.counts ?? null,
-      pickup: pickup
-        ? {
-            outcome: pickup.outcome,
-            command: pickup.command,
-            candidateId: pickup.candidate?.id ?? null,
-            purpose: pickup.purposeGuidance?.purpose ?? null
-          }
-        : null,
+      pickup: buildRuntimePackPickupOverview(pickup),
       role: rolePack?.overview?.role ?? null
     },
     next: nextEntries,

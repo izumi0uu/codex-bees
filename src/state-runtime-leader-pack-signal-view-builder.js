@@ -1,4 +1,5 @@
 import {
+  buildRuntimePackFocusOverview,
   buildRuntimePackPresenceMetadata,
   countRuntimePackEntries
 } from './state-runtime-pack-detail.js';
@@ -44,7 +45,7 @@ export function buildRuntimeSignalPackView(
       surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
-      focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,
+      focus: buildRuntimePackFocusOverview(focus),
       alerts: alerts?.counts ?? null,
       activity: activity?.counts ?? null,
       roles: roles?.counts ?? null

@@ -59,3 +59,23 @@ export function buildRuntimePackPresenceMetadata(entries = {}) {
 export function countRuntimePackEntries(entries = {}) {
   return Object.values(entries).filter(Boolean).length;
 }
+
+export function buildRuntimePackFocusOverview(focusView) {
+  return focusView?.focus
+    ? {
+        type: focusView.focus.type,
+        priority: focusView.focus.priority
+      }
+    : null;
+}
+
+export function buildRuntimePackPickupOverview(pickup) {
+  return pickup
+    ? {
+        outcome: pickup.outcome,
+        command: pickup.command,
+        candidateId: pickup.candidate?.id ?? null,
+        purpose: pickup.purposeGuidance?.purpose ?? null
+      }
+    : null;
+}
