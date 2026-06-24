@@ -4,25 +4,14 @@ import { createStateRuntimeLeaderWorkspaceEntryPoints } from "./state-public-run
 export function createStateRuntimeLeaderEntryPoints(api) {
   const runtimeLeaderWorkspace = createStateRuntimeLeaderWorkspaceEntryPoints(api);
   const runtimeLeaderDispatch = createStateRuntimeLeaderDispatchEntryPoints(runtimeLeaderWorkspace);
-  const {
-    leaderQueue,
-    leaderAssignments,
-    leaderWorkspace
-  } = runtimeLeaderWorkspace;
-  const {
-    leaderAssignmentDispatch,
-    leaderAssignmentDispatchPack,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan
-  } = runtimeLeaderDispatch;
 
   return {
-    leaderQueue,
-    leaderAssignments,
-    leaderAssignmentDispatch,
-    leaderAssignmentDispatchPack,
-    leaderAssignmentDispatchBundle,
-    leaderAssignmentLaunchPlan,
-    leaderWorkspace
+    leaderQueue: runtimeLeaderWorkspace.leaderQueue,
+    leaderAssignments: runtimeLeaderWorkspace.leaderAssignments,
+    leaderAssignmentDispatch: runtimeLeaderDispatch.leaderAssignmentDispatch,
+    leaderAssignmentDispatchPack: runtimeLeaderDispatch.leaderAssignmentDispatchPack,
+    leaderAssignmentDispatchBundle: runtimeLeaderDispatch.leaderAssignmentDispatchBundle,
+    leaderAssignmentLaunchPlan: runtimeLeaderDispatch.leaderAssignmentLaunchPlan,
+    leaderWorkspace: runtimeLeaderWorkspace.leaderWorkspace
   };
 }

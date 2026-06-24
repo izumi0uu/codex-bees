@@ -8,35 +8,19 @@ export function createStateRuntimeOrchestrationPackEntryPoints(runtimeLeader, ru
     runtimeOverview,
     runtimeOrchestrationPackOverview
   );
-  const {
-    runtimeSummaryPack,
-    runtimeOperatorPack,
-    runtimeRecoveryPack,
-    runtimeSignalPack,
-    runtimeHandoffPack,
-    runtimeTriagePack
-  } = runtimeOrchestrationPackOverview;
-  const {
-    runtimeDispatchPack,
-    runtimeLeaderPack,
-    runtimeCloseoutPack,
-    runtimeQueuePack,
-    runtimeWorkspacePack,
-    runtimeControlPack
-  } = runtimeOrchestrationPackCoordination;
 
   return {
-    runtimeSummaryPack,
-    runtimeOperatorPack,
-    runtimeDispatchPack,
-    runtimeRecoveryPack,
-    runtimeLeaderPack,
-    runtimeCloseoutPack,
-    runtimeQueuePack,
-    runtimeWorkspacePack,
-    runtimeControlPack,
-    runtimeSignalPack,
-    runtimeHandoffPack,
-    runtimeTriagePack
+    runtimeSummaryPack: runtimeOrchestrationPackOverview.runtimeSummaryPack,
+    runtimeOperatorPack: runtimeOrchestrationPackOverview.runtimeOperatorPack,
+    runtimeDispatchPack: runtimeOrchestrationPackCoordination.runtimeDispatchPack,
+    runtimeRecoveryPack: runtimeOrchestrationPackOverview.runtimeRecoveryPack,
+    runtimeLeaderPack: runtimeOrchestrationPackCoordination.runtimeLeaderPack,
+    runtimeCloseoutPack: runtimeOrchestrationPackCoordination.runtimeCloseoutPack,
+    runtimeQueuePack: runtimeOrchestrationPackCoordination.runtimeQueuePack,
+    runtimeWorkspacePack: runtimeOrchestrationPackCoordination.runtimeWorkspacePack,
+    runtimeControlPack: runtimeOrchestrationPackCoordination.runtimeControlPack,
+    runtimeSignalPack: runtimeOrchestrationPackOverview.runtimeSignalPack,
+    runtimeHandoffPack: runtimeOrchestrationPackOverview.runtimeHandoffPack,
+    runtimeTriagePack: runtimeOrchestrationPackOverview.runtimeTriagePack
   };
 }

@@ -4,31 +4,12 @@ import { createStateWorkerSessionEntryPoints } from "./state-public-worker-sessi
 export function createStateWorkerEntryPoints(shared, api) {
   const workerQueue = createStateWorkerQueueEntryPoints(shared, api);
   const workerSession = createStateWorkerSessionEntryPoints(shared, api, workerQueue);
-  const {
-    taskInbox,
-    taskNext,
-    taskPickup,
-    taskAssignmentPickup,
-    previewTaskAssignment,
-    previewTaskPickup
-  } = workerQueue;
-  const {
-    workerSession: workerSessionEntry,
-    workerHandoff,
-    workerCloseout,
-    verifierBundle
-  } = workerSession;
 
   return {
-    taskInbox,
-    taskNext,
-    taskPickup,
-    taskAssignmentPickup,
-    previewTaskAssignment,
-    previewTaskPickup,
-    workerSession: workerSessionEntry,
-    workerHandoff,
-    workerCloseout,
-    verifierBundle
+    ...workerQueue,
+    workerSession: workerSession.workerSession,
+    workerHandoff: workerSession.workerHandoff,
+    workerCloseout: workerSession.workerCloseout,
+    verifierBundle: workerSession.verifierBundle
   };
 }
