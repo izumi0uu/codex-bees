@@ -16,18 +16,6 @@ export function createStateRuntimeSessionPackExecutionEntryPoints(api, runtimeLe
     runtimeRolePack
   } = runtimeSessionPackSessionRole;
 
-  function runtimeExecutionPack(input = {}) {
-    return runtimeExecutionPackSurface(input, runtimeExecutionPackSources);
-  }
-
-  function runtimePickupPack(input = {}) {
-    return runtimePickupPackSurface(input, runtimePickupPackSources);
-  }
-
-  function runtimeAssignmentPack(input = {}) {
-    return runtimeAssignmentPackSurface(input, runtimeAssignmentPackSources);
-  }
-
   const runtimeExecutionPackSources = {
     runtimeFocus,
     runtimeDispatch,
@@ -36,12 +24,18 @@ export function createStateRuntimeSessionPackExecutionEntryPoints(api, runtimeLe
     runtimeRoles,
     runtimeQueuePack
   };
+  const runtimeExecutionPack = (input = {}) =>
+    runtimeExecutionPackSurface(input, runtimeExecutionPackSources);
+
   const runtimePickupPackSources = {
     workerSession: api.workerSession,
     taskNext: api.taskNext,
     previewTaskPickup: api.previewTaskPickup,
     runtimeRolePack
   };
+  const runtimePickupPack = (input = {}) =>
+    runtimePickupPackSurface(input, runtimePickupPackSources);
+
   const runtimeAssignmentPackSources = {
     leaderAssignments,
     workerSession: api.workerSession,
@@ -49,6 +43,8 @@ export function createStateRuntimeSessionPackExecutionEntryPoints(api, runtimeLe
     previewTaskAssignment: api.previewTaskAssignment,
     runtimeRoles
   };
+  const runtimeAssignmentPack = (input = {}) =>
+    runtimeAssignmentPackSurface(input, runtimeAssignmentPackSources);
 
   return {
     runtimeExecutionPack,

@@ -9,31 +9,13 @@ import {
 export function createStateRuntimeOverviewLifecycleEntryPoints(shared, api) {
   const { loadState, normalizeTask, normalizeSwarm } = shared;
 
-  function runtimeReview() {
-    return runtimeReviewSurface(runtimeReviewSources);
-  }
-
-  function runtimeActivity(input = {}) {
-    return runtimeActivitySurface(input, runtimeActivitySources);
-  }
-
-  function runtimeHandoffs() {
-    return runtimeHandoffsSurface(runtimeHandoffsSources);
-  }
-
-  function runtimeCloseout() {
-    return runtimeCloseoutSurface(runtimeCloseoutSources);
-  }
-
-  function runtimeRecovery() {
-    return runtimeRecoverySurface(runtimeRecoverySources);
-  }
-
   const runtimeReviewSources = {
     loadState,
     normalizeTask,
     taskBrief: api.taskBrief
   };
+  const runtimeReview = () => runtimeReviewSurface(runtimeReviewSources);
+
   const runtimeActivitySources = {
     loadState,
     normalizeTask,
@@ -41,11 +23,16 @@ export function createStateRuntimeOverviewLifecycleEntryPoints(shared, api) {
     taskBrief: api.taskBrief,
     swarmBrief: api.swarmBrief
   };
+  const runtimeActivity = (input = {}) =>
+    runtimeActivitySurface(input, runtimeActivitySources);
+
   const runtimeHandoffsSources = {
     loadState,
     normalizeTask,
     taskBrief: api.taskBrief
   };
+  const runtimeHandoffs = () => runtimeHandoffsSurface(runtimeHandoffsSources);
+
   const runtimeCloseoutSources = {
     loadState,
     normalizeTask,
@@ -53,11 +40,14 @@ export function createStateRuntimeOverviewLifecycleEntryPoints(shared, api) {
     listSwarmOverviews: api.listSwarmOverviews,
     swarmCloseout: api.swarmCloseout
   };
+  const runtimeCloseout = () => runtimeCloseoutSurface(runtimeCloseoutSources);
+
   const runtimeRecoverySources = {
     loadState,
     normalizeTask,
     taskBrief: api.taskBrief
   };
+  const runtimeRecovery = () => runtimeRecoverySurface(runtimeRecoverySources);
 
   return {
     runtimeReview,

@@ -25,30 +25,6 @@ export function createStateRuntimeOrchestrationPackOverviewEntryPoints(runtimeLe
     runtimeRecovery
   } = runtimeOverview;
 
-  function runtimeSummaryPack(input = {}) {
-    return runtimeSummaryPackSurface(input, runtimeSummaryPackSources);
-  }
-
-  function runtimeOperatorPack() {
-    return runtimeOperatorPackSurface(runtimeOperatorPackSources);
-  }
-
-  function runtimeRecoveryPack() {
-    return runtimeRecoveryPackSurface(runtimeRecoveryPackSources);
-  }
-
-  function runtimeSignalPack(input = {}) {
-    return runtimeSignalPackSurface(input, runtimeSignalPackSources);
-  }
-
-  function runtimeHandoffPack() {
-    return runtimeHandoffPackSurface(runtimeHandoffPackSources);
-  }
-
-  function runtimeTriagePack() {
-    return runtimeTriagePackSurface(runtimeTriagePackSources);
-  }
-
   const runtimeSummaryPackSources = {
     runtimeDashboard,
     runtimeAlerts,
@@ -59,6 +35,9 @@ export function createStateRuntimeOrchestrationPackOverviewEntryPoints(runtimeLe
     leaderAssignmentDispatchBundle,
     leaderAssignmentLaunchPlan
   };
+  const runtimeSummaryPack = (input = {}) =>
+    runtimeSummaryPackSurface(input, runtimeSummaryPackSources);
+
   const runtimeOperatorPackSources = {
     runtimeDashboard,
     runtimeFocus,
@@ -66,29 +45,43 @@ export function createStateRuntimeOrchestrationPackOverviewEntryPoints(runtimeLe
     runtimeHandoffs,
     runtimeCloseout
   };
+  const runtimeOperatorPack = () =>
+    runtimeOperatorPackSurface(runtimeOperatorPackSources);
+
   const runtimeRecoveryPackSources = {
     runtimeRecovery,
     runtimeHandoffs,
     runtimeFocus
   };
+  const runtimeRecoveryPack = () =>
+    runtimeRecoveryPackSurface(runtimeRecoveryPackSources);
+
   const runtimeSignalPackSources = {
     runtimeFocus,
     runtimeAlerts,
     runtimeActivity,
     runtimeRoles
   };
+  const runtimeSignalPack = (input = {}) =>
+    runtimeSignalPackSurface(input, runtimeSignalPackSources);
+
   const runtimeHandoffPackSources = {
     runtimeHandoffs,
     runtimeDispatch,
     runtimeReview,
     runtimeRecovery
   };
+  const runtimeHandoffPack = () =>
+    runtimeHandoffPackSurface(runtimeHandoffPackSources);
+
   const runtimeTriagePackSources = {
     runtimeFocus,
     runtimeAlerts,
     runtimeReview,
     runtimeRecovery
   };
+  const runtimeTriagePack = () =>
+    runtimeTriagePackSurface(runtimeTriagePackSources);
 
   return {
     runtimeSummaryPack,

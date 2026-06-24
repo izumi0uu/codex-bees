@@ -34,30 +34,6 @@ export function createStateRuntimeOrchestrationPackCoordinationEntryPoints(
     runtimeOperatorPack
   } = runtimeOrchestrationPackOverview;
 
-  function runtimeDispatchPack(input = {}) {
-    return runtimeDispatchPackSurface(input, runtimeDispatchPackSources);
-  }
-
-  function runtimeLeaderPack(input = {}) {
-    return runtimeLeaderPackSurface(input, runtimeLeaderPackSources);
-  }
-
-  function runtimeCloseoutPack(input = {}) {
-    return runtimeCloseoutPackSurface(input, runtimeCloseoutPackSources);
-  }
-
-  function runtimeQueuePack(input = {}) {
-    return runtimeQueuePackSurface(input, runtimeQueuePackSources);
-  }
-
-  function runtimeWorkspacePack(input = {}) {
-    return runtimeWorkspacePackSurface(input, runtimeWorkspacePackSources);
-  }
-
-  function runtimeControlPack(input = {}) {
-    return runtimeControlPackSurface(input, runtimeControlPackSources);
-  }
-
   const runtimeDispatchPackSources = {
     runtimeDispatch,
     leaderAssignmentDispatchPack,
@@ -66,6 +42,9 @@ export function createStateRuntimeOrchestrationPackCoordinationEntryPoints(
     runtimeRoles,
     runtimeHandoffs
   };
+  const runtimeDispatchPack = (input = {}) =>
+    runtimeDispatchPackSurface(input, runtimeDispatchPackSources);
+
   const runtimeLeaderPackSources = {
     leaderWorkspace,
     leaderQueue,
@@ -75,11 +54,17 @@ export function createStateRuntimeOrchestrationPackCoordinationEntryPoints(
     leaderAssignmentLaunchPlan,
     runtimeCloseout
   };
+  const runtimeLeaderPack = (input = {}) =>
+    runtimeLeaderPackSurface(input, runtimeLeaderPackSources);
+
   const runtimeCloseoutPackSources = {
     runtimeCloseout,
     runtimeSummaryPack,
     runtimeLeaderPack
   };
+  const runtimeCloseoutPack = (input = {}) =>
+    runtimeCloseoutPackSurface(input, runtimeCloseoutPackSources);
+
   const runtimeQueuePackSources = {
     leaderQueue,
     runtimeDashboard,
@@ -87,6 +72,9 @@ export function createStateRuntimeOrchestrationPackCoordinationEntryPoints(
     leaderAssignmentDispatchBundle,
     leaderAssignmentLaunchPlan
   };
+  const runtimeQueuePack = (input = {}) =>
+    runtimeQueuePackSurface(input, runtimeQueuePackSources);
+
   const runtimeWorkspacePackSources = {
     runtimeDashboard,
     runtimeDispatch,
@@ -95,12 +83,17 @@ export function createStateRuntimeOrchestrationPackCoordinationEntryPoints(
     runtimeReview,
     runtimeRecovery
   };
+  const runtimeWorkspacePack = (input = {}) =>
+    runtimeWorkspacePackSurface(input, runtimeWorkspacePackSources);
+
   const runtimeControlPackSources = {
     runtimeSummaryPack,
     runtimeWorkspacePack,
     runtimeOperatorPack,
     runtimeLeaderPack
   };
+  const runtimeControlPack = (input = {}) =>
+    runtimeControlPackSurface(input, runtimeControlPackSources);
 
   return {
     runtimeDispatchPack,

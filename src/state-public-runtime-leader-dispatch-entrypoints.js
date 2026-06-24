@@ -10,35 +10,30 @@ export function createStateRuntimeLeaderDispatchEntryPoints(runtimeLeaderWorkspa
     leaderAssignments
   } = runtimeLeaderWorkspace;
 
-  function leaderAssignmentDispatch(input = {}) {
-    return leaderAssignmentDispatchSurface(input, leaderAssignmentDispatchSources);
-  }
-
-  function leaderAssignmentDispatchPack(input = {}) {
-    return leaderAssignmentDispatchPackSurface(input, leaderAssignmentDispatchPackSources);
-  }
-
-  function leaderAssignmentDispatchBundle(input = {}) {
-    return leaderAssignmentDispatchBundleSurface(input, leaderAssignmentDispatchBundleSources);
-  }
-
-  function leaderAssignmentLaunchPlan(input = {}) {
-    return leaderAssignmentLaunchPlanSurface(input, leaderAssignmentLaunchPlanSources);
-  }
-
   const leaderAssignmentDispatchSources = {
     leaderAssignments
   };
+  const leaderAssignmentDispatch = (input = {}) =>
+    leaderAssignmentDispatchSurface(input, leaderAssignmentDispatchSources);
+
   const leaderAssignmentDispatchPackSources = {
     leaderAssignments,
     leaderAssignmentDispatch
   };
+  const leaderAssignmentDispatchPack = (input = {}) =>
+    leaderAssignmentDispatchPackSurface(input, leaderAssignmentDispatchPackSources);
+
   const leaderAssignmentDispatchBundleSources = {
     leaderAssignmentDispatchPack
   };
+  const leaderAssignmentDispatchBundle = (input = {}) =>
+    leaderAssignmentDispatchBundleSurface(input, leaderAssignmentDispatchBundleSources);
+
   const leaderAssignmentLaunchPlanSources = {
     leaderAssignmentDispatchBundle
   };
+  const leaderAssignmentLaunchPlan = (input = {}) =>
+    leaderAssignmentLaunchPlanSurface(input, leaderAssignmentLaunchPlanSources);
 
   return {
     leaderAssignmentDispatch,
