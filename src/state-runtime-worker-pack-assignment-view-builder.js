@@ -1,4 +1,8 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from "./state-runtime-pack-detail.js";
 
 export function buildRuntimeAssignmentPackView(
   input,
@@ -73,14 +77,14 @@ export function buildRuntimeAssignmentPackView(
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
-    metadata: {
-      hasAssignment: Boolean(nextEntries.assignment),
-      hasPickup: Boolean(nextEntries.pickup),
-      hasCandidate: Boolean(nextEntries.candidate),
-      hasFocus: Boolean(nextEntries.focus)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasAssignment: nextEntries.assignment,
+      hasPickup: nextEntries.pickup,
+      hasCandidate: nextEntries.candidate,
+      hasFocus: nextEntries.focus
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       assignments: {

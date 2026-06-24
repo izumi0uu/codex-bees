@@ -1,4 +1,8 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from "./state-runtime-pack-detail.js";
 
 export function buildRuntimePickupPackView(
   input,
@@ -72,14 +76,14 @@ export function buildRuntimePickupPackView(
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
-    metadata: {
-      hasFocus: Boolean(nextEntries.focus),
-      hasCandidate: Boolean(nextEntries.candidate),
-      hasBrief: Boolean(nextEntries.brief),
-      hasPickup: Boolean(nextEntries.pickup)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasFocus: nextEntries.focus,
+      hasCandidate: nextEntries.candidate,
+      hasBrief: nextEntries.brief,
+      hasPickup: nextEntries.pickup
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       session: session?.counts ?? null,

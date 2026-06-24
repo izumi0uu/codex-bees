@@ -1,5 +1,11 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
-import { buildRuntimePackCommand, buildRuntimePackExpansionEntry, normalizeRuntimePackDetail } from "./state-runtime-pack-detail.js";
+import {
+  buildRuntimePackCommand,
+  buildRuntimePackExpansionEntry,
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries,
+  normalizeRuntimePackDetail
+} from "./state-runtime-pack-detail.js";
 
 export function buildRuntimeExecutionPackView(
   input,
@@ -64,16 +70,16 @@ export function buildRuntimeExecutionPackView(
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
-    metadata: {
-      hasFocus: Boolean(nextEntries.focus),
-      hasDispatch: Boolean(nextEntries.dispatch),
-      hasAssignmentLaunch: Boolean(nextEntries.assignmentLaunch),
-      hasAssignmentLaunchStep: Boolean(nextEntries.assignmentLaunchStep),
-      hasRole: Boolean(nextEntries.role),
-      hasQueue: Boolean(nextEntries.queue)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasFocus: nextEntries.focus,
+      hasDispatch: nextEntries.dispatch,
+      hasAssignmentLaunch: nextEntries.assignmentLaunch,
+      hasAssignmentLaunchStep: nextEntries.assignmentLaunchStep,
+      hasRole: nextEntries.role,
+      hasQueue: nextEntries.queue
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       focus: focus?.focus ? { type: focus.focus.type, priority: focus.focus.priority } : null,

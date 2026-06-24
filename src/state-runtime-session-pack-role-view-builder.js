@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from "./state-runtime-pack-detail.js";
+
 export function buildRuntimeRolePackView(
   input,
   {
@@ -54,14 +59,14 @@ export function buildRuntimeRolePackView(
     mode: input.mode ?? "any",
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasRole: Boolean(nextEntries.role),
-      hasSession: Boolean(nextEntries.session),
-      hasOwner: Boolean(nextEntries.owner),
-      hasVerifier: Boolean(nextEntries.verifier)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasRole: nextEntries.role,
+      hasSession: nextEntries.session,
+      hasOwner: nextEntries.owner,
+      hasVerifier: nextEntries.verifier
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       role: roleEntry?.counts ?? null,

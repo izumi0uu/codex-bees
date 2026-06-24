@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from "./state-runtime-pack-detail.js";
+
 export function buildRuntimeVerifierPackView(
   input,
   {
@@ -45,14 +50,14 @@ export function buildRuntimeVerifierPackView(
     mode: "verifier",
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasReview: Boolean(nextEntries.review),
-      hasCandidate: Boolean(nextEntries.candidate),
-      hasDecision: Boolean(nextEntries.decision),
-      hasCloseout: Boolean(nextEntries.closeout)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasReview: nextEntries.review,
+      hasCandidate: nextEntries.candidate,
+      hasDecision: nextEntries.decision,
+      hasCloseout: nextEntries.closeout
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       review: review?.counts ?? null,

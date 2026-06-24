@@ -1,4 +1,8 @@
 import { buildPurposeGuidanceForTaskLike } from "./state-lane-purpose.js";
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from "./state-runtime-pack-detail.js";
 
 export function buildRuntimeOwnerPackView(
   input,
@@ -52,14 +56,14 @@ export function buildRuntimeOwnerPackView(
     recommendedSurface,
     recommendedReason,
     purposeGuidance,
-    metadata: {
-      hasFocus: Boolean(nextEntries.focus),
-      hasCandidate: Boolean(nextEntries.candidate),
-      hasHandoff: Boolean(nextEntries.handoff),
-      hasCloseout: Boolean(nextEntries.closeout)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasFocus: nextEntries.focus,
+      hasCandidate: nextEntries.candidate,
+      hasHandoff: nextEntries.handoff,
+      hasCloseout: nextEntries.closeout
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       session: session?.counts ?? null,

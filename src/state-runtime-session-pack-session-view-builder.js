@@ -1,3 +1,8 @@
+import {
+  buildRuntimePackPresenceMetadata,
+  countRuntimePackEntries
+} from "./state-runtime-pack-detail.js";
+
 export function buildRuntimeSessionPackView(
   input,
   {
@@ -62,14 +67,14 @@ export function buildRuntimeSessionPackView(
     mode: input.mode ?? "any",
     recommendedSurface,
     recommendedReason,
-    metadata: {
-      hasWorker: Boolean(nextEntries.worker),
-      hasOwner: Boolean(nextEntries.owner),
-      hasVerifier: Boolean(nextEntries.verifier),
-      hasRole: Boolean(nextEntries.role)
-    },
+    metadata: buildRuntimePackPresenceMetadata({
+      hasWorker: nextEntries.worker,
+      hasOwner: nextEntries.owner,
+      hasVerifier: nextEntries.verifier,
+      hasRole: nextEntries.role
+    }),
     counts: {
-      surfacedNextEntries: Object.values(nextEntries).filter(Boolean).length
+      surfacedNextEntries: countRuntimePackEntries(nextEntries)
     },
     overview: {
       worker: workerPack?.overview ?? null,
