@@ -1,6 +1,8 @@
 import {
-  buildRuntimePackFocusOverview,
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackSignalEntries,
+  buildRuntimePackSignalMetadata,
+  buildRuntimePackSignalOverview,
+  buildRuntimePackSignalSurfaces,
   buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
@@ -24,37 +26,17 @@ export function buildRuntimeSignalPackView(
   const roles = runtimeRoles(input);
   const recommendedSurface = deriveRuntimeSignalPackSurface({ focus, alerts, activity, roles });
   const recommendedReason = deriveRuntimeSignalPackReason({ focus, alerts, activity, roles });
-  const nextEntries = {
-    focus: focus?.focus ?? null,
-    alert: alerts?.alerts?.[0] ?? null,
-    activity: activity?.next ?? null,
-    role: roles?.next ?? null
-  };
+  const nextEntries = buildRuntimePackSignalEntries(focus, alerts, activity, roles);
 
   return {
     kind: "runtime_signal_pack",
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasFocus: nextEntries.focus,
-      hasAlert: nextEntries.alert,
-      hasActivity: nextEntries.activity,
-      hasRole: nextEntries.role
-    }),
+    metadata: buildRuntimePackSignalMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      focus: buildRuntimePackFocusOverview(focus),
-      alerts: alerts?.counts ?? null,
-      activity: activity?.counts ?? null,
-      roles: roles?.counts ?? null
-    },
+    overview: buildRuntimePackSignalOverview(focus, alerts, activity, roles),
     next: nextEntries,
-    surfaces: {
-      focus,
-      alerts,
-      activity,
-      roles
-    },
+    surfaces: buildRuntimePackSignalSurfaces(focus, alerts, activity, roles),
     summary: buildRuntimeSignalPackSummary(recommendedSurface, focus, alerts, activity, roles)
   };
 }

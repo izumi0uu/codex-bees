@@ -1,6 +1,8 @@
 import {
-  buildRuntimePackFocusOverview,
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackTriageEntries,
+  buildRuntimePackTriageMetadata,
+  buildRuntimePackTriageOverview,
+  buildRuntimePackTriageSurfaces,
   buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
@@ -23,37 +25,17 @@ export function buildRuntimeTriagePackView(
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeTriagePackSurface({ focus, alerts, review, recovery });
   const recommendedReason = deriveRuntimeTriagePackReason({ focus, alerts, review, recovery });
-  const nextEntries = {
-    focus: focus?.focus ?? null,
-    alert: alerts?.alerts?.[0] ?? null,
-    review: review?.next ?? null,
-    recovery: recovery?.next ?? null
-  };
+  const nextEntries = buildRuntimePackTriageEntries(focus, alerts, review, recovery);
 
   return {
     kind: "runtime_triage_pack",
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasFocus: nextEntries.focus,
-      hasAlert: nextEntries.alert,
-      hasReview: nextEntries.review,
-      hasRecovery: nextEntries.recovery
-    }),
+    metadata: buildRuntimePackTriageMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      focus: buildRuntimePackFocusOverview(focus),
-      alerts: alerts?.counts ?? null,
-      review: review?.counts ?? null,
-      recovery: recovery?.counts ?? null
-    },
+    overview: buildRuntimePackTriageOverview(focus, alerts, review, recovery),
     next: nextEntries,
-    surfaces: {
-      focus,
-      alerts,
-      review,
-      recovery
-    },
+    surfaces: buildRuntimePackTriageSurfaces(focus, alerts, review, recovery),
     summary: buildRuntimeTriagePackSummary(recommendedSurface, focus, alerts, review, recovery)
   };
 }

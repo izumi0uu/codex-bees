@@ -1,5 +1,8 @@
 import {
-  buildRuntimePackPresenceMetadata,
+  buildRuntimePackHandoffEntries,
+  buildRuntimePackHandoffMetadata,
+  buildRuntimePackHandoffOverview,
+  buildRuntimePackHandoffSurfaces,
   buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
@@ -22,37 +25,17 @@ export function buildRuntimeHandoffPackView(
   const recovery = runtimeRecovery();
   const recommendedSurface = deriveRuntimeHandoffPackSurface({ handoffs, dispatch, review, recovery });
   const recommendedReason = deriveRuntimeHandoffPackReason({ handoffs, dispatch, review, recovery });
-  const nextEntries = {
-    handoff: handoffs?.next ?? null,
-    dispatch: dispatch?.next ?? null,
-    review: review?.next ?? null,
-    recovery: recovery?.next ?? null
-  };
+  const nextEntries = buildRuntimePackHandoffEntries(handoffs, dispatch, review, recovery);
 
   return {
     kind: "runtime_handoff_pack",
     recommendedSurface,
     recommendedReason,
-    metadata: buildRuntimePackPresenceMetadata({
-      hasHandoff: nextEntries.handoff,
-      hasDispatch: nextEntries.dispatch,
-      hasReview: nextEntries.review,
-      hasRecovery: nextEntries.recovery
-    }),
+    metadata: buildRuntimePackHandoffMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
-    overview: {
-      handoffs: handoffs?.counts ?? null,
-      dispatch: dispatch?.counts ?? null,
-      review: review?.counts ?? null,
-      recovery: recovery?.counts ?? null
-    },
+    overview: buildRuntimePackHandoffOverview(handoffs, dispatch, review, recovery),
     next: nextEntries,
-    surfaces: {
-      handoffs,
-      dispatch,
-      review,
-      recovery
-    },
+    surfaces: buildRuntimePackHandoffSurfaces(handoffs, dispatch, review, recovery),
     summary: buildRuntimeHandoffPackSummary(recommendedSurface, handoffs, review, recovery, dispatch)
   };
 }
