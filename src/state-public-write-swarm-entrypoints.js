@@ -26,90 +26,103 @@ export function createStateWriteSwarmEntryPoints(shared) {
   } = shared;
 
   function initSwarm(input) {
-    return initSwarmOperation(input, { loadState, saveState });
+    return initSwarmOperation(input, initSwarmSources);
   }
 
   function initSwarmMutation(input) {
-    return initSwarmMutationOperation(input, { initSwarm });
+    return initSwarmMutationOperation(input, initSwarmMutationSources);
   }
 
   function updateSwarm(input) {
-    return updateSwarmOperation(input, {
-      loadState,
-      saveState,
-      findSwarmIndex,
-      normalizeSwarm
-    });
+    return updateSwarmOperation(input, updateSwarmSources);
   }
 
   function updateSwarmMutation(input) {
-    return updateSwarmMutationOperation(input, { updateSwarm });
+    return updateSwarmMutationOperation(input, updateSwarmMutationSources);
   }
 
   function archiveSwarm(input) {
-    return archiveSwarmOperation(input, {
-      loadState,
-      saveState,
-      findSwarmIndex,
-      normalizeSwarm,
-      normalizeTask
-    });
+    return archiveSwarmOperation(input, archiveSwarmSources);
   }
 
   function archiveSwarmMutation(input) {
-    return archiveSwarmMutationOperation(input, { archiveSwarm });
+    return archiveSwarmMutationOperation(input, archiveSwarmMutationSources);
   }
 
   function restoreSwarm(input) {
-    return restoreSwarmOperation(input, {
-      loadState,
-      saveState,
-      findSwarmIndex,
-      normalizeSwarm,
-      normalizeTask
-    });
+    return restoreSwarmOperation(input, restoreSwarmSources);
   }
 
   function restoreSwarmMutation(input) {
-    return restoreSwarmMutationOperation(input, { restoreSwarm });
+    return restoreSwarmMutationOperation(input, restoreSwarmMutationSources);
   }
 
   function reopenSwarm(input) {
-    return reopenSwarmOperation(input, {
-      loadState,
-      saveState,
-      findSwarmIndex,
-      normalizeSwarm,
-      normalizeTask
-    });
+    return reopenSwarmOperation(input, reopenSwarmSources);
   }
 
   function reopenSwarmMutation(input) {
-    return reopenSwarmMutationOperation(input, { reopenSwarm });
+    return reopenSwarmMutationOperation(input, reopenSwarmMutationSources);
   }
 
   function queueSwarmTasks(input) {
-    return queueSwarmTasksOperation(input, {
-      loadState,
-      saveState,
-      findSwarmIndex,
-      normalizeSwarm,
-      normalizeSwarmLane
-    });
+    return queueSwarmTasksOperation(input, queueSwarmTasksSources);
   }
 
   function dispatchSwarmLane(input) {
-    return dispatchSwarmLaneOperation(input, {
-      loadState,
-      saveState,
-      findSwarmIndex,
-      findTaskIndex,
-      normalizeSwarm,
-      normalizeTask,
-      normalizeSwarmLane,
-      syncSwarmInLoadedState
-    });
+    return dispatchSwarmLaneOperation(input, dispatchSwarmLaneSources);
   }
+
+  const initSwarmSources = { loadState, saveState };
+  const initSwarmMutationSources = { initSwarm };
+  const updateSwarmSources = {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm
+  };
+  const updateSwarmMutationSources = { updateSwarm };
+  const archiveSwarmSources = {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  };
+  const archiveSwarmMutationSources = { archiveSwarm };
+  const restoreSwarmSources = {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  };
+  const restoreSwarmMutationSources = { restoreSwarm };
+  const reopenSwarmSources = {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeTask
+  };
+  const reopenSwarmMutationSources = { reopenSwarm };
+  const queueSwarmTasksSources = {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    normalizeSwarm,
+    normalizeSwarmLane
+  };
+  const dispatchSwarmLaneSources = {
+    loadState,
+    saveState,
+    findSwarmIndex,
+    findTaskIndex,
+    normalizeSwarm,
+    normalizeTask,
+    normalizeSwarmLane,
+    syncSwarmInLoadedState
+  };
 
   return {
     initSwarm,

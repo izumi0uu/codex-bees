@@ -25,87 +25,103 @@ export function createStateWriteTaskMemoryEntryPoints(shared) {
   } = shared;
 
   function annotateTask(input = {}) {
-    return annotateTaskOperation(input, {
-      loadState,
-      saveState,
-      normalizeTask
-    });
+    return annotateTaskOperation(input, annotateTaskSources);
   }
 
   function annotateTaskMutation(input) {
-    return annotateTaskMutationOperation(input, { annotateTask });
+    return annotateTaskMutationOperation(input, annotateTaskMutationSources);
   }
 
   function addTask(input) {
-    return addTaskOperation(input, { loadState, saveState });
+    return addTaskOperation(input, addTaskSources);
   }
 
   function addTaskLifecycle(input) {
-    return addTaskMutationOperation(input, { addTask });
+    return addTaskMutationOperation(input, addTaskLifecycleSources);
   }
 
   function addTasks(inputs) {
-    return addTasksOperation(inputs, { loadState, saveState });
+    return addTasksOperation(inputs, addTasksSources);
   }
 
   function storeMemory(input) {
-    return storeMemoryOperation(input, { loadState, saveState });
+    return storeMemoryOperation(input, storeMemorySources);
   }
 
   function storeMemoryMutation(input) {
-    return storeMemoryMutationOperation(input, { storeMemory });
+    return storeMemoryMutationOperation(input, storeMemoryMutationSources);
   }
 
   function updateTask(input) {
-    return updateTaskOperation(input, {
-      loadState,
-      saveState,
-      findTaskIndex,
-      normalizeTask
-    });
+    return updateTaskOperation(input, updateTaskSources);
   }
 
   function updateTaskMutation(input) {
-    return updateTaskMutationOperation(input, { updateTask });
+    return updateTaskMutationOperation(input, updateTaskMutationSources);
   }
 
   function archiveTask(input) {
-    return archiveTaskOperation(input, {
-      loadState,
-      saveState,
-      findTaskIndex,
-      normalizeTask
-    });
+    return archiveTaskOperation(input, archiveTaskSources);
   }
 
   function archiveTaskMutation(input) {
-    return archiveTaskMutationOperation(input, { archiveTask });
+    return archiveTaskMutationOperation(input, archiveTaskMutationSources);
   }
 
   function restoreTask(input) {
-    return restoreTaskOperation(input, {
-      loadState,
-      saveState,
-      normalizeTask
-    });
+    return restoreTaskOperation(input, restoreTaskSources);
   }
 
   function restoreTaskMutation(input) {
-    return restoreTaskMutationOperation(input, { restoreTask });
+    return restoreTaskMutationOperation(input, restoreTaskMutationSources);
   }
 
   function reopenTask(input) {
-    return reopenTaskOperation(input, {
-      loadState,
-      saveState,
-      findTaskIndex,
-      normalizeTask
-    });
+    return reopenTaskOperation(input, reopenTaskSources);
   }
 
   function reopenTaskMutation(input) {
-    return reopenTaskMutationOperation(input, { reopenTask });
+    return reopenTaskMutationOperation(input, reopenTaskMutationSources);
   }
+
+  const annotateTaskSources = {
+    loadState,
+    saveState,
+    normalizeTask
+  };
+  const annotateTaskMutationSources = { annotateTask };
+  const addTaskSources = { loadState, saveState };
+  const addTaskLifecycleSources = { addTask };
+  const addTasksSources = { loadState, saveState };
+  const storeMemorySources = { loadState, saveState };
+  const storeMemoryMutationSources = { storeMemory };
+  const updateTaskSources = {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask
+  };
+  const updateTaskMutationSources = { updateTask };
+  const archiveTaskSources = {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask
+  };
+  const archiveTaskMutationSources = { archiveTask };
+  const restoreTaskSources = {
+    loadState,
+    saveState,
+    normalizeTask
+  };
+  const restoreTaskMutationSources = { restoreTask };
+  const reopenTaskSources = {
+    loadState,
+    saveState,
+    findTaskIndex,
+    normalizeTask
+  };
+  const reopenTaskMutationSources = { reopenTask };
 
   return {
     annotateTask,
