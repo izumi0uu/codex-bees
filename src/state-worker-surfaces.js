@@ -54,23 +54,14 @@ import {
   recommendWorkerSessionFocus
 } from "./state-worker-views.js";
 
-export function taskInboxFromSources(
-  input = {},
-  {
-    loadState,
-    normalizeTask,
-    taskNext
-  }
-) {
+export function taskInboxFromSources(input = {}, sources = {}) {
   return buildTaskInboxViewFromSources(
     input,
     {
+      ...sources,
       getRuntimeCatalog,
-      loadState,
-      normalizeTask,
       sortInboxTasks,
       summarizeInboxTask,
-      taskNext,
       isClaimableTask,
       describeRole
     },
@@ -81,24 +72,15 @@ export function taskInboxFromSources(
   );
 }
 
-export function taskNextFromSources(
-  input = {},
-  {
-    loadState,
-    normalizeTask,
-    taskBrief
-  }
-) {
+export function taskNextFromSources(input = {}, sources = {}) {
   return buildTaskNextViewFromSources(
     input,
     {
+      ...sources,
       normalizeNextMode,
-      loadState,
-      normalizeTask,
       sortNextCandidates,
       describeRole,
-      summarizeInboxTask,
-      taskBrief
+      summarizeInboxTask
     },
     {
       deriveTaskNextReason,
@@ -107,24 +89,13 @@ export function taskNextFromSources(
   );
 }
 
-export function taskPickupFromSources(
-  input = {},
-  {
-    taskNext,
-    claimTask,
-    taskBrief,
-    getTask
-  }
-) {
+export function taskPickupFromSources(input = {}, sources = {}) {
   return buildTaskPickupViewFromSources(
     input,
     {
-      taskNext,
-      claimTask,
+      ...sources,
       describeRole,
       summarizeInboxTask,
-      taskBrief,
-      getTask,
       pickupFollowupCommand,
       pickupOutcome,
       normalizeNextMode
@@ -136,25 +107,14 @@ export function taskPickupFromSources(
   );
 }
 
-export function taskAssignmentPickupFromSources(
-  input = {},
-  {
-    leaderAssignments,
-    getTask,
-    taskBrief,
-    claimTask
-  }
-) {
+export function taskAssignmentPickupFromSources(input = {}, sources = {}) {
   return buildTaskAssignmentPickupViewFromSources(
     input,
     {
-      leaderAssignments,
+      ...sources,
       describeRole,
       normalizeNextMode,
-      getTask,
-      taskBrief,
       summarizeInboxTask,
-      claimTask,
       assignmentPickupOutcome,
       assignmentFollowupCommand
     },
@@ -165,23 +125,14 @@ export function taskAssignmentPickupFromSources(
   );
 }
 
-export function previewTaskAssignmentFromSources(
-  input = {},
-  {
-    leaderAssignments,
-    getTask,
-    taskBrief
-  }
-) {
+export function previewTaskAssignmentFromSources(input = {}, sources = {}) {
   return buildPreviewTaskAssignmentViewFromSources(
     input,
     {
-      leaderAssignments,
+      ...sources,
       describeRole: describeRoleWithContract,
       normalizeNextMode,
-      getTask,
       summarizeInboxTask,
-      taskBrief,
       assignmentPickupOutcome,
       assignmentFollowupCommand
     },
@@ -192,20 +143,13 @@ export function previewTaskAssignmentFromSources(
   );
 }
 
-export function previewTaskPickupFromSources(
-  input = {},
-  {
-    taskNext,
-    getTask
-  }
-) {
+export function previewTaskPickupFromSources(input = {}, sources = {}) {
   return buildPreviewTaskPickupViewFromSources(
     input,
     {
-      taskNext,
+      ...sources,
       describeRole: describeRoleWithContract,
       normalizeNextMode,
-      getTask,
       pickupOutcome,
       pickupFollowupCommand
     },
@@ -216,31 +160,18 @@ export function previewTaskPickupFromSources(
   );
 }
 
-export function workerSessionFromSources(
-  input = {},
-  {
-    loadState,
-    normalizeTask,
-    taskInbox,
-    taskNext,
-    taskBrief
-  }
-) {
+export function workerSessionFromSources(input = {}, sources = {}) {
   return buildWorkerSessionViewFromSources(
     input,
     {
-      loadState,
-      normalizeTask,
+      ...sources,
       normalizeNextMode,
       compareTasksByUpdatedAt,
-      taskInbox,
-      taskNext,
       recommendWorkerSessionFocus,
       deriveWorkerSessionReason,
       describeRole: describeRoleWithContract,
       buildSessionTaskSnapshot,
-      summarizeInboxTask,
-      taskBrief
+      summarizeInboxTask
     },
     {
       buildWorkerSessionView
@@ -248,16 +179,11 @@ export function workerSessionFromSources(
   );
 }
 
-export function workerHandoffFromSources(
-  input = {},
-  {
-    workerSession
-  }
-) {
+export function workerHandoffFromSources(input = {}, sources = {}) {
   return buildWorkerHandoffViewFromSources(
     input,
     {
-      workerSession,
+      ...sources,
       deriveWorkerHandoffReason,
       buildWorkerHandoffSummary
     },
@@ -267,18 +193,11 @@ export function workerHandoffFromSources(
   );
 }
 
-export function workerCloseoutFromSources(
-  input = {},
-  {
-    workerHandoff,
-    taskReport
-  }
-) {
+export function workerCloseoutFromSources(input = {}, sources = {}) {
   return buildWorkerCloseoutViewFromSources(
     input,
     {
-      workerHandoff,
-      taskReport,
+      ...sources,
       deriveWorkerCloseoutReason,
       deriveWorkerCloseoutCommand,
       buildWorkerCloseoutSummary
@@ -289,20 +208,11 @@ export function workerCloseoutFromSources(
   );
 }
 
-export function verifierBundleFromSources(
-  input = {},
-  {
-    workerSession,
-    workerHandoff,
-    taskReport
-  }
-) {
+export function verifierBundleFromSources(input = {}, sources = {}) {
   return buildVerifierBundleViewFromSources(
     input,
     {
-      workerSession,
-      workerHandoff,
-      taskReport,
+      ...sources,
       describeRole,
       deriveVerifierBundleReason,
       buildVerifierDecisionCommands,
