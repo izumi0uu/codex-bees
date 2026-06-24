@@ -4,7 +4,7 @@ import {
   buildRuntimePackExpansion,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
-  countRuntimePackEntries,
+  buildRuntimePackCounts,
   normalizeRuntimePackDetail
 } from './state-runtime-pack-detail.js';
 
@@ -75,9 +75,7 @@ export function buildRuntimeLeaderPackView(
       hasAssignmentLaunchPlan: assignmentLaunchPlan?.next,
       hasCloseout: closeout?.next
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       workspace: workspace?.counts ?? null,
       queue: queue?.counts ?? null,

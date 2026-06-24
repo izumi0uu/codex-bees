@@ -1,6 +1,6 @@
 import {
   buildRuntimePackPresenceMetadata,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
 
 export function buildRuntimeRolePackView(
@@ -65,9 +65,7 @@ export function buildRuntimeRolePackView(
       hasOwner: nextEntries.owner,
       hasVerifier: nextEntries.verifier
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       role: roleEntry?.counts ?? null,
       session: sessionPack?.overview ?? null,

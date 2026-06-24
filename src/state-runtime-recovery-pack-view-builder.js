@@ -1,6 +1,6 @@
 import {
   buildRuntimePackPresenceMetadata,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
 export function buildRuntimeRecoveryPackView(
@@ -35,9 +35,7 @@ export function buildRuntimeRecoveryPackView(
       hasHandoff: handoffs?.next,
       hasFocus: focus?.focus
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     focus,
     overview: {
       recovery: recovery?.counts ?? null,

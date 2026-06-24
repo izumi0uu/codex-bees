@@ -1,6 +1,6 @@
 import {
   buildRuntimePackPresenceMetadata,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
 export function buildRuntimeReviewPackView(
@@ -41,9 +41,7 @@ export function buildRuntimeReviewPackView(
       hasRole: roles?.next,
       hasVerifier: verifierPack?.next
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       review: review?.counts ?? null,
       roles: roles?.counts ?? null,

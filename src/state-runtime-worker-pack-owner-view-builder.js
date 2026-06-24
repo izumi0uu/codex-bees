@@ -5,7 +5,7 @@ import {
   buildRuntimePackWorkerFlowSurfaces,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
 
 export function buildRuntimeOwnerPackView(
@@ -66,9 +66,7 @@ export function buildRuntimeOwnerPackView(
       hasHandoff: nextEntries.handoff,
       hasCloseout: nextEntries.closeout
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: buildRuntimePackSessionOverview(session),
     next: nextEntries,
     surfaces: buildRuntimePackWorkerFlowSurfaces(session, handoff, closeout, next),

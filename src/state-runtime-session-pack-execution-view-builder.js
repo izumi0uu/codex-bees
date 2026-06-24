@@ -6,7 +6,7 @@ import {
   buildRuntimePackExpansion,
   buildRuntimePackFocusOverview,
   buildRuntimePackPresenceMetadata,
-  countRuntimePackEntries,
+  buildRuntimePackCounts,
   normalizeRuntimePackDetail
 } from "./state-runtime-pack-detail.js";
 
@@ -76,9 +76,7 @@ export function buildRuntimeExecutionPackView(
       hasRole: nextEntries.role,
       hasQueue: nextEntries.queue
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       focus: buildRuntimePackFocusOverview(focus),
       dispatch: dispatch?.counts ?? null,

@@ -4,7 +4,7 @@ import {
   buildRuntimePackPresenceMetadata,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
 
 export function buildRuntimePickupPackView(
@@ -88,9 +88,7 @@ export function buildRuntimePickupPackView(
       hasBrief: nextEntries.brief,
       hasPickup: nextEntries.pickup
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       ...buildRuntimePackSessionOverview(session),
       pickup: buildRuntimePackPickupOverview(pickup),

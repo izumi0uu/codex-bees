@@ -4,7 +4,7 @@ import {
   buildRuntimePackExpansion,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
-  countRuntimePackEntries,
+  buildRuntimePackCounts,
   normalizeRuntimePackDetail
 } from './state-runtime-pack-detail.js';
 
@@ -69,9 +69,7 @@ export function buildRuntimeSummaryPackView(
       hasAssignmentLaunch: assignmentDispatchBundle?.next,
       hasAssignmentLaunchPlan: assignmentLaunchPlan?.next
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     focus,
     overview: {
       dashboard: dashboard.counts,

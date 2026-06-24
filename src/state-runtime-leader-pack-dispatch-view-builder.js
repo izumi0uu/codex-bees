@@ -4,7 +4,7 @@ import {
   buildRuntimePackExpansion,
   buildRuntimePackPresenceMetadata,
   attachRuntimePackSurfaces,
-  countRuntimePackEntries,
+  buildRuntimePackCounts,
   normalizeRuntimePackDetail
 } from './state-runtime-pack-detail.js';
 
@@ -64,9 +64,7 @@ export function buildRuntimeDispatchPackView(
       hasRole: roles?.next,
       hasHandoff: handoffs?.next
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       dispatch: dispatch?.counts ?? null,
       assignmentDispatchPack: assignmentDispatchPack?.counts ?? null,

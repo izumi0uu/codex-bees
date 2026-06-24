@@ -3,7 +3,7 @@ import {
   buildRuntimePackPickupOverview,
   buildRuntimePackPresenceMetadata,
   requireRuntimePackRoleWorkerSelection,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
 
 export function buildRuntimeAssignmentPackView(
@@ -88,9 +88,7 @@ export function buildRuntimeAssignmentPackView(
       hasCandidate: nextEntries.candidate,
       hasFocus: nextEntries.focus
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       assignments: {
         count: roleAssignments?.count ?? 0,

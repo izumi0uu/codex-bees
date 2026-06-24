@@ -1,6 +1,6 @@
 import {
   buildRuntimePackPresenceMetadata,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
 export function buildRuntimeCloseoutPackView(
@@ -36,9 +36,7 @@ export function buildRuntimeCloseoutPackView(
       hasSummaryCloseout: summaryPack?.next?.closeout,
       hasLeaderCloseout: leaderPack?.next?.closeout
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       closeout: closeout?.counts ?? null,
       summary: summaryPack?.overview?.closeout ?? null,

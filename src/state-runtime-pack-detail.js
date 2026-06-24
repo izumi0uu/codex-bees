@@ -82,6 +82,12 @@ export function countRuntimePackEntries(entries = {}) {
   return Object.values(entries).filter(Boolean).length;
 }
 
+export function buildRuntimePackCounts(entries = {}) {
+  return {
+    surfacedNextEntries: countRuntimePackEntries(entries)
+  };
+}
+
 export function buildRuntimePackFocusOverview(focusView) {
   return focusView?.focus
     ? {

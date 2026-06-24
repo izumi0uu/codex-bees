@@ -1,6 +1,6 @@
 import {
   buildRuntimePackPresenceMetadata,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from './state-runtime-pack-detail.js';
 
 export function buildRuntimeOperatorPackView(
@@ -41,9 +41,7 @@ export function buildRuntimeOperatorPackView(
       hasCloseout: closeout?.next,
       hasAlert: alerts?.alerts?.[0]
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     focus,
     overview: {
       dashboard: dashboard?.counts ?? null,

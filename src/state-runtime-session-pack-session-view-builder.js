@@ -1,7 +1,7 @@
 import {
   buildRuntimePackPresenceMetadata,
   requireRuntimePackRoleWorkerSelection,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
 
 export function buildRuntimeSessionPackView(
@@ -76,9 +76,7 @@ export function buildRuntimeSessionPackView(
       hasVerifier: nextEntries.verifier,
       hasRole: nextEntries.role
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       worker: workerPack?.overview ?? null,
       owner: ownerPack?.overview ?? null,

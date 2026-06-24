@@ -1,7 +1,7 @@
 import {
   buildRuntimePackPresenceMetadata,
   requireRuntimePackRoleWorkerSelection,
-  countRuntimePackEntries
+  buildRuntimePackCounts
 } from "./state-runtime-pack-detail.js";
 
 export function buildRuntimeVerifierPackView(
@@ -61,9 +61,7 @@ export function buildRuntimeVerifierPackView(
       hasDecision: nextEntries.decision,
       hasCloseout: nextEntries.closeout
     }),
-    counts: {
-      surfacedNextEntries: countRuntimePackEntries(nextEntries)
-    },
+    counts: buildRuntimePackCounts(nextEntries),
     overview: {
       review: review?.counts ?? null,
       bundle: bundle?.currentTask ? { currentTask: bundle.currentTask.id } : { currentTask: null }
