@@ -1,11 +1,5 @@
 import { runtimeActivityFromSources } from './state-runtime-overviews.js';
 
-export function runtimeActivitySurface(input = {}, { loadState, normalizeTask, normalizeSwarm, taskBrief, swarmBrief }) {
-  return runtimeActivityFromSources(input, {
-    loadState,
-    normalizeTask,
-    normalizeSwarm,
-    taskBrief,
-    swarmBrief
-  });
+export function runtimeActivitySurface(input = {}, sources = {}) {
+  return runtimeActivityFromSources(input, sources);
 }
