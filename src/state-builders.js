@@ -3,7 +3,7 @@ import {
   normalizeSwarm,
   normalizeTask
 } from "./state-normalize.js";
-import { buildPlannerProvenance } from "./planner-provenance.js";
+import { buildPlannerProvenance } from "./planner/provenance.js";
 
 export function buildTask(input, nextId) {
   return normalizeTask({

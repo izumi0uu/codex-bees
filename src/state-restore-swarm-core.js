@@ -1,5 +1,5 @@
 import { buildSwarmHistoryEntry } from "./state-builders.js";
-import { appendSwarmHistoryEntry } from "./state-swarm-history.js";
+import { appendSwarmHistoryEntry } from "./state/swarm/history.js";
 import {
   buildDependencyReopenError,
   findDangerousDependentTasks

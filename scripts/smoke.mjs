@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PUBLIC_TYPE_ENTRYPOINTS } from "../src/typings.js";
-import { getCliDispatchCommands } from "../src/state-cli-command-dispatch.js";
+import { getCliDispatchCommands } from "../src/state/cli/command-dispatch.js";
 import { planSwarm as directPlanSwarm, registerPlannerProfile, resetPlannerProfiles } from "../src/planner.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));

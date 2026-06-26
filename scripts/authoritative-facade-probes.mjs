@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { stateAuthoritativeFacade, statePublicApi } from "../src/state-runtime-core.js";
-import * as lifecycle from "../src/state-runtime-public-api-lifecycle.js";
-import * as mutations from "../src/state-runtime-public-api-mutations.js";
+import * as lifecycle from "../src/state/runtime/public-api/lifecycle.js";
+import * as mutations from "../src/state/runtime/public-api/mutations.js";
 
 function sortedKeys(value) {
   return Object.keys(value).sort();

@@ -63,11 +63,11 @@ What they contribute:
 
 ### Task lifecycle truth
 
-- `src/state-transition-task-lifecycle-core.js`
-- `src/state-transition-task-write-helpers.js`
+- `src/state/task/lifecycle-core.js`
+- `src/state/task/write.js`
 - `src/state-transition-guards.js`
-- `src/state-transition-helpers.js`
-- `src/state-task-core.js`
+- `src/state/task/lifecycle.js`
+- `src/state/task/core.js`
 
 What they contribute:
 
@@ -79,11 +79,11 @@ What they contribute:
 
 ### Swarm lifecycle truth
 
-- `src/state-write-operations-swarm.js`
-- `src/state-swarm-core-dispatch.js`
-- `src/state-swarm-core-queue.js`
-- `src/state-swarm-core-sync.js`
-- `src/state-swarm-core.js`
+- `src/state/write/swarm.js`
+- `src/state/swarm/core-dispatch.js`
+- `src/state/swarm/core-queue.js`
+- `src/state/swarm/core-sync.js`
+- `src/state/swarm/core.js`
 - `src/state-transition-guards.js`
 
 What they contribute:
@@ -113,17 +113,17 @@ These should remain shell or policy surfaces while the first kernel boundary is 
 
 - `src/index.js`
 - `src/mcp.js`
-- `src/state-cli-*`
-- `src/state-mcp-*`
+- `src/state/cli/*`
+- `src/state/mcp/*`
 - `src/api.js`
 - package exports / subpath exports
 
 ### Derived runtime views
 
 - `src/state-runtime-*`
-- `src/state-dashboard-*`
-- `src/state-task-*view*`
-- `src/state-swarm-overview-*`
+- `src/state/dashboard/*`
+- `src/state/task/*view*`
+- `src/state/swarm/overview-*`
 - `src/runtime-*.js`
 
 ### Planner and policy

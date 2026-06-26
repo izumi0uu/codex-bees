@@ -31,8 +31,8 @@ These exist to build and verify the product, but are not the product boundary th
 
 | Layer | Purpose | Primary files |
 | --- | --- | --- |
-| CLI | Human/operator entry surface | `src/index.js`, `src/state-cli-*` |
-| MCP | Tool-driven stdio JSON-RPC surface | `src/mcp.js`, `src/state-mcp-*` |
+| CLI | Human/operator entry surface | `src/index.js`, `src/state/cli/*` |
+| MCP | Tool-driven stdio JSON-RPC surface | `src/mcp.js`, `src/state/mcp/*` |
 | Planning | Turn one objective into bounded lanes | `src/planner.js`, `src/planner-*` |
 | Coordination state | Persist tasks, swarms, memory, and lifecycle transitions | `src/state-*.js`, `.codex-bees/state.json` |
 | Runtime views | Read-oriented dashboards, packs, and handoff bundles | `src/runtime-*.js`, `src/state-runtime-*` |

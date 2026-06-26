@@ -1,4 +1,4 @@
-import { appendTaskHistoryEntry } from "./state-task-core.js";
+import { appendTaskHistoryEntry } from "./state/task/core.js";
 import {
   buildDependencyReopenError,
   findDangerousDependentTasks

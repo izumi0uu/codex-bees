@@ -1,0 +1,43 @@
+import { stateAuthoritativeFacade } from "../../../state-runtime-core.js";
+
+const {
+  claimTask,
+  claimTaskLifecycle,
+  blockTask,
+  blockTaskLifecycle,
+  markTaskReadyForReview,
+  markTaskReadyForReviewLifecycle,
+  completeTask,
+  completeTaskLifecycle,
+  approveTask,
+  approveTaskLifecycle,
+  rejectTask,
+  rejectTaskLifecycle,
+  releaseTask,
+  releaseTaskLifecycle,
+  activateSwarm,
+  blockSwarm,
+  completeSwarm,
+  cancelSwarm,
+} = stateAuthoritativeFacade;
+
+export {
+  claimTask,
+  claimTaskLifecycle,
+  blockTask,
+  blockTaskLifecycle,
+  markTaskReadyForReview,
+  markTaskReadyForReviewLifecycle,
+  completeTask,
+  completeTaskLifecycle,
+  approveTask,
+  approveTaskLifecycle,
+  rejectTask,
+  rejectTaskLifecycle,
+  releaseTask,
+  releaseTaskLifecycle,
+  activateSwarm,
+  blockSwarm,
+  completeSwarm,
+  cancelSwarm,
+};

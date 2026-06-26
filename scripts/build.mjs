@@ -19,23 +19,7 @@ const TYPE_FACADE_FILES = {
 };
 
 function copySourceModules() {
-  for (const entry of readdirSync("src")) {
-    if (
-      !entry.endsWith(".js") ||
-      entry === "state-public.js" ||
-      entry === "catalog-public.js" ||
-      entry === "runtime-contract-public.js" ||
-      entry === "mcp-public.js"
-    ) {
-      continue;
-    }
-    copyFileSync(join("src", entry), join("dist", entry));
-  }
-
-  copyFileSync(join("src", "state-public.js"), join("dist", "state-public.js"));
-  copyFileSync(join("src", "catalog-public.js"), join("dist", "catalog-public.js"));
-  copyFileSync(join("src", "runtime-contract-public.js"), join("dist", "runtime-contract-public.js"));
-  copyFileSync(join("src", "mcp-public.js"), join("dist", "mcp-public.js"));
+  copyTree("src", "dist");
 }
 
 function copyTree(source, target) {

@@ -11,6 +11,8 @@ Codex-native local bounded orchestration for explicit multi-agent work.
 
 `codex-bees` helps you run explicit, inspectable multi-agent coordination inside one repository.
 
+## What it is
+
 It ships:
 
 - a local CLI
@@ -36,7 +38,7 @@ If you want Codex-first orchestration without a hosted control plane, this is th
 - **Inspectable** — CLI, MCP, packs, and views are derived from local state
 - **Small surface area** — it stays focused on bounded coordination, not generic agent sprawl
 
-## What it is for
+## Who it is for
 
 Use `codex-bees` when you want:
 
@@ -46,7 +48,7 @@ Use `codex-bees` when you want:
 - the same coordination model available through both CLI and MCP
 - reusable shipped agent and skill contracts
 
-## Boundaries
+## Who it is not for
 
 `codex-bees` is intentionally **not**:
 
@@ -81,6 +83,20 @@ npx codex-bees catalog
 npx codex-bees mcp --help
 ```
 
+## Core concepts
+
+- **Task** — the smallest tracked work item with owner, verifier, scope, and lifecycle
+- **Swarm** — a bounded local coordination envelope for related tasks
+- **Lane** — a planner-produced slice of work such as implementation, verification, or documentation
+- **Memory** — durable local notes and state artifacts stored with the repo
+
+## CLI / MCP / skill / agent relationship
+
+- **CLI** gives you local commands for planning, queueing, pickup, review, and status
+- **MCP** exposes the same runtime through `codex-bees mcp --stdio`
+- **Skills** such as `project-development` and `swarm-orchestration` shape how work gets executed
+- **Agents** such as `explore`, `executor`, `reviewer`, and `tester` give each lane an explicit role boundary
+
 ## What it looks like
 
 ```bash
@@ -93,7 +109,7 @@ executionShape: parallel-handoff
 waves: 2
 ```
 
-## Example flow
+## Minimal workflow example
 
 Shape one objective into queued work:
 
@@ -106,7 +122,7 @@ npx codex-bees task:pickup --role executor --worker worker-1
 
 When implementation is done, move the task into review and close it with the shipped lifecycle commands.
 
-## Learn more
+## Documentation
 
 - [Architecture](./docs/architecture.md) — product shape and system boundaries
 - [Runtime model](./docs/runtime-model.md) — tasks, swarms, lanes, and lifecycle

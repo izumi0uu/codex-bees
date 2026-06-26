@@ -1,6 +1,6 @@
 import { getRuntimeCatalog } from "./catalog.js";
 import { getPackageMetadata } from "./metadata.js";
-import { listMcpTools } from "./state-mcp-tool-catalog.js";
+import { listMcpTools } from "./state/mcp/tool-catalog.js";
 import { listMemories, listSwarms, listTasks } from "./state-runtime.js";
 import { getCapabilityCatalog } from "./runtime-capability-catalog.js";
 import { countBy } from "./runtime-status-helpers.js";

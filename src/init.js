@@ -1,2 +1,2 @@
-export * from "./init-workspace-preview.js";
-export * from "./init-workspace-apply.js";
+export * from "./init/preview.js";
+export * from "./init/apply.js";

@@ -1,7 +1,7 @@
 import { defaultState, STATE_VERSION } from "./state-normalize-core.js";
-import { normalizeMemory } from "./state-normalize-memory.js";
+import { normalizeMemory } from "./state/memory/normalize.js";
 import { normalizeSwarm } from "./state-normalize-swarm.js";
-import { normalizeTask } from "./state-normalize-task.js";
+import { normalizeTask } from "./state/task/normalize.js";
 
 export function normalizeState(state) {
   if (!state || !Array.isArray(state.tasks)) {
