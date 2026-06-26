@@ -16,7 +16,7 @@ export {
   getCommandCatalogView,
   getCommandCatalogEntry,
   getCommandCatalogEntryView
-} from "./state-command-core.js";
+} from "./state/command/core.js";
 
 export {
   getCommandHelpView,
@@ -24,4 +24,4 @@ export {
   renderCommandHelpText,
   renderHelpText,
   renderInitHelpText
-} from "./state-command-help.js";
+} from "./state/command/help.js";

@@ -3,8 +3,8 @@
 import { argv, env, exit } from "node:process";
 import { fileURLToPath } from "node:url";
 import { isMcpCliUsageError } from "./mcp.js";
-import { runCliCommand } from "./state-cli-command-dispatch.js";
-import { isCliEntrypoint, writeErr } from "./state-cli-helpers.js";
+import { runCliCommand } from "./state/cli/command-dispatch.js";
+import { isCliEntrypoint, writeErr } from "./state/cli/helpers.js";
 
 const MODULE_PATH = fileURLToPath(import.meta.url);
 

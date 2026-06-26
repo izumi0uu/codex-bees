@@ -1,5 +1,5 @@
-import { summarizePlannerProvenance } from "./planner-provenance.js";
-import { buildSwarmOverviewStatusFields } from "./state-swarm-overview-status-helpers.js";
+import { summarizePlannerProvenance } from "./planner/provenance.js";
+import { buildSwarmOverviewStatusFields } from "./state/swarm/overview-status-helpers.js";
 
 export function buildPlanningView(provenance) {
   return summarizePlannerProvenance(provenance);

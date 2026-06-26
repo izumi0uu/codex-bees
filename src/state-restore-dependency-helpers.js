@@ -1,4 +1,4 @@
-import { dependencyRefs, resolveTaskDependencyTask } from "./state-task-core.js";
+import { dependencyRefs, resolveTaskDependencyTask } from "./state/task/core.js";
 
 const REOPEN_BLOCKING_QUEUE_STATUSES = new Set(["claimed", "ready_for_review", "done"]);
 

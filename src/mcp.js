@@ -1,6 +1,6 @@
 import { argv, stderr, exit } from "node:process";
 import { fileURLToPath } from "node:url";
-import { isMcpCliUsageError, runMcpCli } from "./state-mcp-cli.js";
+import { isMcpCliUsageError, runMcpCli } from "./state/mcp/cli.js";
 
 export {
   getMcpCommandCatalog,
@@ -11,14 +11,14 @@ export {
   isMcpCliUsageError,
   renderMcpHelpText,
   runMcpCli
-} from "./state-mcp-cli.js";
+} from "./state/mcp/cli.js";
 
 export {
   callMcpTool,
   handleMcpRequest,
   serializeMcpMessage,
   startMcpServer
-} from "./state-mcp-runtime.js";
+} from "./state/mcp/runtime.js";
 
 export {
   getMcpToolEntry,
@@ -26,7 +26,7 @@ export {
   getToolCatalogView,
   listMcpTools,
   toolCatalog
-} from "./state-mcp-tool-catalog.js";
+} from "./state/mcp/tool-catalog.js";
 
 if (argv[1] && fileURLToPath(import.meta.url) === argv[1]) {
   try {

@@ -19,4 +19,4 @@ export {
   buildSwarmValidationView,
   buildSwarmValidationViewFromSources,
   deriveSwarmStatus
-} from "./state-rules-swarm-validation.js";
+} from "./state/swarm/validation.js";

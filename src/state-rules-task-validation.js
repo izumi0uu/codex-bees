@@ -1,4 +1,4 @@
-import { summarizeTaskDependencies } from "./state-task-core.js";
+import { summarizeTaskDependencies } from "./state/task/core.js";
 import { VALID_LANE_PURPOSES } from "./state-rules-statuses.js";
 
 export function validateTaskValue(task, roleCatalog, tasks = []) {

@@ -1,5 +1,5 @@
 import { VALID_SWARM_STATUSES } from "./state-rules.js";
-import { buildPlannerProvenance } from "./planner-provenance.js";
+import { buildPlannerProvenance } from "./planner/provenance.js";
 
 export function normalizeSwarmLane(lane, index = 0) {
   return {

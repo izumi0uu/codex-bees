@@ -2,7 +2,7 @@ export {
   getBundledRuntimeCatalogPaths,
   getRuntimeCatalogPaths,
   resolveRuntimeCatalogPath
-} from "./catalog-paths.js";
+} from "./catalog/paths.js";
 export {
   listAgentCatalog,
   getAgentCatalogEntry,
@@ -10,15 +10,15 @@ export {
   getAgentCatalogDocumentView,
   getAgentCatalogListView,
   listAgentRoleIds
-} from "./catalog-agent-core.js";
+} from "./catalog/agent-core.js";
 export {
   listSkillCatalog,
   getSkillCatalogEntry,
   getSkillCatalogEntryView,
   getSkillCatalogDocumentView,
   getSkillCatalogListView
-} from "./catalog-skill-core.js";
+} from "./catalog/skill-core.js";
 export {
   getRuntimeCatalog,
   getRuntimeCatalogView
-} from "./catalog-runtime-view.js";
+} from "./catalog/runtime-view.js";

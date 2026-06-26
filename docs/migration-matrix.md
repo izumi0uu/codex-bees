@@ -15,12 +15,12 @@ It is a planning artifact for **boundary extraction first**. It is **not** a mov
 
 | Current surface | Current examples | Future owner | Why | Migration note |
 | --- | --- | --- | --- | --- |
-| Authoritative state persistence | `src/state-runtime-core.js`, `src/state-transition-*`, `src/state-write-operations-*`, `src/state-restore-*` | Rust kernel | these define truth, legality, and mutation | extract a narrow kernel contract first; do not port projections with truth |
-| Task/swarm legality | `src/state-transition-task-lifecycle-core.js`, `src/state-swarm-core-*`, `src/state-rules-*` | Rust kernel | lifecycle legality belongs with truth | freeze schemas before porting |
+| Authoritative state persistence | `src/state-runtime-core.js`, `src/state/task/lifecycle*`, `src/state-transition-guards.js`, `src/state/write/*`, `src/state-restore-*` | Rust kernel | these define truth, legality, and mutation | extract a narrow kernel contract first; do not port projections with truth |
+| Task/swarm legality | `src/state/task/lifecycle-core.js`, `src/state/swarm/core-*`, `src/state-rules-*` | Rust kernel | lifecycle legality belongs with truth | freeze schemas before porting |
 | Truth-dependent history/event records | `src/state-builders.js`, mutation/history helpers | Rust kernel | history is part of authoritative transition output | port only after transition outputs are explicit |
-| Read-oriented runtime views | `src/state-runtime-*`, `src/state-dashboard-*`, `src/state-task-*view*`, `src/state-swarm-overview-*` | TS/JS shell consuming kernel | these are presentation and operator surfaces | keep in JS unless they must be truth-coupled |
-| CLI surface | `src/index.js`, `src/state-cli-*` | TS/JS shell | operator contract and npm bin surface | should remain stable across backend changes |
-| MCP surface | `src/mcp.js`, `src/state-mcp-*` | TS/JS shell | stdio JSON-RPC adapter is a product shell concern | kernel should not own stdio framing |
+| Read-oriented runtime views | `src/state-runtime-*`, `src/state/dashboard/*`, `src/state/task/*view*`, `src/state/swarm/overview-*` | TS/JS shell consuming kernel | these are presentation and operator surfaces | keep in JS unless they must be truth-coupled |
+| CLI surface | `src/index.js`, `src/state/cli/*` | TS/JS shell | operator contract and npm bin surface | should remain stable across backend changes |
+| MCP surface | `src/mcp.js`, `src/state/mcp/*` | TS/JS shell | stdio JSON-RPC adapter is a product shell concern | kernel should not own stdio framing |
 | npm exports / JS API | `src/api.js`, package exports, `dist/*` | TS/JS shell | public package contract is JS-facing today | preserve import compatibility through migration |
 | Planner heuristics | `src/planner.js`, `src/planner-*` | Python intelligence later, JS temporary now | adaptive strategy is policy, not truth | move only after kernel contract is stable |
 | Ranking / recommendation policy | `src/state-runtime-focus-*`, recommendation helpers, ranking logic | Python intelligence later, JS temporary now | prioritization is optional policy | must stay non-authoritative |
