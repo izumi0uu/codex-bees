@@ -21,8 +21,10 @@ export const CORE_COMMAND_HELP_OVERRIDES = {
     notes: [
       "Without --snapshot this opens a full-screen terminal UI when stdin/stdout are TTY-backed.",
       "Use ':' or '/' inside the TUI to open the launcher, filter commands/screens/actions, then return to the current screen after execution.",
-      "Inside the launcher, Up/Down changes the selected entry, Tab accepts it into the prompt, Enter runs it, and Esc cancels.",
+      "Inside the launcher, Up/Down, Ctrl+N/Ctrl+P, and j/k change the selected entry; gg jumps to the top and Shift+G jumps to the bottom.",
+      "Tab accepts the selected launcher command into the prompt, Enter runs it, and Esc cancels.",
       "Press '.' from the main TUI to replay the most recent CLI command from the recent-actions history.",
+      "Each executed CLI command also lands in a result stash that can be reopened from the launcher for review.",
       "Wide terminals automatically switch into a split-pane layout, and interactive sessions keep a live refresh + event stream sidebar running by default."
     ]
   },

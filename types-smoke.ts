@@ -234,15 +234,18 @@ const runtimeTuiEventMessage: string | undefined = runtimeTuiSnapshot.eventStrea
 const runtimeTuiQuickActionLabel: string | undefined = runtimeTuiSnapshot.quickActions[0]?.label;
 const runtimeTuiRecentActionKind: "command" | "action" | "section" | undefined = runtimeTuiSnapshot.recentActions[0]?.kind;
 const runtimeTuiStatuslineSegment: string | undefined = runtimeTuiSnapshot.statusline.segments[0];
+const runtimeTuiResultStatus: "success" | "error" | undefined = runtimeTuiSnapshot.resultStash[0]?.status;
+const runtimeTuiResultReviewVisible: boolean = runtimeTuiSnapshot.resultReview.visible;
 const runtimeTuiPaletteCommand: string | undefined = getRuntimeTuiSnapshot({ commandMode: true, commandInput: "sta" }).commandPalette?.entries[0]?.command;
 const runtimeTuiPaletteSelected: boolean | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.selected;
-const runtimeTuiPaletteKind: "command" | "action" | "section" | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.kind;
+const runtimeTuiPaletteKind: "command" | "action" | "section" | "result" | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.kind;
 const runtimeTuiPalettePreview: string | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.preview[0];
 const runtimeTuiWideLayout: "stacked" | "split-pane" = getRuntimeTuiSnapshot({
   width: 120,
   liveRefresh: { enabled: true, intervalMs: 3000, tick: 1, lastRefreshedAt: "2026-06-27T02:30:00.000Z" },
   eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }],
-  recentActions: [{ label: "Open Summary", kind: "section", at: "2026-06-27T02:30:00.000Z" }]
+  recentActions: [{ label: "Open Summary", kind: "section", at: "2026-06-27T02:30:00.000Z" }],
+  resultStash: [{ label: "codex-bees status", command: "status", status: "success", summary: "ok", outputPreview: ["ok"], at: "2026-06-27T02:30:00.000Z" }]
 }).layout.mode;
 const runtimeTuiSubpathKind: "runtime_tui_snapshot" = getRuntimeTuiSubpathView({ section: "status" }).kind;
 const aliasCommandHelpMatched: string | null = getCommandHelpView("help").matchedCommand;

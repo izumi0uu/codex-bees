@@ -2635,7 +2635,7 @@ const runtimeTuiSplitPaneSnapshot = spawnSync(
   "node",
   [
     "-e",
-    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 124, height: 34, liveRefresh: { enabled: true, intervalMs: 3000, tick: 2, lastRefreshedAt: "2026-06-27T02:30:00.000Z" }, eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }], recentActions: [{ label: "codex-bees status", kind: "command", command: "status", at: "2026-06-27T02:31:00.000Z" }] }); console.log(JSON.stringify({ ok: view.layout.mode === "split-pane" && view.liveRefresh.enabled === true && view.eventStream.total > 0 && view.counts.eventStreamEntries > 0 && view.quickActions.length > 0 && view.recentActions.length > 0 && Array.isArray(view.statusline?.segments) && view.text.includes("Navigator:") && view.text.includes("Quick actions:") && view.text.includes("Recent:") && view.text.includes("Event stream:") && view.text.includes("HISTORY") && view.text.includes("Live: auto 3s") })); })'
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 124, height: 34, liveRefresh: { enabled: true, intervalMs: 3000, tick: 2, lastRefreshedAt: "2026-06-27T02:30:00.000Z" }, eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }], recentActions: [{ label: "codex-bees status", kind: "command", command: "status", at: "2026-06-27T02:31:00.000Z" }], resultStash: [{ label: "codex-bees status", command: "status", status: "success", summary: "runtime ready", outputPreview: ["runtime ready"], at: "2026-06-27T02:31:02.000Z" }] }); console.log(JSON.stringify({ ok: view.layout.mode === "split-pane" && view.liveRefresh.enabled === true && view.eventStream.total > 0 && view.counts.eventStreamEntries > 0 && view.quickActions.length > 0 && view.recentActions.length > 0 && view.resultStash.length > 0 && Array.isArray(view.statusline?.segments) && view.statusline.segments.some((segment) => segment.startsWith("HISTORY ")) && view.statusline.segments.some((segment) => segment.startsWith("RESULTS ")) && view.text.includes("Navigator:") && view.text.includes("Quick actions:") && view.text.includes("Recent:") && view.text.includes("Event stream:") && view.text.includes("Live: auto 3s") })); })'
   ],
   {
     encoding: "utf8"
@@ -2653,7 +2653,7 @@ const runtimeTuiPaletteSnapshot = spawnSync(
   "node",
   [
     "-e",
-    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 84, height: 26, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.commandPalette?.visible === true && view.commandPalette?.entries?.length > 0 && view.counts.commandPaletteEntries > 0 && Array.isArray(view.commandPalette?.entries?.[0]?.preview) && typeof view.commandPalette?.entries?.[0]?.kind === "string" && Array.isArray(view.statusline?.segments) && view.text.includes("Launcher:") && view.text.includes("Preview:") && view.text.includes("⌘") && view.text.includes("codex-bees status") })); })'
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 84, height: 26, commandMode: true, commandInput: "sta", recentActions: [{ label: "codex-bees status", kind: "command", command: "status", at: "2026-06-27T02:31:00.000Z" }], resultStash: [{ label: "codex-bees status", command: "status", status: "success", summary: "runtime ready", outputPreview: ["runtime ready"], at: "2026-06-27T02:31:02.000Z" }] }); console.log(JSON.stringify({ ok: view.commandPalette?.visible === true && view.commandPalette?.entries?.length > 0 && view.counts.commandPaletteEntries > 0 && Array.isArray(view.commandPalette?.entries?.[0]?.preview) && typeof view.commandPalette?.entries?.[0]?.kind === "string" && Array.isArray(view.statusline?.segments) && view.text.includes("Launcher:") && view.text.includes("Preview:") && view.text.includes("⌘") && view.text.includes("codex-bees status") })); })'
   ],
   {
     encoding: "utf8"
@@ -2684,6 +2684,22 @@ if (
   console.error("[smoke:tui-api-import] expected runtime TUI snapshot api surface");
   console.error(runtimeTuiApiImport.stderr || runtimeTuiApiImport.stdout);
   process.exit(runtimeTuiApiImport.status ?? 1);
+}
+const runtimeTuiResultReviewSnapshot = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("./src/runtime-tui.js").then((m) => { const resultStash = [{ id: "result-1", label: "codex-bees status", command: "status", status: "success", summary: "runtime ready", outputPreview: ["runtime ready", "tasks=0"], at: "2026-06-27T02:31:02.000Z" }]; const view = m.getRuntimeTuiSnapshot({ section: "status", width: 100, height: 28, resultStash, activeResultReviewId: "result-1" }); console.log(JSON.stringify({ ok: view.resultReview?.visible === true && view.resultReview?.entry?.id === "result-1" && view.panel.title === "Result review" && view.text.includes("Output preview:") && view.text.includes("runtime ready") })); })'
+  ],
+  { encoding: "utf8" }
+);
+if (
+  runtimeTuiResultReviewSnapshot.status !== 0 ||
+  JSON.parse(runtimeTuiResultReviewSnapshot.stdout).ok !== true
+) {
+  console.error("[smoke:tui-result-review] expected stored command result review surface");
+  console.error(runtimeTuiResultReviewSnapshot.stderr || runtimeTuiResultReviewSnapshot.stdout);
+  process.exit(runtimeTuiResultReviewSnapshot.status ?? 1);
 }
 const runtimeTuiInteractive = spawnSync(
   "python",

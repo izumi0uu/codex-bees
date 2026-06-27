@@ -52,6 +52,8 @@ Inside the TUI:
 - `.` — replay the most recent CLI command
 - `?` — toggle key help
 - `:` or `/` — open the launcher
+- `j/k` or `Ctrl+N/Ctrl+P` — move launcher selection
+- `gg` / `G` — jump to the first / last launcher result
 - `↑/↓` — move the selected palette entry
 - `Tab` — accept the selected palette entry into the prompt
 - `Enter` — run the current or selected palette command
@@ -70,6 +72,7 @@ It also behaves more like an app shell now:
 - grouped secondary matches with lightweight icons
 - a multi-segment status bar at the bottom
 - recent command history that can be replayed with `.`
+- launcher lanes for recent commands and captured result review
 
 This keeps the TUI product-facing: you still use the same shipped CLI surface, but you no longer need to remember every command name from scratch.
 

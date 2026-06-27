@@ -27,6 +27,7 @@ const SPLIT_PANE_MIN_WIDTH = 108;
 const SPLIT_PANE_GUTTER = " │ ";
 const SPLIT_PANE_SIDEBAR_WIDTH = 32;
 const RECENT_ACTION_LIMIT = 5;
+const RESULT_STASH_LIMIT = 6;
 const STATUS_SEGMENT_SEPARATOR = "  •  ";
 
 const TUI_SECTIONS = [
@@ -78,6 +79,9 @@ const TUI_KEYMAP = [
   { key: "?", action: "toggle the key help overlay" },
   { key: ": /", action: "open the launcher" },
   { key: "↑/↓", action: "change the selected command palette entry" },
+  { key: "j/k", action: "move the launcher selection when the prompt is empty" },
+  { key: "ctrl+n/p", action: "move the launcher selection" },
+  { key: "gg / G", action: "jump to the first / last launcher result" },
   { key: "enter", action: "run the current or selected command palette entry" },
   { key: "esc", action: "close the command palette without running anything" },
   { key: "q", action: "quit the TUI" }
@@ -174,6 +178,33 @@ function createRecentAction({
     label: resolvedLabel,
     kind,
     command: command ?? null,
+    at: resolvedAt,
+    timeLabel: formatTimeLabel(resolvedAt)
+  };
+}
+
+function createResultStashEntry({
+  id,
+  command = null,
+  label = null,
+  status = "success",
+  summary = "",
+  outputPreview = [],
+  at = new Date().toISOString()
+} = {}) {
+  const resolvedAt = at ?? null;
+  const resolvedCommand = String(command ?? "").trim() || null;
+  const resolvedSummary = String(summary ?? "").trim();
+  const resolvedLabel = String(label ?? resolvedCommand ?? "Command result").trim();
+  return {
+    id: id ?? `result:${resolvedCommand ?? resolvedLabel}:${resolvedAt ?? "now"}`,
+    command: resolvedCommand,
+    label: resolvedLabel,
+    status,
+    summary: resolvedSummary || "No summary captured.",
+    outputPreview: Array.isArray(outputPreview)
+      ? outputPreview.map((line) => String(line ?? "").trim()).filter(Boolean).slice(0, 8)
+      : [],
     at: resolvedAt,
     timeLabel: formatTimeLabel(resolvedAt)
   };
@@ -277,6 +308,27 @@ function appendRecentAction(entries = [], action, limit = RECENT_ACTION_LIMIT) {
       break;
     }
   }
+  return merged;
+}
+
+function appendResultStashEntry(entries = [], entry, limit = RESULT_STASH_LIMIT) {
+  const next = createResultStashEntry(entry);
+  if (!next.label) {
+    return entries.slice(0, limit);
+  }
+
+  const merged = [next];
+  for (const existing of entries) {
+    const normalized = createResultStashEntry(existing);
+    if (normalized.command && normalized.command === next.command && normalized.summary === next.summary) {
+      continue;
+    }
+    merged.push(normalized);
+    if (merged.length >= limit) {
+      break;
+    }
+  }
+
   return merged;
 }
 
@@ -455,6 +507,9 @@ function getPaletteEntryIcon(entry) {
   if (!entry) {
     return "·";
   }
+  if (entry.kind === "result") {
+    return "☰";
+  }
   if (entry.kind === "action") {
     return "⚡";
   }
@@ -466,6 +521,12 @@ function getPaletteEntryIcon(entry) {
 
 function getPaletteGroupIcon(groupLabel = "") {
   const normalized = String(groupLabel).toLowerCase();
+  if (normalized.includes("result")) {
+    return "☰";
+  }
+  if (normalized.includes("recent")) {
+    return "↺";
+  }
   if (normalized.includes("quick action")) {
     return "⚡";
   }
@@ -503,8 +564,21 @@ function buildStatusSegments(snapshot, { commandMode = false } = {}) {
     `ALERTS ${snapshot.signals.alerts.high}/${snapshot.signals.alerts.medium}`,
     `NEXT ${recommendedLabel}`,
     `HISTORY ${recentCommandCount}`,
+    `RESULTS ${snapshot.resultStash.length}`,
     commandMode ? "LAUNCHER open" : "LAUNCHER ready"
   ];
+}
+
+function summarizeCommandOutput(output = "") {
+  const lines = String(output ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return {
+    summary: lines[0] ?? "Command completed without textual output.",
+    preview: lines.slice(0, 8)
+  };
 }
 
 function normalizeSuggestedCommand(value) {
@@ -623,7 +697,13 @@ function buildCommandPaletteEntries(
   data,
   input = "",
   selectedCommandIndex = 0,
-  { activeSection = DEFAULT_SECTION_ID, liveRefreshEnabled = false, showHelp = false } = {}
+  {
+    activeSection = DEFAULT_SECTION_ID,
+    liveRefreshEnabled = false,
+    showHelp = false,
+    recentActions = [],
+    resultStash = []
+  } = {}
 ) {
   const commandCatalog = getCommandCatalog();
   const paletteByCommand = new Map(
@@ -722,6 +802,45 @@ function buildCommandPaletteEntries(
         `Switch the main pane to ${section.label}.`,
         section.id === activeSection ? "This screen is active right now." : null
       ].filter(Boolean)
+    })),
+    ...recentActions
+      .filter((entry) => entry.kind === "command" && getRecentActionReplayCommand(entry))
+      .map((entry) => {
+        const relatedResult = resultStash.find((result) => result.command === entry.command);
+        return {
+          kind: "command",
+          actionId: `recent:${entry.id}`,
+          command: entry.command,
+          displayCommand: entry.label,
+          description: "Replay a recent CLI command from this TUI session.",
+          groupLabel: "Recent commands",
+          usage: entry.command ? `${PRODUCT_NAME} ${entry.command}` : null,
+          recommended: false,
+          reasons: [],
+          source: "history",
+          preview: [
+            `Recorded at ${entry.timeLabel}.`,
+            relatedResult ? `Last result: ${relatedResult.summary}` : "No captured result preview yet."
+          ].filter(Boolean)
+        };
+      }),
+    ...resultStash.map((entry) => ({
+      kind: "result",
+      actionId: `result:${entry.id}`,
+      resultId: entry.id,
+      command: entry.command ?? entry.label.toLowerCase(),
+      displayCommand: `Review ${entry.label}`,
+      description: entry.summary,
+      groupLabel: "Result stash",
+      usage: entry.command ? `From: ${PRODUCT_NAME} ${entry.command}` : null,
+      recommended: false,
+      reasons: [],
+      source: "history",
+      preview: [
+        `Status: ${entry.status}`,
+        `Captured at ${entry.timeLabel}.`,
+        ...entry.outputPreview.slice(0, 4)
+      ].filter(Boolean)
     }))
   ];
 
@@ -752,6 +871,7 @@ function buildCommandPaletteEntries(
       kind: entry.kind ?? "command",
       actionId: entry.actionId ?? null,
       targetSection: entry.targetSection ?? null,
+      resultId: entry.resultId ?? null,
       command: entry.command,
       displayCommand: entry.displayCommand,
       description: entry.description,
@@ -885,6 +1005,9 @@ function getPaletteEntryBadge(entry) {
   if (!entry) {
     return "item";
   }
+  if (entry.kind === "result") {
+    return "result";
+  }
   if (entry.kind === "action") {
     return "action";
   }
@@ -918,6 +1041,32 @@ function buildCommandPalettePreviewLines(commandPalette = null, width) {
 
   if (selectedEntry.kind === "command" && selectedEntry.usage) {
     lines.push(...wrapText(`Usage: ${selectedEntry.usage}`, width));
+  }
+
+  return lines;
+}
+
+function buildResultReviewLines(entry, width) {
+  const result = createResultStashEntry(entry);
+  const lines = [
+    `Command: ${result.command ?? result.label}`,
+    `Status: ${result.status}`,
+    `Captured: ${result.timeLabel}`,
+    "",
+    "Summary:",
+    ...wrapText(result.summary, width)
+  ];
+
+  if (result.outputPreview.length > 0) {
+    lines.push("");
+    lines.push("Output preview:");
+    for (const previewLine of result.outputPreview) {
+      lines.push(...wrapText(previewLine, width));
+    }
+  } else {
+    lines.push("");
+    lines.push("Output preview:");
+    lines.push("No output preview captured.");
   }
 
   return lines;
@@ -1205,7 +1354,7 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
   footerLines.push(
     fitLine(
       commandMode
-        ? "Keys: ↑/↓ select | Tab accept | Enter run | Esc cancel | Ctrl+C quit"
+        ? "Keys: ↑/↓/j/k/Ctrl+N/Ctrl+P select | gg/G jump | Tab accept | Enter run | Esc cancel"
         : "Keys: 1-6 switch | Tab cycle | o recommended | a auto | r refresh | . replay | ? help | :/ launcher | q quit",
       normalizedWidth
     )
@@ -1249,6 +1398,8 @@ export function getRuntimeTuiSnapshot({
   selectedCommandIndex = 0,
   eventStream = [],
   recentActions = [],
+  resultStash = [],
+  activeResultReviewId = null,
   liveRefresh = {},
   flashMessage = null
 } = {}) {
@@ -1272,13 +1423,35 @@ export function getRuntimeTuiSnapshot({
   const normalizedRecentActions = recentActions
     .map((entry) => createRecentAction(entry))
     .filter((entry) => entry.label);
+  const normalizedResultStash = resultStash
+    .map((entry) => createResultStashEntry(entry))
+    .filter((entry) => entry.label);
+  const activeResultReview =
+    normalizedResultStash.find((entry) => entry.id === activeResultReviewId) ?? null;
   const commandPalette = commandMode
     ? buildCommandPaletteEntries(data, commandInput, selectedCommandIndex, {
         activeSection,
         liveRefreshEnabled: liveRefresh.enabled === true,
-        showHelp
+        showHelp,
+        recentActions: normalizedRecentActions,
+        resultStash: normalizedResultStash
       })
     : null;
+  const renderedPanel = activeResultReview
+    ? {
+        id: activeSection,
+        title: "Result review",
+        description: "Recent command output captured inside the current TUI session.",
+        summary: activeResultReview.summary,
+        lines: buildResultReviewLines(activeResultReview, layout.mode === "split-pane" ? layout.contentWidth : width)
+      }
+    : {
+        id: sectionView.descriptor.id,
+        title: sectionView.descriptor.label,
+        description: sectionView.descriptor.description,
+        summary: sectionView.summary,
+        lines: sectionView.lines
+      };
   const snapshot = {
     kind: "runtime_tui_snapshot",
     recommendedReason: "tui_snapshot_rendered",
@@ -1288,22 +1461,21 @@ export function getRuntimeTuiSnapshot({
     keymap: TUI_KEYMAP.map((entry) => ({ ...entry })),
     header: {
       title: `${PRODUCT_NAME} tui`,
-      subtitle: `${data.metadata.product} v${data.metadata.version} | ${sectionView.descriptor.label}`,
+      subtitle: `${data.metadata.product} v${data.metadata.version} | ${renderedPanel.title}`,
       stateSummary: `${data.statusView.status.guideMode} | tasks=${data.statusView.status.counts.tasks} | swarms=${data.statusView.status.counts.swarms} | memories=${data.statusView.status.counts.memories}`
     },
-    panel: {
-      id: sectionView.descriptor.id,
-      title: sectionView.descriptor.label,
-      description: sectionView.descriptor.description,
-      summary: sectionView.summary,
-      lines: sectionView.lines
-    },
+    panel: renderedPanel,
     commandPalette,
     layout,
     liveRefresh: liveRefreshView,
     signals,
     quickActions,
     recentActions: normalizedRecentActions,
+    resultStash: normalizedResultStash,
+    resultReview: {
+      visible: Boolean(activeResultReview),
+      entry: activeResultReview
+    },
     statusline: {
       segments: buildStatusSegments(
         {
@@ -1313,7 +1485,8 @@ export function getRuntimeTuiSnapshot({
           liveRefresh: liveRefreshView,
           layout,
           signals,
-          recentActions: normalizedRecentActions
+          recentActions: normalizedRecentActions,
+          resultStash: normalizedResultStash
         },
         { commandMode }
       )
@@ -1433,23 +1606,55 @@ function waitForReturnPrompt() {
 async function runNestedCliCommand(input) {
   const tokens = normalizeNestedTokens(input);
   if (tokens.length === 0) {
-    return "No command entered.";
+    return {
+      message: "No command entered.",
+      result: null
+    };
   }
   if (tokens[0] === "tui" && !tokens.includes("--snapshot")) {
-    return "Already inside the TUI. Use sections, '?' or ':' instead of nesting tui.";
+    return {
+      message: "Already inside the TUI. Use sections, '?' or ':' instead of nesting tui.",
+      result: null
+    };
   }
 
   const result = spawnSync(process.execPath, [argv[1], ...tokens], {
-    stdio: "inherit"
+    encoding: "utf8",
+    maxBuffer: 32 * 1024 * 1024
+  });
+  if (result.stdout) {
+    stdout.write(result.stdout);
+  }
+  if (result.stderr) {
+    stderr.write(result.stderr);
+  }
+
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+  const outputSummary = summarizeCommandOutput(output);
+  const commandLabel = `${PRODUCT_NAME} ${tokens.join(" ")}`;
+  const stashEntry = createResultStashEntry({
+    command: tokens.join(" "),
+    label: commandLabel,
+    status: result.status === 0 ? "success" : "error",
+    summary: result.status === 0
+      ? outputSummary.summary
+      : `${commandLabel} exited with status ${result.status ?? 1}.`,
+    outputPreview: outputSummary.preview
   });
 
   await waitForReturnPrompt();
 
   if (result.status !== 0) {
-    return `${PRODUCT_NAME} ${tokens.join(" ")} exited with status ${result.status ?? 1}.`;
+    return {
+      message: `${PRODUCT_NAME} ${tokens.join(" ")} exited with status ${result.status ?? 1}.`,
+      result: stashEntry
+    };
   }
 
-  return `Ran ${PRODUCT_NAME} ${tokens.join(" ")}.`;
+  return {
+    message: `Ran ${PRODUCT_NAME} ${tokens.join(" ")}.`,
+    result: stashEntry
+  };
 }
 
 function resolveCommandModeInput(commandInput, commandPalette = null) {
@@ -1615,10 +1820,13 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
   let refreshTick = 0;
   let sessionEventStream = [];
   let recentActions = [];
+  let resultStash = [];
+  let activeResultReviewId = null;
   let latestSignals = null;
   let attached = false;
   let busy = false;
   let refreshTimer = null;
+  let pendingLauncherMotion = null;
 
   const captureSnapshot = () =>
     getRuntimeTuiSnapshot({
@@ -1631,6 +1839,8 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       selectedCommandIndex,
       eventStream: sessionEventStream,
       recentActions,
+      resultStash,
+      activeResultReviewId,
       liveRefresh: {
         enabled: liveRefreshEnabled,
         intervalMs: LIVE_REFRESH_INTERVAL_MS,
@@ -1707,6 +1917,10 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     recentActions = appendRecentAction(recentActions, action);
   };
 
+  const recordResultStashEntry = (entry) => {
+    resultStash = appendResultStashEntry(resultStash, entry);
+  };
+
   const rerunMostRecentCommand = async () => {
     const recentCommand = recentActions.find((entry) => entry.kind === "command" && getRecentActionReplayCommand(entry));
     if (!recentCommand) {
@@ -1726,7 +1940,12 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     busy = true;
     detach();
     try {
-      flashMessage = await runNestedCliCommand(getRecentActionReplayCommand(recentCommand));
+      const replayResult = await runNestedCliCommand(getRecentActionReplayCommand(recentCommand));
+      flashMessage = replayResult.message;
+      if (replayResult.result) {
+        recordResultStashEntry(replayResult.result);
+        activeResultReviewId = replayResult.result.id;
+      }
       recordRecentAction({
         label: recentCommand.label,
         kind: "command",
@@ -1746,7 +1965,22 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       return;
     }
 
+    if (entry.kind === "result") {
+      activeResultReviewId = entry.resultId ?? null;
+      flashMessage = `Opened result review for ${entry.displayCommand}.`;
+      recordSessionEvents([
+        createTuiEvent({
+          level: "info",
+          source: "session",
+          message: flashMessage
+        })
+      ]);
+      render();
+      return;
+    }
+
     if (entry.kind === "section") {
+      activeResultReviewId = null;
       activeSection = entry.targetSection ?? activeSection;
       showHelp = false;
       flashMessage = `Opened ${entry.displayCommand}.`;
@@ -1763,6 +1997,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     }
 
     if (entry.actionId === "jump-recommended") {
+      activeResultReviewId = null;
       activeSection = captureSnapshot().recommendedSection;
       flashMessage = `Opened recommended section: ${activeSection}.`;
       recordRecentAction({ label: entry.displayCommand, kind: "action" });
@@ -1802,6 +2037,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
 
     if (entry.actionId === "toggle-help") {
       showHelp = !showHelp;
+      activeResultReviewId = null;
       flashMessage = showHelp ? "Key help opened." : "Key help hidden.";
       recordRecentAction({ label: entry.displayCommand, kind: "action" });
       render();
@@ -1852,6 +2088,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     commandMode = false;
     commandInput = "";
     selectedCommandIndex = 0;
+    pendingLauncherMotion = null;
     flashMessage = null;
 
     if (input.kind !== "command") {
@@ -1867,7 +2104,12 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     busy = true;
     detach();
     try {
-      flashMessage = await runNestedCliCommand(input.input);
+      const commandResult = await runNestedCliCommand(input.input);
+      flashMessage = commandResult.message;
+      if (commandResult.result) {
+        recordResultStashEntry(commandResult.result);
+        activeResultReviewId = commandResult.result.id;
+      }
     } finally {
       stdin.setRawMode(true);
       stdin.resume();
@@ -1892,6 +2134,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
         commandMode = false;
         commandInput = "";
         selectedCommandIndex = 0;
+        pendingLauncherMotion = null;
         flashMessage = "Command prompt cancelled.";
         render();
         return;
@@ -1900,30 +2143,55 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
         await runCommandMode();
         return;
       }
-      if (key.name === "up") {
+      if (key.name === "up" || (key.ctrl && key.name === "p") || (character === "k" && !commandInput)) {
+        pendingLauncherMotion = null;
         selectedCommandIndex = Math.max(0, selectedCommandIndex - 1);
         render();
         return;
       }
-      if (key.name === "down") {
+      if (key.name === "down" || (key.ctrl && key.name === "n") || (character === "j" && !commandInput)) {
+        pendingLauncherMotion = null;
         selectedCommandIndex += 1;
         render();
         return;
       }
+      if (character === "G" && !commandInput) {
+        pendingLauncherMotion = null;
+        selectedCommandIndex = Number.MAX_SAFE_INTEGER;
+        render();
+        return;
+      }
+      if (character === "g" && !commandInput) {
+        if (pendingLauncherMotion === "g") {
+          pendingLauncherMotion = null;
+          selectedCommandIndex = 0;
+          render();
+          return;
+        }
+        pendingLauncherMotion = "g";
+        return;
+      }
       if (key.name === "tab") {
+        pendingLauncherMotion = null;
         const snapshotView = captureSnapshot();
         commandInput = applySelectedPaletteCommand(commandInput, snapshotView.commandPalette);
         render();
         return;
       }
       if (key.name === "backspace") {
+        pendingLauncherMotion = null;
         commandInput = commandInput.slice(0, -1);
         selectedCommandIndex = 0;
         render();
         return;
       }
       if (character && !key.meta) {
-        commandInput += character;
+        if (pendingLauncherMotion === "g") {
+          commandInput += `g${character}`;
+          pendingLauncherMotion = null;
+        } else {
+          commandInput += character;
+        }
         selectedCommandIndex = 0;
         render();
       }
@@ -1937,6 +2205,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       return;
     }
     if (key.name === "tab") {
+      activeResultReviewId = null;
       const index = TUI_SECTIONS.findIndex((entry) => entry.id === activeSection);
       activeSection = TUI_SECTIONS[(index + 1) % TUI_SECTIONS.length].id;
       render();
@@ -1971,6 +2240,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       return;
     }
     if (character === "?") {
+      activeResultReviewId = null;
       showHelp = !showHelp;
       render();
       return;
@@ -1984,6 +2254,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       return;
     }
     if (character === "o") {
+      activeResultReviewId = null;
       activeSection = captureSnapshot().recommendedSection;
       render();
       return;
@@ -1991,6 +2262,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
 
     const matched = TUI_SECTIONS.find((entry) => entry.shortcut === character);
     if (matched) {
+      activeResultReviewId = null;
       activeSection = matched.id;
       render();
     }
