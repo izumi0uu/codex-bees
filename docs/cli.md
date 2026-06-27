@@ -49,6 +49,7 @@ Inside the TUI:
 - `o` — jump to the recommended section
 - `a` — toggle live refresh
 - `r` — refresh
+- `.` — replay the most recent CLI command
 - `?` — toggle key help
 - `:` or `/` — open the launcher
 - `↑/↓` — move the selected palette entry
@@ -63,6 +64,12 @@ The launcher ranks:
 - quick runtime actions and screen jumps alongside commands
 - exact command and alias matches next
 - group / description matches after that
+
+It also behaves more like an app shell now:
+
+- grouped secondary matches with lightweight icons
+- a multi-segment status bar at the bottom
+- recent command history that can be replayed with `.`
 
 This keeps the TUI product-facing: you still use the same shipped CLI surface, but you no longer need to remember every command name from scratch.
 

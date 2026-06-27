@@ -96,6 +96,7 @@ Inside the TUI:
 - `Tab` cycles screens
 - `o` jumps to the recommended section
 - `a` toggles live refresh
+- `.` replays the most recent CLI command
 - `:` or `/` opens the launcher
 - `↑/↓` changes the selected palette command
 - `Tab` accepts the selected palette command into the prompt
@@ -107,6 +108,7 @@ On wider terminals, the TUI automatically switches into a split-pane layout with
 
 - a left navigation / signal sidebar
 - quick actions and recent actions
+- grouped launcher matches with inline icons
 - a right detail pane for the active surface
 - a launcher preview panel when search is open
 - a live event stream fed by runtime alerts, runtime activity, and session refresh notices

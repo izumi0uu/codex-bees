@@ -27,6 +27,7 @@ const SPLIT_PANE_MIN_WIDTH = 108;
 const SPLIT_PANE_GUTTER = " │ ";
 const SPLIT_PANE_SIDEBAR_WIDTH = 32;
 const RECENT_ACTION_LIMIT = 5;
+const STATUS_SEGMENT_SEPARATOR = "  •  ";
 
 const TUI_SECTIONS = [
   {
@@ -73,6 +74,7 @@ const TUI_KEYMAP = [
   { key: "o", action: "jump to the recommended section" },
   { key: "a", action: "toggle live refresh" },
   { key: "r", action: "refresh current data" },
+  { key: ".", action: "rerun the most recent CLI command" },
   { key: "?", action: "toggle the key help overlay" },
   { key: ": /", action: "open the launcher" },
   { key: "↑/↓", action: "change the selected command palette entry" },
@@ -446,6 +448,62 @@ function buildQuickActions({ liveRefreshEnabled = false, showHelp = false } = {}
       hint: ": /",
       description: "Search commands, screens, and runtime actions."
     }
+  ];
+}
+
+function getPaletteEntryIcon(entry) {
+  if (!entry) {
+    return "·";
+  }
+  if (entry.kind === "action") {
+    return "⚡";
+  }
+  if (entry.kind === "section") {
+    return "◫";
+  }
+  return "⌘";
+}
+
+function getPaletteGroupIcon(groupLabel = "") {
+  const normalized = String(groupLabel).toLowerCase();
+  if (normalized.includes("quick action")) {
+    return "⚡";
+  }
+  if (normalized.includes("screen")) {
+    return "◫";
+  }
+  if (normalized.includes("runtime")) {
+    return "◎";
+  }
+  return "⌘";
+}
+
+function getRecentActionReplayCommand(entry) {
+  if (!entry) {
+    return null;
+  }
+  if (entry.kind !== "command") {
+    return null;
+  }
+  const command = String(entry.command ?? "").trim();
+  return command || null;
+}
+
+function buildStatusSegments(snapshot, { commandMode = false } = {}) {
+  const recommendedLabel =
+    snapshot.sections.find((entry) => entry.id === snapshot.recommendedSection)?.label ??
+    snapshot.recommendedSection;
+  const recentCommandCount = snapshot.recentActions.filter((entry) => entry.kind === "command").length;
+
+  return [
+    snapshot.liveRefresh.enabled ? `LIVE auto ${Math.round(snapshot.liveRefresh.intervalMs / 1000)}s` : "LIVE manual",
+    `MODE ${snapshot.layout.mode}`,
+    `GUIDE ${snapshot.signals.guideMode}`,
+    `TASKS ${snapshot.signals.tasks}`,
+    `ALERTS ${snapshot.signals.alerts.high}/${snapshot.signals.alerts.medium}`,
+    `NEXT ${recommendedLabel}`,
+    `HISTORY ${recentCommandCount}`,
+    commandMode ? "LAUNCHER open" : "LAUNCHER ready"
   ];
 }
 
@@ -849,7 +907,7 @@ function buildCommandPalettePreviewLines(commandPalette = null, width) {
   const lines = ["Preview:"];
   lines.push(
     fitLine(
-      `${selectedEntry.displayCommand} · ${getPaletteEntryBadge(selectedEntry)}`,
+      `${getPaletteEntryIcon(selectedEntry)} ${selectedEntry.displayCommand} · ${getPaletteEntryBadge(selectedEntry)}`,
       width
     )
   );
@@ -925,7 +983,7 @@ function buildCommandPaletteBodyLines(commandPalette = null, width) {
     .slice(0, 3);
 
   const selectionLines = [
-    `> ${selectedEntry.displayCommand} · ${getPaletteEntryBadge(selectedEntry)}${selectedEntry.recommended ? " [recommended]" : ""}`,
+    `> ${getPaletteEntryIcon(selectedEntry)} ${selectedEntry.displayCommand} · ${getPaletteEntryBadge(selectedEntry)}${selectedEntry.recommended ? " [recommended]" : ""}`,
     `  ${selectedEntry.groupLabel} - ${selectedEntry.description || selectedEntry.usage || "Launcher entry"}`,
     ""
   ];
@@ -939,18 +997,25 @@ function buildCommandPaletteBodyLines(commandPalette = null, width) {
     width
   );
 
-  const siblingLines = siblingEntries.length === 0
-    ? []
-    : [
-        "",
-        "More matches:",
-        ...siblingEntries.flatMap((entry) => [
-          fitLine(`  ${entry.displayCommand} · ${getPaletteEntryBadge(entry)}${entry.recommended ? " [recommended]" : ""}`, width),
-          fitLine(`    ${entry.groupLabel} - ${entry.description || entry.usage || "Launcher entry"}`, width)
-        ])
-      ];
+  const groupedSiblingLines = [];
+  if (siblingEntries.length > 0) {
+    let currentGroup = null;
+    groupedSiblingLines.push("", "More matches:");
+    for (const entry of siblingEntries) {
+      if (entry.groupLabel !== currentGroup) {
+        currentGroup = entry.groupLabel;
+        groupedSiblingLines.push(fitLine(`${getPaletteGroupIcon(currentGroup)} ${currentGroup}`, width));
+      }
+      groupedSiblingLines.push(
+        fitLine(`  ${getPaletteEntryIcon(entry)} ${entry.displayCommand} · ${getPaletteEntryBadge(entry)}${entry.recommended ? " [recommended]" : ""}`, width)
+      );
+      groupedSiblingLines.push(
+        fitLine(`    ${entry.description || entry.usage || "Launcher entry"}`, width)
+      );
+    }
+  }
 
-  return [...introLines, ...selectionLines, ...previewLines, ...siblingLines];
+  return [...introLines, ...selectionLines, ...previewLines, ...groupedSiblingLines];
 }
 
 function buildSidebarLines(snapshot, width) {
@@ -1129,6 +1194,9 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
     footerLines.push(fitLine(`Notice: ${flashMessage}`, normalizedWidth));
   }
   footerLines.push(
+    fitLine(buildStatusSegments(snapshot, { commandMode }).join(STATUS_SEGMENT_SEPARATOR), normalizedWidth)
+  );
+  footerLines.push(
     fitLine(
       `Live: ${snapshot.liveRefresh.enabled ? `auto ${Math.round(snapshot.liveRefresh.intervalMs / 1000)}s` : "manual"} | Layout: ${snapshot.layout.mode} | Events: ${snapshot.eventStream.total}`,
       normalizedWidth
@@ -1138,7 +1206,7 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
     fitLine(
       commandMode
         ? "Keys: ↑/↓ select | Tab accept | Enter run | Esc cancel | Ctrl+C quit"
-        : "Keys: 1-6 switch | Tab cycle | o recommended | a auto | r refresh | ? help | :/ launcher | q quit",
+        : "Keys: 1-6 switch | Tab cycle | o recommended | a auto | r refresh | . replay | ? help | :/ launcher | q quit",
       normalizedWidth
     )
   );
@@ -1236,6 +1304,20 @@ export function getRuntimeTuiSnapshot({
     signals,
     quickActions,
     recentActions: normalizedRecentActions,
+    statusline: {
+      segments: buildStatusSegments(
+        {
+          activeSection,
+          recommendedSection,
+          sections: TUI_SECTIONS,
+          liveRefresh: liveRefreshView,
+          layout,
+          signals,
+          recentActions: normalizedRecentActions
+        },
+        { commandMode }
+      )
+    },
     eventStream: {
       total: mergedEventStream.length,
       entries: mergedEventStream
@@ -1625,6 +1707,40 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     recentActions = appendRecentAction(recentActions, action);
   };
 
+  const rerunMostRecentCommand = async () => {
+    const recentCommand = recentActions.find((entry) => entry.kind === "command" && getRecentActionReplayCommand(entry));
+    if (!recentCommand) {
+      flashMessage = "No recent command to replay.";
+      render();
+      return;
+    }
+
+    recordSessionEvents([
+      createTuiEvent({
+        level: "info",
+        source: "session",
+        message: `Replaying ${recentCommand.label}.`
+      })
+    ]);
+
+    busy = true;
+    detach();
+    try {
+      flashMessage = await runNestedCliCommand(getRecentActionReplayCommand(recentCommand));
+      recordRecentAction({
+        label: recentCommand.label,
+        kind: "command",
+        command: getRecentActionReplayCommand(recentCommand)
+      });
+    } finally {
+      stdin.setRawMode(true);
+      stdin.resume();
+      attach();
+      busy = false;
+      refreshRuntimeView({ source: "manual", commandMessage: flashMessage });
+    }
+  };
+
   const runLauncherAction = async (entry) => {
     if (!entry) {
       return;
@@ -1861,6 +1977,10 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     }
     if (character === "r") {
       refreshRuntimeView({ source: "manual" });
+      return;
+    }
+    if (character === ".") {
+      await rerunMostRecentCommand();
       return;
     }
     if (character === "o") {

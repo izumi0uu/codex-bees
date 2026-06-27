@@ -377,6 +377,9 @@ export interface RuntimeTuiSnapshot {
   signals: RuntimeTuiSignals;
   quickActions: RuntimeTuiQuickAction[];
   recentActions: RuntimeTuiRecentAction[];
+  statusline: {
+    segments: string[];
+  };
   eventStream: {
     total: number;
     entries: RuntimeTuiEvent[];

@@ -2635,7 +2635,7 @@ const runtimeTuiSplitPaneSnapshot = spawnSync(
   "node",
   [
     "-e",
-    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 124, height: 34, liveRefresh: { enabled: true, intervalMs: 3000, tick: 2, lastRefreshedAt: "2026-06-27T02:30:00.000Z" }, eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }], recentActions: [{ label: "Open Status", kind: "section", at: "2026-06-27T02:31:00.000Z" }] }); console.log(JSON.stringify({ ok: view.layout.mode === "split-pane" && view.liveRefresh.enabled === true && view.eventStream.total > 0 && view.counts.eventStreamEntries > 0 && view.quickActions.length > 0 && view.recentActions.length > 0 && view.text.includes("Navigator:") && view.text.includes("Quick actions:") && view.text.includes("Recent:") && view.text.includes("Event stream:") && view.text.includes("Live: auto 3s") })); })'
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 124, height: 34, liveRefresh: { enabled: true, intervalMs: 3000, tick: 2, lastRefreshedAt: "2026-06-27T02:30:00.000Z" }, eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }], recentActions: [{ label: "codex-bees status", kind: "command", command: "status", at: "2026-06-27T02:31:00.000Z" }] }); console.log(JSON.stringify({ ok: view.layout.mode === "split-pane" && view.liveRefresh.enabled === true && view.eventStream.total > 0 && view.counts.eventStreamEntries > 0 && view.quickActions.length > 0 && view.recentActions.length > 0 && Array.isArray(view.statusline?.segments) && view.text.includes("Navigator:") && view.text.includes("Quick actions:") && view.text.includes("Recent:") && view.text.includes("Event stream:") && view.text.includes("HISTORY") && view.text.includes("Live: auto 3s") })); })'
   ],
   {
     encoding: "utf8"
@@ -2653,7 +2653,7 @@ const runtimeTuiPaletteSnapshot = spawnSync(
   "node",
   [
     "-e",
-    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 84, height: 26, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.commandPalette?.visible === true && view.commandPalette?.entries?.length > 0 && view.counts.commandPaletteEntries > 0 && Array.isArray(view.commandPalette?.entries?.[0]?.preview) && typeof view.commandPalette?.entries?.[0]?.kind === "string" && view.text.includes("Launcher:") && view.text.includes("Preview:") && view.text.includes("codex-bees status") })); })'
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 84, height: 26, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.commandPalette?.visible === true && view.commandPalette?.entries?.length > 0 && view.counts.commandPaletteEntries > 0 && Array.isArray(view.commandPalette?.entries?.[0]?.preview) && typeof view.commandPalette?.entries?.[0]?.kind === "string" && Array.isArray(view.statusline?.segments) && view.text.includes("Launcher:") && view.text.includes("Preview:") && view.text.includes("⌘") && view.text.includes("codex-bees status") })); })'
   ],
   {
     encoding: "utf8"
@@ -2671,7 +2671,7 @@ const runtimeTuiApiImport = spawnSync(
   "node",
   [
     "-e",
-    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 80, height: 20, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.kind === "runtime_tui_snapshot" && view.activeSection === "status" && view.sections.length === 6 && view.keymap.some((entry) => entry.key === ": /") && view.keymap.some((entry) => entry.key === "a") && typeof view.text === "string" && view.text.includes("codex-bees tui") && view.commandPalette?.visible === true && typeof view.commandPalette?.entries?.[0]?.command === "string" && typeof view.commandPalette?.entries?.[0]?.kind === "string" && Array.isArray(view.quickActions) && Array.isArray(view.recentActions) && typeof view.layout?.mode === "string" && typeof view.signals?.guideMode === "string" })); })'
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 80, height: 20, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.kind === "runtime_tui_snapshot" && view.activeSection === "status" && view.sections.length === 6 && view.keymap.some((entry) => entry.key === ": /") && view.keymap.some((entry) => entry.key === ".") && view.keymap.some((entry) => entry.key === "a") && typeof view.text === "string" && view.text.includes("codex-bees tui") && view.commandPalette?.visible === true && typeof view.commandPalette?.entries?.[0]?.command === "string" && typeof view.commandPalette?.entries?.[0]?.kind === "string" && Array.isArray(view.quickActions) && Array.isArray(view.recentActions) && Array.isArray(view.statusline?.segments) && typeof view.layout?.mode === "string" && typeof view.signals?.guideMode === "string" })); })'
   ],
   {
     encoding: "utf8"
