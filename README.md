@@ -78,10 +78,25 @@ Inspect the shipped surface:
 
 ```bash
 npx codex-bees --help
+npx codex-bees tui --snapshot
 npx codex-bees status
 npx codex-bees catalog
 npx codex-bees mcp --help
 ```
+
+Open the interactive runtime shell:
+
+```bash
+npx codex-bees tui
+```
+
+Inside the TUI:
+
+- `1-6` switches sections
+- `Tab` cycles screens
+- `o` jumps to the recommended section
+- `:` runs another `codex-bees` command and returns
+- `q` exits
 
 ## Core concepts
 
@@ -93,6 +108,7 @@ npx codex-bees mcp --help
 ## CLI / MCP / skill / agent relationship
 
 - **CLI** gives you local commands for planning, queueing, pickup, review, and status
+- **TUI** gives you a navigable terminal dashboard on top of the same runtime views
 - **MCP** exposes the same runtime through `codex-bees mcp --stdio`
 - **Skills** such as `project-development` and `swarm-orchestration` shape how work gets executed
 - **Agents** such as `explore`, `executor`, `reviewer`, and `tester` give each lane an explicit role boundary

@@ -10,6 +10,7 @@ export const PUBLIC_TYPE_ENTRYPOINTS = [
   "runtime-ready",
   "runtime-guidance",
   "runtime-status",
+  "runtime-tui",
   "runtime-contract",
   "state"
 ];

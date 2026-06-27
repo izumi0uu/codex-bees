@@ -2620,6 +2620,74 @@ if (
   process.exit(1);
 }
 rmSync(runtimeReadyWorkspaceDir, { recursive: true, force: true });
+const runtimeTuiSnapshot = run("tui-snapshot", ["./src/index.js", "tui", "--snapshot", "--section", "focus", "--width", "72", "--height", "24"]).stdout;
+if (
+  !runtimeTuiSnapshot.includes("codex-bees tui") ||
+  !runtimeTuiSnapshot.includes("Focus") ||
+  !runtimeTuiSnapshot.includes("Keys: 1-6 switch") ||
+  !runtimeTuiSnapshot.includes("Command > press ':'")
+) {
+  console.error("[smoke:tui-snapshot] expected terminal snapshot output for the runtime TUI");
+  process.exit(1);
+}
+const runtimeTuiApiImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 80, height: 20 }); console.log(JSON.stringify({ ok: view.kind === "runtime_tui_snapshot" && view.activeSection === "status" && view.sections.length === 6 && view.keymap.some((entry) => entry.key === ":") && typeof view.text === "string" && view.text.includes("codex-bees tui") })); })'
+  ],
+  {
+    encoding: "utf8"
+  }
+);
+if (
+  runtimeTuiApiImport.status !== 0 ||
+  JSON.parse(runtimeTuiApiImport.stdout).ok !== true
+) {
+  console.error("[smoke:tui-api-import] expected runtime TUI snapshot api surface");
+  console.error(runtimeTuiApiImport.stderr || runtimeTuiApiImport.stdout);
+  process.exit(runtimeTuiApiImport.status ?? 1);
+}
+const runtimeTuiInteractive = spawnSync(
+  "python",
+  [
+    "-c",
+    [
+      "import os, pty, sys",
+      "pid, fd = pty.fork()",
+      "if pid == 0:",
+      "    os.execvp('node', ['node', './src/index.js', 'tui'])",
+      "out = b''",
+      "sent = False",
+      "while True:",
+      "    try:",
+      "        chunk = os.read(fd, 4096)",
+      "        if not chunk:",
+      "            break",
+      "        out += chunk",
+      "        if (not sent) and b'Command >' in out:",
+      "            os.write(fd, b'q')",
+      "            sent = True",
+      "    except OSError:",
+      "        break",
+      "_, status = os.waitpid(pid, 0)",
+      "sys.stdout.write(out.decode('utf-8', 'replace'))",
+      "sys.exit(0 if status == 0 else 1)"
+    ].join("\n")
+  ],
+  {
+    encoding: "utf8"
+  }
+);
+if (
+  runtimeTuiInteractive.status !== 0 ||
+  !runtimeTuiInteractive.stdout.includes("codex-bees tui") ||
+  !runtimeTuiInteractive.stdout.includes("Command > press ':'")
+) {
+  console.error("[smoke:tui-interactive] expected full-screen TUI to open and quit cleanly under a PTY");
+  console.error(runtimeTuiInteractive.stderr || runtimeTuiInteractive.stdout);
+  process.exit(runtimeTuiInteractive.status ?? 1);
+}
 const unknownCommandSuggestion = run("unknown-command-suggestion", ["./src/index.js", "runtim:dashbord"], 1);
 if (
   !unknownCommandSuggestion.stderr.includes("Unknown command: runtim:dashbord") ||

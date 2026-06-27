@@ -67,6 +67,10 @@
       "types": "./dist/runtime-status.d.ts",
       "default": "./dist/runtime-status.js"
     },
+    "./runtime-tui": {
+      "types": "./dist/runtime-tui.d.ts",
+      "default": "./dist/runtime-tui.js"
+    },
     "./runtime-contract": {
       "types": "./dist/runtime-contract.d.ts",
       "default": "./dist/runtime-contract-public.js"

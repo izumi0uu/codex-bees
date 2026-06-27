@@ -5,6 +5,10 @@ export const FORCE_OPTION = option("--force", "Overwrite shipped .codex assets t
 export const DIR_OPTION = option("--dir <path>", "Materialize assets into a target directory instead of cwd");
 export const TARGET_OPTION = option("--target <path>", "Alias for --dir");
 export const HELP_OPTION = option("--help", "Show init subcommand help");
+export const SNAPSHOT_OPTION = option("--snapshot", "Render one non-interactive TUI snapshot instead of entering full-screen mode");
+export const SECTION_OPTION = option("--section <section>", "Start the TUI on one section such as summary, dashboard, focus, handoffs, recovery, or status");
+export const WIDTH_OPTION = option("--width <columns>", "Render TUI snapshot output using a fixed terminal width");
+export const HEIGHT_OPTION = option("--height <rows>", "Render TUI snapshot output using a fixed terminal height");
 
 export const COMMAND_NAME_OPTION = option("--name <command>", "Command id from the shipped CLI catalog");
 export const INIT_OPTION_NAME_OPTION = option("--option <option>", "Init option name from the shipped init option catalog");

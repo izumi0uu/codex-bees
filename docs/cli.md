@@ -17,10 +17,40 @@ Use it to:
 
 ```bash
 codex-bees --help
+codex-bees tui --snapshot
 codex-bees status
 codex-bees commands
 codex-bees command:help --name plan
 ```
+
+## Interactive TUI
+
+`codex-bees tui` opens a full-screen terminal UI over the existing runtime views.
+
+Use it when you want:
+
+- a smarter default operator home
+- keyboard navigation across dashboard / focus / handoffs / recovery / status
+- a lightweight terminal shell without giving up the JSON CLI surface
+
+Useful entrypoints:
+
+```bash
+codex-bees tui
+codex-bees tui --snapshot
+codex-bees tui --snapshot --section focus
+codex-bees command:help --name tui
+```
+
+Inside the TUI:
+
+- `1-6` — jump to a section
+- `Tab` — cycle sections
+- `o` — jump to the recommended section
+- `r` — refresh
+- `?` — toggle key help
+- `:` — run another `codex-bees` command and return
+- `q` — quit
 
 ## Command groups
 
@@ -89,6 +119,7 @@ codex-bees swarm:queue --id <swarm-id>
 ### Inspect runtime state
 
 ```bash
+codex-bees tui
 codex-bees runtime:dashboard
 codex-bees runtime:leader-pack
 codex-bees runtime:summary-pack

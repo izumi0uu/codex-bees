@@ -82,7 +82,7 @@ const COMMON_COMMAND_PATHS = [
     id: "runtime",
     label: "Inspect runtime state",
     description: "Use dashboards and packs when you need a read-oriented operator view.",
-    commands: ["runtime:dashboard", "runtime:leader-pack", "runtime:summary-pack"]
+    commands: ["tui", "runtime:dashboard", "runtime:summary-pack", "runtime:leader-pack"]
   },
   {
     id: "mcp",
@@ -99,6 +99,7 @@ function getCommandGroupId(command) {
 
   if (
     command === "run" ||
+    command === "tui" ||
     command === "ready" ||
     command === "commands" ||
     command === "command:get" ||

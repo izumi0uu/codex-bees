@@ -263,6 +263,47 @@ export interface RuntimeReadyView {
   next: string[];
 }
 
+export interface RuntimeTuiSection {
+  id: "summary" | "dashboard" | "focus" | "handoffs" | "recovery" | "status";
+  label: string;
+  shortcut: string;
+  description: string;
+}
+
+export interface RuntimeTuiKeybinding {
+  key: string;
+  action: string;
+}
+
+export interface RuntimeTuiSnapshot {
+  kind: "runtime_tui_snapshot";
+  recommendedReason: "tui_snapshot_rendered";
+  activeSection: RuntimeTuiSection["id"];
+  recommendedSection: RuntimeTuiSection["id"];
+  sections: RuntimeTuiSection[];
+  keymap: RuntimeTuiKeybinding[];
+  header: {
+    title: string;
+    subtitle: string;
+    stateSummary: string;
+  };
+  panel: {
+    id: RuntimeTuiSection["id"];
+    title: string;
+    description: string;
+    summary: string;
+    lines: string[];
+  };
+  counts: {
+    sections: number;
+    renderedLines: number;
+    suggestedCommands: number;
+    width: number;
+    height: number;
+  };
+  text: string;
+}
+
 export interface WorkspaceInitOptions {
   targetDirectory?: string;
   force?: boolean;
@@ -1690,6 +1731,19 @@ export declare function getRuntimeCatalogView(): RuntimeCatalogView;
 export declare function getRuntimeContractView(): RuntimeContractView;
 export declare function getRuntimeDoctorView(entryUrl?: string): RuntimeDoctorView;
 export declare function getRuntimeReadyView(): RuntimeReadyView;
+export declare function getRuntimeTuiSnapshot(input?: {
+  section?: RuntimeTuiSection["id"];
+  width?: number;
+  height?: number;
+  showHelp?: boolean;
+  commandMode?: boolean;
+  commandInput?: string;
+  flashMessage?: string | null;
+}): RuntimeTuiSnapshot;
+export declare function runInteractiveRuntimeTui(input?: {
+  section?: RuntimeTuiSection["id"];
+  snapshot?: boolean;
+}): Promise<void>;
 
 export declare function getCoordinationOverview(): CoordinationOverview;
 export declare function getCoordinationOverviewView(): CoordinationOverviewView;

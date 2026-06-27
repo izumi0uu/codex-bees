@@ -45,6 +45,7 @@ import {
   getPlannerProfiles,
   getPlannerProfilesView,
   getRuntimeReadyView,
+  getRuntimeTuiSnapshot,
   getRuntimeStatus,
   getRuntimeStatusView,
   getToolCatalogView,
@@ -193,6 +194,7 @@ import {
 } from "codex-bees/runtime-guidance";
 import { getRuntimeReadyView as getRuntimeReadySubpathView } from "codex-bees/runtime-ready";
 import { getRuntimeStatusView as getStatusSubpathView } from "codex-bees/runtime-status";
+import { getRuntimeTuiSnapshot as getRuntimeTuiSubpathView } from "codex-bees/runtime-tui";
 
 const metadata = getPackageMetadata();
 metadata.product;
@@ -218,6 +220,12 @@ const initCatalogViewMatched: string | null = getCommandCatalogEntryView("init")
 const initCommandHelpReason: "command_help_loaded" | "command_help_fallback_loaded" = getCommandHelpView("init").recommendedReason;
 const initCommandHelpMatched: string | null = getCommandHelpView("init").matchedCommand;
 const statusCommandHelpMatched: string | null = getCommandHelpView("status").matchedCommand;
+const tuiCommandHelpMatched: string | null = getCommandHelpView("tui").matchedCommand;
+const runtimeTuiSnapshot = getRuntimeTuiSnapshot({ section: "focus", width: 80, height: 24 });
+const runtimeTuiSnapshotKind: "runtime_tui_snapshot" = runtimeTuiSnapshot.kind;
+const runtimeTuiSection: "summary" | "dashboard" | "focus" | "handoffs" | "recovery" | "status" = runtimeTuiSnapshot.activeSection;
+const runtimeTuiText: string = runtimeTuiSnapshot.text;
+const runtimeTuiSubpathKind: "runtime_tui_snapshot" = getRuntimeTuiSubpathView({ section: "status" }).kind;
 const aliasCommandHelpMatched: string | null = getCommandHelpView("help").matchedCommand;
 const initOptionEntry: string | undefined = getInitCommandCatalogEntry("--preview")?.option;
 const initOptionViewReason: "init_command_option_loaded" | "init_command_option_missing" = getInitCommandCatalogEntryView("--preview").recommendedReason;

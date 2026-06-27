@@ -24,6 +24,7 @@ export {
   getRuntimeStatus,
   getRuntimeStatusView
 } from "./runtime-status.js";
+export { getRuntimeTuiSnapshot, runInteractiveRuntimeTui } from "./runtime-tui.js";
 
 export { getRuntimeContractView } from "./runtime-contract.js";
 export { getRuntimeDoctorView } from "./doctor.js";

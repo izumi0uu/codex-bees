@@ -1,6 +1,7 @@
 import { PACKAGE_VERSION } from "../../metadata.js";
 import { runMcpCli } from "../../mcp.js";
 import { handleInit } from "./init.js";
+import { handleTui } from "./tui.js";
 import { write } from "./helpers.js";
 import {
   printCapabilities,
@@ -36,6 +37,7 @@ import {
 
 export const CORE_CLI_COMMAND_DISPATCH_ENTRIES = [
   ["run", async () => printRunSurface()],
+  ["tui", async () => handleTui()],
   ["ready", async () => printReadyView()],
   ["commands", async () => printCommandsView()],
   ["command:get", async () => printCommandView()],
