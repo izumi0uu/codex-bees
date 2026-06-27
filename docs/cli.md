@@ -49,8 +49,20 @@ Inside the TUI:
 - `o` — jump to the recommended section
 - `r` — refresh
 - `?` — toggle key help
-- `:` — run another `codex-bees` command and return
+- `:` — open the searchable command palette
+- `↑/↓` — move the selected palette entry
+- `Tab` — accept the selected palette entry into the prompt
+- `Enter` — run the current or selected palette command
+- `Esc` — cancel the palette
 - `q` — quit
+
+The palette ranks:
+
+- current runtime-recommended commands first
+- exact command and alias matches next
+- group / description matches after that
+
+This keeps the TUI product-facing: you still use the same shipped CLI surface, but you no longer need to remember every command name from scratch.
 
 ## Command groups
 

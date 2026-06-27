@@ -275,6 +275,16 @@ export interface RuntimeTuiKeybinding {
   action: string;
 }
 
+export interface RuntimeTuiCommandPaletteEntry {
+  command: string;
+  displayCommand: string;
+  description: string;
+  groupLabel: string;
+  usage: string | null;
+  recommended: boolean;
+  selected: boolean;
+}
+
 export interface RuntimeTuiSnapshot {
   kind: "runtime_tui_snapshot";
   recommendedReason: "tui_snapshot_rendered";
@@ -294,10 +304,17 @@ export interface RuntimeTuiSnapshot {
     summary: string;
     lines: string[];
   };
+  commandPalette: {
+    visible: boolean;
+    input: string;
+    selectedIndex: number;
+    entries: RuntimeTuiCommandPaletteEntry[];
+  } | null;
   counts: {
     sections: number;
     renderedLines: number;
     suggestedCommands: number;
+    commandPaletteEntries: number;
     width: number;
     height: number;
   };
@@ -1738,6 +1755,7 @@ export declare function getRuntimeTuiSnapshot(input?: {
   showHelp?: boolean;
   commandMode?: boolean;
   commandInput?: string;
+  selectedCommandIndex?: number;
   flashMessage?: string | null;
 }): RuntimeTuiSnapshot;
 export declare function runInteractiveRuntimeTui(input?: {

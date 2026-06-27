@@ -95,7 +95,11 @@ Inside the TUI:
 - `1-6` switches sections
 - `Tab` cycles screens
 - `o` jumps to the recommended section
-- `:` runs another `codex-bees` command and returns
+- `:` opens a searchable command palette
+- `↑/↓` changes the selected palette command
+- `Tab` accepts the selected palette command into the prompt
+- `Enter` runs the current or selected palette command
+- `Esc` closes the palette
 - `q` exits
 
 ## Core concepts

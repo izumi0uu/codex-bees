@@ -20,7 +20,8 @@ export const CORE_COMMAND_HELP_OVERRIDES = {
     options: [SNAPSHOT_OPTION, SECTION_OPTION, WIDTH_OPTION, HEIGHT_OPTION],
     notes: [
       "Without --snapshot this opens a full-screen terminal UI when stdin/stdout are TTY-backed.",
-      "Use ':' inside the TUI to run another codex-bees command and then return to the current screen."
+      "Use ':' inside the TUI to open the command palette, filter commands, then return to the current screen after execution.",
+      "Inside the command palette, Up/Down changes the selected entry, Tab accepts it into the prompt, Enter runs it, and Esc cancels."
     ]
   },
   "command:get": {

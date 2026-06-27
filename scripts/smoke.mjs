@@ -2630,11 +2630,29 @@ if (
   console.error("[smoke:tui-snapshot] expected terminal snapshot output for the runtime TUI");
   process.exit(1);
 }
+const runtimeTuiPaletteSnapshot = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 84, height: 26, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.commandPalette?.visible === true && view.commandPalette?.entries?.length > 0 && view.counts.commandPaletteEntries > 0 && view.text.includes("Command palette:") && view.text.includes("codex-bees status") })); })'
+  ],
+  {
+    encoding: "utf8"
+  }
+);
+if (
+  runtimeTuiPaletteSnapshot.status !== 0 ||
+  JSON.parse(runtimeTuiPaletteSnapshot.stdout).ok !== true
+) {
+  console.error("[smoke:tui-command-palette] expected searchable command palette output");
+  console.error(runtimeTuiPaletteSnapshot.stderr || runtimeTuiPaletteSnapshot.stdout);
+  process.exit(runtimeTuiPaletteSnapshot.status ?? 1);
+}
 const runtimeTuiApiImport = spawnSync(
   "node",
   [
     "-e",
-    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 80, height: 20 }); console.log(JSON.stringify({ ok: view.kind === "runtime_tui_snapshot" && view.activeSection === "status" && view.sections.length === 6 && view.keymap.some((entry) => entry.key === ":") && typeof view.text === "string" && view.text.includes("codex-bees tui") })); })'
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 80, height: 20, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.kind === "runtime_tui_snapshot" && view.activeSection === "status" && view.sections.length === 6 && view.keymap.some((entry) => entry.key === ":") && typeof view.text === "string" && view.text.includes("codex-bees tui") && view.commandPalette?.visible === true && typeof view.commandPalette?.entries?.[0]?.command === "string" })); })'
   ],
   {
     encoding: "utf8"

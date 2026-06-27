@@ -2,6 +2,8 @@ import * as readline from "node:readline";
 import { spawnSync } from "node:child_process";
 import { stdin, stdout, stderr, argv, exit } from "node:process";
 import { PACKAGE_VERSION, PRODUCT_NAME, getPackageMetadata } from "../metadata.js";
+import { getSuggestedCliCommands } from "../state/cli/command-suggestions.js";
+import { getCommandCatalog } from "../state/command/core.js";
 import { getRuntimeReadyView } from "./ready-view.js";
 import { getRuntimeStatusView } from "./status-view.js";
 import {
@@ -16,6 +18,7 @@ import { toolCatalog } from "../mcp.js";
 const DEFAULT_SECTION_ID = "summary";
 const DEFAULT_WIDTH = 100;
 const DEFAULT_HEIGHT = 30;
+const COMMAND_PALETTE_LIMIT = 7;
 
 const TUI_SECTIONS = [
   {
@@ -62,7 +65,10 @@ const TUI_KEYMAP = [
   { key: "o", action: "jump to the recommended section" },
   { key: "r", action: "refresh current data" },
   { key: "?", action: "toggle the key help overlay" },
-  { key: ":", action: "run another codex-bees command and return" },
+  { key: ":", action: "open the searchable command palette" },
+  { key: "↑/↓", action: "change the selected command palette entry" },
+  { key: "enter", action: "run the current or selected command palette entry" },
+  { key: "esc", action: "close the command palette without running anything" },
   { key: "q", action: "quit the TUI" }
 ];
 
@@ -102,6 +108,10 @@ function fitLine(value, width) {
     return text.slice(0, width);
   }
   return `${text.slice(0, width - 3)}...`;
+}
+
+function compactCommand(value = "") {
+  return String(value).toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 function wrapText(value, width) {
@@ -185,6 +195,103 @@ function buildSuggestedCommandLines(entries = [], width) {
   return bulletize(entries.map((entry) => formatSuggestedCommand(entry)).filter(Boolean), width);
 }
 
+function normalizeSuggestedCommand(value) {
+  if (!value) {
+    return null;
+  }
+
+  const text = String(typeof value === "string" ? value : value.command ?? "").trim();
+  if (!text) {
+    return null;
+  }
+
+  const prefixes = [
+    `${PRODUCT_NAME} `,
+    `npx ${PRODUCT_NAME} `,
+    "node ./src/index.js ",
+    "node ./dist/index.js ",
+    "./src/index.js ",
+    "./dist/index.js "
+  ];
+
+  for (const prefix of prefixes) {
+    if (text.startsWith(prefix)) {
+      return text.slice(prefix.length).trim();
+    }
+  }
+
+  return text;
+}
+
+function splitCommandInput(input = "") {
+  const value = String(input);
+  const trimmedStart = value.trimStart();
+  if (!trimmedStart) {
+    return { commandQuery: "", suffix: "" };
+  }
+
+  const firstWhitespace = trimmedStart.search(/\s/);
+  if (firstWhitespace < 0) {
+    return {
+      commandQuery: trimmedStart,
+      suffix: ""
+    };
+  }
+
+  return {
+    commandQuery: trimmedStart.slice(0, firstWhitespace),
+    suffix: trimmedStart.slice(firstWhitespace)
+  };
+}
+
+function scorePaletteEntry(entry, query, suggestedCommands = new Set()) {
+  if (!entry || !query) {
+    return entry?.recommended ? 60 : 0;
+  }
+
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return entry.recommended ? 60 : 0;
+  }
+
+  const normalizedCompactQuery = compactCommand(normalizedQuery);
+  if (!normalizedCompactQuery) {
+    return entry.recommended ? 60 : 0;
+  }
+
+  const values = [
+    entry.command,
+    entry.displayCommand,
+    entry.description,
+    entry.groupLabel,
+    entry.usage,
+    ...(entry.reasons ?? [])
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase());
+
+  let score = 0;
+  for (const value of values) {
+    const compactValue = compactCommand(value);
+    if (value === normalizedQuery || compactValue === normalizedCompactQuery) {
+      score = Math.max(score, 400);
+    } else if (value.startsWith(normalizedQuery) || compactValue.startsWith(normalizedCompactQuery)) {
+      score = Math.max(score, 260);
+    } else if (value.includes(normalizedQuery) || compactValue.includes(normalizedCompactQuery)) {
+      score = Math.max(score, 170);
+    }
+  }
+
+  if (suggestedCommands.has(entry.command)) {
+    score += 160;
+  }
+  if (entry.recommended) {
+    score += 40;
+  }
+
+  return score;
+}
+
 function getRuntimeTuiData() {
   return {
     metadata: getPackageMetadata(),
@@ -195,6 +302,97 @@ function getRuntimeTuiData() {
     handoffsView: runtimeHandoffs(),
     recoveryView: runtimeRecovery(),
     summaryPackView: runtimeSummaryPack()
+  };
+}
+
+function buildCommandPaletteEntries(data, input = "", selectedCommandIndex = 0) {
+  const commandCatalog = getCommandCatalog();
+  const paletteByCommand = new Map(
+    commandCatalog.map((entry) => [
+      entry.command,
+      {
+        command: entry.command,
+        displayCommand: `${PRODUCT_NAME} ${entry.command}`,
+        description: entry.description ?? "",
+        groupLabel: entry.groupLabel ?? "General",
+        usage: entry.usage?.[0] ?? null,
+        recommended: false,
+        reasons: [],
+        source: "catalog"
+      }
+    ])
+  );
+
+  const recommendedEntries = [
+    ...(data.statusView.status.suggestedCommands ?? []),
+    ...(data.focusView.focus?.recommendedCommands ?? []),
+    ...(data.focusView.focus?.focus?.recommendedCommands ?? [])
+  ];
+
+  for (const entry of recommendedEntries) {
+    const command = normalizeSuggestedCommand(entry);
+    if (!command) {
+      continue;
+    }
+
+    const reason = typeof entry === "string" ? null : entry.reason ?? null;
+    const existing =
+      paletteByCommand.get(command) ??
+      {
+        command,
+        displayCommand: `${PRODUCT_NAME} ${command}`,
+        description: reason ?? "Recommended from the current runtime state.",
+        groupLabel: "Runtime recommendations",
+        usage: null,
+        recommended: false,
+        reasons: [],
+        source: "runtime"
+      };
+
+    existing.recommended = true;
+    if (reason && !existing.reasons.includes(reason)) {
+      existing.reasons.push(reason);
+    }
+    if (!paletteByCommand.has(command)) {
+      paletteByCommand.set(command, existing);
+    }
+  }
+
+  const { commandQuery } = splitCommandInput(input);
+  const rankedSuggestions = new Set(getSuggestedCliCommands(commandQuery, { limit: COMMAND_PALETTE_LIMIT * 2 }));
+
+  const ranked = [...paletteByCommand.values()]
+    .map((entry) => ({
+      ...entry,
+      score: scorePaletteEntry(entry, commandQuery, rankedSuggestions)
+    }))
+    .filter((entry) => commandQuery.trim().length === 0 || entry.score > 0)
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+      if (left.recommended !== right.recommended) {
+        return left.recommended ? -1 : 1;
+      }
+      return left.command.localeCompare(right.command);
+    });
+
+  const entries = ranked.slice(0, COMMAND_PALETTE_LIMIT);
+  const boundedSelectedIndex = entries.length === 0 ? -1 : Math.min(Math.max(0, selectedCommandIndex), entries.length - 1);
+
+  return {
+    visible: true,
+    input: String(input ?? ""),
+    selectedIndex: boundedSelectedIndex,
+    entries: entries.map((entry, index) => ({
+      command: entry.command,
+      displayCommand: entry.displayCommand,
+      description: entry.description,
+      groupLabel: entry.groupLabel,
+      usage: entry.usage,
+      recommended: entry.recommended,
+      selected: index === boundedSelectedIndex
+    }))
   };
 }
 
@@ -311,7 +509,39 @@ function buildHelpOverlayLines(width) {
   const lines = ["Keybindings:"];
   lines.push(...bulletize(TUI_KEYMAP.map((entry) => `${entry.key} - ${entry.action}`), width));
   lines.push("");
-  lines.push(...wrapText("Use ':' to run another codex-bees command, inspect its output, then return to the current TUI screen.", width));
+  lines.push(...wrapText("Use ':' to open the command palette, filter commands, inspect output, then return to the current TUI screen.", width));
+  return lines;
+}
+
+function buildCommandPaletteLines(commandPalette = null, width) {
+  if (!commandPalette?.visible) {
+    return [];
+  }
+
+  const lines = [
+    "Command palette:",
+    ...wrapText("Filter by command, alias, group, or description. Tab accepts the selected command and Enter runs it.", width)
+  ];
+
+  if ((commandPalette.entries?.length ?? 0) === 0) {
+    lines.push("");
+    lines.push(...wrapText("No matching commands. Keep typing or press Esc to cancel.", width));
+    return lines;
+  }
+
+  lines.push("");
+  for (const entry of commandPalette.entries) {
+    const prefix = entry.selected ? ">" : " ";
+    const suffix = entry.recommended ? " [recommended]" : "";
+    lines.push(fitLine(`${prefix} ${entry.displayCommand}${suffix}`, width));
+    lines.push(
+      fitLine(
+        `  ${entry.groupLabel} - ${entry.description || entry.usage || "Command palette entry"}`,
+        width
+      )
+    );
+  }
+
   return lines;
 }
 
@@ -377,8 +607,6 @@ function buildSectionView(sectionId, data, width, showHelp = false) {
 function renderTuiText(snapshot, { width, height, commandMode = false, commandInput = "", flashMessage = null } = {}) {
   const normalizedWidth = Math.max(40, width);
   const normalizedHeight = Math.max(16, height);
-  const lines = [];
-
   const tabs = snapshot.sections
     .map((section) => {
       const label = `${section.shortcut} ${section.label}`;
@@ -386,33 +614,61 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
     })
     .join("  ");
 
-  lines.push(fitLine(snapshot.header.title, normalizedWidth));
-  lines.push(fitLine(snapshot.header.subtitle, normalizedWidth));
-  lines.push(fitLine(snapshot.header.stateSummary, normalizedWidth));
-  lines.push("");
-  lines.push(fitLine(tabs, normalizedWidth));
-  lines.push(repeat("-", normalizedWidth));
-  lines.push(fitLine(`${snapshot.panel.title} - ${snapshot.panel.summary}`, normalizedWidth));
-  lines.push("");
-  lines.push(...snapshot.panel.lines.map((line) => fitLine(line, normalizedWidth)));
-  lines.push("");
+  const headerLines = [
+    fitLine(snapshot.header.title, normalizedWidth),
+    fitLine(snapshot.header.subtitle, normalizedWidth),
+    fitLine(snapshot.header.stateSummary, normalizedWidth),
+    "",
+    fitLine(tabs, normalizedWidth),
+    repeat("-", normalizedWidth),
+    fitLine(`${snapshot.panel.title} - ${snapshot.panel.summary}`, normalizedWidth),
+    ""
+  ];
+
+  const panelLines = [...snapshot.panel.lines.map((line) => fitLine(line, normalizedWidth)), ""];
+  const paletteLines =
+    commandMode && snapshot.commandPalette?.visible
+      ? [...buildCommandPaletteLines(snapshot.commandPalette, normalizedWidth), ""]
+      : [];
+
+  const footerLines = [];
   if (flashMessage) {
-    lines.push(fitLine(`Notice: ${flashMessage}`, normalizedWidth));
+    footerLines.push(fitLine(`Notice: ${flashMessage}`, normalizedWidth));
   }
-  lines.push(fitLine("Keys: 1-6 switch | Tab cycle | o recommended | r refresh | ? help | : command | q quit", normalizedWidth));
-  lines.push(
+  footerLines.push(
     fitLine(
       commandMode
-        ? `Command > ${commandInput}`
-        : "Command > press ':' to run another codex-bees command from inside the TUI",
+        ? "Keys: ↑/↓ select | Tab accept | Enter run | Esc cancel | Ctrl+C quit"
+        : "Keys: 1-6 switch | Tab cycle | o recommended | r refresh | ? help | : command | q quit",
+      normalizedWidth
+    )
+  );
+  footerLines.push(
+    fitLine(
+      commandMode
+        ? `Command > ${commandInput || ""}`
+        : "Command > press ':' to open the command palette from inside the TUI",
       normalizedWidth
     )
   );
 
+  const lines = [...headerLines, ...panelLines, ...paletteLines, ...footerLines];
   if (lines.length > normalizedHeight) {
-    const visible = lines.slice(0, normalizedHeight - 1);
-    visible.push(fitLine(`... truncated to ${normalizedHeight} rows`, normalizedWidth));
-    return visible.join("\n");
+    const reservedPaletteLines = paletteLines.length;
+    const availablePanelLines = Math.max(
+      1,
+      normalizedHeight - headerLines.length - footerLines.length - reservedPaletteLines - 1
+    );
+    const visiblePanelLines = panelLines.slice(0, availablePanelLines);
+    return [
+      ...headerLines,
+      ...visiblePanelLines,
+      fitLine(`... truncated to ${normalizedHeight} rows`, normalizedWidth),
+      ...paletteLines,
+      ...footerLines
+    ]
+      .slice(0, normalizedHeight)
+      .join("\n");
   }
 
   return lines.join("\n");
@@ -425,11 +681,13 @@ export function getRuntimeTuiSnapshot({
   showHelp = false,
   commandMode = false,
   commandInput = "",
+  selectedCommandIndex = 0,
   flashMessage = null
 } = {}) {
   const activeSection = normalizeSectionId(section);
   const data = getRuntimeTuiData();
   const sectionView = buildSectionView(activeSection, data, width, showHelp);
+  const commandPalette = commandMode ? buildCommandPaletteEntries(data, commandInput, selectedCommandIndex) : null;
   const snapshot = {
     kind: "runtime_tui_snapshot",
     recommendedReason: "tui_snapshot_rendered",
@@ -448,7 +706,8 @@ export function getRuntimeTuiSnapshot({
       description: sectionView.descriptor.description,
       summary: sectionView.summary,
       lines: sectionView.lines
-    }
+    },
+    commandPalette
   };
 
   const text = renderTuiText(snapshot, {
@@ -465,6 +724,7 @@ export function getRuntimeTuiSnapshot({
       sections: snapshot.sections.length,
       renderedLines: text.split("\n").length,
       suggestedCommands: data.statusView.status.suggestedCommands.length,
+      commandPaletteEntries: commandPalette?.entries?.length ?? 0,
       width,
       height
     },
@@ -577,6 +837,48 @@ async function runNestedCliCommand(input) {
   return `Ran ${PRODUCT_NAME} ${tokens.join(" ")}.`;
 }
 
+function resolveCommandModeInput(commandInput, commandPalette = null) {
+  const trimmedInput = String(commandInput ?? "").trim();
+  const selectedEntry =
+    commandPalette?.entries?.[commandPalette?.selectedIndex] ??
+    commandPalette?.entries?.[0] ??
+    null;
+
+  if (!trimmedInput) {
+    return selectedEntry?.command ?? "";
+  }
+
+  const { commandQuery, suffix } = splitCommandInput(trimmedInput);
+  const normalizedCommandQuery = normalizeSuggestedCommand(commandQuery);
+  if (!selectedEntry) {
+    return trimmedInput;
+  }
+
+  if (normalizedCommandQuery === selectedEntry.command) {
+    return `${selectedEntry.command}${suffix}`;
+  }
+
+  const exactPaletteMatch = commandPalette.entries.some((entry) => entry.command === normalizedCommandQuery);
+  if (exactPaletteMatch) {
+    return normalizedCommandQuery ? `${normalizedCommandQuery}${suffix}` : trimmedInput;
+  }
+
+  return `${selectedEntry.command}${suffix}`;
+}
+
+function applySelectedPaletteCommand(commandInput, commandPalette = null) {
+  const selectedEntry =
+    commandPalette?.entries?.[commandPalette?.selectedIndex] ??
+    commandPalette?.entries?.[0] ??
+    null;
+  if (!selectedEntry) {
+    return commandInput;
+  }
+
+  const { suffix } = splitCommandInput(commandInput);
+  return `${selectedEntry.command}${suffix}`;
+}
+
 export async function runInteractiveRuntimeTui({ section, snapshot = false } = {}) {
   if (snapshot || !stdin.isTTY || !stdout.isTTY) {
     stdout.write(`${getRuntimeTuiSnapshot({ section, width: getTerminalWidth(), height: getTerminalHeight() }).text}\n`);
@@ -591,6 +893,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
   let showHelp = false;
   let commandMode = false;
   let commandInput = "";
+  let selectedCommandIndex = 0;
   let flashMessage = null;
   let attached = false;
   let busy = false;
@@ -603,6 +906,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       showHelp,
       commandMode,
       commandInput,
+      selectedCommandIndex,
       flashMessage
     });
     writeScreen(snapshotView.text);
@@ -637,9 +941,20 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
   };
 
   const runCommandMode = async () => {
-    const input = commandInput.trim();
+    const snapshotView = getRuntimeTuiSnapshot({
+      section: activeSection,
+      width: getTerminalWidth(),
+      height: getTerminalHeight(),
+      showHelp,
+      commandMode,
+      commandInput,
+      selectedCommandIndex,
+      flashMessage
+    });
+    const input = resolveCommandModeInput(commandInput, snapshotView.commandPalette);
     commandMode = false;
     commandInput = "";
+    selectedCommandIndex = 0;
     flashMessage = null;
     busy = true;
     detach();
@@ -668,6 +983,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       if (key.name === "escape") {
         commandMode = false;
         commandInput = "";
+        selectedCommandIndex = 0;
         flashMessage = "Command prompt cancelled.";
         render();
         return;
@@ -676,13 +992,40 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
         await runCommandMode();
         return;
       }
+      if (key.name === "up") {
+        selectedCommandIndex = Math.max(0, selectedCommandIndex - 1);
+        render();
+        return;
+      }
+      if (key.name === "down") {
+        selectedCommandIndex += 1;
+        render();
+        return;
+      }
+      if (key.name === "tab") {
+        const snapshotView = getRuntimeTuiSnapshot({
+          section: activeSection,
+          width: getTerminalWidth(),
+          height: getTerminalHeight(),
+          showHelp,
+          commandMode,
+          commandInput,
+          selectedCommandIndex,
+          flashMessage
+        });
+        commandInput = applySelectedPaletteCommand(commandInput, snapshotView.commandPalette);
+        render();
+        return;
+      }
       if (key.name === "backspace") {
         commandInput = commandInput.slice(0, -1);
+        selectedCommandIndex = 0;
         render();
         return;
       }
       if (character && !key.meta) {
         commandInput += character;
+        selectedCommandIndex = 0;
         render();
       }
       return;
@@ -703,6 +1046,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     if (character === ":") {
       commandMode = true;
       commandInput = "";
+      selectedCommandIndex = 0;
       render();
       return;
     }
