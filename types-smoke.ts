@@ -231,12 +231,17 @@ const runtimeTuiLayoutMode: "stacked" | "split-pane" = runtimeTuiSnapshot.layout
 const runtimeTuiLiveEnabled: boolean = runtimeTuiSnapshot.liveRefresh.enabled;
 const runtimeTuiSignalGuide: string = runtimeTuiSnapshot.signals.guideMode;
 const runtimeTuiEventMessage: string | undefined = runtimeTuiSnapshot.eventStream.entries[0]?.message;
+const runtimeTuiQuickActionLabel: string | undefined = runtimeTuiSnapshot.quickActions[0]?.label;
+const runtimeTuiRecentActionKind: "command" | "action" | "section" | undefined = runtimeTuiSnapshot.recentActions[0]?.kind;
 const runtimeTuiPaletteCommand: string | undefined = getRuntimeTuiSnapshot({ commandMode: true, commandInput: "sta" }).commandPalette?.entries[0]?.command;
 const runtimeTuiPaletteSelected: boolean | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.selected;
+const runtimeTuiPaletteKind: "command" | "action" | "section" | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.kind;
+const runtimeTuiPalettePreview: string | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.preview[0];
 const runtimeTuiWideLayout: "stacked" | "split-pane" = getRuntimeTuiSnapshot({
   width: 120,
   liveRefresh: { enabled: true, intervalMs: 3000, tick: 1, lastRefreshedAt: "2026-06-27T02:30:00.000Z" },
-  eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }]
+  eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }],
+  recentActions: [{ label: "Open Summary", kind: "section", at: "2026-06-27T02:30:00.000Z" }]
 }).layout.mode;
 const runtimeTuiSubpathKind: "runtime_tui_snapshot" = getRuntimeTuiSubpathView({ section: "status" }).kind;
 const aliasCommandHelpMatched: string | null = getCommandHelpView("help").matchedCommand;

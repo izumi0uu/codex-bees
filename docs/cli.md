@@ -50,16 +50,17 @@ Inside the TUI:
 - `a` — toggle live refresh
 - `r` — refresh
 - `?` — toggle key help
-- `:` — open the searchable command palette
+- `:` or `/` — open the launcher
 - `↑/↓` — move the selected palette entry
 - `Tab` — accept the selected palette entry into the prompt
 - `Enter` — run the current or selected palette command
 - `Esc` — cancel the palette
 - `q` — quit
 
-The palette ranks:
+The launcher ranks:
 
 - current runtime-recommended commands first
+- quick runtime actions and screen jumps alongside commands
 - exact command and alias matches next
 - group / description matches after that
 
@@ -67,8 +68,8 @@ This keeps the TUI product-facing: you still use the same shipped CLI surface, b
 
 When the terminal is wide enough, the TUI also switches into a split-pane shell:
 
-- **left pane** — navigator, live refresh status, alert pressure, and recent event stream
-- **right pane** — the active runtime surface or command palette details
+- **left pane** — navigator, quick actions, recent actions, live refresh status, alert pressure, and recent event stream
+- **right pane** — the active runtime surface or launcher details / preview
 
 Interactive sessions keep live refresh enabled by default, so task / swarm / alert / guide-mode changes can surface in the sidebar without leaving the TUI.
 

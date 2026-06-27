@@ -26,6 +26,7 @@ const LIVE_REFRESH_INTERVAL_MS = 3000;
 const SPLIT_PANE_MIN_WIDTH = 108;
 const SPLIT_PANE_GUTTER = " │ ";
 const SPLIT_PANE_SIDEBAR_WIDTH = 32;
+const RECENT_ACTION_LIMIT = 5;
 
 const TUI_SECTIONS = [
   {
@@ -73,7 +74,7 @@ const TUI_KEYMAP = [
   { key: "a", action: "toggle live refresh" },
   { key: "r", action: "refresh current data" },
   { key: "?", action: "toggle the key help overlay" },
-  { key: ":", action: "open the searchable command palette" },
+  { key: ": /", action: "open the launcher" },
   { key: "↑/↓", action: "change the selected command palette entry" },
   { key: "enter", action: "run the current or selected command palette entry" },
   { key: "esc", action: "close the command palette without running anything" },
@@ -157,6 +158,25 @@ function createTuiEvent({
   };
 }
 
+function createRecentAction({
+  id,
+  label,
+  kind = "command",
+  command = null,
+  at = new Date().toISOString()
+} = {}) {
+  const resolvedAt = at ?? null;
+  const resolvedLabel = String(label ?? command ?? "").trim();
+  return {
+    id: id ?? `${kind}:${command ?? resolvedLabel}:${resolvedAt ?? "now"}`,
+    label: resolvedLabel,
+    kind,
+    command: command ?? null,
+    at: resolvedAt,
+    timeLabel: formatTimeLabel(resolvedAt)
+  };
+}
+
 function wrapText(value, width) {
   const text = String(value ?? "").trim();
   if (!text) {
@@ -236,6 +256,26 @@ function formatSuggestedCommand(entry) {
 
 function buildSuggestedCommandLines(entries = [], width) {
   return bulletize(entries.map((entry) => formatSuggestedCommand(entry)).filter(Boolean), width);
+}
+
+function appendRecentAction(entries = [], action, limit = RECENT_ACTION_LIMIT) {
+  const next = createRecentAction(action);
+  if (!next.label) {
+    return entries.slice(0, limit);
+  }
+
+  const merged = [next];
+  for (const existing of entries) {
+    const normalized = createRecentAction(existing);
+    if (normalized.label === next.label && normalized.kind === next.kind) {
+      continue;
+    }
+    merged.push(normalized);
+    if (merged.length >= limit) {
+      break;
+    }
+  }
+  return merged;
 }
 
 function inferActivityEventLevel(entry) {
@@ -374,6 +414,41 @@ function buildLiveRefreshView(liveRefresh = {}) {
   };
 }
 
+function buildQuickActions({ liveRefreshEnabled = false, showHelp = false } = {}) {
+  return [
+    {
+      id: "jump-recommended",
+      label: "Open recommended",
+      hint: "o",
+      description: "Jump to the runtime-recommended section."
+    },
+    {
+      id: "refresh",
+      label: "Refresh runtime",
+      hint: "r",
+      description: "Reload the active runtime surface and compare signals."
+    },
+    {
+      id: "toggle-auto",
+      label: liveRefreshEnabled ? "Pause live refresh" : "Resume live refresh",
+      hint: "a",
+      description: "Toggle the background 3s refresh loop."
+    },
+    {
+      id: "toggle-help",
+      label: showHelp ? "Hide key help" : "Show key help",
+      hint: "?",
+      description: "Toggle the keybinding reference overlay."
+    },
+    {
+      id: "open-launcher",
+      label: "Open launcher",
+      hint: ": /",
+      description: "Search commands, screens, and runtime actions."
+    }
+  ];
+}
+
 function normalizeSuggestedCommand(value) {
   if (!value) {
     return null;
@@ -486,12 +561,18 @@ function getRuntimeTuiData() {
   };
 }
 
-function buildCommandPaletteEntries(data, input = "", selectedCommandIndex = 0) {
+function buildCommandPaletteEntries(
+  data,
+  input = "",
+  selectedCommandIndex = 0,
+  { activeSection = DEFAULT_SECTION_ID, liveRefreshEnabled = false, showHelp = false } = {}
+) {
   const commandCatalog = getCommandCatalog();
   const paletteByCommand = new Map(
     commandCatalog.map((entry) => [
       entry.command,
       {
+        kind: "command",
         command: entry.command,
         displayCommand: `${PRODUCT_NAME} ${entry.command}`,
         description: entry.description ?? "",
@@ -499,7 +580,12 @@ function buildCommandPaletteEntries(data, input = "", selectedCommandIndex = 0) 
         usage: entry.usage?.[0] ?? null,
         recommended: false,
         reasons: [],
-        source: "catalog"
+        source: "catalog",
+        preview: [
+          entry.description ?? "CLI command",
+          entry.usage?.[0] ? `Usage: ${entry.usage[0]}` : null,
+          entry.notes?.[0] ?? null
+        ].filter(Boolean)
       }
     ])
   );
@@ -520,6 +606,7 @@ function buildCommandPaletteEntries(data, input = "", selectedCommandIndex = 0) 
     const existing =
       paletteByCommand.get(command) ??
       {
+        kind: "command",
         command,
         displayCommand: `${PRODUCT_NAME} ${command}`,
         description: reason ?? "Recommended from the current runtime state.",
@@ -527,7 +614,11 @@ function buildCommandPaletteEntries(data, input = "", selectedCommandIndex = 0) 
         usage: null,
         recommended: false,
         reasons: [],
-        source: "runtime"
+        source: "runtime",
+        preview: [
+          reason ?? "Recommended from the current runtime state.",
+          "Runs the existing shipped CLI surface."
+        ]
       };
 
     existing.recommended = true;
@@ -541,8 +632,42 @@ function buildCommandPaletteEntries(data, input = "", selectedCommandIndex = 0) 
 
   const { commandQuery } = splitCommandInput(input);
   const rankedSuggestions = new Set(getSuggestedCliCommands(commandQuery, { limit: COMMAND_PALETTE_LIMIT * 2 }));
+  const recommendedSection = mapRecommendedSurfaceToSection(data);
+  const launcherExtras = [
+    ...buildQuickActions({ liveRefreshEnabled, showHelp }).map((entry) => ({
+      kind: "action",
+      actionId: entry.id,
+      command: entry.label.toLowerCase(),
+      displayCommand: entry.label,
+      description: entry.description,
+      groupLabel: "Quick actions",
+      usage: entry.hint ? `Shortcut: ${entry.hint}` : null,
+      recommended: entry.id === "jump-recommended",
+      reasons: [],
+      source: "runtime",
+      preview: [entry.description, entry.hint ? `Hotkey: ${entry.hint}` : null].filter(Boolean)
+    })),
+    ...TUI_SECTIONS.map((section) => ({
+      kind: "section",
+      actionId: `section:${section.id}`,
+      targetSection: section.id,
+      command: `open ${section.id}`,
+      displayCommand: `Open ${section.label}`,
+      description: section.description,
+      groupLabel: "Screens",
+      usage: `Shortcut: ${section.shortcut}`,
+      recommended: section.id === recommendedSection,
+      reasons: section.id === activeSection ? ["Currently active screen."] : [],
+      source: "runtime",
+      preview: [
+        section.description,
+        `Switch the main pane to ${section.label}.`,
+        section.id === activeSection ? "This screen is active right now." : null
+      ].filter(Boolean)
+    }))
+  ];
 
-  const ranked = [...paletteByCommand.values()]
+  const ranked = [...paletteByCommand.values(), ...launcherExtras]
     .map((entry) => ({
       ...entry,
       score: scorePaletteEntry(entry, commandQuery, rankedSuggestions)
@@ -566,13 +691,17 @@ function buildCommandPaletteEntries(data, input = "", selectedCommandIndex = 0) 
     input: String(input ?? ""),
     selectedIndex: boundedSelectedIndex,
     entries: entries.map((entry, index) => ({
+      kind: entry.kind ?? "command",
+      actionId: entry.actionId ?? null,
+      targetSection: entry.targetSection ?? null,
       command: entry.command,
       displayCommand: entry.displayCommand,
       description: entry.description,
       groupLabel: entry.groupLabel,
       usage: entry.usage,
       recommended: entry.recommended,
-      selected: index === boundedSelectedIndex
+      selected: index === boundedSelectedIndex,
+      preview: Array.isArray(entry.preview) ? entry.preview.filter(Boolean) : []
     }))
   };
 }
@@ -690,7 +819,49 @@ function buildHelpOverlayLines(width) {
   const lines = ["Keybindings:"];
   lines.push(...bulletize(TUI_KEYMAP.map((entry) => `${entry.key} - ${entry.action}`), width));
   lines.push("");
-  lines.push(...wrapText("Use ':' to open the command palette, filter commands, inspect output, then return to the current TUI screen.", width));
+  lines.push(...wrapText("Use ':' or '/' to open the launcher, filter commands or runtime actions, inspect the preview, then return to the current TUI screen.", width));
+  return lines;
+}
+
+function getPaletteEntryBadge(entry) {
+  if (!entry) {
+    return "item";
+  }
+  if (entry.kind === "action") {
+    return "action";
+  }
+  if (entry.kind === "section") {
+    return "screen";
+  }
+  return "cmd";
+}
+
+function buildCommandPalettePreviewLines(commandPalette = null, width) {
+  const selectedEntry =
+    commandPalette?.entries?.[commandPalette?.selectedIndex] ??
+    commandPalette?.entries?.[0] ??
+    null;
+
+  if (!selectedEntry) {
+    return [];
+  }
+
+  const lines = ["Preview:"];
+  lines.push(
+    fitLine(
+      `${selectedEntry.displayCommand} · ${getPaletteEntryBadge(selectedEntry)}`,
+      width
+    )
+  );
+
+  for (const line of selectedEntry.preview ?? []) {
+    lines.push(...wrapText(line, width));
+  }
+
+  if (selectedEntry.kind === "command" && selectedEntry.usage) {
+    lines.push(...wrapText(`Usage: ${selectedEntry.usage}`, width));
+  }
+
   return lines;
 }
 
@@ -700,8 +871,8 @@ function buildCommandPaletteLines(commandPalette = null, width) {
   }
 
   const lines = [
-    "Command palette:",
-    ...wrapText("Filter by command, alias, group, or description. Tab accepts the selected command and Enter runs it.", width)
+    "Launcher:",
+    ...wrapText("Search commands, screens, and runtime actions. Tab accepts the selected entry and Enter runs it.", width)
   ];
 
   if ((commandPalette.entries?.length ?? 0) === 0) {
@@ -714,7 +885,7 @@ function buildCommandPaletteLines(commandPalette = null, width) {
   for (const entry of commandPalette.entries) {
     const prefix = entry.selected ? ">" : " ";
     const suffix = entry.recommended ? " [recommended]" : "";
-    lines.push(fitLine(`${prefix} ${entry.displayCommand}${suffix}`, width));
+    lines.push(fitLine(`${prefix} ${entry.displayCommand} · ${getPaletteEntryBadge(entry)}${suffix}`, width));
     lines.push(
       fitLine(
         `  ${entry.groupLabel} - ${entry.description || entry.usage || "Command palette entry"}`,
@@ -723,7 +894,63 @@ function buildCommandPaletteLines(commandPalette = null, width) {
     );
   }
 
+  const previewLines = buildCommandPalettePreviewLines(commandPalette, width);
+  if (previewLines.length > 0) {
+    lines.push("");
+    lines.push(...previewLines);
+  }
+
   return lines;
+}
+
+function buildCommandPaletteBodyLines(commandPalette = null, width) {
+  if (!commandPalette?.visible) {
+    return [];
+  }
+
+  const introLines = [
+    "Launcher:",
+    ...wrapText("Search commands, screens, and runtime actions. Tab accepts the selected entry and Enter runs it.", width),
+    ""
+  ];
+
+  if ((commandPalette.entries?.length ?? 0) === 0) {
+    return [...introLines, ...wrapText("No matching commands. Keep typing or press Esc to cancel.", width)];
+  }
+
+  const selectedIndex = Math.max(0, commandPalette.selectedIndex ?? 0);
+  const selectedEntry = commandPalette.entries[selectedIndex] ?? commandPalette.entries[0];
+  const siblingEntries = commandPalette.entries
+    .filter((_, index) => index !== selectedIndex)
+    .slice(0, 3);
+
+  const selectionLines = [
+    `> ${selectedEntry.displayCommand} · ${getPaletteEntryBadge(selectedEntry)}${selectedEntry.recommended ? " [recommended]" : ""}`,
+    `  ${selectedEntry.groupLabel} - ${selectedEntry.description || selectedEntry.usage || "Launcher entry"}`,
+    ""
+  ];
+
+  const previewLines = buildCommandPalettePreviewLines(
+    {
+      ...commandPalette,
+      entries: [selectedEntry],
+      selectedIndex: 0
+    },
+    width
+  );
+
+  const siblingLines = siblingEntries.length === 0
+    ? []
+    : [
+        "",
+        "More matches:",
+        ...siblingEntries.flatMap((entry) => [
+          fitLine(`  ${entry.displayCommand} · ${getPaletteEntryBadge(entry)}${entry.recommended ? " [recommended]" : ""}`, width),
+          fitLine(`    ${entry.groupLabel} - ${entry.description || entry.usage || "Launcher entry"}`, width)
+        ])
+      ];
+
+  return [...introLines, ...selectionLines, ...previewLines, ...siblingLines];
 }
 
 function buildSidebarLines(snapshot, width) {
@@ -736,14 +963,35 @@ function buildSidebarLines(snapshot, width) {
 
   lines.push("");
   lines.push("Live runtime:");
-  lines.push(`- layout: ${snapshot.layout.mode}`);
   lines.push(
-    `- refresh: ${snapshot.liveRefresh.enabled ? `auto ${Math.round(snapshot.liveRefresh.intervalMs / 1000)}s` : "manual"}`
+    `- ${snapshot.liveRefresh.enabled ? `auto ${Math.round(snapshot.liveRefresh.intervalMs / 1000)}s` : "manual"} · last ${snapshot.liveRefresh.lastRefreshedAtLabel}`
   );
-  lines.push(`- last: ${snapshot.liveRefresh.lastRefreshedAtLabel}`);
-  lines.push(`- guide: ${snapshot.signals.guideMode}`);
-  lines.push(`- alerts: h=${snapshot.signals.alerts.high} m=${snapshot.signals.alerts.medium}`);
-  lines.push(`- activity: ${snapshot.signals.activity.totalEntries}`);
+  lines.push(`- guide ${snapshot.signals.guideMode} · alerts h=${snapshot.signals.alerts.high} m=${snapshot.signals.alerts.medium}`);
+  lines.push(`- activity ${snapshot.signals.activity.totalEntries} · layout ${snapshot.layout.mode}`);
+
+  lines.push("");
+  lines.push("Recent:");
+  if ((snapshot.recentActions?.length ?? 0) === 0) {
+    lines.push("- No recent actions yet.");
+  } else {
+    lines.push(
+      ...bulletize(
+        snapshot.recentActions.slice(0, 2).map((entry) => `${entry.timeLabel} ${entry.label}`),
+        width,
+        "· "
+      )
+    );
+  }
+
+  lines.push("");
+  lines.push("Quick actions:");
+  lines.push(
+    ...bulletize(
+      snapshot.quickActions.slice(0, 2).map((entry) => `${entry.hint} ${entry.label}`),
+      width,
+      "· "
+    )
+  );
 
   if (snapshot.signals.alerts.topSummary) {
     lines.push("");
@@ -755,7 +1003,7 @@ function buildSidebarLines(snapshot, width) {
   lines.push("Event stream:");
   lines.push(
     ...bulletize(
-      snapshot.eventStream.entries.map((entry) => `${entry.timeLabel} ${entry.message}`),
+      snapshot.eventStream.entries.slice(0, 2).map((entry) => `${entry.timeLabel} ${entry.message}`),
       width,
       "· "
     )
@@ -859,7 +1107,7 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
 
   const paletteLines =
     commandMode && snapshot.commandPalette?.visible
-      ? [...buildCommandPaletteLines(snapshot.commandPalette, normalizedWidth), ""]
+      ? [...buildCommandPaletteBodyLines(snapshot.commandPalette, normalizedWidth), ""]
       : [];
   const panelLines = [...snapshot.panel.lines.map((line) => fitLine(line, normalizedWidth)), ""];
   const bodyLines =
@@ -867,7 +1115,7 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
       ? combineSplitPaneLines(
           buildSidebarLines(snapshot, snapshot.layout.sidebarWidth),
           commandMode
-            ? [...buildCommandPaletteLines(snapshot.commandPalette, snapshot.layout.contentWidth), "", ...snapshot.panel.lines.map((line) => fitLine(line, snapshot.layout.contentWidth))]
+            ? [...buildCommandPaletteBodyLines(snapshot.commandPalette, snapshot.layout.contentWidth), "", ...snapshot.panel.lines.map((line) => fitLine(line, snapshot.layout.contentWidth))]
             : snapshot.panel.lines.map((line) => fitLine(line, snapshot.layout.contentWidth)),
           snapshot.layout.sidebarWidth,
           snapshot.layout.contentWidth
@@ -890,7 +1138,7 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
     fitLine(
       commandMode
         ? "Keys: ↑/↓ select | Tab accept | Enter run | Esc cancel | Ctrl+C quit"
-        : "Keys: 1-6 switch | Tab cycle | o recommended | a auto | r refresh | ? help | : command | q quit",
+        : "Keys: 1-6 switch | Tab cycle | o recommended | a auto | r refresh | ? help | :/ launcher | q quit",
       normalizedWidth
     )
   );
@@ -898,7 +1146,7 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
     fitLine(
       commandMode
         ? `Command > ${commandInput || ""}`
-        : "Command > press ':' to open the command palette from inside the TUI",
+        : "Command > press ':' or '/' to open the launcher from inside the TUI",
       normalizedWidth
     )
   );
@@ -932,6 +1180,7 @@ export function getRuntimeTuiSnapshot({
   commandInput = "",
   selectedCommandIndex = 0,
   eventStream = [],
+  recentActions = [],
   liveRefresh = {},
   flashMessage = null
 } = {}) {
@@ -948,7 +1197,20 @@ export function getRuntimeTuiSnapshot({
     layout.mode === "split-pane" ? layout.contentWidth : width,
     showHelp
   );
-  const commandPalette = commandMode ? buildCommandPaletteEntries(data, commandInput, selectedCommandIndex) : null;
+  const quickActions = buildQuickActions({
+    liveRefreshEnabled: liveRefresh.enabled === true,
+    showHelp
+  });
+  const normalizedRecentActions = recentActions
+    .map((entry) => createRecentAction(entry))
+    .filter((entry) => entry.label);
+  const commandPalette = commandMode
+    ? buildCommandPaletteEntries(data, commandInput, selectedCommandIndex, {
+        activeSection,
+        liveRefreshEnabled: liveRefresh.enabled === true,
+        showHelp
+      })
+    : null;
   const snapshot = {
     kind: "runtime_tui_snapshot",
     recommendedReason: "tui_snapshot_rendered",
@@ -972,6 +1234,8 @@ export function getRuntimeTuiSnapshot({
     layout,
     liveRefresh: liveRefreshView,
     signals,
+    quickActions,
+    recentActions: normalizedRecentActions,
     eventStream: {
       total: mergedEventStream.length,
       entries: mergedEventStream
@@ -1114,25 +1378,41 @@ function resolveCommandModeInput(commandInput, commandPalette = null) {
     null;
 
   if (!trimmedInput) {
-    return selectedEntry?.command ?? "";
+    if (!selectedEntry) {
+      return { kind: "command", input: "" };
+    }
+    if (selectedEntry.kind === "command") {
+      return { kind: "command", input: selectedEntry.command, entry: selectedEntry };
+    }
+    return { kind: selectedEntry.kind, entry: selectedEntry, input: selectedEntry.command ?? "" };
   }
 
   const { commandQuery, suffix } = splitCommandInput(trimmedInput);
   const normalizedCommandQuery = normalizeSuggestedCommand(commandQuery);
   if (!selectedEntry) {
-    return trimmedInput;
+    return { kind: "command", input: trimmedInput };
   }
 
-  if (normalizedCommandQuery === selectedEntry.command) {
-    return `${selectedEntry.command}${suffix}`;
+  if (selectedEntry.kind === "command" && normalizedCommandQuery === selectedEntry.command) {
+    return { kind: "command", input: `${selectedEntry.command}${suffix}`, entry: selectedEntry };
   }
 
-  const exactPaletteMatch = commandPalette.entries.some((entry) => entry.command === normalizedCommandQuery);
+  const exactPaletteMatch = commandPalette.entries.find(
+    (entry) => entry.kind === "command" && entry.command === normalizedCommandQuery
+  );
   if (exactPaletteMatch) {
-    return normalizedCommandQuery ? `${normalizedCommandQuery}${suffix}` : trimmedInput;
+    return {
+      kind: "command",
+      input: normalizedCommandQuery ? `${normalizedCommandQuery}${suffix}` : trimmedInput,
+      entry: exactPaletteMatch
+    };
   }
 
-  return `${selectedEntry.command}${suffix}`;
+  if (selectedEntry.kind === "command") {
+    return { kind: "command", input: `${selectedEntry.command}${suffix}`, entry: selectedEntry };
+  }
+
+  return { kind: selectedEntry.kind, entry: selectedEntry, input: trimmedInput };
 }
 
 function applySelectedPaletteCommand(commandInput, commandPalette = null) {
@@ -1252,6 +1532,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
   let lastRefreshedAt = new Date().toISOString();
   let refreshTick = 0;
   let sessionEventStream = [];
+  let recentActions = [];
   let latestSignals = null;
   let attached = false;
   let busy = false;
@@ -1267,6 +1548,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       commandInput,
       selectedCommandIndex,
       eventStream: sessionEventStream,
+      recentActions,
       liveRefresh: {
         enabled: liveRefreshEnabled,
         intervalMs: LIVE_REFRESH_INTERVAL_MS,
@@ -1339,6 +1621,85 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     return finalSnapshot;
   };
 
+  const recordRecentAction = (action) => {
+    recentActions = appendRecentAction(recentActions, action);
+  };
+
+  const runLauncherAction = async (entry) => {
+    if (!entry) {
+      return;
+    }
+
+    if (entry.kind === "section") {
+      activeSection = entry.targetSection ?? activeSection;
+      showHelp = false;
+      flashMessage = `Opened ${entry.displayCommand}.`;
+      recordRecentAction({ label: entry.displayCommand, kind: "section" });
+      recordSessionEvents([
+        createTuiEvent({
+          level: "info",
+          source: "session",
+          message: flashMessage
+        })
+      ]);
+      render();
+      return;
+    }
+
+    if (entry.actionId === "jump-recommended") {
+      activeSection = captureSnapshot().recommendedSection;
+      flashMessage = `Opened recommended section: ${activeSection}.`;
+      recordRecentAction({ label: entry.displayCommand, kind: "action" });
+      recordSessionEvents([
+        createTuiEvent({
+          level: "info",
+          source: "session",
+          message: flashMessage
+        })
+      ]);
+      render();
+      return;
+    }
+
+    if (entry.actionId === "refresh") {
+      flashMessage = "Manual refresh completed.";
+      recordRecentAction({ label: entry.displayCommand, kind: "action" });
+      refreshRuntimeView({ source: "manual", commandMessage: flashMessage });
+      return;
+    }
+
+    if (entry.actionId === "toggle-auto") {
+      liveRefreshEnabled = !liveRefreshEnabled;
+      flashMessage = liveRefreshEnabled ? "Auto refresh resumed." : "Auto refresh paused.";
+      recordRecentAction({ label: entry.displayCommand, kind: "action" });
+      recordSessionEvents([
+        createTuiEvent({
+          level: "info",
+          source: "session",
+          message: flashMessage
+        })
+      ]);
+      scheduleRefreshTimer();
+      render();
+      return;
+    }
+
+    if (entry.actionId === "toggle-help") {
+      showHelp = !showHelp;
+      flashMessage = showHelp ? "Key help opened." : "Key help hidden.";
+      recordRecentAction({ label: entry.displayCommand, kind: "action" });
+      render();
+      return;
+    }
+
+    if (entry.actionId === "open-launcher") {
+      commandMode = true;
+      commandInput = "";
+      selectedCommandIndex = 0;
+      render();
+    }
+  };
+
   const detach = () => {
     if (!attached) {
       return;
@@ -1376,10 +1737,21 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     commandInput = "";
     selectedCommandIndex = 0;
     flashMessage = null;
+
+    if (input.kind !== "command") {
+      await runLauncherAction(input.entry);
+      return;
+    }
+
+    recordRecentAction({
+      label: `${PRODUCT_NAME} ${input.input}`,
+      kind: "command",
+      command: input.input
+    });
     busy = true;
     detach();
     try {
-      flashMessage = await runNestedCliCommand(input);
+      flashMessage = await runNestedCliCommand(input.input);
     } finally {
       stdin.setRawMode(true);
       stdin.resume();
@@ -1469,6 +1841,13 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       return;
     }
     if (character === ":") {
+      commandMode = true;
+      commandInput = "";
+      selectedCommandIndex = 0;
+      render();
+      return;
+    }
+    if (character === "/") {
       commandMode = true;
       commandInput = "";
       selectedCommandIndex = 0;

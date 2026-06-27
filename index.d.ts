@@ -276,6 +276,9 @@ export interface RuntimeTuiKeybinding {
 }
 
 export interface RuntimeTuiCommandPaletteEntry {
+  kind: "command" | "action" | "section";
+  actionId: string | null;
+  targetSection: RuntimeTuiSection["id"] | null;
   command: string;
   displayCommand: string;
   description: string;
@@ -283,6 +286,7 @@ export interface RuntimeTuiCommandPaletteEntry {
   usage: string | null;
   recommended: boolean;
   selected: boolean;
+  preview: string[];
 }
 
 export interface RuntimeTuiEvent {
@@ -327,6 +331,22 @@ export interface RuntimeTuiSignals {
   };
 }
 
+export interface RuntimeTuiQuickAction {
+  id: string;
+  label: string;
+  hint: string;
+  description: string;
+}
+
+export interface RuntimeTuiRecentAction {
+  id: string;
+  label: string;
+  kind: "command" | "action" | "section";
+  command: string | null;
+  at: string | null;
+  timeLabel: string;
+}
+
 export interface RuntimeTuiSnapshot {
   kind: "runtime_tui_snapshot";
   recommendedReason: "tui_snapshot_rendered";
@@ -355,6 +375,8 @@ export interface RuntimeTuiSnapshot {
   layout: RuntimeTuiLayout;
   liveRefresh: RuntimeTuiLiveRefresh;
   signals: RuntimeTuiSignals;
+  quickActions: RuntimeTuiQuickAction[];
+  recentActions: RuntimeTuiRecentAction[];
   eventStream: {
     total: number;
     entries: RuntimeTuiEvent[];
@@ -1807,6 +1829,7 @@ export declare function getRuntimeTuiSnapshot(input?: {
   commandInput?: string;
   selectedCommandIndex?: number;
   eventStream?: Partial<RuntimeTuiEvent>[];
+  recentActions?: Partial<RuntimeTuiRecentAction>[];
   liveRefresh?: Partial<RuntimeTuiLiveRefresh>;
   flashMessage?: string | null;
 }): RuntimeTuiSnapshot;
