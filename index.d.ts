@@ -236,6 +236,30 @@ export interface RuntimeReadyView {
     nextSteps: number;
   };
   contract: RuntimeContractView;
+  guideMode:
+    | "onboarding"
+    | "review"
+    | "recovery"
+    | "swarm-queue"
+    | "dispatch"
+    | "active"
+    | "closeout"
+    | "steady-state";
+  summary: string;
+  stateCounts: {
+    tasks: number;
+    swarms: number;
+    memories: number;
+    readyForReview: number;
+    blockedTasks: number;
+    queuedTasks: number;
+    activeTasks: number;
+    plannedSwarms: number;
+    activeSwarms: number;
+    blockedSwarms: number;
+    closedSwarms: number;
+  };
+  suggestedCommands: RuntimeSuggestedCommand[];
   next: string[];
 }
 
@@ -791,10 +815,25 @@ export interface RuntimeStatusCounts {
   memories: number;
 }
 
+export interface RuntimeSuggestedCommand {
+  command: string;
+  reason: string;
+}
+
 export interface RuntimeStatus {
   product: "codex-bees";
   version: string;
   mode: "codex-only";
+  guideMode:
+    | "onboarding"
+    | "review"
+    | "recovery"
+    | "swarm-queue"
+    | "dispatch"
+    | "active"
+    | "closeout"
+    | "steady-state";
+  summary: string;
   counts: RuntimeStatusCounts;
   state: {
     taskQueueStatuses: Record<string, number>;
@@ -822,6 +861,7 @@ export interface RuntimeStatus {
       | "runtime_queue_pack"
     >;
   };
+  suggestedCommands: RuntimeSuggestedCommand[];
   useCases: string[];
   catalog: RuntimeCatalog;
   capabilities: RuntimeCapabilitySummary[];

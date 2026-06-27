@@ -1,4 +1,5 @@
 import { PRODUCT_NAME } from "../../metadata.js";
+import { getRuntimeCliGuide } from "../../runtime/cli-guide.js";
 import { renderMcpHelpText } from "../mcp/cli.js";
 import {
   DIR_OPTION,
@@ -50,6 +51,20 @@ function appendCommandGroups(lines) {
   }
 }
 
+function appendSuggestedCommands(lines) {
+  const guide = getRuntimeCliGuide({ productName: PRODUCT_NAME });
+  if (!Array.isArray(guide.suggestions) || guide.suggestions.length === 0) {
+    return;
+  }
+
+  lines.push("Suggested now:");
+  lines.push(`  ${guide.summary}`);
+  for (const suggestion of guide.suggestions.slice(0, 4)) {
+    lines.push(`  ${suggestion.command}`);
+    lines.push(`    ${suggestion.reason}`);
+  }
+}
+
 export function getCommandHelpView(command) {
   const matchedEntry = getCommandCatalogEntry(command);
   const text = renderCommandHelpText(command);
@@ -80,6 +95,8 @@ export function renderHelpText() {
   appendCommonPaths(lines);
   lines.push("", "");
   appendCommandGroups(lines);
+  lines.push("", "");
+  appendSuggestedCommands(lines);
   lines.push(
     "",
     "More:",

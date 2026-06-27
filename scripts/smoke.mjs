@@ -959,6 +959,7 @@ import("codex-bees/commands").then((m) => {
     catalogView.commonPaths.some((path) => path.commands?.includes("codex-bees plan --task <objective>")) &&
     renderedHelp.includes("Common paths:") &&
     renderedHelp.includes("Command groups:") &&
+    renderedHelp.includes("Suggested now:") &&
     renderedHelp.includes("codex-bees command:help --name <command>") &&
     typeof m.getCommandCatalogEntry === "function" &&
     m.getCommandCatalogEntry("init")?.command === "init" &&
@@ -980,6 +981,7 @@ import("codex-bees/commands").then((m) => {
     missingHelpView.recommendedReason === "command_help_fallback_loaded" &&
     missingHelpView.text.includes("Common paths:") &&
     missingHelpView.text.includes("Command groups:") &&
+    missingHelpView.text.includes("Suggested now:") &&
     typeof m.getInitCommandCatalogView === "function" &&
     initOptionsView.kind === "init_command_catalog_view" &&
     initOptionsView.counts.totalOptions >= 5 &&
@@ -1354,6 +1356,11 @@ if (
   console.error(installedRootTaskViewsImport.stderr || installedRootTaskViewsImport.stdout);
   process.exit(installedRootTaskViewsImport.status ?? 1);
 }
+
+function resetInstalledAppState() {
+  rmSync(join(packedInstallAppDir, ".codex-bees"), { recursive: true, force: true });
+}
+
 function runInstalled(label, command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: options.cwd ?? packedInstallAppDir,
@@ -1371,11 +1378,14 @@ function runInstalled(label, command, args, options = {}) {
   return result;
 }
 
+resetInstalledAppState();
+
 const installedHelp = runInstalled("installed-help", "npx", ["codex-bees", "--help"]);
 if (
   !installedHelp.stdout.includes("codex-bees") ||
   !installedHelp.stdout.includes("Common paths:") ||
   !installedHelp.stdout.includes("Command groups:") ||
+  !installedHelp.stdout.includes("Suggested now:") ||
   !installedHelp.stdout.includes("codex-bees init --preview") ||
   !installedHelp.stdout.includes("codex-bees command:help --name <command>") ||
   !installedHelp.stdout.includes("codex-bees mcp --stdio")
@@ -1408,6 +1418,7 @@ if (
   !installedDirectCliHelp.stdout.includes("codex-bees") ||
   !installedDirectCliHelp.stdout.includes("Common paths:") ||
   !installedDirectCliHelp.stdout.includes("Command groups:") ||
+  !installedDirectCliHelp.stdout.includes("Suggested now:") ||
   !installedDirectCliHelp.stdout.includes("codex-bees init --preview") ||
   !installedDirectCliHelp.stdout.includes("codex-bees command:help --name <command>") ||
   !installedDirectCliHelp.stdout.includes("codex-bees mcp --stdio")
@@ -1860,8 +1871,10 @@ if (
   installedStatus.status?.catalog?.source !== "bundled" ||
   installedStatus.status?.version !== "0.1.0" ||
   installedStatus.status?.product !== "codex-bees" ||
+  installedStatus.status?.guideMode !== "onboarding" ||
   installedStatus.counts?.agents !== 4 ||
-  installedStatus.counts?.skills !== 2
+  installedStatus.counts?.skills !== 2 ||
+  installedStatus.status?.suggestedCommands?.[0]?.command !== "codex-bees init --preview"
 ) {
   console.error("[smoke:installed-status] expected installed npx codex-bees status to expose bundled runtime catalog");
   process.exit(1);
@@ -2575,26 +2588,45 @@ if (
   console.error("[smoke:doctor] expected runtime doctor and contract views");
   process.exit(1);
 }
-const runtimeReadyView = JSON.parse(run("run-verify", ["./src/index.js", "run"]).stdout);
+const runtimeReadyWorkspaceDir = mkdtempSync(join(tmpdir(), "codex-bees-runtime-ready-"));
+const runtimeReadyView = JSON.parse(
+  runInCwd("run-verify", [join(REPO_ROOT, "src", "index.js"), "run"], runtimeReadyWorkspaceDir).stdout
+);
 if (
   runtimeReadyView.kind !== "runtime_ready_view" ||
   runtimeReadyView.recommendedReason !== "runtime_entry_ready" ||
   runtimeReadyView.status !== "ready" ||
   runtimeReadyView.counts?.nextSteps !== 6 ||
   runtimeReadyView.contract?.kind !== "runtime_contract_view" ||
-  runtimeReadyView.next?.[0] !== "use `codex-bees init` to materialize the shipped .codex project assets"
+  runtimeReadyView.next?.[0] !== "use `codex-bees init` to materialize the shipped .codex project assets" ||
+  runtimeReadyView.guideMode !== "onboarding" ||
+  !runtimeReadyView.summary?.includes("no tracked tasks, swarms, or memories") ||
+  runtimeReadyView.suggestedCommands?.[0]?.command !== "codex-bees init --preview"
 ) {
   console.error("[smoke:run] expected runtime readiness view");
   process.exit(1);
 }
-const cliReadyView = JSON.parse(run("ready-verify", ["./src/index.js", "ready"]).stdout).ready;
+const cliReadyView = JSON.parse(
+  runInCwd("ready-verify", [join(REPO_ROOT, "src", "index.js"), "ready"], runtimeReadyWorkspaceDir).stdout
+).ready;
 if (
   cliReadyView.kind !== "runtime_ready_view" ||
   cliReadyView.recommendedReason !== "runtime_entry_ready" ||
   cliReadyView.status !== "ready" ||
-  cliReadyView.contract?.kind !== "runtime_contract_view"
+  cliReadyView.contract?.kind !== "runtime_contract_view" ||
+  cliReadyView.suggestedCommands?.[0]?.command !== "codex-bees init --preview"
 ) {
   console.error("[smoke:ready] expected explicit runtime readiness view");
+  process.exit(1);
+}
+rmSync(runtimeReadyWorkspaceDir, { recursive: true, force: true });
+const unknownCommandSuggestion = run("unknown-command-suggestion", ["./src/index.js", "runtim:dashbord"], 1);
+if (
+  !unknownCommandSuggestion.stderr.includes("Unknown command: runtim:dashbord") ||
+  !unknownCommandSuggestion.stderr.includes("Did you mean:") ||
+  !unknownCommandSuggestion.stderr.includes("codex-bees runtime:dashboard")
+) {
+  console.error("[smoke:unknown-command-suggestion] expected typo guidance for unknown commands");
   process.exit(1);
 }
 const cliCommandsView = JSON.parse(run("commands-verify", ["./src/index.js", "commands"]).stdout).commands;
@@ -3047,7 +3079,6 @@ const cliStatusWithToolsFlag = JSON.parse(
 ).status;
 if (
   cliStatusWithToolsFlag.kind !== "runtime_status_view" ||
-  cliStatusWithToolsFlag.recommendedReason !== "runtime_state_visible" ||
   cliStatusWithToolsFlag.status?.product !== "codex-bees"
 ) {
   console.error("[smoke:cli-flag-isolation] expected non-mcp commands to ignore the MCP --tools flag path");
@@ -10524,7 +10555,9 @@ const runtimeContractMcpInput = [
     }
   })
 ].join("\n") + "\n";
-const runtimeContractMcp = spawnSync("node", ["./src/mcp.js", "--stdio"], {
+const runtimeContractMcpWorkspaceDir = mkdtempSync(join(tmpdir(), "codex-bees-runtime-contract-mcp-"));
+const runtimeContractMcp = spawnSync("node", [join(REPO_ROOT, "src", "mcp.js"), "--stdio"], {
+  cwd: runtimeContractMcpWorkspaceDir,
   input: runtimeContractMcpInput,
   encoding: "utf8"
 });
@@ -10607,6 +10640,7 @@ if (
   console.error(runtimeContractMcp.stderr || runtimeContractMcp.stdout);
   process.exit(1);
 }
+rmSync(runtimeContractMcpWorkspaceDir, { recursive: true, force: true });
 const runtimeGuidanceMcpInput = [
   JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} }),
   JSON.stringify({

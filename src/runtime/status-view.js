@@ -3,6 +3,7 @@ import { getPackageMetadata } from "../metadata.js";
 import { listMcpTools } from "../state/mcp/tool-catalog.js";
 import { listMemories, listSwarms, listTasks } from "../state-runtime.js";
 import { getCapabilityCatalog } from "./capability-catalog.js";
+import { getRuntimeCliGuide } from "./cli-guide.js";
 import { countBy } from "./status-helpers.js";
 
 export function getRuntimeStatus({ version, toolCount } = {}) {
@@ -19,11 +20,14 @@ export function getRuntimeStatus({ version, toolCount } = {}) {
     mcp: [...new Set(capabilities.flatMap((capability) => capability.preferredEntryPoints?.mcp ?? []))].slice(0, 6)
   };
   const useCases = [...new Set(capabilities.flatMap((capability) => capability.useCases ?? []))].slice(0, 6);
+  const cliGuide = getRuntimeCliGuide();
 
   return {
     product: metadata.product,
     version: version ?? metadata.version,
     mode: metadata.mode,
+    guideMode: cliGuide.guideMode,
+    summary: cliGuide.summary,
     counts: {
       tools: resolvedToolCount,
       agents: catalog.agents.length,
@@ -40,6 +44,7 @@ export function getRuntimeStatus({ version, toolCount } = {}) {
     },
     highlights,
     recommendedEntryPoints,
+    suggestedCommands: cliGuide.suggestions,
     useCases,
     catalog,
     capabilities: capabilities.map((capability) => ({

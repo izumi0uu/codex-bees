@@ -322,6 +322,16 @@ const runtimeDoctorReason: "doctor_ready" | "doctor_entry_missing" = getRuntimeD
 const runtimeDoctorStatus: "ok" = getRuntimeDoctorView().status;
 const runtimeReadyReason: "runtime_entry_ready" = getRuntimeReadyView().recommendedReason;
 const runtimeReadyStatus: "ready" = getRuntimeReadyView().status;
+const runtimeReadyGuideMode:
+  | "onboarding"
+  | "review"
+  | "recovery"
+  | "swarm-queue"
+  | "dispatch"
+  | "active"
+  | "closeout"
+  | "steady-state" = getRuntimeReadyView().guideMode;
+const runtimeReadySuggestedCommand: string | undefined = getRuntimeReadyView().suggestedCommands[0]?.command;
 getRuntimeReadyView().next[0];
 getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).kind;
 const runtimeStatusReason: "runtime_state_visible" | "runtime_state_empty" = getRuntimeStatusView({ version: metadata.version, toolCount: listMcpTools().length }).recommendedReason;
@@ -636,6 +646,15 @@ const rootRuntimeContractCliTransport: "stdio" = getRuntimeContractView().contra
 const rootRuntimeContractMcpTransport: "stdio-jsonrpc" = getRuntimeContractView().contract.transport.mcp;
 const rootRuntimeStatusMode: "codex-only" = getRuntimeStatus({ version: metadata.version, toolCount: listMcpTools().length }).mode;
 const rootRuntimeStatusProduct: "codex-bees" = getRuntimeStatus({ version: metadata.version, toolCount: listMcpTools().length }).product;
+const rootRuntimeStatusGuideMode:
+  | "onboarding"
+  | "review"
+  | "recovery"
+  | "swarm-queue"
+  | "dispatch"
+  | "active"
+  | "closeout"
+  | "steady-state" = getRuntimeStatus({ version: metadata.version, toolCount: listMcpTools().length }).guideMode;
 const apiReadyKind: "runtime_ready_view" = getApiRuntimeReadyView().kind;
 const apiToolName: string | undefined = getApiToolCatalogView().tools[0]?.name;
 const catalogSource: "workspace" | "bundled" | "missing" = getCatalogSubpathView().catalog.source;
@@ -708,6 +727,7 @@ const statusCliEntry:
   | "runtime:summary-pack"
   | "runtime:queue-pack"
   | undefined = getStatusSubpathView().status.recommendedEntryPoints.cli[0];
+const statusSuggestedCommand: string | undefined = getStatusSubpathView().status.suggestedCommands[0]?.command;
 const plannerLane: string | undefined = planTaskSubpath("typed downstream planner").lanes[0]?.lane;
 const swarmLane: string | undefined = planSwarmSubpath("typed downstream swarm").swarm.lanes[0]?.lane;
 const swarmWorkers: number = planSwarmSubpath("typed downstream swarm").swarm.maxWorkers;
