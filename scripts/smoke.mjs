@@ -1,5 +1,5 @@
 import { spawnSync as childSpawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -566,6 +566,10 @@ if (
 const packDryRun = JSON.parse(
   runNpm(["pack", "--dry-run", "--json"]).stdout
 )[0];
+if ((statSync(DIST_INDEX).mode & 0o111) === 0) {
+  console.error("[smoke:dist-bin-mode] expected dist/index.js to be executable");
+  process.exit(1);
+}
 const packPaths = new Set((packDryRun.files ?? []).map((entry) => entry.path));
 if (
   !packPaths.has("dist/index.js") ||
@@ -612,6 +616,10 @@ if (installedManifestMain !== "dist/api.js") {
 const installedManifest = JSON.parse(
   readFileSync(join(packedInstallAppDir, "node_modules", "codex-bees", "package.json"), "utf8")
 );
+if ((statSync(join(packedInstallAppDir, "node_modules", "codex-bees", "dist", "index.js")).mode & 0o111) === 0) {
+  console.error("[smoke:installed-bin-mode] expected installed package dist/index.js to be executable");
+  process.exit(1);
+}
 const installedManifestTypes = installedManifest.types;
 if (installedManifestTypes !== "./dist/api.d.ts") {
   console.error("[smoke:installed-manifest-types] expected installed package types entry to target dist/api.d.ts");
