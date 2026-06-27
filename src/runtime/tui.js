@@ -1799,9 +1799,15 @@ function buildSignalChangeEvents(previousSignals, nextSignals, { source = "manua
   return events;
 }
 
-export async function runInteractiveRuntimeTui({ section, snapshot = false } = {}) {
+export async function runInteractiveRuntimeTui({ section, snapshot = false, width, height } = {}) {
   if (snapshot || !stdin.isTTY || !stdout.isTTY) {
-    stdout.write(`${getRuntimeTuiSnapshot({ section, width: getTerminalWidth(), height: getTerminalHeight() }).text}\n`);
+    stdout.write(
+      `${getRuntimeTuiSnapshot({
+        section,
+        width: width ?? getTerminalWidth(),
+        height: height ?? getTerminalHeight()
+      }).text}\n`
+    );
     return;
   }
 

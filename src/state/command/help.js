@@ -88,7 +88,12 @@ export function renderHelpText() {
     "Codex-only local bounded orchestration for explicit multi-agent work.",
     "",
     "Usage:",
+    `  ${PRODUCT_NAME}`,
     `  ${PRODUCT_NAME} <command> [options]`,
+    "",
+    "Default:",
+    "  Open the interactive runtime TUI when no command is provided.",
+    `  ${PRODUCT_NAME} --snapshot --section focus`,
     ""
   ];
 

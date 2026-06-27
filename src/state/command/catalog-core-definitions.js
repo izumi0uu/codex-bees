@@ -1,6 +1,6 @@
 export function getCoreCommandCatalogDefinitions({ getInitCommandCatalog, getMcpCommandCatalog }) {
   return [
-    { command: "run", description: "Start the local Codex runtime shell surface" },
+    { command: "run", description: "Legacy entry surface retained for compatibility; prefer `codex-bees` for the TUI or `ready` for the readiness view" },
     { command: "tui", description: "Open the interactive runtime TUI or render a terminal snapshot" },
     { command: "ready", description: "Show the runtime readiness surface" },
     { command: "commands", description: "Show the grouped CLI command catalog surface" },

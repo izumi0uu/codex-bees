@@ -45,6 +45,7 @@ import {
   getPlannerProfiles,
   getPlannerProfilesView,
   getRuntimeReadyView,
+  runInteractiveRuntimeTui,
   getRuntimeTuiSnapshot,
   getRuntimeStatus,
   getRuntimeStatusView,
@@ -236,6 +237,7 @@ const runtimeTuiRecentActionKind: "command" | "action" | "section" | undefined =
 const runtimeTuiStatuslineSegment: string | undefined = runtimeTuiSnapshot.statusline.segments[0];
 const runtimeTuiResultStatus: "success" | "error" | undefined = runtimeTuiSnapshot.resultStash[0]?.status;
 const runtimeTuiResultReviewVisible: boolean = runtimeTuiSnapshot.resultReview.visible;
+const runtimeTuiInteractiveInvocation: Promise<void> = runInteractiveRuntimeTui({ snapshot: true, width: 80, height: 24 });
 const runtimeTuiPaletteCommand: string | undefined = getRuntimeTuiSnapshot({ commandMode: true, commandInput: "sta" }).commandPalette?.entries[0]?.command;
 const runtimeTuiPaletteSelected: boolean | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.selected;
 const runtimeTuiPaletteKind: "command" | "action" | "section" | "result" | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.kind;

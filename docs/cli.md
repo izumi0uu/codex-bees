@@ -6,6 +6,7 @@ The CLI is the primary operator-facing surface of `codex-bees`.
 
 Use it to:
 
+- open the default TUI home
 - bootstrap `.codex` assets into a repo
 - inspect the runtime contract and shipped catalog
 - generate plans, tasks, and swarms
@@ -16,8 +17,9 @@ Use it to:
 ## Start here
 
 ```bash
+codex-bees
 codex-bees --help
-codex-bees tui --snapshot
+codex-bees --snapshot --section focus
 codex-bees status
 codex-bees commands
 codex-bees command:help --name plan
@@ -25,7 +27,7 @@ codex-bees command:help --name plan
 
 ## Interactive TUI
 
-`codex-bees tui` opens a full-screen terminal UI over the existing runtime views.
+`codex-bees` opens a full-screen terminal UI over the existing runtime views by default.
 
 Use it when you want:
 
@@ -36,11 +38,14 @@ Use it when you want:
 Useful entrypoints:
 
 ```bash
+codex-bees
 codex-bees tui
-codex-bees tui --snapshot
-codex-bees tui --snapshot --section focus
+codex-bees --snapshot
+codex-bees --snapshot --section focus
 codex-bees command:help --name tui
 ```
+
+`codex-bees tui` remains as the explicit alias when you want to spell the shell surface directly, but the product-facing default is now the bare command.
 
 Inside the TUI:
 
@@ -150,6 +155,7 @@ codex-bees swarm:queue --id <swarm-id>
 ### Inspect runtime state
 
 ```bash
+codex-bees
 codex-bees tui
 codex-bees runtime:dashboard
 codex-bees runtime:leader-pack

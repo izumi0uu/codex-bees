@@ -15,10 +15,18 @@ import {
 } from "./options.js";
 
 export const CORE_COMMAND_HELP_OVERRIDES = {
+  run: {
+    usage: [commandUsage("run")],
+    notes: [
+      "Legacy entry surface retained for compatibility.",
+      "Prefer running `codex-bees` with no command for the interactive TUI, or use `codex-bees ready` for the explicitly named readiness view."
+    ]
+  },
   tui: {
     usage: [commandUsage("tui", "[--snapshot] [--section <section>] [--width <columns>] [--height <rows>]")],
     options: [SNAPSHOT_OPTION, SECTION_OPTION, WIDTH_OPTION, HEIGHT_OPTION],
     notes: [
+      "Running `codex-bees` with no command opens the same shell by default.",
       "Without --snapshot this opens a full-screen terminal UI when stdin/stdout are TTY-backed.",
       "Use ':' or '/' inside the TUI to open the launcher, filter commands/screens/actions, then return to the current screen after execution.",
       "Inside the launcher, Up/Down, Ctrl+N/Ctrl+P, and j/k change the selected entry; gg jumps to the top and Shift+G jumps to the bottom.",
@@ -78,7 +86,7 @@ export const CORE_COMMAND_HELP_OVERRIDES = {
   },
   "--help": {
     usage: [commandUsage("--help"), commandUsage("help")],
-    notes: ["Print the full top-level command catalog."]
+    notes: ["Print the TUI-first top-level command catalog without opening the shell."]
   },
   "--version": {
     usage: [commandUsage("--version"), commandUsage("version")],

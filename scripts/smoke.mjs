@@ -963,11 +963,15 @@ import("codex-bees/commands").then((m) => {
     catalogView.groups.some((group) => group.label === "Core setup & inspection") &&
     catalogView.groups.some((group) => group.label === "Swarm coordination") &&
     Array.isArray(catalogView.commonPaths) &&
+    catalogView.commonPaths.some((path) => path.label === "Open the runtime shell") &&
+    catalogView.commonPaths.some((path) => path.commands?.includes("codex-bees")) &&
     catalogView.commonPaths.some((path) => path.label === "Bootstrap a repo") &&
     catalogView.commonPaths.some((path) => path.commands?.includes("codex-bees plan --task <objective>")) &&
     renderedHelp.includes("Common paths:") &&
     renderedHelp.includes("Command groups:") &&
     renderedHelp.includes("Suggested now:") &&
+    renderedHelp.includes("Open the interactive runtime TUI when no command is provided.") &&
+    renderedHelp.includes("codex-bees --snapshot --section focus") &&
     renderedHelp.includes("codex-bees command:help --name <command>") &&
     typeof m.getCommandCatalogEntry === "function" &&
     m.getCommandCatalogEntry("init")?.command === "init" &&
@@ -1394,6 +1398,8 @@ if (
   !installedHelp.stdout.includes("Common paths:") ||
   !installedHelp.stdout.includes("Command groups:") ||
   !installedHelp.stdout.includes("Suggested now:") ||
+  !installedHelp.stdout.includes("Open the interactive runtime TUI when no command is provided.") ||
+  !installedHelp.stdout.includes("codex-bees --snapshot --section focus") ||
   !installedHelp.stdout.includes("codex-bees init --preview") ||
   !installedHelp.stdout.includes("codex-bees command:help --name <command>") ||
   !installedHelp.stdout.includes("codex-bees mcp --stdio")
@@ -1427,6 +1433,8 @@ if (
   !installedDirectCliHelp.stdout.includes("Common paths:") ||
   !installedDirectCliHelp.stdout.includes("Command groups:") ||
   !installedDirectCliHelp.stdout.includes("Suggested now:") ||
+  !installedDirectCliHelp.stdout.includes("Open the interactive runtime TUI when no command is provided.") ||
+  !installedDirectCliHelp.stdout.includes("codex-bees --snapshot --section focus") ||
   !installedDirectCliHelp.stdout.includes("codex-bees init --preview") ||
   !installedDirectCliHelp.stdout.includes("codex-bees command:help --name <command>") ||
   !installedDirectCliHelp.stdout.includes("codex-bees mcp --stdio")
@@ -1542,6 +1550,24 @@ if (installedVersion.stdout.trim() !== "0.1.0") {
 const installedDirectCliVersion = runInstalled("installed-direct-cli-version", "node", ["./node_modules/codex-bees/dist/index.js", "--version"]);
 if (installedDirectCliVersion.stdout.trim() !== "0.1.0") {
   console.error("[smoke:installed-direct-cli-version] expected direct packaged CLI version output");
+  process.exit(1);
+}
+const installedDefaultEntry = runInstalled("installed-default-entry", "npx", ["codex-bees"]);
+if (
+  !installedDefaultEntry.stdout.includes("codex-bees tui") ||
+  !installedDefaultEntry.stdout.includes("Command > press ':' or '/'") ||
+  !installedDefaultEntry.stdout.includes("Live: manual")
+) {
+  console.error("[smoke:installed-default-entry] expected bare npx codex-bees to fall into the TUI shell surface");
+  process.exit(1);
+}
+const installedDirectCliDefaultEntry = runInstalled("installed-direct-cli-default-entry", "node", ["./node_modules/codex-bees/dist/index.js"]);
+if (
+  !installedDirectCliDefaultEntry.stdout.includes("codex-bees tui") ||
+  !installedDirectCliDefaultEntry.stdout.includes("Command > press ':' or '/'") ||
+  !installedDirectCliDefaultEntry.stdout.includes("Live: manual")
+) {
+  console.error("[smoke:installed-direct-cli-default-entry] expected bare packaged CLI entry to fall into the TUI shell surface");
   process.exit(1);
 }
 const installedRun = JSON.parse(
@@ -2628,7 +2654,17 @@ if (
   process.exit(1);
 }
 rmSync(runtimeReadyWorkspaceDir, { recursive: true, force: true });
-const runtimeTuiSnapshot = run("tui-snapshot", ["./src/index.js", "tui", "--snapshot", "--section", "focus", "--width", "72", "--height", "24"]).stdout;
+const runtimeTuiDefaultEntry = run("tui-default-entry", ["./src/index.js"]).stdout;
+if (
+  !runtimeTuiDefaultEntry.includes("codex-bees tui") ||
+  !runtimeTuiDefaultEntry.includes("Summary") ||
+  !runtimeTuiDefaultEntry.includes("Command > press ':' or '/'") ||
+  !runtimeTuiDefaultEntry.includes("Live: manual")
+) {
+  console.error("[smoke:tui-default-entry] expected bare CLI entry to open the TUI shell");
+  process.exit(1);
+}
+const runtimeTuiSnapshot = run("tui-snapshot", ["./src/index.js", "--snapshot", "--section", "focus", "--width", "72", "--height", "24"]).stdout;
 if (
   !runtimeTuiSnapshot.includes("codex-bees tui") ||
   !runtimeTuiSnapshot.includes("Focus") ||

@@ -8,6 +8,18 @@ import { getSuggestedCliCommands } from "./state/cli/command-suggestions.js";
 import { isCliEntrypoint, writeErr } from "./state/cli/helpers.js";
 
 const MODULE_PATH = fileURLToPath(import.meta.url);
+const TOP_LEVEL_TUI_FLAGS = new Set(["--snapshot", "--section", "--width", "--height"]);
+
+function resolveEntrypointCommand(args = argv.slice(2)) {
+  const command = args[0];
+  if (typeof command === "undefined") {
+    return "tui";
+  }
+  if (TOP_LEVEL_TUI_FLAGS.has(command)) {
+    return "tui";
+  }
+  return command;
+}
 
 async function runCommand(command) {
   const handled = await runCliCommand(command, { mcpArgs: argv.slice(3) });
@@ -33,7 +45,7 @@ if (isCliEntrypoint(MODULE_PATH)) {
     writeErr(`[codex-bees] argv=${JSON.stringify(argv.slice(2))}\n`);
   }
 
-  runCommand(argv[2]).catch((error) => {
+  runCommand(resolveEntrypointCommand()).catch((error) => {
     writeErr(`${isMcpCliUsageError(error) ? error.message : error.stack || error.message}\n`);
     exit(1);
   });

@@ -1,5 +1,5 @@
-import { argv, exit, readOption, write, writeErr } from "./helpers.js";
-import { getRuntimeTuiSnapshot, runInteractiveRuntimeTui } from "../../runtime-tui.js";
+import { argv, exit, readOption, writeErr } from "./helpers.js";
+import { runInteractiveRuntimeTui } from "../../runtime-tui.js";
 
 function readPositiveInteger(flag) {
   const index = argv.indexOf(flag);
@@ -20,12 +20,5 @@ export async function handleTui() {
   const section = readOption("--section");
   const width = readPositiveInteger("--width");
   const height = readPositiveInteger("--height");
-
-  if (snapshot) {
-    const view = getRuntimeTuiSnapshot({ section, width, height });
-    write(`${view.text}\n`);
-    return;
-  }
-
-  await runInteractiveRuntimeTui({ section });
+  await runInteractiveRuntimeTui({ section, snapshot, width, height });
 }

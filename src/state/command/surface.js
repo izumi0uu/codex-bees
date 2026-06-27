@@ -45,6 +45,12 @@ const COMMAND_GROUPS = [
 
 const COMMON_COMMAND_PATHS = [
   {
+    id: "shell",
+    label: "Open the runtime shell",
+    description: "Run the TUI by default, or render a snapshot from the same shell surface without spelling the alias.",
+    commands: ["", "--snapshot --section focus", "ready"]
+  },
+  {
     id: "bootstrap",
     label: "Bootstrap a repo",
     description: "Preview and install the bundled `.codex` assets, then confirm the runtime surface.",
@@ -181,7 +187,10 @@ function getCommonCommandPaths() {
 function formatCommonCommandPath(path, productName) {
   return {
     ...path,
-    commands: path.commands.map((command) => `${productName} ${command}`)
+    commands: path.commands.map((command) => {
+      const normalizedCommand = String(command ?? "").trim();
+      return normalizedCommand ? `${productName} ${normalizedCommand}` : productName;
+    })
   };
 }
 

@@ -1858,6 +1858,8 @@ export declare function getRuntimeTuiSnapshot(input?: {
 export declare function runInteractiveRuntimeTui(input?: {
   section?: RuntimeTuiSection["id"];
   snapshot?: boolean;
+  width?: number;
+  height?: number;
 }): Promise<void>;
 
 export declare function getCoordinationOverview(): CoordinationOverview;
