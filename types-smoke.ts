@@ -226,8 +226,18 @@ const runtimeTuiSnapshotKind: "runtime_tui_snapshot" = runtimeTuiSnapshot.kind;
 const runtimeTuiSection: "summary" | "dashboard" | "focus" | "handoffs" | "recovery" | "status" = runtimeTuiSnapshot.activeSection;
 const runtimeTuiText: string = runtimeTuiSnapshot.text;
 const runtimeTuiPaletteEntryCount: number = runtimeTuiSnapshot.counts.commandPaletteEntries;
+const runtimeTuiEventCount: number = runtimeTuiSnapshot.counts.eventStreamEntries;
+const runtimeTuiLayoutMode: "stacked" | "split-pane" = runtimeTuiSnapshot.layout.mode;
+const runtimeTuiLiveEnabled: boolean = runtimeTuiSnapshot.liveRefresh.enabled;
+const runtimeTuiSignalGuide: string = runtimeTuiSnapshot.signals.guideMode;
+const runtimeTuiEventMessage: string | undefined = runtimeTuiSnapshot.eventStream.entries[0]?.message;
 const runtimeTuiPaletteCommand: string | undefined = getRuntimeTuiSnapshot({ commandMode: true, commandInput: "sta" }).commandPalette?.entries[0]?.command;
 const runtimeTuiPaletteSelected: boolean | undefined = getRuntimeTuiSnapshot({ commandMode: true }).commandPalette?.entries[0]?.selected;
+const runtimeTuiWideLayout: "stacked" | "split-pane" = getRuntimeTuiSnapshot({
+  width: 120,
+  liveRefresh: { enabled: true, intervalMs: 3000, tick: 1, lastRefreshedAt: "2026-06-27T02:30:00.000Z" },
+  eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }]
+}).layout.mode;
 const runtimeTuiSubpathKind: "runtime_tui_snapshot" = getRuntimeTuiSubpathView({ section: "status" }).kind;
 const aliasCommandHelpMatched: string | null = getCommandHelpView("help").matchedCommand;
 const initOptionEntry: string | undefined = getInitCommandCatalogEntry("--preview")?.option;

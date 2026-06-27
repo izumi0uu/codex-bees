@@ -95,12 +95,19 @@ Inside the TUI:
 - `1-6` switches sections
 - `Tab` cycles screens
 - `o` jumps to the recommended section
+- `a` toggles live refresh
 - `:` opens a searchable command palette
 - `↑/↓` changes the selected palette command
 - `Tab` accepts the selected palette command into the prompt
 - `Enter` runs the current or selected palette command
 - `Esc` closes the palette
 - `q` exits
+
+On wider terminals, the TUI automatically switches into a split-pane layout with:
+
+- a left navigation / signal sidebar
+- a right detail pane for the active surface
+- a live event stream fed by runtime alerts, runtime activity, and session refresh notices
 
 ## Core concepts
 

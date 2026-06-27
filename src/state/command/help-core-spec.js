@@ -21,7 +21,8 @@ export const CORE_COMMAND_HELP_OVERRIDES = {
     notes: [
       "Without --snapshot this opens a full-screen terminal UI when stdin/stdout are TTY-backed.",
       "Use ':' inside the TUI to open the command palette, filter commands, then return to the current screen after execution.",
-      "Inside the command palette, Up/Down changes the selected entry, Tab accepts it into the prompt, Enter runs it, and Esc cancels."
+      "Inside the command palette, Up/Down changes the selected entry, Tab accepts it into the prompt, Enter runs it, and Esc cancels.",
+      "Wide terminals automatically switch into a split-pane layout, and interactive sessions keep a live refresh + event stream sidebar running by default."
     ]
   },
   "command:get": {

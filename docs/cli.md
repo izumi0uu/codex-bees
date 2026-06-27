@@ -47,6 +47,7 @@ Inside the TUI:
 - `1-6` — jump to a section
 - `Tab` — cycle sections
 - `o` — jump to the recommended section
+- `a` — toggle live refresh
 - `r` — refresh
 - `?` — toggle key help
 - `:` — open the searchable command palette
@@ -63,6 +64,13 @@ The palette ranks:
 - group / description matches after that
 
 This keeps the TUI product-facing: you still use the same shipped CLI surface, but you no longer need to remember every command name from scratch.
+
+When the terminal is wide enough, the TUI also switches into a split-pane shell:
+
+- **left pane** — navigator, live refresh status, alert pressure, and recent event stream
+- **right pane** — the active runtime surface or command palette details
+
+Interactive sessions keep live refresh enabled by default, so task / swarm / alert / guide-mode changes can surface in the sidebar without leaving the TUI.
 
 ## Command groups
 

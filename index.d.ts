@@ -285,6 +285,48 @@ export interface RuntimeTuiCommandPaletteEntry {
   selected: boolean;
 }
 
+export interface RuntimeTuiEvent {
+  id: string;
+  at: string | null;
+  timeLabel: string;
+  level: "info" | "warn" | "success";
+  source: "session" | "runtime_alert" | "runtime_activity";
+  message: string;
+}
+
+export interface RuntimeTuiLayout {
+  mode: "stacked" | "split-pane";
+  sidebarWidth: number;
+  contentWidth: number;
+}
+
+export interface RuntimeTuiLiveRefresh {
+  enabled: boolean;
+  intervalMs: number;
+  tick: number;
+  lastRefreshedAt: string | null;
+  lastRefreshedAtLabel: string;
+}
+
+export interface RuntimeTuiSignals {
+  guideMode: string;
+  tasks: number;
+  swarms: number;
+  memories: number;
+  recommendedSurface: string | null;
+  recommendedSection: RuntimeTuiSection["id"];
+  alerts: {
+    total: number;
+    high: number;
+    medium: number;
+    topSummary: string | null;
+  };
+  activity: {
+    totalEntries: number;
+    nextSummary: string | null;
+  };
+}
+
 export interface RuntimeTuiSnapshot {
   kind: "runtime_tui_snapshot";
   recommendedReason: "tui_snapshot_rendered";
@@ -310,11 +352,19 @@ export interface RuntimeTuiSnapshot {
     selectedIndex: number;
     entries: RuntimeTuiCommandPaletteEntry[];
   } | null;
+  layout: RuntimeTuiLayout;
+  liveRefresh: RuntimeTuiLiveRefresh;
+  signals: RuntimeTuiSignals;
+  eventStream: {
+    total: number;
+    entries: RuntimeTuiEvent[];
+  };
   counts: {
     sections: number;
     renderedLines: number;
     suggestedCommands: number;
     commandPaletteEntries: number;
+    eventStreamEntries: number;
     width: number;
     height: number;
   };
@@ -1756,6 +1806,8 @@ export declare function getRuntimeTuiSnapshot(input?: {
   commandMode?: boolean;
   commandInput?: string;
   selectedCommandIndex?: number;
+  eventStream?: Partial<RuntimeTuiEvent>[];
+  liveRefresh?: Partial<RuntimeTuiLiveRefresh>;
   flashMessage?: string | null;
 }): RuntimeTuiSnapshot;
 export declare function runInteractiveRuntimeTui(input?: {

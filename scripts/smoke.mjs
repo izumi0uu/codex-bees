@@ -2625,10 +2625,29 @@ if (
   !runtimeTuiSnapshot.includes("codex-bees tui") ||
   !runtimeTuiSnapshot.includes("Focus") ||
   !runtimeTuiSnapshot.includes("Keys: 1-6 switch") ||
-  !runtimeTuiSnapshot.includes("Command > press ':'")
+  !runtimeTuiSnapshot.includes("Command > press ':'") ||
+  !runtimeTuiSnapshot.includes("Live: manual")
 ) {
   console.error("[smoke:tui-snapshot] expected terminal snapshot output for the runtime TUI");
   process.exit(1);
+}
+const runtimeTuiSplitPaneSnapshot = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 124, height: 30, liveRefresh: { enabled: true, intervalMs: 3000, tick: 2, lastRefreshedAt: "2026-06-27T02:30:00.000Z" }, eventStream: [{ message: "Manual refresh completed.", source: "session", level: "info", at: "2026-06-27T02:30:00.000Z" }] }); console.log(JSON.stringify({ ok: view.layout.mode === "split-pane" && view.liveRefresh.enabled === true && view.eventStream.total > 0 && view.counts.eventStreamEntries > 0 && view.text.includes("Navigator:") && view.text.includes("Event stream:") && view.text.includes("Live: auto 3s") })); })'
+  ],
+  {
+    encoding: "utf8"
+  }
+);
+if (
+  runtimeTuiSplitPaneSnapshot.status !== 0 ||
+  JSON.parse(runtimeTuiSplitPaneSnapshot.stdout).ok !== true
+) {
+  console.error("[smoke:tui-split-pane] expected split-pane snapshot with live refresh and event stream");
+  console.error(runtimeTuiSplitPaneSnapshot.stderr || runtimeTuiSplitPaneSnapshot.stdout);
+  process.exit(runtimeTuiSplitPaneSnapshot.status ?? 1);
 }
 const runtimeTuiPaletteSnapshot = spawnSync(
   "node",
@@ -2652,7 +2671,7 @@ const runtimeTuiApiImport = spawnSync(
   "node",
   [
     "-e",
-    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 80, height: 20, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.kind === "runtime_tui_snapshot" && view.activeSection === "status" && view.sections.length === 6 && view.keymap.some((entry) => entry.key === ":") && typeof view.text === "string" && view.text.includes("codex-bees tui") && view.commandPalette?.visible === true && typeof view.commandPalette?.entries?.[0]?.command === "string" })); })'
+    'import("./src/runtime-tui.js").then((m) => { const view = m.getRuntimeTuiSnapshot({ section: "status", width: 80, height: 20, commandMode: true, commandInput: "sta" }); console.log(JSON.stringify({ ok: view.kind === "runtime_tui_snapshot" && view.activeSection === "status" && view.sections.length === 6 && view.keymap.some((entry) => entry.key === ":") && view.keymap.some((entry) => entry.key === "a") && typeof view.text === "string" && view.text.includes("codex-bees tui") && view.commandPalette?.visible === true && typeof view.commandPalette?.entries?.[0]?.command === "string" && typeof view.layout?.mode === "string" && typeof view.signals?.guideMode === "string" })); })'
   ],
   {
     encoding: "utf8"
@@ -2700,7 +2719,8 @@ const runtimeTuiInteractive = spawnSync(
 if (
   runtimeTuiInteractive.status !== 0 ||
   !runtimeTuiInteractive.stdout.includes("codex-bees tui") ||
-  !runtimeTuiInteractive.stdout.includes("Command > press ':'")
+  !runtimeTuiInteractive.stdout.includes("Command > press ':'") ||
+  !runtimeTuiInteractive.stdout.includes("Live: auto 3s")
 ) {
   console.error("[smoke:tui-interactive] expected full-screen TUI to open and quit cleanly under a PTY");
   console.error(runtimeTuiInteractive.stderr || runtimeTuiInteractive.stdout);

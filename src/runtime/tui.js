@@ -7,6 +7,8 @@ import { getCommandCatalog } from "../state/command/core.js";
 import { getRuntimeReadyView } from "./ready-view.js";
 import { getRuntimeStatusView } from "./status-view.js";
 import {
+  runtimeActivity,
+  runtimeAlerts,
   runtimeDashboard,
   runtimeFocus,
   runtimeHandoffs,
@@ -19,6 +21,11 @@ const DEFAULT_SECTION_ID = "summary";
 const DEFAULT_WIDTH = 100;
 const DEFAULT_HEIGHT = 30;
 const COMMAND_PALETTE_LIMIT = 7;
+const EVENT_STREAM_LIMIT = 6;
+const LIVE_REFRESH_INTERVAL_MS = 3000;
+const SPLIT_PANE_MIN_WIDTH = 108;
+const SPLIT_PANE_GUTTER = " │ ";
+const SPLIT_PANE_SIDEBAR_WIDTH = 32;
 
 const TUI_SECTIONS = [
   {
@@ -63,6 +70,7 @@ const TUI_KEYMAP = [
   { key: "1-6", action: "switch sections" },
   { key: "tab", action: "cycle sections" },
   { key: "o", action: "jump to the recommended section" },
+  { key: "a", action: "toggle live refresh" },
   { key: "r", action: "refresh current data" },
   { key: "?", action: "toggle the key help overlay" },
   { key: ":", action: "open the searchable command palette" },
@@ -110,8 +118,43 @@ function fitLine(value, width) {
   return `${text.slice(0, width - 3)}...`;
 }
 
+function padLine(value, width) {
+  return fitLine(value, width).padEnd(Math.max(0, width), " ");
+}
+
 function compactCommand(value = "") {
   return String(value).toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function formatTimeLabel(value = null) {
+  if (!value) {
+    return "now";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "now";
+  }
+
+  return date.toISOString().slice(11, 19);
+}
+
+function createTuiEvent({
+  id,
+  at = new Date().toISOString(),
+  level = "info",
+  source = "session",
+  message
+} = {}) {
+  const resolvedAt = at ?? null;
+  return {
+    id: id ?? `${source}:${resolvedAt ?? "now"}:${message ?? "event"}`,
+    at: resolvedAt,
+    timeLabel: formatTimeLabel(resolvedAt),
+    level,
+    source,
+    message: String(message ?? "").trim()
+  };
 }
 
 function wrapText(value, width) {
@@ -193,6 +236,142 @@ function formatSuggestedCommand(entry) {
 
 function buildSuggestedCommandLines(entries = [], width) {
   return bulletize(entries.map((entry) => formatSuggestedCommand(entry)).filter(Boolean), width);
+}
+
+function inferActivityEventLevel(entry) {
+  if (!entry) {
+    return "info";
+  }
+  if (["blocked", "changes_requested"].includes(entry.type)) {
+    return "warn";
+  }
+  if (["approved", "completed"].includes(entry.type)) {
+    return "success";
+  }
+  return "info";
+}
+
+function buildRuntimeDerivedEvents(data) {
+  const events = [];
+
+  for (const alert of data.alertsView.alerts?.slice(0, 2) ?? []) {
+    events.push(
+      createTuiEvent({
+        id: `runtime-alert:${alert.kind}:${alert.taskId ?? alert.swarmId ?? alert.summary}`,
+        at: null,
+        level: alert.severity === "high" ? "warn" : "info",
+        source: "runtime_alert",
+        message: alert.summary
+      })
+    );
+  }
+
+  for (const entry of data.activityView.entries?.slice(0, 3) ?? []) {
+    events.push(
+      createTuiEvent({
+        id: `runtime-activity:${entry.entityType}:${entry.taskId ?? entry.swarmId ?? entry.at ?? entry.summary}`,
+        at: entry.at ?? null,
+        level: inferActivityEventLevel(entry),
+        source: "runtime_activity",
+        message: entry.summary
+      })
+    );
+  }
+
+  if (events.length === 0) {
+    events.push(
+      createTuiEvent({
+        id: "runtime-idle",
+        at: null,
+        level: "info",
+        source: "runtime_activity",
+        message: "Runtime has no active alerts or recorded activity yet."
+      })
+    );
+  }
+
+  return events;
+}
+
+function mergeTuiEvents(sessionEvents = [], runtimeEvents = [], limit = EVENT_STREAM_LIMIT) {
+  const merged = [];
+  const seen = new Set();
+
+  for (const event of [...sessionEvents, ...runtimeEvents]) {
+    const normalized = createTuiEvent(event);
+    if (!normalized.message) {
+      continue;
+    }
+
+    const dedupeKey = `${normalized.source}:${normalized.message}`;
+    if (seen.has(dedupeKey)) {
+      continue;
+    }
+    seen.add(dedupeKey);
+    merged.push(normalized);
+    if (merged.length >= limit) {
+      break;
+    }
+  }
+
+  return merged;
+}
+
+function buildTuiSignals(data, recommendedSection) {
+  return {
+    guideMode: data.statusView.status.guideMode,
+    tasks: data.statusView.status.counts.tasks,
+    swarms: data.statusView.status.counts.swarms,
+    memories: data.statusView.status.counts.memories,
+    recommendedSurface: data.summaryPackView?.recommendedSurface ?? null,
+    recommendedSection,
+    alerts: {
+      total: data.alertsView.counts?.total ?? 0,
+      high: data.alertsView.counts?.high ?? 0,
+      medium: data.alertsView.counts?.medium ?? 0,
+      topSummary: data.alertsView.alerts?.[0]?.summary ?? null
+    },
+    activity: {
+      totalEntries: data.activityView.counts?.totalEntries ?? 0,
+      nextSummary: data.activityView.next?.summary ?? null
+    }
+  };
+}
+
+function buildTuiLayout(width) {
+  const normalizedWidth = Math.max(40, Number(width) || DEFAULT_WIDTH);
+  if (normalizedWidth < SPLIT_PANE_MIN_WIDTH) {
+    return {
+      mode: "stacked",
+      sidebarWidth: 0,
+      contentWidth: normalizedWidth
+    };
+  }
+
+  const sidebarWidth = Math.min(
+    SPLIT_PANE_SIDEBAR_WIDTH,
+    Math.max(28, Math.floor(normalizedWidth * 0.3))
+  );
+
+  return {
+    mode: "split-pane",
+    sidebarWidth,
+    contentWidth: normalizedWidth - sidebarWidth - SPLIT_PANE_GUTTER.length
+  };
+}
+
+function buildLiveRefreshView(liveRefresh = {}) {
+  const intervalMs = Number.isInteger(Number(liveRefresh.intervalMs)) && Number(liveRefresh.intervalMs) > 0
+    ? Number(liveRefresh.intervalMs)
+    : LIVE_REFRESH_INTERVAL_MS;
+
+  return {
+    enabled: liveRefresh.enabled === true,
+    intervalMs,
+    tick: Number.isInteger(Number(liveRefresh.tick)) ? Number(liveRefresh.tick) : 0,
+    lastRefreshedAt: liveRefresh.lastRefreshedAt ?? null,
+    lastRefreshedAtLabel: liveRefresh.lastRefreshedAt ? formatTimeLabel(liveRefresh.lastRefreshedAt) : "pending"
+  };
 }
 
 function normalizeSuggestedCommand(value) {
@@ -297,6 +476,8 @@ function getRuntimeTuiData() {
     metadata: getPackageMetadata(),
     readyView: getRuntimeReadyView(),
     statusView: getRuntimeStatusView({ version: PACKAGE_VERSION, toolCount: toolCatalog.length }),
+    alertsView: runtimeAlerts(),
+    activityView: runtimeActivity({ limit: EVENT_STREAM_LIMIT }),
     dashboardView: runtimeDashboard(),
     focusView: runtimeFocus(),
     handoffsView: runtimeHandoffs(),
@@ -545,6 +726,57 @@ function buildCommandPaletteLines(commandPalette = null, width) {
   return lines;
 }
 
+function buildSidebarLines(snapshot, width) {
+  const lines = ["Navigator:"];
+  for (const section of snapshot.sections) {
+    const activeMarker = section.id === snapshot.activeSection ? ">" : " ";
+    const recommendedMarker = section.id === snapshot.recommendedSection ? " *" : "";
+    lines.push(`${activeMarker} ${section.shortcut} ${section.label}${recommendedMarker}`);
+  }
+
+  lines.push("");
+  lines.push("Live runtime:");
+  lines.push(`- layout: ${snapshot.layout.mode}`);
+  lines.push(
+    `- refresh: ${snapshot.liveRefresh.enabled ? `auto ${Math.round(snapshot.liveRefresh.intervalMs / 1000)}s` : "manual"}`
+  );
+  lines.push(`- last: ${snapshot.liveRefresh.lastRefreshedAtLabel}`);
+  lines.push(`- guide: ${snapshot.signals.guideMode}`);
+  lines.push(`- alerts: h=${snapshot.signals.alerts.high} m=${snapshot.signals.alerts.medium}`);
+  lines.push(`- activity: ${snapshot.signals.activity.totalEntries}`);
+
+  if (snapshot.signals.alerts.topSummary) {
+    lines.push("");
+    lines.push("Top alert:");
+    lines.push(...wrapText(snapshot.signals.alerts.topSummary, width));
+  }
+
+  lines.push("");
+  lines.push("Event stream:");
+  lines.push(
+    ...bulletize(
+      snapshot.eventStream.entries.map((entry) => `${entry.timeLabel} ${entry.message}`),
+      width,
+      "· "
+    )
+  );
+
+  return lines.map((line) => fitLine(line, width));
+}
+
+function combineSplitPaneLines(leftLines = [], rightLines = [], leftWidth, rightWidth) {
+  const rowCount = Math.max(leftLines.length, rightLines.length);
+  const rows = [];
+
+  for (let index = 0; index < rowCount; index += 1) {
+    rows.push(
+      `${padLine(leftLines[index] ?? "", leftWidth)}${SPLIT_PANE_GUTTER}${padLine(rightLines[index] ?? "", rightWidth)}`
+    );
+  }
+
+  return rows;
+}
+
 function buildSectionView(sectionId, data, width, showHelp = false) {
   const descriptor = getSectionDescriptor(sectionId);
   const contentWidth = Math.max(20, width - 2);
@@ -625,11 +857,24 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
     ""
   ];
 
-  const panelLines = [...snapshot.panel.lines.map((line) => fitLine(line, normalizedWidth)), ""];
   const paletteLines =
     commandMode && snapshot.commandPalette?.visible
       ? [...buildCommandPaletteLines(snapshot.commandPalette, normalizedWidth), ""]
       : [];
+  const panelLines = [...snapshot.panel.lines.map((line) => fitLine(line, normalizedWidth)), ""];
+  const bodyLines =
+    snapshot.layout.mode === "split-pane"
+      ? combineSplitPaneLines(
+          buildSidebarLines(snapshot, snapshot.layout.sidebarWidth),
+          commandMode
+            ? [...buildCommandPaletteLines(snapshot.commandPalette, snapshot.layout.contentWidth), "", ...snapshot.panel.lines.map((line) => fitLine(line, snapshot.layout.contentWidth))]
+            : snapshot.panel.lines.map((line) => fitLine(line, snapshot.layout.contentWidth)),
+          snapshot.layout.sidebarWidth,
+          snapshot.layout.contentWidth
+        )
+      : commandMode
+        ? [...paletteLines, ...panelLines]
+        : [...panelLines];
 
   const footerLines = [];
   if (flashMessage) {
@@ -637,9 +882,15 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
   }
   footerLines.push(
     fitLine(
+      `Live: ${snapshot.liveRefresh.enabled ? `auto ${Math.round(snapshot.liveRefresh.intervalMs / 1000)}s` : "manual"} | Layout: ${snapshot.layout.mode} | Events: ${snapshot.eventStream.total}`,
+      normalizedWidth
+    )
+  );
+  footerLines.push(
+    fitLine(
       commandMode
         ? "Keys: ↑/↓ select | Tab accept | Enter run | Esc cancel | Ctrl+C quit"
-        : "Keys: 1-6 switch | Tab cycle | o recommended | r refresh | ? help | : command | q quit",
+        : "Keys: 1-6 switch | Tab cycle | o recommended | a auto | r refresh | ? help | : command | q quit",
       normalizedWidth
     )
   );
@@ -652,19 +903,17 @@ function renderTuiText(snapshot, { width, height, commandMode = false, commandIn
     )
   );
 
-  const lines = [...headerLines, ...panelLines, ...paletteLines, ...footerLines];
+  const lines = [...headerLines, ...bodyLines, ...footerLines];
   if (lines.length > normalizedHeight) {
-    const reservedPaletteLines = paletteLines.length;
     const availablePanelLines = Math.max(
       1,
-      normalizedHeight - headerLines.length - footerLines.length - reservedPaletteLines - 1
+      normalizedHeight - headerLines.length - footerLines.length - 1
     );
-    const visiblePanelLines = panelLines.slice(0, availablePanelLines);
+    const visiblePanelLines = bodyLines.slice(0, availablePanelLines);
     return [
       ...headerLines,
       ...visiblePanelLines,
       fitLine(`... truncated to ${normalizedHeight} rows`, normalizedWidth),
-      ...paletteLines,
       ...footerLines
     ]
       .slice(0, normalizedHeight)
@@ -682,17 +931,29 @@ export function getRuntimeTuiSnapshot({
   commandMode = false,
   commandInput = "",
   selectedCommandIndex = 0,
+  eventStream = [],
+  liveRefresh = {},
   flashMessage = null
 } = {}) {
   const activeSection = normalizeSectionId(section);
   const data = getRuntimeTuiData();
-  const sectionView = buildSectionView(activeSection, data, width, showHelp);
+  const layout = buildTuiLayout(width);
+  const recommendedSection = mapRecommendedSurfaceToSection(data);
+  const mergedEventStream = mergeTuiEvents(eventStream, buildRuntimeDerivedEvents(data), EVENT_STREAM_LIMIT);
+  const liveRefreshView = buildLiveRefreshView(liveRefresh);
+  const signals = buildTuiSignals(data, recommendedSection);
+  const sectionView = buildSectionView(
+    activeSection,
+    data,
+    layout.mode === "split-pane" ? layout.contentWidth : width,
+    showHelp
+  );
   const commandPalette = commandMode ? buildCommandPaletteEntries(data, commandInput, selectedCommandIndex) : null;
   const snapshot = {
     kind: "runtime_tui_snapshot",
     recommendedReason: "tui_snapshot_rendered",
     activeSection,
-    recommendedSection: mapRecommendedSurfaceToSection(data),
+    recommendedSection,
     sections: TUI_SECTIONS.map((entry) => ({ ...entry })),
     keymap: TUI_KEYMAP.map((entry) => ({ ...entry })),
     header: {
@@ -707,7 +968,14 @@ export function getRuntimeTuiSnapshot({
       summary: sectionView.summary,
       lines: sectionView.lines
     },
-    commandPalette
+    commandPalette,
+    layout,
+    liveRefresh: liveRefreshView,
+    signals,
+    eventStream: {
+      total: mergedEventStream.length,
+      entries: mergedEventStream
+    }
   };
 
   const text = renderTuiText(snapshot, {
@@ -725,6 +993,7 @@ export function getRuntimeTuiSnapshot({
       renderedLines: text.split("\n").length,
       suggestedCommands: data.statusView.status.suggestedCommands.length,
       commandPaletteEntries: commandPalette?.entries?.length ?? 0,
+      eventStreamEntries: mergedEventStream.length,
       width,
       height
     },
@@ -879,6 +1148,90 @@ function applySelectedPaletteCommand(commandInput, commandPalette = null) {
   return `${selectedEntry.command}${suffix}`;
 }
 
+function appendTuiEvent(entries = [], event) {
+  return mergeTuiEvents([event, ...entries], [], EVENT_STREAM_LIMIT);
+}
+
+function buildSignalChangeEvents(previousSignals, nextSignals, { source = "manual", openedSection = null, intervalMs = LIVE_REFRESH_INTERVAL_MS } = {}) {
+  if (!previousSignals) {
+    return [
+      createTuiEvent({
+        level: "info",
+        source: "session",
+        message: `TUI session opened on ${openedSection ?? nextSignals?.recommendedSection ?? DEFAULT_SECTION_ID}.`
+      }),
+      createTuiEvent({
+        level: "info",
+        source: "session",
+        message: `Live refresh is running every ${Math.round(intervalMs / 1000)}s.`
+      })
+    ];
+  }
+
+  const events = [];
+  if (previousSignals.guideMode !== nextSignals.guideMode) {
+    events.push(
+      createTuiEvent({
+        level: "info",
+        source: "session",
+        message: `Guide mode changed ${previousSignals.guideMode} → ${nextSignals.guideMode}.`
+      })
+    );
+  }
+
+  if (previousSignals.tasks !== nextSignals.tasks) {
+    events.push(
+      createTuiEvent({
+        level: nextSignals.tasks > previousSignals.tasks ? "success" : "warn",
+        source: "session",
+        message: `Tracked tasks changed ${previousSignals.tasks} → ${nextSignals.tasks}.`
+      })
+    );
+  }
+
+  if (previousSignals.swarms !== nextSignals.swarms) {
+    events.push(
+      createTuiEvent({
+        level: nextSignals.swarms > previousSignals.swarms ? "success" : "warn",
+        source: "session",
+        message: `Tracked swarms changed ${previousSignals.swarms} → ${nextSignals.swarms}.`
+      })
+    );
+  }
+
+  if (previousSignals.alerts.high !== nextSignals.alerts.high || previousSignals.alerts.medium !== nextSignals.alerts.medium) {
+    events.push(
+      createTuiEvent({
+        level: nextSignals.alerts.high > previousSignals.alerts.high ? "warn" : "info",
+        source: "session",
+        message: `Alert pressure changed to high=${nextSignals.alerts.high}, medium=${nextSignals.alerts.medium}.`
+      })
+    );
+  }
+
+  if (previousSignals.recommendedSection !== nextSignals.recommendedSection) {
+    events.push(
+      createTuiEvent({
+        level: "info",
+        source: "session",
+        message: `Recommended section changed ${previousSignals.recommendedSection} → ${nextSignals.recommendedSection}.`
+      })
+    );
+  }
+
+  if (events.length === 0 && source === "manual") {
+    events.push(
+      createTuiEvent({
+        level: "info",
+        source: "session",
+        message: "Manual refresh completed with no runtime-level changes."
+      })
+    );
+  }
+
+  return events;
+}
+
 export async function runInteractiveRuntimeTui({ section, snapshot = false } = {}) {
   if (snapshot || !stdin.isTTY || !stdout.isTTY) {
     stdout.write(`${getRuntimeTuiSnapshot({ section, width: getTerminalWidth(), height: getTerminalHeight() }).text}\n`);
@@ -895,11 +1248,17 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
   let commandInput = "";
   let selectedCommandIndex = 0;
   let flashMessage = null;
+  let liveRefreshEnabled = true;
+  let lastRefreshedAt = new Date().toISOString();
+  let refreshTick = 0;
+  let sessionEventStream = [];
+  let latestSignals = null;
   let attached = false;
   let busy = false;
+  let refreshTimer = null;
 
-  const render = () => {
-    const snapshotView = getRuntimeTuiSnapshot({
+  const captureSnapshot = () =>
+    getRuntimeTuiSnapshot({
       section: activeSection,
       width: getTerminalWidth(),
       height: getTerminalHeight(),
@@ -907,9 +1266,77 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       commandMode,
       commandInput,
       selectedCommandIndex,
+      eventStream: sessionEventStream,
+      liveRefresh: {
+        enabled: liveRefreshEnabled,
+        intervalMs: LIVE_REFRESH_INTERVAL_MS,
+        lastRefreshedAt,
+        tick: refreshTick
+      },
       flashMessage
     });
+
+  const render = () => {
+    const snapshotView = captureSnapshot();
     writeScreen(snapshotView.text);
+    return snapshotView;
+  };
+
+  const clearRefreshTimer = () => {
+    if (refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+  };
+
+  const recordSessionEvents = (events = []) => {
+    for (const event of events) {
+      sessionEventStream = appendTuiEvent(sessionEventStream, event);
+    }
+  };
+
+  const scheduleRefreshTimer = () => {
+    clearRefreshTimer();
+    if (!attached || !liveRefreshEnabled) {
+      return;
+    }
+
+    refreshTimer = setInterval(() => {
+      if (!busy) {
+        refreshRuntimeView({ source: "auto" });
+      }
+    }, LIVE_REFRESH_INTERVAL_MS);
+    refreshTimer.unref?.();
+  };
+
+  const refreshRuntimeView = ({ source = "manual", commandMessage = null } = {}) => {
+    lastRefreshedAt = new Date().toISOString();
+    refreshTick += 1;
+
+    const baselineSnapshot = captureSnapshot();
+    const nextSignals = baselineSnapshot.signals;
+    const events = commandMessage
+      ? [
+          createTuiEvent({
+            level: "info",
+            source: "session",
+            message: commandMessage
+          })
+        ]
+      : buildSignalChangeEvents(latestSignals, nextSignals, {
+          source,
+          openedSection: activeSection,
+          intervalMs: LIVE_REFRESH_INTERVAL_MS
+        });
+
+    if (events.length > 0) {
+      recordSessionEvents(events);
+    }
+
+    const finalSnapshot = captureSnapshot();
+    latestSignals = finalSnapshot.signals;
+    writeScreen(finalSnapshot.text);
+    return finalSnapshot;
   };
 
   const detach = () => {
@@ -917,6 +1344,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       return;
     }
     attached = false;
+    clearRefreshTimer();
     stdout.off("resize", render);
     stdin.off("keypress", onKeypress);
     try {
@@ -933,6 +1361,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
     enterScreen();
     stdout.on("resize", render);
     stdin.on("keypress", onKeypress);
+    scheduleRefreshTimer();
   };
 
   const close = () => {
@@ -941,16 +1370,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
   };
 
   const runCommandMode = async () => {
-    const snapshotView = getRuntimeTuiSnapshot({
-      section: activeSection,
-      width: getTerminalWidth(),
-      height: getTerminalHeight(),
-      showHelp,
-      commandMode,
-      commandInput,
-      selectedCommandIndex,
-      flashMessage
-    });
+    const snapshotView = captureSnapshot();
     const input = resolveCommandModeInput(commandInput, snapshotView.commandPalette);
     commandMode = false;
     commandInput = "";
@@ -965,7 +1385,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       stdin.resume();
       attach();
       busy = false;
-      render();
+      refreshRuntimeView({ source: "manual", commandMessage: flashMessage });
     }
   };
 
@@ -1003,16 +1423,7 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
         return;
       }
       if (key.name === "tab") {
-        const snapshotView = getRuntimeTuiSnapshot({
-          section: activeSection,
-          width: getTerminalWidth(),
-          height: getTerminalHeight(),
-          showHelp,
-          commandMode,
-          commandInput,
-          selectedCommandIndex,
-          flashMessage
-        });
+        const snapshotView = captureSnapshot();
         commandInput = applySelectedPaletteCommand(commandInput, snapshotView.commandPalette);
         render();
         return;
@@ -1043,6 +1454,20 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       render();
       return;
     }
+    if (character === "a") {
+      liveRefreshEnabled = !liveRefreshEnabled;
+      flashMessage = liveRefreshEnabled ? "Auto refresh resumed." : "Auto refresh paused.";
+      recordSessionEvents([
+        createTuiEvent({
+          level: "info",
+          source: "session",
+          message: flashMessage
+        })
+      ]);
+      scheduleRefreshTimer();
+      render();
+      return;
+    }
     if (character === ":") {
       commandMode = true;
       commandInput = "";
@@ -1056,11 +1481,11 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
       return;
     }
     if (character === "r") {
-      render();
+      refreshRuntimeView({ source: "manual" });
       return;
     }
     if (character === "o") {
-      activeSection = getRuntimeTuiSnapshot({ section: activeSection }).recommendedSection;
+      activeSection = captureSnapshot().recommendedSection;
       render();
       return;
     }
@@ -1073,5 +1498,14 @@ export async function runInteractiveRuntimeTui({ section, snapshot = false } = {
   };
 
   attach();
+  const initialSnapshot = captureSnapshot();
+  latestSignals = initialSnapshot.signals;
+  recordSessionEvents(
+    buildSignalChangeEvents(null, initialSnapshot.signals, {
+      source: "initial",
+      openedSection: activeSection,
+      intervalMs: LIVE_REFRESH_INTERVAL_MS
+    })
+  );
   render();
 }
