@@ -1,8 +1,8 @@
-import { runtimeRoleCatalog } from "../../state-role-catalog.js";
+import { runtimeRoleCatalog } from "../role/catalog.js";
 import {
   buildSwarmValidationViewFromSources,
   deriveSwarmStatus
-} from "../../state-rules.js";
+} from "../rules/index.js";
 import {
   syncSwarmStatusFromSources,
   validateSwarmFromSources

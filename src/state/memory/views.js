@@ -1,4 +1,4 @@
-import { createCollectionView, createLoadedValueView } from "../../state-view-helpers.js";
+import { createCollectionView, createLoadedValueView } from "../core/view-helpers.js";
 
 export function buildMemoryDetailView(
   id,

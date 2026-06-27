@@ -1,4 +1,4 @@
-import { buildSwarmLifecycleResult } from "../../state-lifecycle-views.js";
+import { buildSwarmLifecycleResult } from "../core/lifecycle-views.js";
 
 export function activateSwarmLifecycleView(input, { transitionSwarm }) {
   return buildSwarmLifecycleResult(

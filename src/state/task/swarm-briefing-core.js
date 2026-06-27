@@ -1,5 +1,5 @@
 import { recommendTaskAction } from "./core-views.js";
-import { pickPriorityEntry } from "../../state/queue/views.js";
+import { pickPriorityEntry } from "../queue/views.js";
 
 export function recommendLaneAction(laneSummary, task, tasks = [], recommendTaskActionFn = recommendTaskAction) {
   if (!task) {

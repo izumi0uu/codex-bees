@@ -21,9 +21,9 @@ import { runtimeTriagePackFromSources } from "../src/state/runtime/orchestration
 import { runtimeTriagePackSurface } from "../src/state/runtime/entry/orchestration-pack/triage-surface.js";
 import { runtimeSignalPackFromSources } from "../src/state/runtime/orchestration-packs/signal-source.js";
 import { runtimeSignalPackSurface } from "../src/state/runtime/entry/orchestration-pack/signal-surface.js";
-import { createStateRuntimeSessionPackSessionRoleEntryPoints } from "../src/state/public/runtime-session-pack-session-role-entrypoints.js";
-import { createStateRuntimeSessionPackExecutionEntryPoints } from "../src/state/public/runtime-session-pack-execution-entrypoints.js";
-import { createStateRuntimeOrchestrationPackOverviewEntryPoints } from "../src/state/public/runtime-orchestration-pack-overview-entrypoints.js";
+import { createStateRuntimeSessionPackSessionRoleEntryPoints } from "../src/state/public/runtime/runtime-session-pack-session-role-entrypoints.js";
+import { createStateRuntimeSessionPackExecutionEntryPoints } from "../src/state/public/runtime/runtime-session-pack-execution-entrypoints.js";
+import { createStateRuntimeOrchestrationPackOverviewEntryPoints } from "../src/state/public/runtime/runtime-orchestration-pack-overview-entrypoints.js";
 
 function runProbe(label, probe) {
   probe();

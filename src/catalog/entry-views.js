@@ -1,4 +1,4 @@
-import { createResolvedItemView } from "../state-view-helpers.js";
+import { createResolvedItemView } from "../state/core/view-helpers.js";
 import { parseCatalogDocument } from "./document-parse.js";
 import { readText, resolveRuntimeCatalogPath } from "./paths.js";
 

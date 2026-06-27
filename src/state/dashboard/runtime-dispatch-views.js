@@ -1,5 +1,8 @@
-import { buildPurposeGuidanceForTaskLike } from '../../state-lane-purpose.js';
-import { buildRecommendedNextFields } from "../runtime/recommendation-helpers.js";
+import { buildPurposeGuidanceForTaskLike } from '../task/lane-purpose.js';
+import {
+  buildDispatchPriorityScore,
+  buildRecommendedNextFields
+} from "../runtime/recommendation/helpers.js";
 
 export function deriveRuntimeDispatchReason({ groups, totalAssignments, next }) {
   if ((groups?.length ?? 0) > 1) {
@@ -43,23 +46,49 @@ export function buildRuntimeDispatchView(
     owner: group.owner,
     count: group.count,
     next: group.assignments?.[0] ?? null,
-    assignments: (group.assignments ?? []).map((assignment, index) => ({
-      position: index + 1,
-      swarmId: assignment.swarmId,
-      objective: assignment.objective,
-      lane: assignment.lane,
-      purpose: assignment.purpose ?? null,
-      purposeGuidance: assignment.purposeGuidance ?? buildPurposeGuidanceForTaskLike(assignment),
-      taskId: assignment.taskId,
-      taskQueueStatus: assignment.taskQueueStatus,
-      verifier: assignment.verifier,
-      ...buildRecommendedNextFields(assignment, { includeTaskBrief: true }),
-      summary: assignment.summary
-    }))
+    assignments: (group.assignments ?? []).map((assignment, index) => {
+      const dispatchPriority = buildDispatchPriorityScore(assignment);
+      return {
+        position: index + 1,
+        swarmId: assignment.swarmId,
+        objective: assignment.objective,
+        lane: assignment.lane,
+        purpose: assignment.purpose ?? null,
+        purposeGuidance: assignment.purposeGuidance ?? buildPurposeGuidanceForTaskLike(assignment),
+        taskId: assignment.taskId,
+        taskQueueStatus: assignment.taskQueueStatus,
+        verifier: assignment.verifier,
+        plannerAssessment: assignment.plannerAssessment ?? null,
+        dispatchScore: assignment.dispatchScore ?? dispatchPriority.score,
+        dispatchScoreBreakdown: assignment.dispatchScoreBreakdown ?? dispatchPriority.scoreBreakdown,
+        ...buildRecommendedNextFields(assignment, { includeTaskBrief: true }),
+        summary: assignment.summary
+      };
+    })
   }));
   const next = groups[0]?.assignments?.[0] ?? null;
   const totalAssignments = groups.reduce((total, group) => total + (group.count ?? 0), 0);
   const recommendedReason = deriveRuntimeDispatchReason({ groups, totalAssignments, next });
+  const ranking = groups
+    .flatMap((group) => group.assignments ?? [])
+    .sort((left, right) => {
+      const scoreDelta = (right.dispatchScore ?? 0) - (left.dispatchScore ?? 0);
+      if (scoreDelta !== 0) {
+        return scoreDelta;
+      }
+      return (left.lane ?? "").localeCompare(right.lane ?? "");
+    })
+    .map((assignment, index) => ({
+      rank: index + 1,
+      swarmId: assignment.swarmId,
+      lane: assignment.lane,
+      taskId: assignment.taskId,
+      purpose: assignment.purpose ?? null,
+      dispatchScore: assignment.dispatchScore ?? 0,
+      dispatchScoreBreakdown: assignment.dispatchScoreBreakdown ?? {},
+      plannerAssessment: assignment.plannerAssessment ?? null,
+      summary: assignment.summary
+    }));
 
   return {
     kind: 'runtime_dispatch',
@@ -70,6 +99,7 @@ export function buildRuntimeDispatchView(
     },
     groups,
     next,
+    ranking,
     summary: buildRuntimeDispatchSummary(groups, next)
   };
 }

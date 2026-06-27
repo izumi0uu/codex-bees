@@ -1,4 +1,4 @@
-import { stateAuthoritativeFacade } from "../../../state-runtime-core.js";
+import { stateAuthoritativeFacade } from "../core/index.js";
 
 const {
   annotateTask,

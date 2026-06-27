@@ -1,12 +1,12 @@
 export {
   getCapabilityCatalog,
   getCapabilityCatalogEntry
-} from "./runtime-capability-catalog.js";
+} from "./runtime/capability-catalog.js";
 export {
   getCapabilityCatalogEntryView,
   getCapabilityCatalogView
-} from "./runtime-capability-views.js";
+} from "./runtime/capability-views.js";
 export {
   getRuntimeStatus,
   getRuntimeStatusView
-} from "./runtime-status-view.js";
+} from "./runtime/status-view.js";

@@ -3,7 +3,8 @@ import {
   buildPlanLanes,
   buildPlannerOrchestration,
   derivePlannerStrategy
-} from "./lanes.js";
+} from "./lane/index.js";
+import { buildPlannerAssessment } from "./assessment.js";
 import { buildPlannerProvenance } from "./provenance.js";
 import {
   DEFAULT_PLANNER_PROFILE_ID,
@@ -11,7 +12,7 @@ import {
   resolvePlannerProfileContext,
   selectPlannerProfile,
   toPlannerProfile
-} from "./registry.js";
+} from "./profile/registry.js";
 import {
   chooseDiscoveryScope,
   chooseDocumentationScope,
@@ -20,7 +21,7 @@ import {
   directoryExists,
   inferPlannerIntent,
   runtimeRoleFilePath
-} from "./scope.js";
+} from "./scope/index.js";
 
 function plannerEvidenceForProfile(task, plannerProfile = getPlannerProfileRecord(DEFAULT_PLANNER_PROFILE_ID)) {
   const catalogPaths = getRuntimeCatalogPaths();
@@ -61,6 +62,14 @@ export function planTask(task, options = {}) {
   const planner = toPlannerProfile(profile);
   const lanes = buildPlanLanes(task, profile);
   const orchestration = buildPlannerOrchestration(lanes);
+  const evidence = plannerEvidenceForProfile(task, profile);
+  const assessment = buildPlannerAssessment({
+    planner,
+    plannerSelection,
+    evidence,
+    lanes,
+    orchestration
+  });
   const recommendedReason = lanes.length > 1 ? "multi_lane_plan_ready" : "single_lane_plan_ready";
 
   return {
@@ -70,7 +79,8 @@ export function planTask(task, options = {}) {
     requestedProfile: plannerSelection.requestedProfile,
     planner,
     plannerSelection,
-    evidence: plannerEvidenceForProfile(task, profile),
+    evidence,
+    assessment,
     orchestration,
     lanes
   };
@@ -82,7 +92,8 @@ export function planSwarm(task, options = {}) {
   const plannerProvenance = buildPlannerProvenance({
     requestedProfile: plan.requestedProfile,
     planner: plan.planner,
-    plannerSelection: plan.plannerSelection
+    plannerSelection: plan.plannerSelection,
+    assessment: plan.assessment
   });
   return {
     kind: "planned_swarm",
@@ -92,6 +103,7 @@ export function planSwarm(task, options = {}) {
     planner: plan.planner,
     plannerSelection: plan.plannerSelection,
     evidence: plan.evidence,
+    assessment: plan.assessment,
     orchestration: plan.orchestration,
     swarm: {
       objective: task,
@@ -113,7 +125,8 @@ export function queueTasksFromPlan(task, addTasks, options = {}) {
   const plannerProvenance = buildPlannerProvenance({
     requestedProfile: plan.requestedProfile,
     planner: plan.planner,
-    plannerSelection: plan.plannerSelection
+    plannerSelection: plan.plannerSelection,
+    assessment: plan.assessment
   });
   const tasks = plan.lanes.map((lane) => ({
     title: lane.summary,
@@ -141,6 +154,7 @@ export function queueTasksFromPlan(task, addTasks, options = {}) {
     requestedProfile: plan.requestedProfile,
     planner: plan.planner,
     plannerSelection: plan.plannerSelection,
+    assessment: plan.assessment,
     orchestration: plan.orchestration,
     lanes: plan.lanes,
     created
@@ -163,6 +177,7 @@ export function queueSwarmFromPlan(task, { initSwarm, queueSwarmTasks }, options
     planner: planned.planner,
     plannerSelection: planned.plannerSelection,
     evidence: planned.evidence,
+    assessment: planned.assessment,
     orchestration: planned.orchestration,
     swarm: queued.swarm,
     created: queued.created

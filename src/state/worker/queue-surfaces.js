@@ -23,7 +23,7 @@ import {
   deriveTaskNextReason,
   deriveTaskPickupPreviewReason,
   deriveTaskPickupReason
-} from "../../state-reasons.js";
+} from "../task/reasons.js";
 import { describeRole, describeRoleWithContract } from "../task/core.js";
 
 export function taskInboxFromSources(input = {}, sources = {}) {

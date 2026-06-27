@@ -3,7 +3,7 @@ import {
   buildRuntimeAlertsViewFromSources,
   deriveRuntimeAlertsReason
 } from "../../dashboard/views.js";
-import { compareRuntimeAlerts } from "../../../state/role/index.js";
+import { compareRuntimeAlerts } from "../../role/index.js";
 
 export function runtimeAlertsFromSources(sources = {}) {
   return buildRuntimeAlertsViewFromSources(

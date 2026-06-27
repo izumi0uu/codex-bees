@@ -33,10 +33,10 @@ These exist to build and verify the product, but are not the product boundary th
 | --- | --- | --- |
 | CLI | Human/operator entry surface | `src/index.js`, `src/state/cli/*` |
 | MCP | Tool-driven stdio JSON-RPC surface | `src/mcp.js`, `src/state/mcp/*` |
-| Planning | Turn one objective into bounded lanes | `src/planner.js`, `src/planner-*` |
-| Coordination state | Persist tasks, swarms, memory, and lifecycle transitions | `src/state-*.js`, `.codex-bees/state.json` |
-| Runtime views | Read-oriented dashboards, packs, and handoff bundles | `src/runtime-*.js`, `src/state-runtime-*` |
-| Catalog | Discover shipped skills and agents | `src/catalog-*.js`, `.codex/` |
+| Planning | Turn one objective into bounded lanes | `src/planner.js`, `src/planner/{lane,profile,scope}/*`, `src/planner/task-plans.js` |
+| Coordination state | Persist tasks, swarms, memory, and lifecycle transitions | `src/state/{core,archive,queue,role,rules,swarm,task,worker,write}/*`, `.codex-bees/state.json` |
+| Runtime views | Read-oriented dashboards, packs, and handoff bundles | `src/runtime/*`, `src/state/runtime/{overview,session-packs,orchestration-packs,focus,handoff,closeout,recovery,workspace,ranking,recommendation}/*` |
+| Catalog | Discover shipped skills and agents | `src/catalog.js`, `src/catalog/*`, `.codex/` |
 | Workspace assets | Codex-specific repo bootstrap payload | `.codex/config.toml`, `.codex/agents/*`, `.codex/skills/*` |
 
 ## High-level system view
@@ -75,6 +75,48 @@ graph TD
 .codex-bees/
   state.json
 ```
+
+## Source layout snapshot
+
+The implementation now uses a **thin-facade, grouped-domain** layout instead of wide flat folders:
+
+```text
+src/
+  planner.js
+  state.js
+  planner/
+    lane/
+    profile/
+    scope/
+    assessment.js
+    provenance.js
+    task-plans.js
+  state/
+    public/
+      read/
+      write/
+      runtime/
+      worker/
+      transition/
+    runtime/
+      overview/
+      session-packs/
+      orchestration-packs/
+      focus/
+      handoff/
+      closeout/
+      recovery/
+      workspace/
+      ranking/
+      recommendation/
+      task-entry/
+```
+
+This is intentional:
+
+- keep public facades such as `src/planner.js` and `src/state.js` easy to discover
+- move dense implementation clusters under named domains once a flat list stops scaling
+- preserve the product boundary while making contributor navigation cheaper
 
 ## Design choices
 

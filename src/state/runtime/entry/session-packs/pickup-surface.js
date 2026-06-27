@@ -1,1 +1,1 @@
-export { runtimePickupPackFromSources as runtimePickupPackSurface } from "../../../../state/runtime/packs.js";
+export { runtimePickupPackFromSources as runtimePickupPackSurface } from "../../packs.js";

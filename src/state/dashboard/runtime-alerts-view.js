@@ -1,4 +1,4 @@
-import { buildRuntimeTaskDashboardFields } from "../runtime/task-entry-helpers.js";
+import { buildRuntimeTaskDashboardFields } from "../runtime/task-entry/helpers.js";
 
 export function buildRuntimeAlertsSummary(alerts) {
   if (alerts.length === 0) {

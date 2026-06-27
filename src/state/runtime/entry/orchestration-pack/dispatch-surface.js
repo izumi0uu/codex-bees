@@ -1,1 +1,1 @@
-export { runtimeDispatchPackFromSources as runtimeDispatchPackSurface } from '../../../../state/runtime/packs.js';
+export { runtimeDispatchPackFromSources as runtimeDispatchPackSurface } from '../../packs.js';

@@ -1,4 +1,4 @@
-import { buildSwarmHistoryEntry, buildTaskHistoryEntry } from "../../state-builders.js";
+import { buildSwarmHistoryEntry, buildTaskHistoryEntry } from "../core/builders.js";
 import { appendSwarmHistoryEntry } from "./history.js";
 import { appendTaskHistoryEntry, taskDependenciesReady } from "../task/core.js";
 

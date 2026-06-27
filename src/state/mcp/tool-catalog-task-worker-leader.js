@@ -104,6 +104,18 @@ export const TASK_WORKER_LEADER_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "leader_assignment_ranking",
+    description: "Rank dispatchable leader assignments across local swarms.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        status: { type: "string" },
+        topology: { type: "string" },
+        owner: { type: "string" }
+      }
+    }
+  },
+  {
     name: "leader_assignment_dispatch",
     description: "Build a worker-targeted dispatch package for one leader assignment.",
     inputSchema: {

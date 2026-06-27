@@ -1,7 +1,7 @@
-import { pickPriorityEntry } from "../../state/queue/views.js";
-import { buildRecommendedNextFields } from "../runtime/recommendation-helpers.js";
-import { buildSwarmOverviewStatusFields } from "../../state/swarm/overview-status-helpers.js";
-import { createLoadedValueView } from "../../state-view-helpers.js";
+import { pickPriorityEntry } from "../queue/views.js";
+import { buildRecommendedNextFields } from "../runtime/recommendation/helpers.js";
+import { buildSwarmOverviewStatusFields } from "../swarm/overview-status-helpers.js";
+import { createLoadedValueView } from "../core/view-helpers.js";
 
 export function buildSwarmCloseoutView(
   id,

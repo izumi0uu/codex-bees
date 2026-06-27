@@ -1,4 +1,10 @@
-import { buildRuntimeSignalPackSummary, buildRuntimeSignalPackView, deriveRuntimeSignalPackReason, deriveRuntimeSignalPackSurface } from '../views.js';
+import {
+  buildRuntimeSignalPackScoring,
+  buildRuntimeSignalPackSummary,
+  buildRuntimeSignalPackView,
+  deriveRuntimeSignalPackReason,
+  deriveRuntimeSignalPackSurface
+} from '../views.js';
 
 export function runtimeSignalPackFromSources(input = {}, sources = {}) {
   return buildRuntimeSignalPackView(
@@ -7,7 +13,8 @@ export function runtimeSignalPackFromSources(input = {}, sources = {}) {
     {
       deriveRuntimeSignalPackSurface,
       deriveRuntimeSignalPackReason,
-      buildRuntimeSignalPackSummary
+      buildRuntimeSignalPackSummary,
+      buildRuntimeSignalPackScoring
     }
   );
 }

@@ -33,6 +33,7 @@ const TASK_MCP_TOOL_CATALOG_ORDER = [
   "leader_workspace",
   "leader_queue",
   "leader_assignments",
+  "leader_assignment_ranking",
   "leader_assignment_dispatch",
   "leader_assignment_dispatch_bundle",
   "leader_assignment_launch_plan",

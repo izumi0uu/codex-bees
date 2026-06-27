@@ -1,4 +1,4 @@
-import { buildRuntimeTaskDashboardFields } from "../runtime/task-entry-helpers.js";
+import { buildRuntimeTaskDashboardFields } from "../runtime/task-entry/helpers.js";
 
 export function summarizeDashboardTask(task) {
   return {

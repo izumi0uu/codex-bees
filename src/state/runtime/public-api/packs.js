@@ -1,4 +1,4 @@
-import { statePublicApi } from "../../../state-runtime-core.js";
+import { statePublicApi } from "../core/index.js";
 
 const {
   leaderAssignmentDispatchPack,

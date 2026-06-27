@@ -4,7 +4,7 @@ import {
   buildRuntimePackSignalOverview,
   buildRuntimePackSignalSurfaces,
   buildRuntimePackCounts
-} from '../../../state/runtime/pack-detail/index.js';
+} from '../pack-detail/index.js';
 
 export function buildRuntimeSignalPackView(
   input,
@@ -17,7 +17,8 @@ export function buildRuntimeSignalPackView(
   {
     deriveRuntimeSignalPackSurface,
     deriveRuntimeSignalPackReason,
-    buildRuntimeSignalPackSummary
+    buildRuntimeSignalPackSummary,
+    buildRuntimeSignalPackScoring
   }
 ) {
   const focus = runtimeFocus();
@@ -26,12 +27,17 @@ export function buildRuntimeSignalPackView(
   const roles = runtimeRoles(input);
   const recommendedSurface = deriveRuntimeSignalPackSurface({ focus, alerts, activity, roles });
   const recommendedReason = deriveRuntimeSignalPackReason({ focus, alerts, activity, roles });
+  const scoring = buildRuntimeSignalPackScoring({ focus, alerts, activity, roles });
   const nextEntries = buildRuntimePackSignalEntries(focus, alerts, activity, roles);
 
   return {
     kind: "runtime_signal_pack",
     recommendedSurface,
     recommendedReason,
+    recommendationScore: scoring.score,
+    recommendationScoreBreakdown: scoring.scoreBreakdown,
+    recommendationScoreEntries: scoring.scoreEntries,
+    recommendationCandidates: scoring.rankedCandidates,
     metadata: buildRuntimePackSignalMetadata(nextEntries),
     counts: buildRuntimePackCounts(nextEntries),
     overview: buildRuntimePackSignalOverview(focus, alerts, activity, roles),
@@ -40,4 +46,3 @@ export function buildRuntimeSignalPackView(
     summary: buildRuntimeSignalPackSummary(recommendedSurface, focus, alerts, activity, roles)
   };
 }
-

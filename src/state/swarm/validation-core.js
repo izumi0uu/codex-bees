@@ -1,4 +1,4 @@
-import { VALID_LANE_PURPOSES } from "../../state-rules-statuses.js";
+import { VALID_LANE_PURPOSES } from "../rules/statuses.js";
 
 function collectSwarmCycleLanes(swarm) {
   const laneIds = new Set((swarm.lanes ?? []).map((lane) => lane.lane).filter(Boolean));

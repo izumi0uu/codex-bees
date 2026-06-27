@@ -1,1 +1,1 @@
-export { runtimeDashboardFromSources as runtimeDashboardSurface } from '../../overviews.js';
+export { runtimeDashboardFromSources as runtimeDashboardSurface } from '../../overview/index.js';

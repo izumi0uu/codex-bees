@@ -1,6 +1,6 @@
-import { buildHistoryView, buildPlanningView } from "../../state-view-metadata.js";
-import { createCollectionView, createLoadedValueView } from "../../state-view-helpers.js";
-import { buildRuntimeTaskDashboardFields } from "../runtime/task-entry-helpers.js";
+import { buildHistoryView, buildPlanningView } from "../core/view-metadata.js";
+import { createCollectionView, createLoadedValueView } from "../core/view-helpers.js";
+import { buildRuntimeTaskDashboardFields } from "../runtime/task-entry/helpers.js";
 
 export function deriveTaskReportReason(task) {
   if (task.queueStatus === "ready_for_review") {

@@ -3,14 +3,14 @@ import { cwd } from "node:process";
 import {
   defaultState,
   normalizeState
-} from "../../../state-normalize.js";
+} from "../../core/normalize.js";
 import {
   ensureStateFileAtPath,
   loadStateFromFile,
   recoverCorruptStateFile as recoverCorruptStateFileWithPaths,
   saveStateToFile,
   writeStateFile as writeStateFileWithPaths
-} from "../../../state-storage.js";
+} from "../../core/storage.js";
 
 const STATE_DIR = join(cwd(), ".codex-bees");
 const STATE_FILE = join(STATE_DIR, "state.json");

@@ -1,4 +1,10 @@
-import { buildRuntimeDispatchPackSummary, buildRuntimeDispatchPackView, deriveRuntimeDispatchPackReason, deriveRuntimeDispatchPackSurface } from '../views.js';
+import {
+  buildRuntimeDispatchPackScoring,
+  buildRuntimeDispatchPackSummary,
+  buildRuntimeDispatchPackView,
+  deriveRuntimeDispatchPackReason,
+  deriveRuntimeDispatchPackSurface
+} from '../views.js';
 
 export function runtimeDispatchPackFromSources(input = {}, sources = {}) {
   return buildRuntimeDispatchPackView(
@@ -7,7 +13,8 @@ export function runtimeDispatchPackFromSources(input = {}, sources = {}) {
     {
       deriveRuntimeDispatchPackSurface,
       deriveRuntimeDispatchPackReason,
-      buildRuntimeDispatchPackSummary
+      buildRuntimeDispatchPackSummary,
+      buildRuntimeDispatchPackScoring
     }
   );
 }

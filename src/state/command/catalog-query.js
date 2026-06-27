@@ -7,7 +7,7 @@ import {
   groupCommandCatalog
 } from "./surface.js";
 import { normalizeCommand } from "./options.js";
-import { createCollectionView, createResolvedItemView } from "../../state-view-helpers.js";
+import { createCollectionView, createResolvedItemView } from "../core/view-helpers.js";
 
 export function getCommandCatalogView() {
   const commands = getCommandCatalog();

@@ -1,7 +1,7 @@
 import {
   buildRejectedTaskLifecycleResult,
   buildTaskLifecycleResult
-} from "../../state-lifecycle-views.js";
+} from "../core/lifecycle-views.js";
 
 export function claimTaskTransition(input, { transitionTask }) {
   return transitionTask({

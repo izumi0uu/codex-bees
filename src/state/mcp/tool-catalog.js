@@ -10,7 +10,7 @@ import {
 import {
   TASK_MCP_TOOL_CATALOG
 } from "./tool-catalog-task.js";
-import { createCollectionView, createResolvedItemView } from "../../state-view-helpers.js";
+import { createCollectionView, createResolvedItemView } from "../core/view-helpers.js";
 
 export const toolCatalog = [
   ...CORE_MCP_TOOL_CATALOG,

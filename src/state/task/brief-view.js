@@ -1,7 +1,7 @@
 import { summarizeTaskDependencies } from "./core.js";
-import { buildRecommendedFieldsFromResult } from "../runtime/recommendation-helpers.js";
-import { buildHistoryView, buildPlanningView } from "../../state-view-metadata.js";
-import { createLoadedValueView } from "../../state-view-helpers.js";
+import { buildRecommendedFieldsFromResult } from "../runtime/recommendation/helpers.js";
+import { buildHistoryView, buildPlanningView } from "../core/view-metadata.js";
+import { createLoadedValueView } from "../core/view-helpers.js";
 
 export function deriveTaskBriefReason(task, recommended) {
   if (task.queueStatus === "done") {

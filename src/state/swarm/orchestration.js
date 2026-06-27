@@ -1,4 +1,4 @@
-import { buildDependencyWaves, deriveExecutionShapeFromWaves, laneDependsOnList } from "../../orchestration-waves.js";
+import { buildDependencyWaves, deriveExecutionShapeFromWaves, laneDependsOnList } from "../../planner/lane/waves.js";
 
 function buildFallbackWaveLaneView(lane) {
   return {

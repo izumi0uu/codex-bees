@@ -3,7 +3,7 @@ import {
   buildRuntimeDashboardViewFromSources,
   deriveRuntimeDashboardReason
 } from "../../dashboard/views.js";
-import { summarizeDashboardTask } from "../../../state/role/index.js";
+import { summarizeDashboardTask } from "../../role/index.js";
 import { compareTasksByUpdatedAt } from "../../queue/views.js";
 
 export function runtimeDashboardFromSources(sources = {}) {

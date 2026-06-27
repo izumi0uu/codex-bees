@@ -1,1 +1,1 @@
-export { runtimeHandoffPackFromSources as runtimeHandoffPackSurface } from '../../../../state/runtime/packs.js';
+export { runtimeHandoffPackFromSources as runtimeHandoffPackSurface } from '../../packs.js';

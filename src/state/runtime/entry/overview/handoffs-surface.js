@@ -1,1 +1,1 @@
-export { runtimeHandoffsFromSources as runtimeHandoffsSurface } from '../../overviews.js';
+export { runtimeHandoffsFromSources as runtimeHandoffsSurface } from '../../overview/index.js';

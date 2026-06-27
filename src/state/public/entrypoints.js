@@ -1,7 +1,7 @@
-import { createStateAuthoritativeFacade } from "../../state-authoritative-facade.js";
-import { createStateReadEntryPoints } from "./read-entrypoints.js";
-import { createStateRuntimeEntryPoints } from "./runtime-entrypoints.js";
-import { createStateWorkerEntryPoints } from "./worker-entrypoints.js";
+import { createStateAuthoritativeFacade } from "./authoritative-facade.js";
+import { createStateReadEntryPoints } from "./read/read-entrypoints.js";
+import { createStateRuntimeEntryPoints } from "./runtime/runtime-entrypoints.js";
+import { createStateWorkerEntryPoints } from "./worker/worker-entrypoints.js";
 
 export function createStatePublicApi(shared) {
   const api = {};

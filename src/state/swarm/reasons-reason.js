@@ -1,4 +1,4 @@
-import { pickPriorityEntry } from "../../state/queue/views.js";
+import { pickPriorityEntry } from "../queue/views.js";
 
 export function deriveSwarmBriefReason(recommended) {
   const action = recommended?.action ?? null;

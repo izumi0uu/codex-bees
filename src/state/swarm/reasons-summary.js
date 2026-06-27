@@ -1,4 +1,4 @@
-import { pickPriorityEntry } from "../../state/queue/views.js";
+import { pickPriorityEntry } from "../queue/views.js";
 
 export function buildSwarmBundleSummary(overview, laneBundles) {
   if (overview.readyToComplete) {

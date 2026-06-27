@@ -1,4 +1,5 @@
 import { getPlannerProfileView, getPlannerProfilesView, planSwarm, planTask, queueSwarmFromPlan, queueTasksFromPlan } from "../../planner.js";
+import { getPlannerProfileRankingView } from "../../planner/profile/ranking.js";
 import {
   activateSwarm,
   addTasks,
@@ -45,6 +46,23 @@ const PLAN_MCP_TOOL_HANDLERS = {
     return createSuccess(
       id,
       createNamedTextPayload("profile", getPlannerProfileView(params.arguments.profile, { profileFile: params.arguments?.profileFile }))
+    );
+  },
+
+  planner_profile_ranking({ id, args, metadata }) {
+    const params = { arguments: args };
+    const taskRequired = requireArgument(id, "planner_profile_ranking", params.arguments, "task");
+    if (taskRequired) return taskRequired;
+
+    return createSuccess(
+      id,
+      createNamedTextPayload(
+        "profileRanking",
+        getPlannerProfileRankingView(params.arguments.task, {
+          profileId: params.arguments.profile,
+          profileFile: params.arguments.profileFile
+        })
+      )
     );
   },
 

@@ -1,11 +1,11 @@
 import {
   buildTaskHistoryEntry
-} from "../../../state-builders.js";
+} from "../../core/builders.js";
 import {
   normalizeSwarm,
   normalizeTask
-} from "../../../state-normalize.js";
-import { runtimeRoleCatalog } from "../../../state-role-catalog.js";
+} from "../../core/normalize.js";
+import { runtimeRoleCatalog } from "../../role/catalog.js";
 import {
   VALID_QUEUE_STATUSES,
   VALID_SWARM_STATUSES,
@@ -13,16 +13,16 @@ import {
   canTransitionTask,
   deriveSwarmStatus,
   validateTaskValue
-} from "../../../state-rules.js";
+} from "../../rules/index.js";
 import {
   buildSyncedSwarmState,
   buildTransitionedSwarmState,
   syncLoadedSwarmState,
   transitionSwarmFromSources
-} from "../../../state/swarm/core.js";
+} from "../../swarm/core.js";
 import {
   appendTaskHistoryEntry
-} from "../../../state/task/core.js";
+} from "../../task/core.js";
 import {
   findSwarmIndex,
   findTaskIndex,
@@ -34,14 +34,14 @@ import {
   validateTaskClaimReady,
   validateTaskQueueTransition,
   validateVerifierAction
-} from "../../../state-transition-guards.js";
+} from "../../core/transition-guards.js";
 import {
   buildTransitionedTaskState,
   buildTaskReviewPatch,
   deriveTaskTransitionContext,
   resolveTaskClaimedBy,
   transitionTaskFromSources
-} from "../../../state/task/lifecycle.js";
+} from "../../task/lifecycle.js";
 
 export function createStateTransitions({ loadState, saveState }) {
   function syncSwarmInLoadedState(state, swarmId) {

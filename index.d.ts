@@ -385,6 +385,14 @@ export type PlannerLaneStrategy =
   | "discover-implement-verify"
   | "discover-implement-verify-docs";
 
+export type PlannerAssessmentBand = "low" | "medium" | "high";
+export type PlannerAssessmentExecutionPressure = "steady" | "elevated" | "parallel";
+export type PlannerAssessmentDispatchBias =
+  | "serial-handoff"
+  | "parallelize-by-owner"
+  | "parallelize-by-lane"
+  | "single-owner";
+
 export interface TaskPlanLane {
   lane: string;
   purpose: TaskPlanLanePurpose;
@@ -443,8 +451,46 @@ export interface PlannerEvidence {
   roleFiles: PlannerRoleFileEvidence[];
 }
 
+export interface PlannerAssessment {
+  complexity: PlannerAssessmentBand;
+  coordinationIntensity: PlannerAssessmentBand;
+  publicSurfaceRisk: PlannerAssessmentBand;
+  verificationPressure: PlannerAssessmentBand;
+  executionPressure: PlannerAssessmentExecutionPressure;
+  dispatchBias: PlannerAssessmentDispatchBias;
+  recommendedParallelism: number;
+  scoreHints: {
+    complexity: number;
+    coordinationIntensity: number;
+    publicSurfaceRisk: number;
+    verificationPressure: number;
+  };
+  signals: {
+    taskClass: PlannerTaskClass;
+    laneStrategy: PlannerLaneStrategy;
+    intentTags: string[];
+    primaryScopeCount: number;
+    discoveryScopeCount: number;
+    verificationScopeCount: number;
+    documentationScopeCount: number;
+    laneCount: number;
+    waveCount: number;
+    peakParallelOwners: number;
+    peakParallelLanes: number;
+    discoveryLaneCount: number;
+    implementationLaneCount: number;
+    verificationLaneCount: number;
+    documentationLaneCount: number;
+  };
+  summary: string;
+}
+
 export interface PlannerProfileSelectionHints {
   keywords: string[];
+  taskClasses: string[];
+  intentTags: string[];
+  excludeIntentTags: string[];
+  scopePrefixes: string[];
   priority: number;
 }
 
@@ -512,7 +558,79 @@ export interface PlannerSelection {
     | "explicit_profile_requested"
     | "missing_profile_fallback"
     | "coordination_profile_inferred"
-    | "default_profile_inferred";
+    | "default_profile_inferred"
+    | "profile_hint_inferred";
+  resolvedSourceKind?: string | null;
+  defaultProfile?: string | null;
+  availableProfiles?: string[];
+  profileFiles?: string[];
+  selectionContext?: {
+    taskClass: PlannerTaskClass;
+    laneStrategy: PlannerLaneStrategy;
+    implementationScope: string[];
+    intentTags: string[];
+  };
+  matchedSignals?: {
+    keywords: string[];
+    taskClasses: string[];
+    intentTags: string[];
+    scopePrefixes: string[];
+    coordinationBias: boolean;
+  };
+  selectionScore?: number;
+  selectionScoreBreakdown?: Record<string, number>;
+  matchedSignalCount?: number;
+  heuristicMatches?: PlannerProfileRankingEntry[];
+}
+
+export interface PlannerProfileRankingEntry {
+  rank: number;
+  profileId: string;
+  sourceKind: string;
+  selectionScore: number;
+  scoreBreakdown: Record<string, number>;
+  matchedSignalCount: number;
+  matchedKeywords: string[];
+  matchedTaskClasses: string[];
+  matchedIntentTags: string[];
+  matchedScopePrefixes: string[];
+  matchedCoordinationBias: boolean;
+}
+
+export interface PlannerProfileRankingView {
+  kind: "planner_profile_ranking_view";
+  recommendedReason: string;
+  task: string;
+  counts: {
+    totalCandidates: number;
+    matchedSignalCount: number;
+  };
+  inputProfile: string | null;
+  requestedProfile: string | null;
+  resolvedProfile: string | null;
+  resolvedSourceKind: string | null;
+  defaultProfile: string | null;
+  availableProfiles: string[];
+  profileFiles: string[];
+  selectionMode: string | null;
+  usedDefaultProfile: boolean;
+  selectionContext: {
+    taskClass: PlannerTaskClass | null;
+    laneStrategy: PlannerLaneStrategy | null;
+    implementationScope: string[];
+    intentTags: string[];
+  };
+  matchedSignals: {
+    keywords: string[];
+    taskClasses: string[];
+    intentTags: string[];
+    scopePrefixes: string[];
+    coordinationBias: boolean;
+  };
+  selectionScore: number;
+  selectionScoreBreakdown: Record<string, number>;
+  profiles: PlannerProfileRankingEntry[];
+  summary: string;
 }
 
 export type PlannerExecutionShape =
@@ -556,6 +674,7 @@ export interface TaskPlan {
   planner: PlannerProfile;
   plannerSelection: PlannerSelection;
   evidence: PlannerEvidence;
+  assessment: PlannerAssessment;
   orchestration: PlannerOrchestration;
   lanes: TaskPlanLane[];
 }
@@ -568,6 +687,7 @@ export interface PlannedSwarm {
   planner: PlannerProfile;
   plannerSelection: PlannerSelection;
   evidence: PlannerEvidence;
+  assessment: PlannerAssessment;
   orchestration: PlannerOrchestration;
   swarm: PlannedSwarmShape;
 }
@@ -579,6 +699,7 @@ export interface QueuedPlan {
   requestedProfile: string;
   planner: PlannerProfile;
   plannerSelection: PlannerSelection;
+  assessment: PlannerAssessment;
   orchestration: PlannerOrchestration;
   lanes: TaskPlanLane[];
   created: TaskRecord[];
@@ -1274,6 +1395,82 @@ export interface MemorySearchView {
   results: MemorySearchResult[];
 }
 
+export interface LeaderAssignmentRankingEntry {
+  rank: number;
+  swarmId: string;
+  lane: string;
+  taskId: string | null;
+  owner: unknown;
+  purpose: TaskPlanLanePurpose | null;
+  wave: number | string | null;
+  dispatchScore: number;
+  dispatchScoreBreakdown: Record<string, number>;
+  plannerAssessment: PlannerAssessment | null;
+  summary: string;
+}
+
+export interface LeaderAssignmentRankingView {
+  kind: "leader_assignment_ranking_view";
+  recommendedReason: string;
+  filters: Record<string, string | null>;
+  counts: {
+    totalAssignments: number;
+    ownerGroups: number;
+  };
+  next: unknown | null;
+  assignments: LeaderAssignmentRankingEntry[];
+  summary: string;
+}
+
+export interface RuntimeDispatchRankingEntry {
+  rank: number;
+  swarmId: string;
+  lane: string;
+  taskId: string | null;
+  purpose: TaskPlanLanePurpose | null;
+  dispatchScore: number;
+  dispatchScoreBreakdown: Record<string, number>;
+  plannerAssessment: PlannerAssessment | null;
+  summary: string;
+}
+
+export interface RuntimeDispatchRankingView {
+  kind: "runtime_dispatch_ranking_view";
+  recommendedReason: string;
+  counts: {
+    ownerGroups: number;
+    totalAssignments: number;
+  };
+  next: unknown | null;
+  assignments: RuntimeDispatchRankingEntry[];
+  summary: string;
+}
+
+export interface RuntimeFocusCandidateEntry {
+  rank?: number;
+  key: string;
+  score?: number;
+  summary?: string | null;
+  recommendedReason?: string;
+  focus?: unknown;
+  priorityScore?: number;
+  priorityScoreBreakdown?: Record<string, number>;
+  scoreBreakdown?: Record<string, number>;
+}
+
+export interface RuntimeFocusCandidatesView {
+  kind: "runtime_focus_candidates_view";
+  recommendedReason: string;
+  counts: {
+    totalCandidates: number;
+  };
+  focus: unknown | null;
+  priorityScore: number;
+  priorityScoreBreakdown: Record<string, number>;
+  candidates: RuntimeFocusCandidateEntry[];
+  summary: string;
+}
+
 export interface MemoryFilters {
   namespace?: string;
   kind?: string;
@@ -1470,6 +1667,7 @@ export declare function getPlannerProfiles(): PlannerProfile[];
 export declare function getPlannerProfilesView(): PlannerProfileListView;
 export declare function getPlannerProfile(id?: string): PlannerProfile | undefined;
 export declare function getPlannerProfileView(id?: string): PlannerProfileView;
+export declare function getPlannerProfileRankingView(task: string, options?: { profileId?: string; profileFile?: string }): PlannerProfileRankingView;
 export declare function registerPlannerProfile(profile: PlannerProfileDefinition, options?: { defaultProfileId?: string; makeDefault?: boolean }): PlannerProfileDefinition;
 export declare function registerPlannerProfiles(profiles?: PlannerProfileDefinition[], options?: { defaultProfileId?: string; makeDefault?: boolean }): PlannerProfileDefinition[];
 export declare function resetPlannerProfiles(): void;
@@ -1516,6 +1714,25 @@ export declare function listTasksView(): TaskListView;
 export declare function listSwarmsView(filters?: SwarmFilters, options?: { detailed?: false }): SwarmListView;
 export declare function listSwarmsView(filters: SwarmFilters | undefined, options: { detailed: true }): DetailedSwarmListView;
 export declare function listMemoriesView(filters?: MemoryFilters): MemoryListView;
+export declare function leaderAssignmentRanking(input?: { status?: string; topology?: string; owner?: string }): LeaderAssignmentRankingView;
+export declare function leaderAssignments(input?: { status?: string; topology?: string; owner?: string }): unknown;
+export declare function leaderAssignmentDispatch(input?: JsonObject): unknown;
+export declare function leaderAssignmentDispatchBundle(input?: JsonObject): unknown;
+export declare function leaderAssignmentLaunchPlan(input?: JsonObject): unknown;
+export declare function leaderQueue(input?: { status?: string; topology?: string; owner?: string }): unknown;
+export declare function leaderWorkspace(input?: { status?: string; topology?: string; owner?: string }): unknown;
+export declare function runtimeActivity(input?: { limit?: number }): unknown;
+export declare function runtimeAlerts(): unknown;
+export declare function runtimeCloseout(): unknown;
+export declare function runtimeDashboard(): unknown;
+export declare function runtimeDispatch(): unknown;
+export declare function runtimeDispatchRanking(): RuntimeDispatchRankingView;
+export declare function runtimeFocus(): unknown;
+export declare function runtimeFocusCandidates(): RuntimeFocusCandidatesView;
+export declare function runtimeHandoffs(): unknown;
+export declare function runtimeRecovery(): unknown;
+export declare function runtimeReview(): unknown;
+export declare function runtimeRoles(input?: { limit?: number }): unknown;
 export declare function searchMemoriesView(query: string, filters?: MemoryFilters, limit?: number): MemorySearchView;
 export declare function storeMemory(input: MemoryInput): MemoryRecord;
 export declare function validateTask(id: string): TaskValidationView | null;

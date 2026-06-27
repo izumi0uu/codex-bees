@@ -1,5 +1,6 @@
 export {
   getPlannerProfile,
+  getPlannerProfileRankingView,
   getPlannerProfiles,
   getPlannerProfilesView,
   getPlannerProfileView,

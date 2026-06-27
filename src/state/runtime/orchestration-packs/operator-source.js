@@ -1,4 +1,10 @@
-import { buildRuntimeOperatorPackSummary, buildRuntimeOperatorPackView, deriveRuntimeOperatorPackReason, deriveRuntimeOperatorPackSurface } from '../views.js';
+import {
+  buildRuntimeOperatorPackScoring,
+  buildRuntimeOperatorPackSummary,
+  buildRuntimeOperatorPackView,
+  deriveRuntimeOperatorPackReason,
+  deriveRuntimeOperatorPackSurface
+} from '../views.js';
 
 export function runtimeOperatorPackFromSources(sources = {}) {
   return buildRuntimeOperatorPackView(
@@ -6,7 +12,8 @@ export function runtimeOperatorPackFromSources(sources = {}) {
     {
       deriveRuntimeOperatorPackSurface,
       deriveRuntimeOperatorPackReason,
-      buildRuntimeOperatorPackSummary
+      buildRuntimeOperatorPackSummary,
+      buildRuntimeOperatorPackScoring
     }
   );
 }

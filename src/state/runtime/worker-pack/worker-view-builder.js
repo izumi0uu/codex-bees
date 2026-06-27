@@ -6,7 +6,7 @@ import {
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackSessionOverview,
   buildRuntimePackCounts
-} from "../../../state/runtime/pack-detail/index.js";
+} from "../pack-detail/index.js";
 
 export function buildRuntimeWorkerPackView(
   input,

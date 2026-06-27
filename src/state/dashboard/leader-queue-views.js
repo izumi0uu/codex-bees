@@ -1,5 +1,5 @@
-import { buildRecommendedNextFields } from "../runtime/recommendation-helpers.js";
-import { buildSwarmOverviewStatusFields } from "../../state/swarm/overview-status-helpers.js";
+import { buildRecommendedNextFields } from "../runtime/recommendation/helpers.js";
+import { buildSwarmOverviewStatusFields } from "../swarm/overview-status-helpers.js";
 
 export function buildLeaderQueueSummary(items) {
   if (items.length === 0) {

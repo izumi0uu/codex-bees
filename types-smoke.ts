@@ -40,6 +40,7 @@ import {
   getRuntimeContractView,
   getRuntimeDoctorView,
   getPlannerProfile,
+  getPlannerProfileRankingView,
   getPlannerProfileView,
   getPlannerProfiles,
   getPlannerProfilesView,
@@ -90,6 +91,25 @@ import {
   listMemoriesView,
   listSwarmsView,
   listTasksView,
+  leaderAssignmentRanking,
+  leaderAssignments,
+  leaderAssignmentDispatch,
+  leaderAssignmentDispatchBundle,
+  leaderAssignmentLaunchPlan,
+  leaderQueue,
+  leaderWorkspace,
+  runtimeActivity,
+  runtimeAlerts,
+  runtimeCloseout,
+  runtimeDashboard,
+  runtimeDispatch,
+  runtimeDispatchRanking,
+  runtimeFocus,
+  runtimeFocusCandidates,
+  runtimeHandoffs,
+  runtimeRecovery,
+  runtimeReview,
+  runtimeRoles,
   searchMemoriesView,
   serializeMcpMessage,
   stateFilePath,
@@ -159,6 +179,7 @@ import {
 import { getRuntimeContractView as getContractSubpathView } from "codex-bees/runtime-contract";
 import {
   getPlannerProfile as getPlannerProfileSubpath,
+  getPlannerProfileRankingView as getPlannerProfileRankingViewSubpath,
   getPlannerProfileView as getPlannerProfileViewSubpath,
   getPlannerProfiles as getPlannerProfilesSubpath,
   getPlannerProfilesView as getPlannerProfilesViewSubpath,
@@ -237,6 +258,27 @@ const subpathMetadataVersion: "0.1.0" = metadataSubpathVersion;
 const subpathMetadataProductName: "codex-bees" = metadataSubpathProductName;
 const subpathPlannerQueuedKind: "queued_plan" = queueTasksFromPlanSubpath("typed queue", (tasks) => tasks as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).kind;
 const subpathPlannerQueuedLane: string | undefined = queueTasksFromPlanSubpath("typed queue", (tasks) => tasks as ReturnType<typeof addTask>[], { profileId: "bounded-local" }).lanes[0]?.lane;
+const plannerRankingKind: "planner_profile_ranking_view" = getPlannerProfileRankingView("Coordinate a planner-driven swarm").kind;
+const plannerRankingTopProfile: string | undefined = getPlannerProfileRankingView("Coordinate a planner-driven swarm").profiles[0]?.profileId;
+const plannerRankingSubpathKind: "planner_profile_ranking_view" = getPlannerProfileRankingViewSubpath("Coordinate a planner-driven swarm").kind;
+const plannerRankingTaskClass:
+  | "coordination-kernel"
+  | "runtime-surface"
+  | "docs-only"
+  | "docs-runtime"
+  | "catalog-contract"
+  | "build-verification"
+  | "general"
+  | null = getPlannerProfileRankingView("Coordinate a planner-driven swarm").selectionContext.taskClass;
+const plannerRankingIntentTag: string | undefined = getPlannerProfileRankingView("Coordinate a planner-driven swarm").matchedSignals.intentTags[0];
+const plannerRankingMatchedIntentTag: string | undefined = getPlannerProfileRankingView("Improve task queue review transitions").profiles[0]?.matchedIntentTags[0];
+const plannerRankingHeuristicTop: string | undefined = planSwarm("Improve task queue review transitions").plannerSelection.heuristicMatches?.[0]?.profileId;
+const leaderAssignmentRankingKind: "leader_assignment_ranking_view" = leaderAssignmentRanking().kind;
+const leaderAssignmentRankingTopLane: string | undefined = leaderAssignmentRanking().assignments[0]?.lane;
+const runtimeDispatchRankingKind: "runtime_dispatch_ranking_view" = runtimeDispatchRanking().kind;
+const runtimeDispatchRankingTopLane: string | undefined = runtimeDispatchRanking().assignments[0]?.lane;
+const runtimeFocusCandidatesKind: "runtime_focus_candidates_view" = runtimeFocusCandidates().kind;
+const runtimeFocusCandidatesTopKey: string | undefined = runtimeFocusCandidates().candidates[0]?.key;
 const subpathGuidanceOverviewKind: "coordination_overview_view" = getRuntimeGuidanceSubpathOverviewView().kind;
 const subpathGuidanceWorkerKind: "worker_guidelines_view" = getRuntimeGuidanceSubpathWorkerView().kind;
 const subpathRuntimeReadyKind: "runtime_ready_view" = getRuntimeReadySubpathView().kind;
@@ -311,12 +353,19 @@ const rootPlanSelectionReason:
   | "explicit_profile_requested"
   | "missing_profile_fallback"
   | "coordination_profile_inferred"
-  | "default_profile_inferred" = planTask("typed smoke").plannerSelection.reason;
+  | "default_profile_inferred"
+  | "profile_hint_inferred" = planTask("typed smoke").plannerSelection.reason;
 const rootPlanInputProfile: string | null = planTask("typed smoke").plannerSelection.inputProfile;
+const rootPlanSelectionTaskClass: "coordination-kernel" | "runtime-surface" | "docs-only" | "docs-runtime" | "catalog-contract" | "build-verification" | "general" = planSwarm("Improve task queue review transitions").plannerSelection.selectionContext!.taskClass;
+const rootPlanSelectionIntentTag: string | undefined = planSwarm("Improve task queue review transitions").plannerSelection.matchedSignals?.intentTags[0];
 const rootPlanExecutionShape: "solo-lane" | "serial-handoff" | "parallel-handoff" = planTask("typed smoke", { profileId: "bounded-local" }).orchestration.executionShape;
 const rootPlanWaveCount: number = planTask("typed smoke", { profileId: "bounded-local" }).orchestration.waveCount;
 const rootPlanPeakParallelOwners: number = planTask("typed smoke", { profileId: "bounded-local" }).orchestration.peakParallelOwners;
 const rootPlanWavePurpose: "discovery" | "implementation" | "verification" | "documentation" | undefined = planTask("typed smoke", { profileId: "bounded-local" }).orchestration.waves[0]?.lanes[0]?.purpose;
+const rootPlanAssessmentComplexity: "low" | "medium" | "high" = planTask("typed smoke", { profileId: "bounded-local" }).assessment.complexity;
+const rootPlanAssessmentExecutionPressure: "steady" | "elevated" | "parallel" = planTask("typed smoke", { profileId: "bounded-local" }).assessment.executionPressure;
+const rootPlanAssessmentDispatchBias: "serial-handoff" | "parallelize-by-owner" | "parallelize-by-lane" | "single-owner" = planTask("typed smoke", { profileId: "bounded-local" }).assessment.dispatchBias;
+const rootPlanAssessmentTaskClass: "docs-only" | "docs-runtime" | "coordination-kernel" | "catalog-contract" | "runtime-surface" | "build-verification" | "general" = planTask("typed smoke", { profileId: "bounded-local" }).assessment.signals.taskClass;
 const plannedSwarmReason: "multi_lane_swarm_ready" | "single_lane_swarm_ready" = planSwarm("typed root swarm", { profileId: "bounded-local" }).recommendedReason;
 const rootSwarmPlanWorkers: number = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.maxWorkers;
 const rootSwarmPlanTopology: "bounded-local" = planSwarm("typed root swarm", { profileId: "bounded-local" }).swarm.topology;
@@ -337,6 +386,7 @@ const taskPlanReason: "multi_lane_plan_ready" | "single_lane_plan_ready" = planT
 const taskPlanLanePurpose: "discovery" | "implementation" | "verification" | "documentation" = planTask("typed smoke").lanes[0]?.purpose as "discovery" | "implementation" | "verification" | "documentation";
 const plannerHasSrc: boolean = planTask("typed smoke").evidence.repoSignals.hasSrc;
 const plannerRolePath: string | undefined = planTask("typed smoke").evidence.roleFiles[0]?.path;
+const runtimeDispatchPlannerAssessmentBand: "low" | "medium" | "high" | undefined = runtimeDispatchRanking().assignments[0]?.plannerAssessment?.coordinationIntensity;
 const apiPlannerProfileId: string | undefined = getApiPlannerProfiles()[0]?.id;
 const apiPlannerProfilesViewKind: "planner_profile_list_view" = getApiPlannerProfilesView().kind;
 const apiPlannerProfileTopology: string | undefined = getApiPlannerProfile()?.topology;

@@ -1,4 +1,10 @@
-import { buildRuntimeSummaryPackSummary, buildRuntimeSummaryPackView, deriveRuntimeSummaryPackReason, deriveRuntimeSummaryPackSurface } from '../views.js';
+import {
+  buildRuntimeSummaryPackScoring,
+  buildRuntimeSummaryPackSummary,
+  buildRuntimeSummaryPackView,
+  deriveRuntimeSummaryPackReason,
+  deriveRuntimeSummaryPackSurface
+} from '../views.js';
 
 export function runtimeSummaryPackFromSources(input = {}, sources = {}) {
   return buildRuntimeSummaryPackView(
@@ -7,7 +13,8 @@ export function runtimeSummaryPackFromSources(input = {}, sources = {}) {
     {
       deriveRuntimeSummaryPackSurface,
       deriveRuntimeSummaryPackReason,
-      buildRuntimeSummaryPackSummary
+      buildRuntimeSummaryPackSummary,
+      buildRuntimeSummaryPackScoring
     }
   );
 }

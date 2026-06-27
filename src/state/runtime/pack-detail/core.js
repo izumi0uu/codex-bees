@@ -1,4 +1,4 @@
-import { buildPurposeGuidanceForTaskLike } from "../../../state-lane-purpose.js";
+import { buildPurposeGuidanceForTaskLike } from "../../task/lane-purpose.js";
 
 export const RUNTIME_PACK_DETAILS = Object.freeze(["compact", "full"]);
 

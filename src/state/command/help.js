@@ -21,7 +21,7 @@ import {
   groupCommandCatalog
 } from "./surface.js";
 import { createResolvedOptionView } from "./options.js";
-import { createResolvedItemView } from "../../state-view-helpers.js";
+import { createResolvedItemView } from "../core/view-helpers.js";
 
 function appendCommonPaths(lines) {
   const commonPaths = getCommonCommandPaths().map((path) => formatCommonCommandPath(path, PRODUCT_NAME));

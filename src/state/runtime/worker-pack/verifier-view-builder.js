@@ -5,7 +5,7 @@ import {
   buildRuntimePackVerifierSurfaces,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackCounts
-} from "../../../state/runtime/pack-detail/index.js";
+} from "../pack-detail/index.js";
 
 export function buildRuntimeVerifierPackView(
   input,

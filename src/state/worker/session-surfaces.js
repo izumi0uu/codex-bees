@@ -3,7 +3,7 @@ import {
   deriveWorkerCloseoutReason,
   deriveWorkerHandoffReason,
   deriveWorkerSessionReason
-} from "../../state-reasons.js";
+} from "./reasons.js";
 import { describeRoleWithContract, describeRole } from "../task/core.js";
 import {
   buildSessionTaskSnapshot,

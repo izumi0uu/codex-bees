@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { createLoadedValueView } from "./state-view-helpers.js";
+import { createLoadedValueView } from "./state/core/view-helpers.js";
 
 const PACKAGE_MANIFEST_LOCATIONS = [
   new URL("../package.json", import.meta.url),

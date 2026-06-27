@@ -1163,7 +1163,7 @@ const installedPlannerImport = spawnSync(
   "node",
   [
     "-e",
-    'import("codex-bees/planner").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("planTask") && Object.keys(m).includes("getPlannerProfile") && Object.keys(m).includes("getPlannerProfiles") && Object.keys(m).includes("getPlannerProfileView")})))'
+    'import("codex-bees/planner").then((m) => console.log(JSON.stringify({ok:Object.keys(m).includes("planTask") && Object.keys(m).includes("getPlannerProfile") && Object.keys(m).includes("getPlannerProfiles") && Object.keys(m).includes("getPlannerProfileView") && typeof m.getPlannerProfileRankingView === "function" && m.getPlannerProfileRankingView("Orchestrate a parallel swarm dispatch across workers").kind === "planner_profile_ranking_view" && m.getPlannerProfileRankingView("Orchestrate a parallel swarm dispatch across workers").profiles?.[0]?.profileId === "coordination-local" && m.getPlannerProfileRankingView("Improve task queue review transitions").selectionContext?.taskClass === "coordination-kernel" && m.getPlannerProfileRankingView("Improve task queue review transitions").profiles?.[0]?.matchedIntentTags?.includes("review-flow")})))'
   ],
   {
     cwd: packedInstallAppDir,
@@ -1177,6 +1177,125 @@ if (
   console.error("[smoke:installed-planner-import] expected installed codex-bees/planner subpath export");
   console.error(installedPlannerImport.stderr || installedPlannerImport.stdout);
   process.exit(installedPlannerImport.status ?? 1);
+}
+const installedRankingProbeState = JSON.stringify(
+  {
+    version: 1,
+    nextId: 3,
+    nextMemoryId: 1,
+    nextSwarmId: 2,
+    updatedAt: "2026-06-27T00:00:00.000Z",
+    tasks: [
+      {
+        id: "task-1",
+        title: "Implement alpha lane",
+        objective: "Ship alpha implementation",
+        owner: "executor",
+        verifier: "reviewer",
+        queueStatus: "queued",
+        lane: "lane-alpha",
+        lanePurpose: "implementation",
+        swarmId: "swarm-1",
+        scope: ["src/planner"],
+        acceptance: ["alpha lane completes implementation handoff"],
+        verification: ["smoke"],
+        updatedAt: "2026-06-27T00:00:00.000Z",
+        history: []
+      },
+      {
+        id: "task-2",
+        title: "Recover blocked beta task",
+        objective: "Recover blocked beta task",
+        owner: "executor",
+        verifier: "reviewer",
+        queueStatus: "blocked",
+        lane: "lane-beta",
+        lanePurpose: "verification",
+        swarmId: "swarm-1",
+        scope: ["src/state/runtime"],
+        acceptance: ["blocked beta task is surfaced as top recovery priority"],
+        verification: ["smoke"],
+        updatedAt: "2026-06-27T00:00:00.000Z",
+        history: [{ id: "event-1", at: "2026-06-27T00:00:00.000Z", type: "blocked", outcome: "blocked" }]
+      }
+    ],
+    memories: [],
+    swarms: [
+      {
+        id: "swarm-1",
+        objective: "Ship smarter runtime ranking",
+        status: "active",
+        topology: "bounded-local",
+        maxWorkers: 2,
+        executionShape: "parallel",
+        waveCount: 1,
+        owner: "executor",
+        lanes: [
+          {
+            lane: "lane-alpha",
+            purpose: "implementation",
+            summary: "Implement alpha lane",
+            owner: "executor",
+            verifier: "reviewer",
+            taskId: "task-1"
+          },
+          {
+            lane: "lane-beta",
+            purpose: "verification",
+            summary: "Recover blocked beta task",
+            owner: "executor",
+            verifier: "reviewer",
+            taskId: "task-2"
+          }
+        ],
+        history: []
+      }
+    ],
+    archivedTasks: [],
+    archivedSwarms: []
+  },
+  null,
+  2
+);
+const installedRuntimeRankingImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees").then(async (m) => { const { mkdirSync, rmSync, writeFileSync } = await import("node:fs"); const { join } = await import("node:path"); mkdirSync(".codex-bees", { recursive: true }); writeFileSync(join(".codex-bees", "state.json"), process.argv[1]); const planner = m.getPlannerProfileRankingView("Orchestrate a parallel swarm dispatch across workers"); const plannerIntent = m.getPlannerProfileRankingView("Improve task queue review transitions"); const leader = m.leaderAssignmentRanking(); const dispatch = m.runtimeDispatchRanking(); const focus = m.runtimeFocusCandidates(); rmSync(".codex-bees", { recursive: true, force: true }); console.log(JSON.stringify({ ok: planner.kind === "planner_profile_ranking_view" && planner.profiles?.[0]?.profileId === "coordination-local" && plannerIntent.selectionContext?.taskClass === "coordination-kernel" && plannerIntent.matchedSignals?.intentTags?.includes("review-flow") && leader.kind === "leader_assignment_ranking_view" && leader.assignments?.[0]?.lane === "lane-alpha" && dispatch.kind === "runtime_dispatch_ranking_view" && dispatch.assignments?.[0]?.lane === "lane-alpha" && focus.kind === "runtime_focus_candidates_view" && focus.candidates?.[0]?.key === "blocked_task" })); })',
+    installedRankingProbeState
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedRuntimeRankingImport.status !== 0 ||
+  JSON.parse(installedRuntimeRankingImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-runtime-ranking-import] expected installed root api to expose working ranking surfaces");
+  console.error(installedRuntimeRankingImport.stderr || installedRuntimeRankingImport.stdout);
+  process.exit(installedRuntimeRankingImport.status ?? 1);
+}
+const installedMcpRankingImport = spawnSync(
+  "node",
+  [
+    "-e",
+    'import("codex-bees/mcp").then(async (m) => { const { mkdirSync, rmSync, writeFileSync } = await import("node:fs"); const { join } = await import("node:path"); mkdirSync(".codex-bees", { recursive: true }); writeFileSync(join(".codex-bees", "state.json"), process.argv[1]); const planner = JSON.parse(m.callMcpTool("planner_profile_ranking", { task: "Orchestrate a parallel swarm dispatch across workers" }).content[0].text).profileRanking; const plannerIntent = JSON.parse(m.callMcpTool("planner_profile_ranking", { task: "Improve task queue review transitions" }).content[0].text).profileRanking; const leader = JSON.parse(m.callMcpTool("leader_assignment_ranking").content[0].text).assignmentRanking; const dispatch = JSON.parse(m.callMcpTool("runtime_dispatch_ranking").content[0].text).dispatchRanking; const focus = JSON.parse(m.callMcpTool("runtime_focus_candidates").content[0].text).focusCandidates; rmSync(".codex-bees", { recursive: true, force: true }); console.log(JSON.stringify({ ok: planner.kind === "planner_profile_ranking_view" && planner.profiles?.[0]?.profileId === "coordination-local" && plannerIntent.selectionContext?.taskClass === "coordination-kernel" && plannerIntent.matchedSignals?.intentTags?.includes("review-flow") && leader.kind === "leader_assignment_ranking_view" && leader.assignments?.[0]?.lane === "lane-alpha" && dispatch.kind === "runtime_dispatch_ranking_view" && dispatch.assignments?.[0]?.lane === "lane-alpha" && focus.kind === "runtime_focus_candidates_view" && focus.candidates?.[0]?.key === "blocked_task" })); })',
+    installedRankingProbeState
+  ],
+  {
+    cwd: packedInstallAppDir,
+    encoding: "utf8"
+  }
+);
+if (
+  installedMcpRankingImport.status !== 0 ||
+  JSON.parse(installedMcpRankingImport.stdout).ok !== true
+) {
+  console.error("[smoke:installed-mcp-ranking-import] expected installed mcp api to expose working ranking tools");
+  console.error(installedMcpRankingImport.stderr || installedMcpRankingImport.stdout);
+  process.exit(installedMcpRankingImport.status ?? 1);
 }
 const installedRuntimeContractImport = spawnSync(
   "node",
@@ -2595,6 +2714,8 @@ if (
   explicitCustomFilePlan.requestedProfile !== "release-local" ||
   explicitCustomFilePlan.planner?.sourceKind !== "file" ||
   explicitCustomFilePlan.planner?.laneModel !== "release-bounded-lanes" ||
+  explicitCustomFilePlan.assessment?.complexity === undefined ||
+  explicitCustomFilePlan.assessment?.executionPressure === undefined ||
   explicitCustomFilePlan.plannerSelection?.resolvedProfile !== "release-local" ||
   explicitCustomFilePlan.plannerSelection?.resolvedSourceKind !== "file" ||
   explicitCustomFilePlan.plannerSelection?.defaultProfile !== "release-local" ||
@@ -4832,6 +4953,8 @@ if (
   queuedPlanSwarm.recommendedReason !== "multiple_swarm_lane_tasks_queued" ||
   queuedPlanSwarm.requestedProfile !== "coordination-local" ||
   queuedPlanSwarm.planner?.executionModel !== "coordination-wave-local" ||
+  queuedPlanSwarm.assessment?.coordinationIntensity !== "high" ||
+  queuedPlanSwarm.assessment?.executionPressure !== "parallel" ||
   queuedPlanSwarm.plannerSelection?.resolvedSourceKind !== "shipped" ||
   queuedPlanSwarm.plannerSelection?.matchedSignals?.coordinationBias !== true ||
   queuedPlanSwarm.plannerSelection?.selectionMode !== "heuristic" ||
@@ -4845,12 +4968,14 @@ if (
   queuedPlanSwarm.swarm?.maxWorkers !== 2 ||
   queuedPlanSwarm.swarm?.waveCount !== 3 ||
   queuedPlanSwarm.swarm?.waves?.[0]?.lanes?.[0]?.purpose !== "discovery" ||
+  queuedPlanSwarm.swarm?.plannerProvenance?.assessment?.coordinationIntensity !== "high" ||
   queuedPlanSwarm.swarm?.plannerProvenance?.plannerSelection?.resolvedProfile !== "coordination-local" ||
   queuedPlanSwarm.swarm?.plannerProvenance?.planner?.id !== "coordination-local" ||
   !queuedPlanSwarm.created.every(
     (task) =>
       task.plannerProvenance?.requestedProfile === "coordination-local" &&
-      task.plannerProvenance?.plannerSelection?.resolvedProfile === "coordination-local"
+      task.plannerProvenance?.plannerSelection?.resolvedProfile === "coordination-local" &&
+      task.plannerProvenance?.assessment?.executionPressure === "parallel"
   ) ||
   !queuedPlanSwarm.created.some((task) => task.lanePurpose === "discovery") ||
   !queuedPlanSwarm.created.some((task) => task.lanePurpose === "documentation") ||
@@ -4878,6 +5003,7 @@ if (
   queuedPlanSwarmTaskBrief?.coordination?.lanePurpose !== "discovery" ||
   queuedPlanSwarmTaskBrief?.planning?.resolvedProfile !== "coordination-local" ||
   queuedPlanSwarmTaskBrief?.planning?.selectionMode !== "heuristic" ||
+  queuedPlanSwarmTaskBrief?.planning?.assessment?.executionPressure !== "parallel" ||
   queuedPlanSwarmTaskBrief?.task?.plannerProvenance?.planner?.id !== "coordination-local"
 ) {
   console.error("[smoke:plan-swarm-queue-task-brief] expected planner lane purpose in task brief");
@@ -4888,7 +5014,8 @@ const queuedPlanSwarmTaskDetail = JSON.parse(
 ).task;
 if (
   queuedPlanSwarmTaskDetail?.task?.plannerProvenance?.plannerSelection?.resolvedProfile !== "coordination-local" ||
-  queuedPlanSwarmTaskDetail?.metadata?.plannerProvenance?.resolvedProfile !== "coordination-local"
+  queuedPlanSwarmTaskDetail?.metadata?.plannerProvenance?.resolvedProfile !== "coordination-local" ||
+  queuedPlanSwarmTaskDetail?.metadata?.plannerProvenance?.assessment?.executionPressure !== "parallel"
 ) {
   console.error("[smoke:plan-swarm-queue-task-get] expected persisted planner provenance on swarm lane task");
   process.exit(1);
@@ -4899,9 +5026,20 @@ const queuedPlanSwarmGet = JSON.parse(
 if (
   queuedPlanSwarmGet?.swarm?.plannerProvenance?.plannerSelection?.resolvedProfile !== "coordination-local" ||
   queuedPlanSwarmGet?.metadata?.plannerProvenance?.resolvedProfile !== "coordination-local" ||
-  queuedPlanSwarmGet?.metadata?.plannerProvenance?.selectionMode !== "heuristic"
+  queuedPlanSwarmGet?.metadata?.plannerProvenance?.selectionMode !== "heuristic" ||
+  queuedPlanSwarmGet?.metadata?.plannerProvenance?.assessment?.coordinationIntensity !== "high"
 ) {
   console.error("[smoke:plan-swarm-queue-swarm-get] expected persisted planner provenance on queued swarm");
+  process.exit(1);
+}
+const queuedPlanSwarmAssignmentRanking = JSON.parse(
+  run("plan-swarm-queue-leader-ranking", ["./src/index.js", "leader:assignment-ranking"]).stdout
+);
+if (
+  queuedPlanSwarmAssignmentRanking?.assignments?.[0]?.plannerAssessment?.executionPressure !== "parallel" ||
+  queuedPlanSwarmAssignmentRanking?.assignments?.[0]?.plannerAssessment?.coordinationIntensity !== "high"
+) {
+  console.error("[smoke:plan-swarm-queue-leader-ranking] expected planner assessment on dispatch ranking");
   process.exit(1);
 }
 const queuedPlanSwarmBrief = JSON.parse(

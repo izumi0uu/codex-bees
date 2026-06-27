@@ -32,6 +32,10 @@ export const RUNTIME_COMMAND_HELP_OVERRIDES = {
     options: [WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
     notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
   },
+  "runtime:dispatch-ranking": {
+    usage: [commandUsage("runtime:dispatch-ranking")],
+    options: []
+  },
   "runtime:signal-pack": {
     usage: [commandUsage("runtime:signal-pack", "[--limit <number>]")],
     options: [LIMIT_OPTION]
@@ -93,6 +97,10 @@ export const RUNTIME_COMMAND_HELP_OVERRIDES = {
     usage: [commandUsage("runtime:dispatch-pack", "[--worker <worker-id>] [--workers <json>] [--detail <detail>]")],
     options: [WORKER_OPTION, WORKERS_OPTION, DETAIL_OPTION],
     notes: [JSON_WORKERS_NOTE, RUNTIME_PACK_DETAIL_NOTE]
+  },
+  "runtime:focus-candidates": {
+    usage: [commandUsage("runtime:focus-candidates")],
+    options: []
   },
   "runtime:roles": {
     usage: [commandUsage("runtime:roles", "[--limit <number>]")],

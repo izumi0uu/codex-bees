@@ -1,6 +1,6 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { createCollectionView } from "../state-view-helpers.js";
+import { createCollectionView } from "../state/core/view-helpers.js";
 import { parseFrontmatter } from "./document-parse.js";
 import { createCatalogDocumentView, createCatalogEntryView } from "./entry-views.js";
 import { getRuntimeCatalogPaths, isDirectory, isFile, readText, toDisplayPath } from "./paths.js";

@@ -1,5 +1,5 @@
-import { runtimeRoleCatalog } from "../../state-role-catalog.js";
-import { buildTaskValidationViewFromSources } from "../../state-rules.js";
+import { runtimeRoleCatalog } from "../role/catalog.js";
+import { buildTaskValidationViewFromSources } from "../rules/index.js";
 import { validateTaskFromSources } from "./core.js";
 
 export function validateTaskSurface(id, sources = {}) {

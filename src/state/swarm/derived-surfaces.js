@@ -1,6 +1,6 @@
 import { getRuntimeCatalog } from "../../catalog.js";
-import { runtimeRoleCatalog } from "../../state-role-catalog.js";
-import { validateSwarmValue } from "../../state-rules.js";
+import { runtimeRoleCatalog } from "../role/catalog.js";
+import { validateSwarmValue } from "../rules/index.js";
 import {
   buildSwarmBlockersSummary,
   buildSwarmBundleSummary,

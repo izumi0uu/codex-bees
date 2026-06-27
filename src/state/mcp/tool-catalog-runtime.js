@@ -47,9 +47,11 @@ const RUNTIME_MCP_TOOL_CATALOG_ORDER = [
   "runtime_worker_pack",
   "runtime_dashboard",
   "runtime_dispatch",
+  "runtime_dispatch_ranking",
   "runtime_dispatch_pack",
   "runtime_execution_pack",
   "runtime_focus",
+  "runtime_focus_candidates",
   "runtime_review",
   "runtime_alerts",
   "runtime_roles"

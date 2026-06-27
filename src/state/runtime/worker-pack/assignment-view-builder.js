@@ -6,7 +6,7 @@ import {
   buildRuntimePackFallbackPurposeGuidance,
   requireRuntimePackRoleWorkerSelection,
   buildRuntimePackCounts
-} from "../../../state/runtime/pack-detail/index.js";
+} from "../pack-detail/index.js";
 
 export function buildRuntimeAssignmentPackView(
   input,

@@ -7,6 +7,7 @@ import {
   leaderQueue,
   leaderWorkspace
 } from "../../state-runtime.js";
+import { buildLeaderAssignmentRankingView } from "../runtime/ranking/views.js";
 import { createNamedTextPayload, createSuccess } from "./runtime-response.js";
 
 export const TASK_LEADER_MCP_TOOL_HANDLERS = {
@@ -41,6 +42,20 @@ export const TASK_LEADER_MCP_TOOL_HANDLERS = {
     });
 
     return createSuccess(id, createNamedTextPayload("assignments", assignments));
+  },
+
+  leader_assignment_ranking({ id, args, metadata }) {
+    const params = { arguments: args };
+    const assignments = leaderAssignments({
+      status: params.arguments?.status,
+      topology: params.arguments?.topology,
+      owner: params.arguments?.owner
+    });
+
+    return createSuccess(
+      id,
+      createNamedTextPayload("assignmentRanking", buildLeaderAssignmentRankingView(assignments))
+    );
   },
 
   leader_assignment_dispatch({ id, args, metadata }) {

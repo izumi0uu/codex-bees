@@ -11,7 +11,7 @@ import {
   buildRuntimePackExpansion,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
-} from "../../../state/runtime/pack-detail/index.js";
+} from "../pack-detail/index.js";
 
 export function buildRuntimeExecutionPackView(
   input,

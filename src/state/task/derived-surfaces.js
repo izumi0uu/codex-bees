@@ -1,7 +1,7 @@
 import { getRuntimeCatalog } from "../../catalog.js";
-import { deriveTaskHistoryReason } from "../../state-reasons.js";
-import { runtimeRoleCatalog } from "../../state-role-catalog.js";
-import { validateTaskValue } from "../../state-rules.js";
+import { deriveTaskHistoryReason } from "./reasons.js";
+import { runtimeRoleCatalog } from "../role/catalog.js";
+import { validateTaskValue } from "../rules/index.js";
 import { deriveReviewState, describeRoleWithContract } from "./core.js";
 import {
   buildTaskBriefViewFromSources,

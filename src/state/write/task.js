@@ -1,7 +1,7 @@
-import { buildTask } from "../../state-builders.js";
-import { buildTaskMutationResult } from "../../state-lifecycle-views.js";
+import { buildTask } from "../core/builders.js";
+import { buildTaskMutationResult } from "../core/lifecycle-views.js";
 import { archiveTaskFromSources } from "../archive/core.js";
-import { reopenTaskFromSources, restoreTaskFromSources } from "../../state-restore-core.js";
+import { reopenTaskFromSources, restoreTaskFromSources } from "../archive/restore-core.js";
 import { appendTaskAnnotation } from "../task/core.js";
 import {
   addTaskFromSources,
@@ -9,7 +9,7 @@ import {
   annotateTaskFromSources,
   buildUpdatedTaskState,
   updateTaskFromSources
-} from "../../state/task/write.js";
+} from "../task/write.js";
 
 export function annotateTaskOperation(
   input,

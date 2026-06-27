@@ -1,4 +1,4 @@
-import { buildSwarmHistoryEntry } from "../../state-builders.js";
+import { buildSwarmHistoryEntry } from "../core/builders.js";
 import { derivePersistedSwarmOrchestration } from "./orchestration-persist.js";
 import { appendSwarmHistoryEntry } from "./history.js";
 

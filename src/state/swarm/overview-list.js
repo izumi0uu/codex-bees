@@ -1,4 +1,4 @@
-import { createCollectionView } from "../../state-view-helpers.js";
+import { createCollectionView } from "../core/view-helpers.js";
 
 export function buildSwarmListView(filters = {}, options = {}, { listSwarms, listSwarmOverviews }) {
   const detailed = options.detailed === true;

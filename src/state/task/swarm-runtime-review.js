@@ -1,8 +1,9 @@
-import { buildPurposeGuidanceForTaskLike } from "../../state-lane-purpose.js";
-import { buildRecommendedFieldsFromResult } from "../runtime/recommendation-helpers.js";
-import { buildRuntimeTaskIdentityFields } from "../runtime/task-entry-helpers.js";
+import { buildPurposeGuidanceForTaskLike } from "./lane-purpose.js";
+import { buildRecommendedFieldsFromResult } from "../runtime/recommendation/helpers.js";
+import { buildRuntimeTaskIdentityFields } from "../runtime/task-entry/helpers.js";
 
 export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBrief) {
+  const brief = taskBrief(task.id);
   return {
     position,
     ...buildRuntimeTaskIdentityFields(task),
@@ -11,6 +12,7 @@ export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBr
     owner: describeRole(task.owner),
     claimedBy: task.claimedBy,
     updatedAt: task.updatedAt,
+    plannerAssessment: brief?.planning?.assessment ?? null,
     ...buildRecommendedFieldsFromResult(
       {
         actor: {
@@ -24,7 +26,7 @@ export function buildRuntimeReviewTaskEntry(task, position, describeRole, taskBr
           `node ./src/index.js task:reject --id ${task.id} --by ${task.verifier ?? "<verifier-role>"} --status claimed --notes "<changes requested>"`
         ]
       },
-      { includeTaskBrief: true, taskBrief: taskBrief(task.id) }
+      { includeTaskBrief: true, taskBrief: brief }
     ),
     summary: `Review ${task.id} for verifier ${task.verifier ?? "unknown"}.`
   };

@@ -17,7 +17,8 @@ export function buildRuntimeOperatorPackView(
   {
     deriveRuntimeOperatorPackSurface,
     deriveRuntimeOperatorPackReason,
-    buildRuntimeOperatorPackSummary
+    buildRuntimeOperatorPackSummary,
+    buildRuntimeOperatorPackScoring
   }
 ) {
   const dashboard = runtimeDashboard();
@@ -27,12 +28,17 @@ export function buildRuntimeOperatorPackView(
   const closeout = runtimeCloseout();
   const recommendedSurface = deriveRuntimeOperatorPackSurface({ focus, handoffs, closeout, dashboard, alerts });
   const recommendedReason = deriveRuntimeOperatorPackReason({ focus, handoffs, closeout, dashboard, alerts });
+  const scoring = buildRuntimeOperatorPackScoring({ focus, handoffs, closeout, dashboard, alerts });
   const nextEntries = buildRuntimePackOperatorEntries(focus, handoffs, closeout, alerts);
 
   return {
     kind: 'runtime_operator_pack',
     recommendedSurface,
     recommendedReason,
+    recommendationScore: scoring.score,
+    recommendationScoreBreakdown: scoring.scoreBreakdown,
+    recommendationScoreEntries: scoring.scoreEntries,
+    recommendationCandidates: scoring.rankedCandidates,
     metadata: buildRuntimePackOperatorMetadata(focus, handoffs, closeout, alerts),
     counts: buildRuntimePackCounts(nextEntries),
     focus,
@@ -42,4 +48,3 @@ export function buildRuntimeOperatorPackView(
     summary: buildRuntimeOperatorPackSummary(recommendedSurface, focus, alerts)
   };
 }
-

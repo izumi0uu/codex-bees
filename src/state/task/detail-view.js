@@ -1,5 +1,5 @@
-import { buildTaskDetailMetadata } from "../../state-view-metadata.js";
-import { createLoadedValueView } from "../../state-view-helpers.js";
+import { buildTaskDetailMetadata } from "../core/view-metadata.js";
+import { createLoadedValueView } from "../core/view-helpers.js";
 
 export function buildTaskDetailView(
   id,

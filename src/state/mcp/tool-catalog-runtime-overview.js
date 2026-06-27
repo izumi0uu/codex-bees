@@ -50,8 +50,24 @@ export const RUNTIME_OVERVIEW_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "runtime_dispatch_ranking",
+    description: "Expose the ranked runtime dispatch candidates for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
     name: "runtime_focus",
     description: "Build the single next-action runtime focus for local runtime work.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    }
+  },
+  {
+    name: "runtime_focus_candidates",
+    description: "Expose the ranked runtime focus candidates before final selection.",
     inputSchema: {
       type: "object",
       properties: {}

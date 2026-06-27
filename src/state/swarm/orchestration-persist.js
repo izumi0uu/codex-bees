@@ -1,5 +1,5 @@
-import { buildDependencyWaves, deriveExecutionShapeFromWaves } from "../../orchestration-waves.js";
-import { normalizeSwarmLane } from "../../state-normalize.js";
+import { buildDependencyWaves, deriveExecutionShapeFromWaves } from "../../planner/lane/waves.js";
+import { normalizeSwarmLane } from "../core/normalize.js";
 
 export function derivePersistedSwarmOrchestration(current = null, input = {}) {
   const rawLanes = input.lanes !== undefined ? input.lanes : current?.lanes ?? [];

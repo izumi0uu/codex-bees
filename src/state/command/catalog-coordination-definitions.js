@@ -2,6 +2,7 @@ export function getCoordinationCommandCatalogDefinitions() {
   return [
     { command: "plan:profiles", description: "Show the available planner profile catalog surface" },
     { command: "plan:profile", description: "Show one available planner profile surface entry" },
+    { command: "plan:profile-ranking", description: "Rank planner profiles for one objective using the shipped selection signals" },
     { command: "plan", description: "Generate a bounded execution plan from one objective" },
     { command: "plan:queue", description: "Generate a plan and queue its lanes as local tasks" },
     { command: "plan:swarm", description: "Generate a bounded swarm contract from one objective" },
@@ -30,6 +31,7 @@ export function getCoordinationCommandCatalogDefinitions() {
     { command: "leader:assignment-launch-plan", description: "Build a step-by-step startup plan across worker launches" },
     { command: "leader:assignment-dispatch-pack", description: "Build worker-targeted dispatch packages across owner groups" },
     { command: "leader:assignments", description: "Build owner-grouped dispatch assignments across swarms" },
+    { command: "leader:assignment-ranking", description: "Rank dispatchable leader assignments across swarms" },
     { command: "leader:queue", description: "Build a prioritized leader decision queue across swarms" },
     { command: "leader:workspace", description: "Build a leader-ready orchestration workspace across swarms" },
     { command: "task:claim", description: "Claim a local coordination task" },

@@ -17,6 +17,11 @@ export const COORDINATION_PLAN_COMMAND_HELP_OVERRIDES = {
     options: [PLANNER_PROFILE_ID_OPTION, PLANNER_PROFILE_FILE_OPTION],
     notes: [PLANNER_PROFILE_FILE_NOTE]
   },
+  "plan:profile-ranking": {
+    usage: [commandUsage("plan:profile-ranking", "--task <task> [--profile <planner-profile-id>] [--profile-file <path>]")],
+    options: [option("--task <task>", "Task brief to rank against the available planner profiles"), PLANNER_PROFILE_ID_OPTION, PLANNER_PROFILE_FILE_OPTION],
+    notes: [PLANNER_PROFILE_FILE_NOTE]
+  },
   plan: {
     usage: [commandUsage("plan", "--task <task> [--profile <planner-profile-id>] [--profile-file <path>]")],
     options: [option("--task <task>", "Task brief to turn into a bounded execution plan"), PLANNER_PROFILE_ID_OPTION, PLANNER_PROFILE_FILE_OPTION],

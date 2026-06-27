@@ -1,1 +1,1 @@
-export { runtimeDispatchFromSources as runtimeDispatchSurface } from '../../overviews.js';
+export { runtimeDispatchFromSources as runtimeDispatchSurface } from '../../overview/index.js';

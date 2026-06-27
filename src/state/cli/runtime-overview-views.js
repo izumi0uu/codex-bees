@@ -10,8 +10,12 @@ import {
   runtimeReview,
   runtimeRoles
 } from "../../state-runtime.js";
+import {
+  buildRuntimeDispatchRankingView,
+  buildRuntimeFocusCandidatesView
+} from "../runtime/ranking/views.js";
 import { readPositiveIntegerOption } from "./helpers.js";
-import { writeNamedView } from "./view-writers.js";
+import { writeNamedView, writeView } from "./view-writers.js";
 
 function printRuntimeActivity() {
   writeNamedView("activity", runtimeActivity({ limit: readPositiveIntegerOption("--limit") }));
@@ -37,8 +41,16 @@ function printRuntimeDispatch() {
   writeNamedView("dispatch", runtimeDispatch());
 }
 
+function printRuntimeDispatchRanking() {
+  writeView(buildRuntimeDispatchRankingView(runtimeDispatch()));
+}
+
 function printRuntimeFocus() {
   writeNamedView("focus", runtimeFocus());
+}
+
+function printRuntimeFocusCandidates() {
+  writeView(buildRuntimeFocusCandidatesView(runtimeFocus()));
 }
 
 function printRuntimeReview() {
@@ -59,7 +71,9 @@ export {
   printRuntimeCloseout,
   printRuntimeDashboard,
   printRuntimeDispatch,
+  printRuntimeDispatchRanking,
   printRuntimeFocus,
+  printRuntimeFocusCandidates,
   printRuntimeHandoffs,
   printRuntimeRecovery,
   printRuntimeReview,

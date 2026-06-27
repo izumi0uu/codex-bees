@@ -27,7 +27,8 @@ export function buildRuntimeSummaryPackView(
   {
     deriveRuntimeSummaryPackSurface,
     deriveRuntimeSummaryPackReason,
-    buildRuntimeSummaryPackSummary
+    buildRuntimeSummaryPackSummary,
+    buildRuntimeSummaryPackScoring
   }
 ) {
   const detailLevel = normalizeRuntimePackDetail(input.detail);
@@ -41,6 +42,7 @@ export function buildRuntimeSummaryPackView(
   const assignmentLaunchPlan = leaderAssignmentLaunchPlan(input);
   const recommendedSurface = deriveRuntimeSummaryPackSurface({ focus, recovery, closeout, handoffs, dashboard });
   const recommendedReason = deriveRuntimeSummaryPackReason({ focus, recovery, closeout, handoffs, dashboard });
+  const scoring = buildRuntimeSummaryPackScoring({ focus, recovery, closeout, handoffs, dashboard });
   const nextEntries = buildRuntimePackSummaryEntries(
     focus,
     handoffs,
@@ -66,6 +68,10 @@ export function buildRuntimeSummaryPackView(
     availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
+    recommendationScore: scoring.score,
+    recommendationScoreBreakdown: scoring.scoreBreakdown,
+    recommendationScoreEntries: scoring.scoreEntries,
+    recommendationCandidates: scoring.rankedCandidates,
     metadata: buildRuntimePackSummaryMetadata(
       focus,
       recovery,
@@ -103,4 +109,3 @@ export function buildRuntimeSummaryPackView(
     )
   );
 }
-

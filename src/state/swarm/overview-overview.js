@@ -1,8 +1,8 @@
 import { annotateTasksWithDependencyState } from "../task/core.js";
-import { pickPriorityEntry } from "../../state/queue/views.js";
+import { pickPriorityEntry } from "../queue/views.js";
 import { buildSwarmOverviewStatusFields } from "./overview-status-helpers.js";
-import { buildPlanningView } from "../../state-view-metadata.js";
-import { createLoadedValueView } from "../../state-view-helpers.js";
+import { buildPlanningView } from "../core/view-metadata.js";
+import { createLoadedValueView } from "../core/view-helpers.js";
 
 export function findSwarmLaneTask(lane, swarmTasks) {
   if (lane.taskId) {

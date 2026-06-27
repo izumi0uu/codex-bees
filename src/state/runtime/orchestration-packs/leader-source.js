@@ -1,4 +1,10 @@
-import { buildRuntimeLeaderPackSummary, buildRuntimeLeaderPackView, deriveRuntimeLeaderPackReason, deriveRuntimeLeaderPackSurface } from '../views.js';
+import {
+  buildRuntimeLeaderPackScoring,
+  buildRuntimeLeaderPackSummary,
+  buildRuntimeLeaderPackView,
+  deriveRuntimeLeaderPackReason,
+  deriveRuntimeLeaderPackSurface
+} from '../views.js';
 
 export function runtimeLeaderPackFromSources(input = {}, sources = {}) {
   return buildRuntimeLeaderPackView(
@@ -7,7 +13,8 @@ export function runtimeLeaderPackFromSources(input = {}, sources = {}) {
     {
       deriveRuntimeLeaderPackSurface,
       deriveRuntimeLeaderPackReason,
-      buildRuntimeLeaderPackSummary
+      buildRuntimeLeaderPackSummary,
+      buildRuntimeLeaderPackScoring
     }
   );
 }

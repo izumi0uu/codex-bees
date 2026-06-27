@@ -1,4 +1,4 @@
-import { buildSwarmHistoryEntry } from "../../state-builders.js";
+import { buildSwarmHistoryEntry } from "../core/builders.js";
 import { updateSwarmAtIndex } from "./core-read-sync.js";
 import { appendSwarmHistoryEntry } from "./history.js";
 

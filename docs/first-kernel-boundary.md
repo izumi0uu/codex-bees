@@ -53,7 +53,7 @@ These current modules are the strongest candidates for the first authoritative k
 
 - `src/state-runtime-core.js`
 - `src/state-storage.js`
-- `src/state-normalize.js`
+- `src/state/core/normalize.js`
 
 What they contribute:
 

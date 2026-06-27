@@ -1,5 +1,5 @@
 import { readJsonOption, readOption } from "./helpers.js";
-import { writeNamedView } from "./view-writers.js";
+import { writeNamedView, writeView } from "./view-writers.js";
 import {
   leaderAssignmentDispatch,
   leaderAssignmentDispatchBundle,
@@ -9,6 +9,7 @@ import {
   leaderQueue,
   leaderWorkspace
 } from "../../state-runtime.js";
+import { buildLeaderAssignmentRankingView } from "../runtime/ranking/views.js";
 
 function readLeaderSurfaceOptions() {
   return {
@@ -43,6 +44,11 @@ export function handleLeaderQueue() {
 export function handleLeaderAssignments() {
   const assignments = leaderAssignments(readLeaderSurfaceOptions());
   writeNamedView("assignments", assignments);
+}
+
+export function handleLeaderAssignmentRanking() {
+  const assignments = leaderAssignments(readLeaderSurfaceOptions());
+  writeView(buildLeaderAssignmentRankingView(assignments));
 }
 
 export function handleLeaderAssignmentDispatch() {

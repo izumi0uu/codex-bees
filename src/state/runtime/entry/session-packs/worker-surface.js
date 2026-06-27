@@ -1,1 +1,1 @@
-export { runtimeWorkerPackFromSources as runtimeWorkerPackSurface } from "../../../../state/runtime/packs.js";
+export { runtimeWorkerPackFromSources as runtimeWorkerPackSurface } from "../../packs.js";

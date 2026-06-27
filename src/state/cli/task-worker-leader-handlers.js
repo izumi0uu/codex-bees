@@ -10,6 +10,7 @@ export {
   handleLeaderWorkspace,
   handleLeaderQueue,
   handleLeaderAssignments,
+  handleLeaderAssignmentRanking,
   handleLeaderAssignmentDispatch,
   handleLeaderAssignmentDispatchPack,
   handleLeaderAssignmentDispatchBundle,

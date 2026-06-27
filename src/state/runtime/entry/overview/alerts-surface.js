@@ -1,1 +1,1 @@
-export { runtimeAlertsFromSources as runtimeAlertsSurface } from '../../overviews.js';
+export { runtimeAlertsFromSources as runtimeAlertsSurface } from '../../overview/index.js';

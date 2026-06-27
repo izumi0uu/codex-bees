@@ -1,4 +1,4 @@
-import { buildPurposeGuidanceForTaskLike } from "../../state-lane-purpose.js";
+import { buildPurposeGuidanceForTaskLike } from "../task/lane-purpose.js";
 import { buildLaunchWindows } from "./leader-dispatch-launch-core.js";
 
 export function buildLeaderAssignmentLaunchPlanView(

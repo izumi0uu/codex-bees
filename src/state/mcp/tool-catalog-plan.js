@@ -22,6 +22,19 @@ export const PLAN_MCP_TOOL_CATALOG = [
     }
   },
   {
+    name: "planner_profile_ranking",
+    description: "Rank planner profiles for a task brief using the shipped selection signals.",
+    inputSchema: {
+      type: "object",
+      required: ["task"],
+      properties: {
+        task: { type: "string" },
+        profile: { type: "string" },
+        profileFile: { type: "string" }
+      }
+    }
+  },
+  {
     name: "plan_task",
     description: "Generate a bounded read-only execution plan for a task brief.",
     inputSchema: {

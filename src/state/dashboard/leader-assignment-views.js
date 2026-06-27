@@ -1,7 +1,11 @@
-import { buildPurposeGuidanceForTaskLike } from "../../state-lane-purpose.js";
-import { compareLanePurposes } from "../../state/queue/views.js";
-import { buildRecommendedNextFields } from "../runtime/recommendation-helpers.js";
-import { findLaneOrchestrationContext } from "../../state/swarm/orchestration.js";
+import { buildPurposeGuidanceForTaskLike } from "../task/lane-purpose.js";
+import { compareLanePurposes } from "../queue/views.js";
+import {
+  buildDispatchPriorityScore,
+  buildRecommendedNextFields
+} from "../runtime/recommendation/helpers.js";
+import { lanePurposeRank } from "../queue/core-priority.js";
+import { findLaneOrchestrationContext } from "../swarm/orchestration.js";
 
 export function buildLeaderAssignmentsSummary(assignments, groups) {
   if (assignments.length === 0) {
@@ -56,6 +60,7 @@ export function buildLeaderAssignmentsView(
           lane.dependencyReady !== false
       )
       .map((lane) => {
+        const plannerAssessment = brief?.planning?.assessment ?? null;
         const laneOrchestration =
           findLaneOrchestrationContext(orchestration, lane.lane) ?? {
             wave: lane.wave ?? null,
@@ -65,6 +70,15 @@ export function buildLeaderAssignmentsView(
             waveLaneCount: lane.waveLaneCount ?? null,
             waveOwnerCount: lane.waveOwnerCount ?? null
           };
+
+        const dispatchPriority = buildDispatchPriorityScore({
+          ...lane,
+          plannerAssessment,
+          dependencyReady: lane.dependencyReady,
+          purposeRank: lanePurposeRank(lane.purpose ?? null),
+          wave: laneOrchestration.wave,
+          waveParallelizable: laneOrchestration.waveParallelizable
+        });
 
         return {
           swarmId: swarm.id,
@@ -76,6 +90,7 @@ export function buildLeaderAssignmentsView(
           verifier: lane.verifier,
           taskId: lane.taskId,
           taskQueueStatus: lane.taskQueueStatus,
+          plannerAssessment,
           ...buildRecommendedNextFields(lane, {
             includeTaskBrief: true,
             taskBrief: lane.taskId ? taskBrief(lane.taskId) : null
@@ -89,10 +104,17 @@ export function buildLeaderAssignmentsView(
           waveParallelizable: laneOrchestration.waveParallelizable,
           waveLaneCount: laneOrchestration.waveLaneCount,
           waveOwnerCount: laneOrchestration.waveOwnerCount,
+          dispatchScore: dispatchPriority.score,
+          dispatchScoreBreakdown: dispatchPriority.scoreBreakdown,
+          dispatchScoreEntries: dispatchPriority.scoreEntries,
           summary: `Dispatch ${lane.lane} from ${swarm.id}${laneOrchestration.wave ? ` wave ${laneOrchestration.wave}` : ""} to ${lane.owner.id ?? lane.owner.name ?? "unknown"}.`
         };
       });
   }).sort((left, right) => {
+    const scoreDelta = (right.dispatchScore ?? 0) - (left.dispatchScore ?? 0);
+    if (scoreDelta !== 0) {
+      return scoreDelta;
+    }
     const leftWave = Number.isInteger(Number(left.wave)) ? Number(left.wave) : Number.MAX_SAFE_INTEGER;
     const rightWave = Number.isInteger(Number(right.wave)) ? Number(right.wave) : Number.MAX_SAFE_INTEGER;
     if (leftWave !== rightWave) {
@@ -116,6 +138,10 @@ export function buildLeaderAssignmentsView(
     current.assignments.push(assignment);
     current.count += 1;
     current.assignments.sort((left, right) => {
+      const scoreDelta = (right.dispatchScore ?? 0) - (left.dispatchScore ?? 0);
+      if (scoreDelta !== 0) {
+        return scoreDelta;
+      }
       const leftWave = Number.isInteger(Number(left.wave)) ? Number(left.wave) : Number.MAX_SAFE_INTEGER;
       const rightWave = Number.isInteger(Number(right.wave)) ? Number(right.wave) : Number.MAX_SAFE_INTEGER;
       if (leftWave !== rightWave) {
@@ -131,6 +157,11 @@ export function buildLeaderAssignmentsView(
   }
 
   const groups = [...groupsByOwner.values()].sort((left, right) => {
+    const leftScore = left.assignments?.[0]?.dispatchScore ?? 0;
+    const rightScore = right.assignments?.[0]?.dispatchScore ?? 0;
+    if (rightScore !== leftScore) {
+      return rightScore - leftScore;
+    }
     const leftWave = Number.isInteger(Number(left.assignments?.[0]?.wave))
       ? Number(left.assignments[0].wave)
       : Number.MAX_SAFE_INTEGER;
@@ -153,6 +184,19 @@ export function buildLeaderAssignmentsView(
   });
   const next = assignments[0] ?? null;
   const recommendedReason = deriveLeaderAssignmentsReason({ assignments, groups, next });
+  const ranking = assignments.map((assignment, index) => ({
+          rank: index + 1,
+          swarmId: assignment.swarmId,
+          lane: assignment.lane,
+          taskId: assignment.taskId,
+          owner: assignment.owner,
+          purpose: assignment.purpose ?? null,
+          wave: assignment.wave ?? null,
+          dispatchScore: assignment.dispatchScore ?? 0,
+          dispatchScoreBreakdown: assignment.dispatchScoreBreakdown ?? {},
+          plannerAssessment: assignment.plannerAssessment ?? null,
+          summary: assignment.summary
+        }));
 
   return {
     kind: "leader_assignments",
@@ -163,6 +207,7 @@ export function buildLeaderAssignmentsView(
       ownerGroups: groups.length
     },
     next,
+    ranking,
     groups,
     summary: buildLeaderAssignmentsSummary(assignments, groups)
   };

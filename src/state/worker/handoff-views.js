@@ -1,5 +1,5 @@
-import { buildPurposeGuidanceForTaskLike, buildPurposeSentence } from "../../state-lane-purpose.js";
-import { createLoadedValueView } from "../../state-view-helpers.js";
+import { buildPurposeGuidanceForTaskLike, buildPurposeSentence } from "../task/lane-purpose.js";
+import { createLoadedValueView } from "../core/view-helpers.js";
 
 export function buildWorkerHandoffSummary(session, focusTaskSnapshot) {
   const purposeSentence = buildPurposeSentence(

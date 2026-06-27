@@ -1,9 +1,9 @@
-import { buildSwarm, buildTask } from "../../state-builders.js";
-import { buildSwarmMutationResult } from "../../state-lifecycle-views.js";
+import { buildSwarm, buildTask } from "../core/builders.js";
+import { buildSwarmMutationResult } from "../core/lifecycle-views.js";
 import { archiveSwarmFromSources } from "../archive/core.js";
-import { reopenSwarmFromSources, restoreSwarmFromSources } from "../../state-restore-core.js";
-import { runtimeRoleCatalog } from "../../state-role-catalog.js";
-import { validateSwarmValue, validateTaskValue } from "../../state-rules.js";
+import { reopenSwarmFromSources, restoreSwarmFromSources } from "../archive/restore-core.js";
+import { runtimeRoleCatalog } from "../role/catalog.js";
+import { validateSwarmValue, validateTaskValue } from "../rules/index.js";
 import {
   buildUpdatedSwarmState,
   buildDispatchedSwarmState,

@@ -10,7 +10,7 @@ import {
   attachRuntimePackSurfaces,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
-} from '../../../state/runtime/pack-detail/index.js';
+} from '../pack-detail/index.js';
 
 export function buildRuntimeLeaderPackView(
   input,
@@ -26,7 +26,8 @@ export function buildRuntimeLeaderPackView(
   {
     deriveRuntimeLeaderPackSurface,
     deriveRuntimeLeaderPackReason,
-    buildRuntimeLeaderPackSummary
+    buildRuntimeLeaderPackSummary,
+    buildRuntimeLeaderPackScoring
   }
 ) {
   const detailLevel = normalizeRuntimePackDetail(input.detail);
@@ -39,6 +40,7 @@ export function buildRuntimeLeaderPackView(
   const closeout = runtimeCloseout();
   const recommendedSurface = deriveRuntimeLeaderPackSurface({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
   const recommendedReason = deriveRuntimeLeaderPackReason({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
+  const scoring = buildRuntimeLeaderPackScoring({ workspace, queue, dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, closeout });
   const nextEntries = buildRuntimePackLeaderEntries(
     workspace,
     queue,
@@ -70,6 +72,10 @@ export function buildRuntimeLeaderPackView(
     },
     recommendedSurface,
     recommendedReason,
+    recommendationScore: scoring.score,
+    recommendationScoreBreakdown: scoring.scoreBreakdown,
+    recommendationScoreEntries: scoring.scoreEntries,
+    recommendationCandidates: scoring.rankedCandidates,
     metadata: buildRuntimePackLeaderMetadata(
       workspace,
       queue,
@@ -108,4 +114,3 @@ export function buildRuntimeLeaderPackView(
     )
   );
 }
-

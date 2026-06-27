@@ -1,9 +1,9 @@
-import { compareLanePurposes } from "../../state/queue/views.js";
-import { buildRecommendedFieldsFromResult } from "../runtime/recommendation-helpers.js";
-import { buildSwarmOverviewStatusFields } from "../../state/swarm/overview-status-helpers.js";
-import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "../../state/swarm/orchestration.js";
-import { createLoadedValueView } from "../../state-view-helpers.js";
-import { buildHistoryView, buildPlanningView } from "../../state-view-metadata.js";
+import { compareLanePurposes } from "../queue/views.js";
+import { buildRecommendedFieldsFromResult } from "../runtime/recommendation/helpers.js";
+import { buildSwarmOverviewStatusFields } from "../swarm/overview-status-helpers.js";
+import { buildSwarmOrchestrationView, findLaneOrchestrationContext } from "../swarm/orchestration.js";
+import { createLoadedValueView } from "../core/view-helpers.js";
+import { buildHistoryView, buildPlanningView } from "../core/view-metadata.js";
 
 export function buildSwarmBriefView(
   id,

@@ -10,7 +10,7 @@ import {
   attachRuntimePackSurfaces,
   buildRuntimePackCounts,
   normalizeRuntimePackDetail
-} from '../../../state/runtime/pack-detail/index.js';
+} from '../pack-detail/index.js';
 
 export function buildRuntimeDispatchPackView(
   input,
@@ -25,7 +25,8 @@ export function buildRuntimeDispatchPackView(
   {
     deriveRuntimeDispatchPackSurface,
     deriveRuntimeDispatchPackReason,
-    buildRuntimeDispatchPackSummary
+    buildRuntimeDispatchPackSummary,
+    buildRuntimeDispatchPackScoring
   }
 ) {
   const detailLevel = normalizeRuntimePackDetail(input.detail);
@@ -37,6 +38,7 @@ export function buildRuntimeDispatchPackView(
   const handoffs = runtimeHandoffs();
   const recommendedSurface = deriveRuntimeDispatchPackSurface({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs });
   const recommendedReason = deriveRuntimeDispatchPackReason({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs });
+  const scoring = buildRuntimeDispatchPackScoring({ dispatch, assignmentDispatchPack, assignmentDispatchBundle, assignmentLaunchPlan, roles, handoffs });
   const nextEntries = buildRuntimePackDispatchEntries(
     dispatch,
     assignmentDispatchPack,
@@ -61,6 +63,10 @@ export function buildRuntimeDispatchPackView(
     availableDetails: RUNTIME_PACK_DETAILS,
     recommendedSurface,
     recommendedReason,
+    recommendationScore: scoring.score,
+    recommendationScoreBreakdown: scoring.scoreBreakdown,
+    recommendationScoreEntries: scoring.scoreEntries,
+    recommendationCandidates: scoring.rankedCandidates,
     metadata: buildRuntimePackDispatchMetadata(
       dispatch,
       assignmentDispatchPack,
@@ -95,4 +101,3 @@ export function buildRuntimeDispatchPackView(
     )
   );
 }
-

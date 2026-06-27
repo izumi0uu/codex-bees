@@ -41,6 +41,10 @@ export const COORDINATION_WORKER_COMMAND_HELP_OVERRIDES = {
     usage: [commandUsage("leader:assignments", "[--status <status>] [--topology <topology>] [--owner <owner>]")],
     options: [STATUS_OPTION, TOPOLOGY_OPTION, OWNER_OPTION]
   },
+  "leader:assignment-ranking": {
+    usage: [commandUsage("leader:assignment-ranking", "[--status <status>] [--topology <topology>] [--owner <owner>]")],
+    options: [STATUS_OPTION, TOPOLOGY_OPTION, OWNER_OPTION]
+  },
   "leader:assignment-dispatch": {
     usage: [commandUsage("leader:assignment-dispatch", "[options]")],
     options: [ROLE_OPTION, OWNER_OPTION, WORKER_OPTION, TASK_ID_OPTION, STATUS_OPTION, TOPOLOGY_OPTION]

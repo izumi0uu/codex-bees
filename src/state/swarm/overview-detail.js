@@ -1,5 +1,5 @@
-import { buildSwarmDetailMetadata } from "../../state-view-metadata.js";
-import { createLoadedValueView } from "../../state-view-helpers.js";
+import { buildSwarmDetailMetadata } from "../core/view-metadata.js";
+import { createLoadedValueView } from "../core/view-helpers.js";
 
 export function buildSwarmDetailView(id, { getSwarm, swarmOverview }) {
   const swarm = getSwarm(id);

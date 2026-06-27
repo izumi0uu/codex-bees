@@ -1,8 +1,8 @@
 import {
   buildRuntimeTaskIdentityFields,
   buildRuntimeTaskRecommendationFields
-} from "../task-entry-helpers.js";
-import { buildRecommendedNextFields } from "../recommendation-helpers.js";
+} from "../task-entry/helpers.js";
+import { buildRecommendedNextFields } from "../recommendation/helpers.js";
 
 export function buildRuntimeActivityEventSummary(entity, event) {
   if (entity.entityType === "swarm") {

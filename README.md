@@ -97,6 +97,40 @@ npx codex-bees mcp --help
 - **Skills** such as `project-development` and `swarm-orchestration` shape how work gets executed
 - **Agents** such as `explore`, `executor`, `reviewer`, and `tester` give each lane an explicit role boundary
 
+## Source layout
+
+The repo stays product-facing at the top level and pushes implementation detail downward:
+
+```text
+src/
+  planner.js          # public planner facade
+  state.js            # public state facade
+  planner/
+    lane/             # lane construction, dependencies, waves, orchestration
+    profile/          # planner profile API, ranking, selection, registry
+    scope/            # repo-scope detection and intent inference
+  state/
+    public/
+      read/           # derived read entrypoints
+      write/          # mutation entrypoints
+      runtime/        # runtime view entrypoints
+      worker/         # worker-facing entrypoints
+      transition/     # lifecycle transition entrypoints
+    runtime/
+      overview/       # dashboard/alerts/review/focus overview sources
+      session-packs/  # role/session/execution pack sources
+      orchestration-packs/
+      focus/
+      handoff/
+      closeout/
+      recovery/
+      workspace/
+      ranking/
+      recommendation/
+```
+
+The intent is simple: keep **root facades shallow**, and group dense implementation modules by domain once they stop being readable as a flat file list.
+
 ## What it looks like
 
 ```bash

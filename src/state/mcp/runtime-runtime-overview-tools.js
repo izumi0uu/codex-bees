@@ -10,6 +10,10 @@ import {
   runtimeReview,
   runtimeRoles
 } from "../../state-runtime.js";
+import {
+  buildRuntimeDispatchRankingView,
+  buildRuntimeFocusCandidatesView
+} from "../runtime/ranking/views.js";
 import { createNamedTextPayload, createSuccess } from "./runtime-response.js";
 
 const RUNTIME_OVERVIEW_MCP_TOOL_HANDLERS = {
@@ -41,8 +45,22 @@ const RUNTIME_OVERVIEW_MCP_TOOL_HANDLERS = {
     return createSuccess(id, createNamedTextPayload("dispatch", runtimeDispatch()));
   },
 
+  runtime_dispatch_ranking({ id, args, metadata }) {
+    return createSuccess(
+      id,
+      createNamedTextPayload("dispatchRanking", buildRuntimeDispatchRankingView(runtimeDispatch()))
+    );
+  },
+
   runtime_focus({ id, args, metadata }) {
     return createSuccess(id, createNamedTextPayload("focus", runtimeFocus()));
+  },
+
+  runtime_focus_candidates({ id, args, metadata }) {
+    return createSuccess(
+      id,
+      createNamedTextPayload("focusCandidates", buildRuntimeFocusCandidatesView(runtimeFocus()))
+    );
   },
 
   runtime_review({ id, args, metadata }) {
